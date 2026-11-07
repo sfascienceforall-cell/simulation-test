@@ -1,0 +1,1 @@
+(function(M){var X={"court": "Chimie · 6e", "nav": [["../../../secondaire/", "Secondaire", true], ["../../../universite/", "Université"], ["../../../", "Physique (unif)"], ["../../../universite/chimie/", "Chimie (unif)"]], "crumbs": [["../../", "Secondaire"]], "featured": "c6-c01-reconnaitre"};for(var k in X)M[k]=X[k];})(SFA.meta);

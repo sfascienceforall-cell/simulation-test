@@ -1,0 +1,1 @@
+(function(M){var X={"court": "Biologie · 5e", "nav": [["../../../secondaire/", "Secondaire", true], ["../../../universite/", "Université"], ["../../../", "Physique (unif)"], ["../../../universite/chimie/", "Chimie (unif)"]], "crumbs": [["../../", "Secondaire"]], "featured": "b5-c01-seuil"};for(var k in X)M[k]=X[k];})(SFA.meta);

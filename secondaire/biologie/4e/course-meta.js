@@ -1,0 +1,1 @@
+(function(M){var X={"court": "Biologie · 4e", "nav": [["../../../secondaire/", "Secondaire", true], ["../../../universite/", "Université"], ["../../../", "Physique (unif)"], ["../../../universite/chimie/", "Chimie (unif)"]], "crumbs": [["../../", "Secondaire"]], "featured": "b4-c01-microscope"};for(var k in X)M[k]=X[k];})(SFA.meta);

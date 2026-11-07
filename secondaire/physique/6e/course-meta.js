@@ -1,0 +1,1 @@
+(function(M){var X={"court": "Physique · 6e", "nav": [["../../../secondaire/", "Secondaire", true], ["../../../universite/", "Université"], ["../../../", "Physique (unif)"], ["../../../universite/chimie/", "Chimie (unif)"]], "crumbs": [["../../", "Secondaire"]], "featured": "p6-c01-aimant-boussoles"};for(var k in X)M[k]=X[k];})(SFA.meta);

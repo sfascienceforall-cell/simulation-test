@@ -1,0 +1,1 @@
+(function(M){var X={"court": "Chimie · 5e", "nav": [["../../../secondaire/", "Secondaire", true], ["../../../universite/", "Université"], ["../../../", "Physique (unif)"], ["../../../universite/chimie/", "Chimie (unif)"]], "crumbs": [["../../", "Secondaire"]], "featured": "c5-c01-remplissage"};for(var k in X)M[k]=X[k];})(SFA.meta);

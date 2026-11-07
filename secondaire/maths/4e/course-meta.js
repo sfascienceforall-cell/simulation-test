@@ -1,0 +1,1 @@
+(function(M){var X={"court": "Mathématiques · 4e", "nav": [["../../../secondaire/", "Secondaire", true], ["../../../universite/", "Université"], ["../../../", "Physique (unif)"], ["../../../universite/chimie/", "Chimie (unif)"]], "crumbs": [["../../", "Secondaire"]], "featured": "m4-c06-cercle"};for(var k in X)M[k]=X[k];})(SFA.meta);

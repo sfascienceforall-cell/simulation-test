@@ -1,0 +1,1 @@
+(function(M){var X={"court": "Biologie · 3e", "nav": [["../../../secondaire/", "Secondaire", true], ["../../../universite/", "Université"], ["../../../", "Physique (unif)"], ["../../../universite/chimie/", "Chimie (unif)"]], "crumbs": [["../../", "Secondaire"]], "featured": "b3-c01-reseau"};for(var k in X)M[k]=X[k];})(SFA.meta);

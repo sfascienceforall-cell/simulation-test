@@ -1,0 +1,1 @@
+(function(M){var X={"court": "Chimie · 3e", "nav": [["../../../secondaire/", "Secondaire", true], ["../../../universite/", "Université"], ["../../../", "Physique (unif)"], ["../../../universite/chimie/", "Chimie (unif)"]], "crumbs": [["../../", "Secondaire"]], "featured": "c3-c10-chou"};for(var k in X)M[k]=X[k];})(SFA.meta);

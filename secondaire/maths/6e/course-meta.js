@@ -1,0 +1,1 @@
+(function(M){var X={"court": "Mathématiques · 6e", "nav": [["../../../secondaire/", "Secondaire", true], ["../../../universite/", "Université"], ["../../../", "Physique (unif)"], ["../../../universite/chimie/", "Chimie (unif)"]], "crumbs": [["../../", "Secondaire"]], "featured": "m6-c08-galton"};for(var k in X)M[k]=X[k];})(SFA.meta);

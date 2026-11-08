@@ -4,8 +4,6 @@ Site statique (GitHub Pages) : simulations interactives, théorie animée et exe
 
 - `secondaire/` : maths, physique, chimie, biologie, de la 3e à la 6e (FWB), 10 chapitres par année.
 - `universite/` : mathématiques, biologie, biostatistique (BA1).
-- La physique et la chimie universitaires restent sur le site principal :
-  https://sfascienceforall-cell.github.io/simulations/ (liens absolus dans `kit/sfa-nav.js` : `PHYS`, `CHIMIE`, `PREPA`).
 
 ## Navigation commune
 `kit/sfa-nav.js` + `kit/sfa-nav.css` : barre identique sur toutes les pages (menu « Cours », recherche globale ⌘K ou `/`,

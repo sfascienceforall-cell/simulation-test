@@ -97,7 +97,7 @@ window.SFA_COURSE = function () {
   var crumbs = (M.crumbs || []).map(function (n) { return '<a href="' + n[0] + '">' + n[1] + "</a>"; }).join("");
   var feat = M.featured && ALL.filter(function (s) { return s.id === M.featured; })[0];
   document.getElementById("app").innerHTML =
-    '<header class="sfa-top"><div class="in"><a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a><nav class="sfa-nav">' + nav + '</nav><a class="sfa-cta" href="' + (M.prepa || "https://sfascienceforall-cell.github.io/simulations/prepa/") + '">Prépa concours médecine</a></div></header>' +
+    '<header class="sfa-top"><div class="in"><a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a><nav class="sfa-nav">' + nav + '</nav><a class="sfa-cta" href="' + (M.prepa || "https://sciencesforall.be/concours") + '">Prépa concours médecine</a></div></header>' +
     '<div class="sfa-page"><nav class="sfa-crumbs" aria-label="Fil d\'Ariane">' + crumbs + "›<b>" + esc(M.court || M.titre) + "</b></nav>" +
     '<div class="sfa-grid"><main style="min-width:0">' +
     '<div class="sfa-titlecard crs-hero"><div class="crs-hero-l"><div class="sfa-chips"><span class="sfa-chip">' + esc(M.kicker || "") + '</span><span class="sfa-chip free">Gratuit</span></div><h1>' + esc(M.titre) + "</h1><p>" + (M.intro || "") + '</p>' +
@@ -120,7 +120,7 @@ window.SFA_COURSE = function () {
     '<div class="info" id="info"></div></div>' +
     "</div></section></main>" +
     '<aside class="sfa-side"><div class="sfa-list"><h2>Chapitres<span>' + nEx + ' exercices</span></h2><ol id="sideList"></ol></div>' +
-    '<div class="sfa-promo"><small>Envie d\'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="' + (M.prepa || "https://sfascienceforall-cell.github.io/simulations/prepa/") + '">Voir la prépa concours médecine</a></div></aside></div></div>' +
+    '<div class="sfa-promo"><small>Envie d\'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="' + (M.prepa || "https://sciencesforall.be/concours") + '">Voir la prépa concours médecine</a></div></aside></div></div>' +
     '<footer class="sfa-foot">Science For All · ' + esc(M.pied || "simulations, théorie et exercices") + "</footer>";
 
   document.body.classList.add("m-" + (M.matiere || "maths"));

@@ -29,9 +29,5 @@ for (const dir of walk(ROOT, []).sort()) {
   sims.forEach(s => { if (!s.id || idx[s.ch] == null) return; out.push({ k: "simulation", t: strip(s.titre), s: court + " · ch. " + (idx[s.ch] + 1) + " · " + strip(chs[idx[s.ch]].titre), u: rel + s.id + "/", m }); });
   console.error(rel, chs.length, "chapitres", sims.length, "sims");
 }
-/* site de physique et chimie (unif) */
-const P = "https://sfascienceforall-cell.github.io/simulations/";
-const ext = JSON.parse(fs.readFileSync(path.join(__dirname, "external-pages.json"), "utf8"));
-ext.forEach(e => out.push({ k: e.k || "simulation", t: e.t, s: e.s, u: P + e.u, m: e.m }));
 fs.writeFileSync(path.join(__dirname, "search-index.js"), "/* généré par kit/build_search_index.js */\nwindow.SFA_INDEX=" + JSON.stringify(out) + ";\n");
 console.error("total", out.length);

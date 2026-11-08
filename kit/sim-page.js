@@ -27,7 +27,7 @@ function start() {
   document.body.classList.add("m-" + (M.matiere || "maths"));
   document.title = strip(d.titre) + " · " + (M.court || M.titre) + " · SFA";
   var nav = (M.nav || []).map(function (n) { return '<a href="' + rel(n[0]) + '"' + (n[2] ? ' class="on"' : "") + ">" + n[1] + "</a>"; }).join("");
-  var prepa = M.prepa || "https://sfascienceforall-cell.github.io/simulations/prepa/";
+  var prepa = M.prepa || "https://sciencesforall.be/concours";
   document.getElementById("app").innerHTML =
     '<header class="sfa-top"><div class="in"><a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a><nav class="sfa-nav">' + nav + '</nav><a class="sfa-cta" href="' + prepa + '">Prépa concours médecine</a></div></header>' +
     '<div class="sfa-page"><nav class="sfa-crumbs" aria-label="Fil d\'Ariane"><a href="../">' + esc(M.court || M.titre) + '</a>›<a href="../#c=' + ci + '">' + esc(c.titre) + "</a>›<b>" + esc(strip(d.titre)) + "</b></nav>" +

@@ -2,56 +2,56 @@
    Une seule barre, identique partout : logo · menu « Cours » (panneau Secondaire / Université) · recherche globale (⌘K ou /) ·
    bouton Prépa. Sur téléphone : barre en bas (Cours, Recherche, Reprendre, Prépa).
    Utilisation : <script src="…/kit/sfa-nav.js"></script> ; la barre remplace le <header class="sfa-top"> (pages de cours et de
-   simulation) ou le <header class="top"> (pages d'accueil). Les adresses du site de physique et de chimie sont dans PHYS / CHIMIE. */
+   simulation) ou le <header class="top"> (pages d'accueil). La configuration du site est dans SITE (en tête du fichier). */
 (function () {
   "use strict";
   var me = document.currentScript && document.currentScript.src || "";
   var ROOT = me.replace(/kit\/sfa-nav\.js.*$/, "");               /* racine de ce site (avec / final) */
-  var PHYS = "https://sfascienceforall-cell.github.io/simulations/";  /* site de physique et chimie (unif) */
-  var CHIMIE = PHYS + "chimie/";
-  var PREPA = PHYS + "prepa/";
-  var MATS = [["maths", "Mathématiques", "#1e3f8f"], ["physique", "Physique", "#b42318"], ["chimie", "Chimie", "#2e6b55"], ["biologie", "Biologie", "#5B21B6"]];
-  var YEARS = ["3e", "4e", "5e", "6e"];
-  var UNIF = [["Physique", PHYS, "#b42318", "physique"], ["Chimie", CHIMIE, "#2e6b55", "chimie"], ["Mathématiques", ROOT + "universite/maths/", "#1e3f8f", "maths"],
-              ["Biologie", ROOT + "universite/biologie/", "#5B21B6", "biologie"], ["Biostatistique", ROOT + "universite/statistique/", "#0e7490", "statistique"]];
-  var ACC = { maths: "#1e3f8f", physique: "#b42318", chimie: "#2e6b55", biologie: "#5B21B6", statistique: "#0e7490" };
-  window.SFANAV_CFG = { ROOT: ROOT, PHYS: PHYS, CHIMIE: CHIMIE, PREPA: PREPA };
-
+  var SITE = {"home": "", "acc": "#13233a", "ph": "Rechercher une notion, une simulation…", "mats": {"maths": "#1e3f8f", "physique": "#b42318", "chimie": "#2e6b55", "biologie": "#5B21B6", "statistique": "#0e7490"}, "links": [["SFA", "https://sciencesforall.be"], ["Prépa médecine", "https://sciencesforall.be/concours"]], "bottom": ["Prépa", "https://sciencesforall.be/concours"], "cols": [{"t": "Secondaire", "s": "FWB · 3e → 6e", "w": 1.5, "grid": [{"t": "Mathématiques", "a": "#1e3f8f", "l": [["3e", "secondaire/maths/3e/"], ["4e", "secondaire/maths/4e/"], ["5e", "secondaire/maths/5e/"], ["6e", "secondaire/maths/6e/"]]}, {"t": "Physique", "a": "#b42318", "l": [["3e", "secondaire/physique/3e/"], ["4e", "secondaire/physique/4e/"], ["5e", "secondaire/physique/5e/"], ["6e", "secondaire/physique/6e/"]]}, {"t": "Chimie", "a": "#2e6b55", "l": [["3e", "secondaire/chimie/3e/"], ["4e", "secondaire/chimie/4e/"], ["5e", "secondaire/chimie/5e/"], ["6e", "secondaire/chimie/6e/"]]}, {"t": "Biologie", "a": "#5B21B6", "l": [["3e", "secondaire/biologie/3e/"], ["4e", "secondaire/biologie/4e/"], ["5e", "secondaire/biologie/5e/"], ["6e", "secondaire/biologie/6e/"]]}], "all": ["Tout le secondaire", "secondaire/"]}, {"t": "Université", "s": "BA1 médecine, pharma, biomed, sciences", "w": 1, "list": [["Mathématiques", "universite/maths/", "#1e3f8f"], ["Biologie", "universite/biologie/", "#5B21B6"], ["Biostatistique", "universite/statistique/", "#0e7490"]], "all": ["Toute l'université", "universite/"]}]};
   function esc(t) { return String(t == null ? "" : t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;"); }
   function here() { return location.href.split("#")[0].replace(/index\.html$/, ""); }
   function matiere() {
     var m = (window.SFA && window.SFA.meta && window.SFA.meta.matiere) || "";
     if (!m) { var b = document.body.className.match(/\bm-(\w+)/); if (b) m = b[1]; }
     if (!m) { var p = here().replace(ROOT, ""); var x = /(?:secondaire|universite)\/(maths|physique|chimie|biologie|statistique)/.exec(p); if (x) m = x[1]; }
+    if (!m && SITE.matOf) m = SITE.matOf(here().replace(ROOT, ""));
     return m;
   }
 
-  /* ---------- reprise : dernière page visitée ---------- */
+  /* ---------- reprise : dernière page visitée (propre à ce site : pas de pont entre dépôts) ---------- */
+  var LKEY = "sfa_last:" + ROOT.replace(/^https?:\/\/[^/]+/, "");
   function remember() {
     try {
       var t = document.title.replace(/ · SFA$/, "");
-      if (/\/(secondaire|universite)\/[^/]+\//.test(location.pathname) || location.hash) localStorage.setItem("sfa_last", JSON.stringify({ u: location.href, t: t }));
+      if (location.href.split("#")[0].replace(/index\.html$/, "") !== ROOT || location.hash) localStorage.setItem(LKEY, JSON.stringify({ u: location.href, t: t }));
     } catch (e) {}
   }
-  function last() { try { return JSON.parse(localStorage.getItem("sfa_last") || "null"); } catch (e) { return null; } }
+  function last() { try { return JSON.parse(localStorage.getItem(LKEY) || "null"); } catch (e) { return null; } }
 
   /* ---------- panneau « Cours » ---------- */
   function panel() {
-    var cur = here();
-    var h = '<div class="nv-panel" id="nvPanel" role="dialog" aria-label="Tous les cours"><div class="nv-pin">';
-    h += '<div class="nv-col"><h3>Secondaire <small>FWB · 3e → 6e</small></h3><div class="nv-sgrid">';
-    MATS.forEach(function (m) {
-      h += '<div class="nv-mat" style="--a:' + m[2] + '"><b>' + m[1] + "</b><div>";
-      YEARS.forEach(function (y) { var u = ROOT + "secondaire/" + m[0] + "/" + y + "/"; h += '<a href="' + u + '"' + (cur === u ? ' class="on"' : "") + ">" + y + "</a>"; });
-      h += "</div></div>";
+    var cur = here(), L = last();
+    var h = '<div class="nv-panel" id="nvPanel" role="dialog" aria-label="Tous les cours"><div class="nv-pin" style="grid-template-columns:' + SITE.cols.map(function (c) { return (c.w || 1) + "fr"; }).join(" ") + '">';
+    SITE.cols.forEach(function (c, ci) {
+      h += '<div class="nv-col"><h3>' + c.t + (c.s ? " <small>" + c.s + "</small>" : "") + "</h3>";
+      if (c.grid) {
+        h += '<div class="nv-sgrid">';
+        c.grid.forEach(function (m) { h += '<div class="nv-mat" style="--a:' + m.a + '"><b>' + m.t + "</b><div>";
+          m.l.forEach(function (y) { var u = url(y[1]); h += '<a href="' + u + '"' + (cur === u ? ' class="on"' : "") + ">" + y[0] + "</a>"; }); h += "</div></div>"; });
+        h += "</div>";
+      }
+      if (c.chips) { h += '<div class="nv-chips">'; c.chips.forEach(function (u) { h += '<a href="' + url(u[1]) + '">' + u[0] + "</a>"; }); h += "</div>"; }
+      if (c.list) {
+        h += '<div class="nv-ugrid">';
+        c.list.forEach(function (u) { var href = url(u[1]); h += '<a class="nv-u' + (cur === href ? " on" : "") + '" style="--a:' + (u[2] || SITE.acc) + '" href="' + href + '"><i></i>' + u[0] + (u[3] ? "<small>" + u[3] + "</small>" : "") + "</a>"; });
+        h += "</div>";
+      }
+      if (c.all) h += '<a class="nv-all" href="' + url(c.all[1]) + '">' + c.all[0] + " →</a>";
+      if (ci === SITE.cols.length - 1 && L) h += '<a class="nv-resume" href="' + esc(L.u) + '"><small>Reprendre</small><b>' + esc(L.t) + "</b></a>";
+      h += "</div>";
     });
-    h += '</div><a class="nv-all" href="' + ROOT + 'secondaire/">Tout le secondaire →</a></div>';
-    h += '<div class="nv-col"><h3>Université <small>BA1 médecine, pharma, biomed, sciences</small></h3><div class="nv-ugrid">';
-    UNIF.forEach(function (u) { h += '<a class="nv-u' + (cur === u[1] ? " on" : "") + '" style="--a:' + u[2] + '" href="' + u[1] + '"><i></i>' + u[0] + "</a>"; });
-    h += '</div><a class="nv-all" href="' + ROOT + 'universite/">Toute l\'université →</a>';
-    var L = last(); if (L) h += '<a class="nv-resume" href="' + esc(L.u) + '"><small>Reprendre</small><b>' + esc(L.t) + "</b></a>";
-    h += "</div></div></div>";
-    return h;
+    h += '<div class="nv-mlinks">' + SITE.links.map(function (l) { return '<a href="' + url(l[1]) + '">' + l[0] + "</a>"; }).join("") + "</div>";
+    return h + "</div></div>";
   }
 
   /* ---------- recherche globale ---------- */
@@ -85,7 +85,7 @@
     var box = document.getElementById("nvRes");
     if (!list.length) { box.innerHTML = '<p class="nv-hint">' + (document.getElementById("nvQ").value ? "Aucun résultat." : "Tape une notion : <i>dérivée</i>, <i>titrage</i>, <i>mitose</i>, <i>lentille</i>, <i>Monty Hall</i>…") + "</p>"; return; }
     box.innerHTML = list.map(function (r, i) {
-      return '<a href="' + esc(url(r.u)) + '" class="nv-r' + (i === sel ? " on" : "") + '" style="--a:' + (ACC[r.m] || "#13233a") + '"><span class="nv-k">' + r.k + "</span><b>" + esc(r.t) + "</b><small>" + esc(r.s || "") + "</small></a>";
+      return '<a href="' + esc(url(r.u)) + '" class="nv-r' + (i === sel ? " on" : "") + '" style="--a:' + ((SITE.mats[r.m] || SITE.acc)) + '"><span class="nv-k">' + r.k + "</span><b>" + esc(r.t) + "</b><small>" + esc(r.s || "") + "</small></a>";
     }).join("");
   }
   function move(d) { if (!res.length) return; sel = (sel + d + res.length) % res.length; show(res); var on = document.querySelector(".nv-r.on"); if (on) on.scrollIntoView({ block: "nearest" }); }
@@ -95,12 +95,12 @@
     var m = matiere(), L = last();
     if (L && L.u.split("#")[0].replace(/index\.html$/, "") === here()) L = null;   /* déjà sur cette page */
     var isMac = /Mac|iPhone|iPad/.test(navigator.platform || "");
-    return '<div class="nv-in"><a class="nv-logo" href="' + ROOT + '"><i>SFA</i><span>Science For All</span></a>' +
+    return '<div class="nv-in"><a class="nv-logo" href="' + url(SITE.home) + '"><i>SFA</i><span>Science For All</span></a>' +
       '<button class="nv-btn nv-cours" type="button" aria-expanded="false" aria-controls="nvPanel">Cours <span class="nv-car">▾</span></button>' +
-      '<button class="nv-search" type="button"><span class="nv-ico">⌕</span><span class="nv-ph">Rechercher une notion, une simulation…</span><kbd>' + (isMac ? "⌘" : "Ctrl") + " K</kbd></button>" +
+      SITE.links.map(function (l) { return '<a class="nv-btn nv-lk" href="' + url(l[1]) + '">' + l[0] + "</a>"; }).join("") +
+      '<button class="nv-search" type="button"><span class="nv-ico">⌕</span><span class="nv-ph">' + SITE.ph + '</span><kbd>' + (isMac ? "⌘" : "Ctrl") + " K</kbd></button>" +
       '<span class="nv-sp"></span>' +
-      (L ? '<a class="nv-btn nv-res" href="' + esc(L.u) + '" title="' + esc(L.t) + '">↻ Reprendre</a>' : "") +
-      '<a class="nv-cta" href="' + PREPA + '">Prépa médecine</a></div>' + panel();
+      (L ? '<a class="nv-btn nv-res" href="' + esc(L.u) + '" title="' + esc(L.t) + '">↻ Reprendre</a>' : "") + "</div>" + panel();
   }
   var mounted = false;
   function mount() {
@@ -109,7 +109,7 @@
     if (!hd) return;
     mounted = true;
     var m = matiere();
-    hd.className = "nv-top"; hd.id = "nvTop"; document.body.style.setProperty("--acc", ACC[m] || "#13233a"); hd.innerHTML = html();
+    hd.className = "nv-top"; hd.id = "nvTop"; document.body.style.setProperty("--acc", SITE.mats[m] || SITE.acc); hd.innerHTML = html();
     /* recherche (superposée) */
     var o = document.createElement("div"); o.id = "nvSearch"; o.className = "nv-search-o";
     o.innerHTML = '<div class="nv-sbox" role="dialog" aria-label="Recherche"><div class="nv-sin"><span class="nv-ico">⌕</span><input id="nvQ" type="search" placeholder="Rechercher dans tous les cours…" autocomplete="off"><button type="button" class="nv-x" aria-label="Fermer">Échap</button></div><div id="nvRes" class="nv-resl"></div></div>';
@@ -118,7 +118,7 @@
     var L = last();
     var bb = document.createElement("nav"); bb.className = "nv-bottom"; bb.setAttribute("aria-label", "Navigation");
     bb.innerHTML = '<button type="button" data-a="cours"><i>☰</i>Cours</button><button type="button" data-a="search"><i>⌕</i>Recherche</button>' +
-      '<a href="' + (L ? esc(L.u) : ROOT) + '"><i>↻</i>Reprendre</a><a href="' + PREPA + '"><i>★</i>Prépa</a>';
+      '<a href="' + (L ? esc(L.u) : ROOT) + '"><i>↻</i>Reprendre</a><a href="' + url(SITE.bottom[1]) + '"><i>★</i>' + SITE.bottom[0] + '</a>';
     document.body.appendChild(bb); document.body.classList.add("nv-has-bottom");
     var pnl = document.getElementById("nvPanel"), btn = hd.querySelector(".nv-cours");
     function toggle(open) { var on = open == null ? !pnl.classList.contains("open") : open; pnl.classList.toggle("open", on); btn.setAttribute("aria-expanded", on ? "true" : "false"); }
@@ -142,5 +142,6 @@
     remember(); addEventListener("hashchange", remember);
   }
   window.SFANAV = { mount: mount, open: openSearch };
-  document.addEventListener("DOMContentLoaded", function () { setTimeout(mount, 0); });
+  function tryMount(n) { mount(); if (!mounted && n > 0) setTimeout(function () { tryMount(n - 1); }, 100); }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { tryMount(30); }); else tryMount(30);
 })();

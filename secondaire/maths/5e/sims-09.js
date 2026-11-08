@@ -145,7 +145,7 @@ SFA.sim({
   titre:"La perspective cavalière déforme (et conserve)",
   resume:"Règle l'angle de fuite et le coefficient de réduction : qu'est-ce qui est conservé ?",
   but:"Glisse l'extrémité rouge de la fuyante (ou règle α et k). Compare l'angle apparent et la longueur apparente aux vraies mesures du cube d'arête 4 cm, dessiné en vraie 3D en haut à droite.",
-  aRetenir:"En perspective cavalière : la face de devant est en vraie grandeur ; les arêtes de profondeur sont dessinées à l'angle α avec la horizontale et réduites du coefficient k ; les droites parallèles restent parallèles, les milieux restent des milieux, les rapports de longueurs sur une même direction sont conservés.",
+  aRetenir:"En perspective cavalière : la face de devant est en vraie grandeur ; les arêtes de profondeur sont dessinées à l'angle α avec l'horizontale et réduites du coefficient k ; les droites parallèles restent parallèles, les milieux restent des milieux, les rapports de longueurs sur une même direction sont conservés.",
   piege:"Les angles droits et les longueurs des fuyantes ne sont pas conservés : l'angle B̂AA′ est droit dans la réalité mais mesure α sur le dessin. On ne mesure pas au rapporteur sur une perspective.",
   build:function(k, S){
     var c = k.canvas(440);

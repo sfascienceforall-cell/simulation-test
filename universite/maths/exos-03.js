@@ -7,7 +7,7 @@ SFA.exos("c03", [
 
   {t:"Produit et fonction composée", s:1, enonce:"Dérive f(x) = x²·e<sup>3x</sup> et mets le résultat sous forme factorisée.",
    indice:"(u v)′ = u′v + u v′ et (e<sup>3x</sup>)′ = 3e<sup>3x</sup>.",
-   corrige:"<ol><li>u = x², u′ = 2x ; v = e<sup>3x</sup>, v′ = 3e<sup>3x</sup> (dérivée composée).</li><li>f′(x) = 2x·e<sup>3x</sup> + x²·3e<sup>3x</sup>.</li><li>On factorise : f′(x) = x·e<sup>3x</sup>(2 + 3x).</li></ol>", reponse:"f′(x) = x(3x + 2)e^{3x}"},
+   corrige:"<ol><li>u = x², u′ = 2x ; v = e<sup>3x</sup>, v′ = 3e<sup>3x</sup> (dérivée composée).</li><li>f′(x) = 2x·e<sup>3x</sup> + x²·3e<sup>3x</sup>.</li><li>On factorise : f′(x) = x·e<sup>3x</sup>(2 + 3x).</li></ol>", reponse:"f′(x) = x(3x + 2)e<sup>3x</sup>"},
 
   {t:"Équation de la tangente", s:1, enonce:"Détermine l'équation de la tangente à la courbe de f(x) = √x au point d'abscisse a = 4.",
    indice:"y = f(a) + f′(a)(x − a) avec f′(x) = 1/(2√x).",

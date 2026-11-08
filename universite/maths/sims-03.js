@@ -275,7 +275,7 @@ SFA.sim({
   resume: "Augmente l'ordre n : le polynôme se colle à la fonction autour de 0, puis de plus en plus loin. Mais pour ln(1 + x) ou 1/(1 − x), il y a un mur en |x| = 1.",
   but: "Choisis la fonction et l'ordre n, puis lis l'erreur au point x. À l'ordre 1 on retrouve l'approximation affine (la tangente).",
   aRetenir: "T<sub>n</sub>(x) = Σ f<sup>(k)</sup>(0) xᵏ/k! (k de 0 à n). Pour x proche de 0, f(x) ≈ T<sub>n</sub>(x) avec une erreur de l'ordre de xⁿ⁺¹. Ordre 1 : f(x) ≈ f(0) + f′(0)x. Exemples : sin x ≈ x − x³/6 ; eˣ ≈ 1 + x + x²/2 ; ln(1 + x) ≈ x − x²/2.",
-  piege: "Le polynôme ne converge pas toujours : pour ln(1 + x), 1/(1 − x), arctan x la série ne converge que pour |x| < 1 (rayon de convergence R = 1). Au-delà, augmenter n aggrave l'erreur.",
+  piege: "Le polynôme ne converge pas toujours : pour ln(1 + x), 1/(1 − x), arctan x la série diverge pour |x| > 1 (rayon de convergence R = 1). Au-delà, augmenter n aggrave l'erreur.",
   build: function(k, S){
     var c = k.canvas(390), fs = k.select("Fonction", [["sin", "sin x"], ["cos", "cos x"], ["exp", "eˣ"], ["ln", "ln(1 + x)"], ["geo", "1/(1 − x)"], ["atan", "arctan x"]], "sin");
     var n = k.slider("Ordre n", 0, 14, 1, 3, ""), xs = k.slider("Point x où lire l'erreur", -3, 3, 0.05, 0.8, "");

@@ -20,12 +20,12 @@ SFA.sim({
   titre:"Le signe du produit scalaire : aigu, droit, obtus",
   resume:"Déplace les pointes de u et v : u·v change de signe avec l'angle.",
   but:"Glisse la pointe rouge (u) ou bleue (v) à la souris ou au doigt (ou règle les coordonnées). Cherche v perpendiculaire à u : que vaut u·v ?",
-  aRetenir:"u·v = u₁v₁ + u₂v₂ = |u|·|v|·cos θ. Angle aigu : u·v > 0 · angle droit : u·v = 0 (vecteurs orthogonaux) · angle obtus : u·v < 0. Le produit scalaire est un nombre, pas un vecteur.",
-  piege:"u·v = |u||v| seulement si θ = 0° (même sens). Et u·v = 0 n'oblige pas u ou v à être nul : il suffit qu'ils soient perpendiculaires.",
+  aRetenir:"u·v = u₁v₁ + u₂v₂ = ‖u‖·‖v‖·cos θ. Angle aigu : u·v > 0 · angle droit : u·v = 0 (vecteurs orthogonaux) · angle obtus : u·v < 0. Le produit scalaire est un nombre, pas un vecteur.",
+  piege:"u·v = ‖u‖‖v‖ seulement si θ = 0° (même sens). Et u·v = 0 n'oblige pas u ou v à être nul : il suffit qu'ils soient perpendiculaires.",
   build:function(k, S){
     var c = k.canvas(420), ax;
     var ux = k.slider("u₁", -5, 5, 0.5, 4, ""), uy = k.slider("u₂", -5, 5, 0.5, 1, ""), vx = k.slider("v₁", -5, 5, 0.5, 1, ""), vy = k.slider("v₂", -5, 5, 0.5, 3, "");
-    var ro = k.readouts(["u·v = u₁v₁ + u₂v₂", "|u|·|v|·cos θ", "Angle θ", "Nature"]); var nt = k.note("", "ok");
+    var ro = k.readouts(["u·v = u₁v₁ + u₂v₂", "‖u‖·‖v‖·cos θ", "Angle θ", "Nature"]); var nt = k.note("", "ok");
     dragTips(c, function(){ return ax; }, [{x:function(){ return ux.value; }, y:function(){ return uy.value; }, set:function(x, y){ ux.set(x); uy.set(y); }}, {x:function(){ return vx.value; }, y:function(){ return vy.value; }, set:function(x, y){ vx.set(x); vy.set(y); }}], function(){ k.redraw(); });
     k.draw(function(){
       c.clear(); ax = sqAxes(c, 6, 1);
@@ -40,7 +40,7 @@ SFA.sim({
       if (ml > 1e-6) S.draw.label(c, "θ = " + F(th, 0) + "°", ax.X(mx / ml * 1.9), ax.Y(my / ml * 1.9), {color:col, size:12.5});
       var nat = Math.abs(dp) < 1e-9 ? "droit (orthogonaux)" : dp > 0 ? "aigu (u·v > 0)" : "obtus (u·v < 0)";
       ro.set(0, F(dp, 2)); ro.set(1, F(nu * nv * cs, 2)); ro.set(2, F(th, 1) + "°"); ro.set(3, nat);
-      nt.set("u = (" + F(a, 1) + " ; " + F(b, 1) + "), v = (" + F(d, 1) + " ; " + F(e, 1) + "). |u| = " + F(nu, 2) + ", |v| = " + F(nv, 2) + ". cos θ = u·v/(|u||v|) = " + F(cs, 3) + ", donc θ ≈ " + F(th, 1) + "°. Angle " + nat + ".", Math.abs(dp) < 1e-9 ? "ok" : "");
+      nt.set("u = (" + F(a, 1) + " ; " + F(b, 1) + "), v = (" + F(d, 1) + " ; " + F(e, 1) + "). ‖u‖ = " + F(nu, 2) + ", ‖v‖ = " + F(nv, 2) + ". cos θ = u·v/(‖u‖‖v‖) = " + F(cs, 3) + ", donc θ ≈ " + F(th, 1) + "°. Angle " + nat + ".", Math.abs(dp) < 1e-9 ? "ok" : "");
     });
   }
 });
@@ -49,14 +49,14 @@ SFA.sim({
 SFA.sim({
   id:"m5-c10-projection", ch:"c10", tag:"Classique",
   titre:"L'ombre de u sur v : la projection orthogonale",
-  resume:"La longueur de l'ombre vaut u·v/|v|.",
+  resume:"La longueur de l'ombre vaut u·v/‖v‖.",
   but:"Glisse la pointe de u (rouge). Son ombre sur la droite de v (bleu) est le segment vert. Fais en sorte que la longueur algébrique de l'ombre vaille 3.",
-  aRetenir:"La projection orthogonale de u sur v est p = (u·v / |v|²)·v. La longueur algébrique de l'ombre vaut u·v/|v| : positive si l'angle est aigu, négative s'il est obtus, nulle si u ⟂ v.",
-  piege:"u·v n'est pas la longueur de l'ombre : il faut diviser par |v|. Et la longueur algébrique peut être négative (ombre dans le sens opposé à v).",
+  aRetenir:"La projection orthogonale de u sur v est p = (u·v / ‖v‖²)·v. La longueur algébrique de l'ombre vaut u·v/‖v‖ : positive si l'angle est aigu, négative s'il est obtus, nulle si u ⟂ v.",
+  piege:"u·v n'est pas la longueur de l'ombre : il faut diviser par ‖v‖. Et la longueur algébrique peut être négative (ombre dans le sens opposé à v).",
   build:function(k, S){
     var c = k.canvas(420), ax;
     var ux = k.slider("u₁", -5, 5, 0.5, 3, ""), uy = k.slider("u₂", -5, 5, 0.5, 3, ""), vx = k.slider("v₁", -5, 5, 0.5, 4, ""), vy = k.slider("v₂", -5, 5, 0.5, 1, "");
-    var ro = k.readouts(["u·v", "|v|", "Ombre algébrique u·v/|v|", "Projection p"]); var nt = k.note("", "ok");
+    var ro = k.readouts(["u·v", "‖v‖", "Ombre algébrique u·v/‖v‖", "Projection p"]); var nt = k.note("", "ok");
     dragTips(c, function(){ return ax; }, [{x:function(){ return ux.value; }, y:function(){ return uy.value; }, set:function(x, y){ ux.set(x); uy.set(y); }}], function(){ k.redraw(); });
     k.draw(function(){
       c.clear(); ax = sqAxes(c, 6, 1);
@@ -72,7 +72,7 @@ SFA.sim({
       S.draw.label(c, "ombre = " + F(dp / nv, 2), ax.X(px / 2) , ax.Y(py / 2) + 18, {color:P.green, size:12});
       var L = dp / nv; ro.set(0, F(dp, 2)); ro.set(1, F(nv, 2)); ro.set(2, F(L, 2)); ro.set(3, "(" + F(px, 2) + " ; " + F(py, 2) + ")");
       var hit = Math.abs(L - 3) < 0.05;
-      nt.set((hit ? "<b>Bravo : l'ombre mesure 3.</b> " : "") + "p = (u·v/|v|²)·v = " + F(t, 3) + "·v. L'ombre a la longueur |p| = " + F(Math.abs(L), 2) + (L < -1e-9 ? ", orientée en sens contraire de v (angle obtus)." : L > 1e-9 ? ", dans le sens de v (angle aigu)." : " : u ⟂ v, l'ombre se réduit à un point."), hit ? "ok" : "");
+      nt.set((hit ? "<b>Bravo : l'ombre mesure 3.</b> " : "") + "p = (u·v/‖v‖²)·v = " + F(t, 3) + "·v. L'ombre a la longueur |p| = " + F(Math.abs(L), 2) + (L < -1e-9 ? ", orientée en sens contraire de v (angle obtus)." : L > 1e-9 ? ", dans le sens de v (angle aigu)." : " : u ⟂ v, l'ombre se réduit à un point."), hit ? "ok" : "");
     });
   }
 });

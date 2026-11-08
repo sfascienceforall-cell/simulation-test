@@ -42,10 +42,10 @@ SFA.theo("c07", {
   TB('toujours égaux à 2R = 6,0',x0,252,VIO_D,15,'left');
  },
  th: '<div class="tcard"><b class="h">Notations</b><p>Dans le triangle ABC, a = BC est le côté opposé à Â, b = AC à B̂, c = AB à Ĉ. On a Â + B̂ + Ĉ = 180°. « Résoudre » un triangle, c\'est calculer tous ses côtés et tous ses angles à partir de trois données.</p></div>'+
- '<div class="tcard"><b class="h">Loi des sinus</b><p><b>a / sin Â = b / sin B̂ = c / sin Ĉ</b> (= 2R, R rayon du cercle circonscrit). On l\'utilise quand on connaît <b>un côté et son angle opposé</b> (cas ASA, AAS, SSA).</p><p>Exemple : Â = 40°, B̂ = 60°, a = 7 cm. Alors b = a·sin B̂ / sin Â = 7 × 0,8660 / 0,6428 ≈ <b>9,4 cm</b>.</p></div>'+
- '<div class="tcard"><b class="h">Loi des cosinus</b><p><b>a² = b² + c² − 2bc·cos Â</b> (et les deux autres par permutation). On l\'utilise avec <b>deux côtés et l\'angle compris</b> (SAS) ou avec <b>trois côtés</b> (SSS) : cos Â = (b² + c² − a²)/(2bc). Pour Â = 90°, on retrouve Pythagore.</p><p>Exemples : c = 8, b = 5, Â = 60° : a² = 64 + 25 − 40 = 49, donc <b>a = 7</b>. Côtés 5, 7, 8 : l\'angle opposé à 7 vérifie cos θ = (25 + 64 − 49)/80 = 1/2, donc <b>θ = 60°</b>.</p></div>'+
+ '<div class="tcard"><b class="h">Loi des sinus</b><p><b>a / sin Â = b / sin B̂ = c / sin Ĉ</b> (= 2R, R rayon du cercle circonscrit). On l\'utilise quand on connaît <b>un côté et son angle opposé</b> (cas ACA, AAC, CCA).</p><p>Exemple : Â = 40°, B̂ = 60°, a = 7 cm. Alors b = a·sin B̂ / sin Â = 7 × 0,8660 / 0,6428 ≈ <b>9,4 cm</b>.</p></div>'+
+ '<div class="tcard"><b class="h">Loi des cosinus</b><p><b>a² = b² + c² − 2bc·cos Â</b> (et les deux autres par permutation). On l\'utilise avec <b>deux côtés et l\'angle compris</b> (CAC) ou avec <b>trois côtés</b> (CCC) : cos Â = (b² + c² − a²)/(2bc). Pour Â = 90°, on retrouve Pythagore.</p><p>Exemples : c = 8, b = 5, Â = 60° : a² = 64 + 25 − 40 = 49, donc <b>a = 7</b>. Côtés 5, 7, 8 : l\'angle opposé à 7 vérifie cos θ = (25 + 64 − 49)/80 = 1/2, donc <b>θ = 60°</b>.</p></div>'+
  '<div class="tcard"><b class="h">Aire</b><p><b>Aire = ½·b·c·sin Â</b> (deux côtés et l\'angle compris). La hauteur issue de A s\'obtient ensuite par aire = ½·a·h. Exemple : 5 cm, 8 cm et 30° donnent ½ × 5 × 8 × 0,5 = <b>10 cm²</b>.</p></div>'+
- '<div class="tcard"><b class="h">Cas ambigu (SSA) et applications</b><p>Avec Â, b et a donnés, on pose h = b·sin Â : si a &lt; h aucun triangle ; si a = h un seul (rectangle) ; si <b>h &lt; a &lt; b deux triangles</b> (B̂ aigu ou obtus : sin B̂ = b·sin Â / a donne B̂ et 180° − B̂) ; si a ≥ b un seul. Exemple : Â = 30°, b = 10, a = 6 : h = 5, donc deux triangles.</p><p><b>Forces</b> : deux forces F₁, F₂ faisant un angle φ ont une résultante de norme R² = F₁² + F₂² + 2F₁F₂ cos φ. <b>Pièges</b> : calculatrice en degrés ; sin B̂ = 0,83 ne donne pas qu\'un seul angle ; vérifier que la somme des angles vaut 180°.</p></div>'
+ '<div class="tcard"><b class="h">Cas ambigu (CCA) et applications</b><p>Avec Â, b et a donnés, on pose h = b·sin Â : si a &lt; h aucun triangle ; si a = h un seul (rectangle) ; si <b>h &lt; a &lt; b deux triangles</b> (B̂ aigu ou obtus : sin B̂ = b·sin Â / a donne B̂ et 180° − B̂) ; si a ≥ b un seul. Exemple : Â = 30°, b = 10, a = 6 : h = 5, donc deux triangles.</p><p><b>Forces</b> : deux forces F₁, F₂ faisant un angle φ ont une résultante de norme R² = F₁² + F₂² + 2F₁F₂ cos φ. <b>Pièges</b> : calculatrice en degrés ; sin B̂ = 0,83 ne donne pas qu\'un seul angle ; vérifier que la somme des angles vaut 180°.</p></div>'
 });
 SFA.figs("c07", [
  function (p) { /* 0 loi des sinus */
@@ -85,7 +85,7 @@ SFA.figs("c07", [
   if(p>0){ctx.globalAlpha=m4_ap(p,0,1);m4_sd(f,B,C,'BC = 7 cm',DRED,18,15);tag('BC² = 64 + 25 − 2·8·5·cos 60° = 49',W*.5,H*.92,DGREEN,15);ctx.globalAlpha=1;}
   else m4_sd(f,B,C,'BC = ?',GREY,18,15);
  },
- function (p) { /* 4 angle SSS */
+ function (p) { /* 4 angle CCC */
   var f=m4_fr(-1,9.5,-1,5.5,{eq:true,t:24,b:20});
   var V=[0,0],P=[8,0],Q=[2.5,5*Math.sin(60*D2R)];
   m4_T(f,[V,P,Q],['A','B','C']);
@@ -94,7 +94,7 @@ SFA.figs("c07", [
   if(p>0){ctx.globalAlpha=m4_ap(p,0,1);tag('cos θ = (25 + 64 − 49) / 80 = 1/2',W*.5,H*.92,DGREEN,15);ctx.globalAlpha=1;}
   else tag('angle opposé au côté 7',W*.5,H*.92,GREY,14);
  },
- function (p) { /* 5 ASA */
+ function (p) { /* 5 ACA */
   var f=m4_fr(-1.5,14,-1.5,11.5,{eq:true,t:18,b:14});
   var c=13.02,B=[0,0],C=[12,0],A=[c*Math.cos(50*D2R),c*Math.sin(50*D2R)];
   m4_T(f,[A,B,C],['A','B','C']);

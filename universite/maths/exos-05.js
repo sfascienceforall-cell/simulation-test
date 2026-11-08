@@ -2,7 +2,7 @@
 SFA.exos("c05", [
   {t:"Décroissance exponentielle", s:1, enonce:"Résous le problème de Cauchy y′ = −2y avec y(0) = 5.",
    indice:"y′ = k y a pour solutions y = C·e<sup>kx</sup> ; la condition initiale fixe C.",
-   corrige:"<ol><li>L'équation y′ = ky (k = −2) a pour solution générale y = C·e<sup>−2x</sup>.</li><li>y(0) = C = 5.</li><li>Vérification : y′ = 5·(−2)e<sup>−2x</sup> = −2y ✓.</li></ol>", reponse:"y = 5e^{−2x}"},
+   corrige:"<ol><li>L'équation y′ = ky (k = −2) a pour solution générale y = C·e<sup>−2x</sup>.</li><li>y(0) = C = 5.</li><li>Vérification : y′ = 5·(−2)e<sup>−2x</sup> = −2y ✓.</li></ol>", reponse:"y = 5e<sup>−2x</sup>"},
 
   {t:"Solution générale", s:1, enonce:"Quelle est la solution générale de y′ = 3y ?",
    choix:["y = e<sup>3x</sup> + C","y = C·e<sup>3x</sup>","y = 3C·eˣ","y = C·x³"], bonne:1,
@@ -28,7 +28,7 @@ SFA.exos("c05", [
 
   {t:"Perfusion et plateau", s:3, enonce:"Un médicament est perfusé à 12 mg/h dans un volume de distribution V = 30 L ; l'élimination est du premier ordre, k = 0,2 h⁻¹. Alors C′ = −kC + 12/V, avec C(0) = 0. Calcule C(t), la concentration à l'équilibre et le temps pour atteindre 90 % du plateau.",
    indice:"Écris C′ = −0,2(C − C<sub>eq</sub>) avec C<sub>eq</sub> = (12/30)/0,2.",
-   corrige:"<ol><li>12/V = 0,4 mg/L/h. Équilibre : C′ = 0 ⇒ C<sub>eq</sub> = 0,4/0,2 = 2 mg/L.</li><li>C′ = −0,2(C − 2) ⇒ C(t) = 2 + (C(0) − 2)e<sup>−0,2t</sup> = 2(1 − e<sup>−0,2t</sup>).</li><li>90 % du plateau : 1 − e<sup>−0,2t</sup> = 0,9 ⇒ e<sup>−0,2t</sup> = 0,1 ⇒ t = ln 10/0,2 ≈ 11,5 h (soit ≈ 3,3 demi-vies d'élimination de 3,47 h).</li></ol>", reponse:"C(t) = 2(1 − e^{−0,2t}) mg/L ; C_eq = 2 mg/L ; t ≈ 11,5 h"},
+   corrige:"<ol><li>12/V = 0,4 mg/L/h. Équilibre : C′ = 0 ⇒ C<sub>eq</sub> = 0,4/0,2 = 2 mg/L.</li><li>C′ = −0,2(C − 2) ⇒ C(t) = 2 + (C(0) − 2)e<sup>−0,2t</sup> = 2(1 − e<sup>−0,2t</sup>).</li><li>90 % du plateau : 1 − e<sup>−0,2t</sup> = 0,9 ⇒ e<sup>−0,2t</sup> = 0,1 ⇒ t = ln 10/0,2 ≈ 11,5 h (soit ≈ 3,3 demi-vies d'élimination de 3,47 h).</li></ol>", reponse:"C(t) = 2(1 − e<sup>−0,2t</sup>) mg/L ; C_eq = 2 mg/L ; t ≈ 11,5 h"},
 
   {t:"Temps pour atteindre K/2", s:3, enonce:"Une population suit y′ = 0,5·y(1 − y/200) avec y(0) = 20. Au bout de combien d'unités de temps atteint-elle 100 (la moitié de la capacité) ?",
    choix:["≈ 4,39","≈ 3,22","≈ 2,20","≈ 4,61"], bonne:0,
@@ -37,11 +37,11 @@ SFA.exos("c05", [
 
   {t:"Oscillations amorties", s:3, enonce:"Résous y″ + 2y′ + 5y = 0 avec y(0) = 2 et y′(0) = 0.",
    indice:"Équation caractéristique λ² + 2λ + 5 = 0 : racines complexes α ± iω.",
-   corrige:"<ol><li>Δ = 4 − 20 = −16 ; λ = (−2 ± 4i)/2 = −1 ± 2i.</li><li>y = e<sup>−x</sup>(A cos 2x + B sin 2x).</li><li>y(0) = A = 2.</li><li>y′ = e<sup>−x</sup>[(−A + 2B)cos 2x + (−B − 2A)sin 2x], donc y′(0) = −A + 2B = 0 ⇒ B = 1.</li></ol>Contrôle : l'amplitude décroît en e<sup>−x</sup>, la pseudo-période vaut π.", reponse:"y = e^{−x}(2 cos 2x + sin 2x)"},
+   corrige:"<ol><li>Δ = 4 − 20 = −16 ; λ = (−2 ± 4i)/2 = −1 ± 2i.</li><li>y = e<sup>−x</sup>(A cos 2x + B sin 2x).</li><li>y(0) = A = 2.</li><li>y′ = e<sup>−x</sup>[(−A + 2B)cos 2x + (−B − 2A)sin 2x], donc y′(0) = −A + 2B = 0 ⇒ B = 1.</li></ol>Contrôle : l'amplitude décroît en e<sup>−x</sup>, la pseudo-période vaut π.", reponse:"y = e<sup>−x</sup>(2 cos 2x + sin 2x)"},
 
   {t:"Mélange dans une cuve", s:4, enonce:"Une cuve contient 50 L d'eau salée avec 10 kg de sel. On y verse 5 L/min d'une solution à 0,4 kg/L, et le mélange (supposé homogène) sort à 5 L/min. Écris l'équation différentielle de la masse de sel m(t), résous-la et donne le temps pour atteindre 15 kg.",
    indice:"m′ = (sel entrant) − (sel sortant) ; la concentration sortante est m/50.",
-   corrige:"<ol><li>Entrée : 5·0,4 = 2 kg/min. Sortie : 5·(m/50) = m/10 kg/min.</li><li>m′ = 2 − m/10 = −(1/10)(m − 20) : équilibre m = 20 kg (= 50 L × 0,4 kg/L).</li><li>m(t) = 20 + (10 − 20)e<sup>−t/10</sup> = 20 − 10e<sup>−t/10</sup>.</li><li>m = 15 ⇒ e<sup>−t/10</sup> = 1/2 ⇒ t = 10 ln 2 ≈ 6,93 min.</li></ol>", reponse:"m′ = 2 − m/10 ; m = 20 − 10e^{−t/10} ; t ≈ 6,93 min"},
+   corrige:"<ol><li>Entrée : 5·0,4 = 2 kg/min. Sortie : 5·(m/50) = m/10 kg/min.</li><li>m′ = 2 − m/10 = −(1/10)(m − 20) : équilibre m = 20 kg (= 50 L × 0,4 kg/L).</li><li>m(t) = 20 + (10 − 20)e<sup>−t/10</sup> = 20 − 10e<sup>−t/10</sup>.</li><li>m = 15 ⇒ e<sup>−t/10</sup> = 1/2 ⇒ t = 10 ln 2 ≈ 6,93 min.</li></ol>", reponse:"m′ = 2 − m/10 ; m = 20 − 10e<sup>−t/10</sup> ; t ≈ 6,93 min"},
 
   {t:"Régimes d'un amortisseur", s:4, enonce:"Un système masse-ressort a m = 2 kg et k = 8 N/m. Quels sont les régimes pour des frottements c = 5, 8 et 12 kg/s (dans cet ordre) ?",
    choix:["sur-amorti, critique, sous-amorti","sous-amorti, sur-amorti, sur-amorti","sous-amorti, critique, sur-amorti","sous-amorti, critique, critique"], bonne:2,
@@ -54,7 +54,7 @@ SFA.exos("c05", [
 
   {t:"Réponse d'un système à un échelon", s:5, enonce:"Un oscillateur est décrit par x″ + 4x′ + 13x = 26 avec x(0) = 0 et x′(0) = 0 (échelon de force à t = 0). (a) Trouve la solution particulière constante. (b) Résous le problème de Cauchy. (c) Calcule le premier dépassement maximal de x et exprime-le en % de la valeur finale.",
    indice:"x = x<sub>p</sub> + x<sub>h</sub> ; racines caractéristiques −2 ± 3i. Pour (c), x′(t) = 0 en une valeur simple de t.",
-   corrige:"<ol><li>(a) x constant : 13x = 26 ⇒ x<sub>p</sub> = 2.</li><li>(b) λ² + 4λ + 13 = 0 ⇒ λ = −2 ± 3i. x = 2 + e<sup>−2t</sup>(A cos 3t + B sin 3t). x(0) = 0 ⇒ A = −2. x′(0) = −2A + 3B = 0 ⇒ B = −4/3. Donc x = 2 − e<sup>−2t</sup>(2 cos 3t + (4/3) sin 3t).</li><li>(c) x′(t) = e<sup>−2t</sup>[(−2A + 3B)cos 3t + (−2B − 3A)sin 3t] = (26/3)e<sup>−2t</sup> sin 3t. Premier zéro pour t > 0 : 3t = π, t = π/3 ≈ 1,05. x(π/3) = 2 + 2e<sup>−2π/3</sup> ≈ 2,246.</li><li>Dépassement : (2,246 − 2)/2 ≈ 12,3 % de la valeur finale.</li></ol>", reponse:"x_p = 2 ; x = 2 − e^{−2t}(2cos3t + (4/3)sin3t) ; dépassement ≈ 12,3 % en t = π/3"},
+   corrige:"<ol><li>(a) x constant : 13x = 26 ⇒ x<sub>p</sub> = 2.</li><li>(b) λ² + 4λ + 13 = 0 ⇒ λ = −2 ± 3i. x = 2 + e<sup>−2t</sup>(A cos 3t + B sin 3t). x(0) = 0 ⇒ A = −2. x′(0) = −2A + 3B = 0 ⇒ B = −4/3. Donc x = 2 − e<sup>−2t</sup>(2 cos 3t + (4/3) sin 3t).</li><li>(c) x′(t) = e<sup>−2t</sup>[(−2A + 3B)cos 3t + (−2B − 3A)sin 3t] = (26/3)e<sup>−2t</sup> sin 3t. Premier zéro pour t > 0 : 3t = π, t = π/3 ≈ 1,05. x(π/3) = 2 + 2e<sup>−2π/3</sup> ≈ 2,246.</li><li>Dépassement : (2,246 − 2)/2 ≈ 12,3 % de la valeur finale.</li></ol>", reponse:"x_p = 2 ; x = 2 − e<sup>−2t</sup>(2cos3t + (4/3)sin3t) ; dépassement ≈ 12,3 % en t = π/3"},
 
   {t:"Équilibres et seuil (effet Allee)", s:5, enonce:"Une population obéit à y′ = y(y − 2)(4 − y) (y en milliers). Quels sont les équilibres stables ?",
    choix:["seulement y = 2 (stable)","y = 0, 2 et 4 tous stables","y = 2 et y = 4 stables, y = 0 instable","y = 0 et y = 4 (stables), y = 2 instable"], bonne:3,

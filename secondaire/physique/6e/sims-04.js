@@ -115,7 +115,7 @@ SFA.sim({
     var Rl = k.slider("Résistance de la ligne R", 1, 30, 1, 10, "Ω");
     var Uk = k.slider("Tension de transport U", 10, 400, 10, 380, "kV");
     var goal = false, t = 0;
-    k.button("Défi : pertes ≤ 1 %", function(){ goal = true; Pw.set(40 + Math.round(Math.random() * 16) * 10); Rl.set(8 + Math.round(Math.random() * 14)); Uk.set(60); }, true);
+    k.button("Défi : pertes ≤ 1 %", function(){ goal = true; var p0, r0; do { p0 = 40 + Math.round(Math.random() * 16) * 10; r0 = 8 + Math.round(Math.random() * 14); } while (p0 * r0 > 1500); /* R·P ≤ 1 500 Ω·MW : 1 % atteignable avec U ≤ 400 kV */ Pw.set(p0); Rl.set(r0); Uk.set(60); }, true);
     var ro = k.readouts(["Intensité I = P/U", "Perte R·I²", "Perte relative", "Puissance reçue"]);
     var nt = k.note("", "ok");
     var lp = k.loop(function(dt){ t += dt; k.redraw(); }); lp.play();

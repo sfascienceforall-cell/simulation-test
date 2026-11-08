@@ -14,7 +14,7 @@ SFA.exos("c07", [
  {t:"Angle à partir des trois côtés (QCM)", s:3, enonce:"Un triangle a pour côtés 5, 7 et 8. Quelle est la mesure de l'angle opposé au côté de longueur 7 ?", choix:["30°","60°","120°","45°"], bonne:1,
   pourquoi:{0:"cos A = 1/2 correspond à 60°, pas 30° (cos 30° = √3/2).",2:"Tu as fait une erreur de signe : cos A = +1/2 (et non −1/2) donne 60° ; 120° aurait cos = −1/2.",3:"cos 45° = √2/2 ≈ 0,71, pas 0,5."},
   corrige:"Loi des cosinus : 7² = 5² + 8² − 2×5×8×cos A ⇒ 49 = 89 − 80 cos A ⇒ cos A = 40/80 = 1/2 ⇒ A = 60°. Contrôle : c'est le triangle de l'exercice précédent."},
- {t:"Triangle ASA", s:3, enonce:"Dans ABC, B = 50°, C = 70° et a = BC = 12 cm. Détermine A, b et c (arrondis au centième).", indice:"Commence par l'angle A : la somme des angles vaut 180°.",
+ {t:"Triangle ACA", s:3, enonce:"Dans ABC, B = 50°, C = 70° et a = BC = 12 cm. Détermine A, b et c (arrondis au centième).", indice:"Commence par l'angle A : la somme des angles vaut 180°.",
   corrige:"<ol><li>A = 180° − 50° − 70° = 60°.</li><li>Loi des sinus : a / sin A = 12 / sin 60° ≈ 12 / 0,8660 ≈ 13,856.</li><li>b = 13,856 × sin 50° ≈ 13,856 × 0,7660 ≈ 10,61 cm.</li><li>c = 13,856 × sin 70° ≈ 13,856 × 0,9397 ≈ 13,02 cm.</li><li>Vérification : le plus grand côté (c) est bien opposé au plus grand angle (C = 70°) ✓.</li></ol>",
   reponse:"A = 60° ; b ≈ 10,61 cm ; c ≈ 13,02 cm"},
  {t:"Cas ambigu (QCM)", s:4, enonce:"On veut construire un triangle ABC avec A = 30°, b = AC = 10 cm et a = BC = 6 cm. Combien de triangles répondent à la question ?", choix:["Aucun","Un seul","Deux","On ne peut pas savoir"], bonne:2,

@@ -124,7 +124,7 @@ SFA.sim({
   resume: "Sur une échelle verticale logarithmique, vois xⁿ dépasser eˣ au début… puis eˣ reprendre définitivement l'avantage.",
   but: "Choisis la puissance n et la fenêtre. Les trois courbes sont tracées en log₁₀ : eˣ est une droite, xⁿ et ln x sont des courbes qui s'aplatissent. Glisse la ligne verticale de lecture et repère le dernier croisement.",
   aRetenir: "Pour tout n : lim<sub>x→+∞</sub> eˣ/xⁿ = +∞ et lim<sub>x→+∞</sub> (ln x)/xᵖ = 0 (p > 0). Ordre de croissance à l'infini : ln x ≪ xᵖ ≪ eˣ. Ces limites lèvent les formes indéterminées ∞/∞ et 0·∞.",
-  piege: "Pour n grand, xⁿ domine eˣ sur une très longue plage (x ≤ 20 pour n = 10…) : la limite en +∞ ne dit rien sur les valeurs « raisonnables ».",
+  piege: "Pour n grand, xⁿ domine eˣ sur une très longue plage (de x ≈ 1,12 à x ≈ 35,8 pour n = 10) : la limite en +∞ ne dit rien sur les valeurs « raisonnables ».",
   build: function(k, S){
     var c = k.canvas(380), n = k.slider("Puissance n", 1, 20, 1, 5, ""), xm = k.slider("Fenêtre : x de 0 à", 10, 120, 5, 60, "");
     var xs = k.slider("Point x lu", 1, 120, 1, 30, ""); var ro = k.readouts(["Dernier croisement eˣ = xⁿ", "eˣ", "xⁿ", "Rapport eˣ / xⁿ"]), nt = k.note("", "");

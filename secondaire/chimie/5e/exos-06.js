@@ -12,7 +12,7 @@ SFA.exos("c06", [
  {t:"ΔH avec correction du calorimètre", s:2,
   enonce:"On dissout 4,0 g de NaOH (M = 40 g/mol) dans 200 g d'eau. Le calorimètre a une capacité thermique C = 25 J/K. La température monte de 5,1 K. Calcule l'enthalpie molaire de dissolution.",
   indice:"Convertis d'abord 4,0 g en moles. Chaleur reçue : (m·c + C)·ΔT.",
-  corrige:"<ol><li>n = m/M = 4,0 / 40 = 0,10 mol.</li><li>Q = (m·c + C)·ΔT = (200 × 4,18 + 25) × 5,1 = (836 + 25) × 5,1 = 861 × 5,1 = 4 391 J.</li><li>ΔH = −Q/n = −4 391 / 0,10 = −43 910 J/mol ≈ −43,9 kJ/mol.</li><li>Sans la capacité C on aurait trouvé 836 × 5,1 / 0,10 = −42,6 kJ/mol : un écart de 3 %.</li></ol>",
+  corrige:"<ol><li>n = m/M = 4,0 / 40 = 0,10 mol.</li><li>Q = (m·c + C)·ΔT = (200 × 4,18 + 25) × 5,1 = (836 + 25) × 5,1 = 861 × 5,1 = 4 391 J.</li><li>ΔH = −Q/n = −4 391 / 0,10 = −43 910 J/mol ≈ −43,9 kJ/mol.</li><li>Sans la capacité C on aurait trouvé ΔH = −836 × 5,1 / 0,10 ≈ −42 600 J/mol = −42,6 kJ/mol : un écart de 3 %.</li></ol>",
   reponse:"ΔH ≈ −43,9 kJ/mol"},
  {t:"Le nitrate d'ammonium qui refroidit", s:2, choix:["ΔH > 0 (endothermique)", "ΔH < 0 (exothermique)", "ΔH = 0", "On ne peut rien dire du signe"],
   enonce:"On dissout du nitrate d'ammonium dans de l'eau à 20 °C dans un calorimètre : la température de la solution descend à 16 °C. Quel est le signe de l'enthalpie de dissolution ?",

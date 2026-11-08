@@ -23,7 +23,7 @@ SFA.exos("c01", [
    corrige:"ln 8 = ln(2³) = 3 ln 2, donc ln 8 − 3 ln 2 = 0. Ensuite ln(e²) = 2. Donc A = 0 + 2 = 2."},
 
   {t:"Équation exponentielle", s:2, enonce:"Résous 3·e<sup>2x</sup> = 12. Donne la valeur exacte puis une valeur approchée à 10<sup>−3</sup> près.",
-   indice:"Isole e^{2x}, puis applique ln.",
+   indice:"Isole e<sup>2x</sup>, puis applique ln.",
    corrige:"<ol><li>e<sup>2x</sup> = 12/3 = 4.</li><li>On applique ln (croissante, réciproque de l'exponentielle) : 2x = ln 4 = 2 ln 2.</li><li>x = ln 2 ≈ 0,693.</li></ol>Contrôle : 3·e<sup>2 ln 2</sup> = 3·4 = 12. ✓", reponse:"x = ln 2 ≈ 0,693"},
 
   {t:"arcsin d'un sinus", s:3, enonce:"Que vaut arcsin(sin(5π/6)) ?",

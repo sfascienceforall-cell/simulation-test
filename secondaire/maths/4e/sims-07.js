@@ -141,7 +141,7 @@ SFA.sim({
 /* ---------- cas ambigu ---------- */
 SFA.sim({
   id:"m4-c07-cas-ambigu", ch:"c07", tag:"Piège",
-  titre:"Le cas ambigu SSA : 0, 1 ou 2 triangles ?",
+  titre:"Le cas ambigu CCA : 0, 1 ou 2 triangles ?",
   resume:"On connaît b, l'angle A et le côté a : combien de triangles existent ?",
   but:"Fixe l'angle A et le côté b, puis fais varier le côté a (curseur, ou glisse le point du cercle, ou le repère sur la règle du bas). Le côté a est un « balancier » centré en C : il coupe la droite de base 0, 1 ou 2 fois. Trouve la valeur de a qui donne exactement un triangle rectangle.",
   aRetenir:"Avec A aigu et h = b·sin A : a < h → aucun triangle ; a = h → un triangle rectangle ; h < a < b → DEUX triangles ; a ≥ b → un seul triangle. Avec A obtus ou droit : un triangle si a > b, sinon aucun.",

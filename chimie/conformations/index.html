@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Newman et chaise · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style id="sfa-chim">
+/* Compléments communs aux simulations de chimie SFA (mêmes cartes et même typo que le kit) */
+*{box-sizing:border-box}
+.sfa-card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-top:14px}
+.sfa-card h2{font:800 15px var(--f-ui);margin:0 0 8px;color:var(--ink)}
+.sfa-card ul{margin:0;padding-left:20px}.sfa-card li{margin:4px 0}
+.sfa-card.trap{border-left:4px solid #BA7517}
+.sfa-card.keep{border-left:4px solid var(--green)}
+.defi{border-top:1px solid var(--line);padding:10px 0}.defi:first-of-type{border-top:0}
+.defi p{margin:0 0 6px;font-weight:600}
+.defi details summary{cursor:pointer;font:800 13px var(--f-ui);color:var(--green);list-style:none}
+.defi details summary::-webkit-details-marker{display:none}
+.defi details summary::before{content:"+ ";}.defi details[open] summary::before{content:"− ";}
+.defi details div{margin-top:6px;color:var(--ink2);background:var(--bg);border-radius:8px;padding:8px 12px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.ctl .lab{font:700 .86rem var(--f-ui);color:var(--ink2);margin-right:2px}
+.hint{font:500 .84rem var(--f-ui);color:var(--muted)}
+.btn{background:var(--paper);border:1px solid var(--line2);border-radius:8px;color:var(--ink);font:800 .82rem var(--f-ui);padding:8px 12px;cursor:pointer;touch-action:manipulation}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.chem{font-family:var(--f-ui)}
+.big{font:800 1.6rem/1.1 var(--f-ui);color:var(--ink)}
+.ok{color:var(--green);font-weight:800}.warn{color:#a32d2d;font-weight:800}
+sub,sup{font-size:.72em;line-height:0}
+</style>
+<script>
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche (repris du kit SFA). */
+addEventListener('DOMContentLoaded',()=>{
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+});
+</script>
+<style>
+.part{font:800 1.05rem var(--f-ui);margin:4px 0 8px;color:var(--ink)}
+.part small{font-weight:600;color:var(--muted);font-size:.85rem;margin-left:6px}
+.cf-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:860px){.cf-wrap{grid-template-columns:minmax(0,1fr)}}
+canvas.cv{display:block;width:100%;touch-action:none;user-select:none;-webkit-user-select:none}
+#nw{height:320px;cursor:grab}#en{height:240px;margin-top:10px}#ch{height:380px;cursor:grab}
+@media (max-width:640px){#nw{height:290px}#ch{height:300px}#en{height:220px}}
+.pane{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14px}
+.pane h3{font:800 14px var(--f-ui);margin:0 0 6px}
+.pane p{margin:4px 0}
+.pane ul{margin:4px 0;padding-left:20px}
+.verdict{font:800 1.2rem/1.25 var(--f-ui);margin:4px 0 6px}
+.rowr{display:flex;align-items:center;gap:10px;margin:10px 0;flex-wrap:wrap}
+.rowr input[type=range]{flex:1;min-width:160px}
+.rowr .val{min-width:56px}
+.sep{height:1px;background:var(--line);margin:22px 0 16px}
+.tagax{color:#c0392b;font-weight:800}.tageq{color:#1f5fbf;font-weight:800}
+</style>
+<link rel="stylesheet" href="../../kit/sfa-nav.css"></head>
+<body>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a class="on" href="../">Simulations de chimie</a><a href="../exercices/">Exercices de chimie</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations de physique</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="../">Simulations de chimie</a>›<a href="../#organique">Chimie organique</a>›<b>Newman et chaise</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Chimie · Conformations</span><span class="sfa-chip free">Gratuit</span></div><h1>Newman et chaise</h1><p>Tourne autour d'une liaison simple et regarde l'énergie monter et descendre ; bascule une chaise et vois ce qui change, et ce qui ne change pas.</p></div>
+<section class="sfa-sim">
+  <div class="part">A. Projection de Newman<small>rotation autour de la liaison C–C</small></div>
+  <div class="ctl"><span class="lab">Molécule</span><button class="btn on" data-m="ethane">Éthane</button><button class="btn" data-m="butane">Butane (liaison C2–C3)</button></div>
+  <div class="cf-wrap">
+    <div style="min-width:0"><canvas class="cv" id="nw" aria-label="Projection de Newman : fais glisser le carbone arrière pour le faire tourner"></canvas></div>
+    <div class="pane" id="pA"></div>
+  </div>
+  <div class="rowr"><span class="pill" style="color:#185fa5">θ &nbsp;angle dièdre</span><input type="range" id="th" min="0" max="360" step="1" value="60" style="accent-color:#185fa5"><span class="val" id="thv">60°</span></div>
+  <div class="ctl"><button class="btn" id="play">Faire tourner</button><span class="lab" style="margin-left:6px">Aller à</span><button class="btn" data-go="0">0°</button><button class="btn" data-go="60">60°</button><button class="btn" data-go="120">120°</button><button class="btn" data-go="180">180°</button></div>
+  <canvas class="cv" id="en" aria-label="Diagramme d'énergie potentielle en fonction de l'angle dièdre"></canvas>
+  <p class="hint" style="margin-top:6px">Courbe simplifiée : elle passe exactement par les énergies des conformations remarquables et les relie par une interpolation lisse. Énergies relatives à la conformation la plus stable.</p>
+
+  <div class="sep"></div>
+  <div class="part">B. Cyclohexane en chaise<small>positions axiales et équatoriales</small></div>
+  <div class="ctl"><span class="lab">Cycle</span>
+    <button class="btn" data-s="0">Cyclohexane</button><button class="btn on" data-s="1">Un substituant</button><button class="btn" data-s="2">Deux substituants</button></div>
+  <div class="ctl" id="ctlG"><span class="lab">Groupe sur C1</span><button class="btn on" data-g="CH3">Méthyle</button><button class="btn" data-g="tBu">tert-Butyle</button></div>
+  <div class="ctl" id="ctlD"><span class="lab">Positions</span><button class="btn on" data-p="1">1,2</button><button class="btn" data-p="2">1,3</button><button class="btn" data-p="3">1,4</button>
+    <span class="lab" style="margin-left:8px">Isomère</span><button class="btn on" data-ct="cis">cis</button><button class="btn" data-ct="trans">trans</button></div>
+  <div class="cf-wrap">
+    <div style="min-width:0">
+      <canvas class="cv" id="ch" aria-label="Cyclohexane en chaise : fais glisser pour tourner la vue"></canvas>
+      <div class="ctl"><button class="btn" id="flip" style="border-color:#13233a!important">Basculer la chaise</button><span class="hint">Glisse sur le dessin pour tourner la vue.</span></div>
+      <div class="legend" style="display:flex;flex-wrap:wrap;gap:4px 14px;font:600 12px var(--f-ui);color:var(--muted)"><span><b class="tagax">—</b> liaison axiale (parallèle à l'axe du cycle)</span><span><b class="tageq">—</b> liaison équatoriale</span><span>··· gêne 1,3-diaxiale</span></div>
+      <p class="hint" style="margin-top:4px">Dessin simplifié : chaise schématique (plissement exagéré, longueurs et angles non à l'échelle, H non dessinés sur les liaisons libres).</p>
+    </div>
+    <div class="pane" id="pB"></div>
+  </div>
+</section>
+
+<div class="sfa-card keep"><h2>Ce qu'il faut retenir</h2><ul>
+  <li>Décalé : liaisons à 60° les unes des autres, énergie minimale. Éclipsé : liaisons alignées, énergie maximale. Éthane : 12 kJ/mol d'écart.</li>
+  <li>Butane : anti (180°) &lt; gauche (60°, 3,8 kJ/mol) &lt; éclipsés ; le pire est CH₃ en face de CH₃ (0°, environ 19 kJ/mol).</li>
+  <li>Chaise : chaque carbone porte une liaison axiale (verticale) et une équatoriale. Le basculement échange axial et équatorial.</li>
+  <li>Un substituant est plus stable en équatorial : en axial, il subit deux gênes 1,3-diaxiales. Le tert-butyle reste pratiquement toujours équatorial.</li>
+  <li>Disubstitué : la chaise la plus stable met en équatorial le plus de groupes possible, en priorité le plus volumineux.</li>
+</ul></div>
+
+<div class="sfa-card trap"><h2>Pièges classiques</h2><ul>
+  <li>Le basculement de la chaise conserve cis/trans : un groupe « en haut » reste en haut. Seul son caractère axial ou équatorial change.</li>
+  <li>Cis ne veut pas dire « tous les deux axiaux ». Cis-1,3 : les deux axiaux ou les deux équatoriaux ; cis-1,2 et cis-1,4 : un axial et un équatorial.</li>
+  <li>Les conformères ne sont pas des isomères de configuration : ils s'interconvertissent sans cesse à température ambiante, par simple rotation autour de liaisons simples, sans rompre de liaison. On ne peut pas les isoler.</li>
+  <li>Une projection de Newman se lit le long d'une seule liaison : le carbone avant est le point central, le carbone arrière est le cercle.</li>
+</ul></div>
+
+<div class="sfa-card"><h2>Défis</h2>
+  <div class="defi"><p>1. Butane : combien de conformations décalées différentes trouves-tu entre 0° et 360° ? Ont-elles toutes la même énergie ?</p>
+    <details><summary>Voir la réponse</summary><div>Trois : gauche (60°), anti (180°) et gauche (300°). Les deux gauches ont la même énergie (3,8 kJ/mol au-dessus de l'anti), car elles sont images l'une de l'autre dans un miroir.</div></details></div>
+  <div class="defi"><p>2. Choisis le trans-1,4-diméthylcyclohexane. Quelle chaise est la plus stable ? Bascule-la : est-il devenu cis ?</p>
+    <details><summary>Voir la réponse</summary><div>La chaise diéquatoriale est la plus stable (l'autre est diaxiale). Après basculement, il est toujours trans : un groupe reste en haut, l'autre en bas.</div></details></div>
+  <div class="defi"><p>3. Cis-1-tert-butyl-3-méthylcyclohexane : peut-on avoir les deux groupes en équatorial ?</p>
+    <details><summary>Voir la réponse</summary><div>Oui : en 1,3, cis correspond à « les deux axiaux » ou « les deux équatoriaux ». La chaise diéquatoriale est de loin la plus stable.</div></details></div>
+</div>
+</main>
+<aside class="sfa-side">
+  <div class="sfa-list"><h2>Chimie organique : stéréochimie et réactivité<span>3 simulations</span></h2><ol><li><a href="../stereochimie-3d/"><i>01</i>R/S, Fischer et E/Z</a></li><li><a class="on" aria-current="page" href="../conformations/"><i>02</i>Newman et chaise</a></li><li><a href="../effets-electroniques/"><i>03</i>Effets électroniques en organique</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside>
+</div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de chimie</footer>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const D=Math.PI/180;
+const fr=(v,n)=>v.toFixed(n).replace('.',',');
+const INK='#0f1b2d',MUT='#5f6b7a',BLUE='#185fa5',GRN='#1D9E75',GRND='#0F6E56',OR='#BA7517',RED='#c0392b',EQ='#1f5fbf';
+function fit(cv){const r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1;const W=Math.round(r.width)||600,H=Math.round(r.height)||300;
+  if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
+  const c=cv.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);return {c,W,H};}
+function halo(c,t,x,y,col,font,al){c.font=font||'700 13px Mulish,system-ui,sans-serif';c.textAlign=al||'center';c.textBaseline='middle';c.lineJoin='round';
+  c.lineWidth=4;c.strokeStyle='rgba(255,255,255,.95)';c.strokeText(t,x,y);c.fillStyle=col;c.fillText(t,x,y);}
+
+/* ================= A. Newman ================= */
+/* Énergies relatives (kJ/mol) des conformations remarquables, VALEURS-REFERENCE.md, section « Valeurs usuelles des
+   simulations organiques » (vérifiées par le professeur, 01/11/2026) : éthane, barrière 12 ; butane, gauche 3,8 ;
+   éclipsée CH3/H ≈ 16 ; éclipsée CH3/CH3 ≈ 19. */
+const KEY={ethane:[12,0,12,0,12,0,12],
+           butane:[19,3.8,16,0,16,3.8,19]};
+/* Interpolation lisse entre deux conformations remarquables voisines (tous les 60°) : demi-cosinus,
+   dérivée nulle aux extrémités, donc extremums exactement aux angles remarquables. */
+function E(m,th){th=((th%360)+360)%360;const k=Math.min(5,Math.floor(th/60)),t=(th-60*k)/60,a=KEY[m][k],b=KEY[m][k+1];return a+(b-a)*(1-Math.cos(Math.PI*t))/2;}
+function confName(m,th){th=((Math.round(th)%360)+360)%360;const near=[0,60,120,180,240,300,360].find(a=>Math.abs(th-a)<=7);
+  if(near===undefined)return {n:'intermédiaire',d:'ni décalée ni éclipsée'};
+  const a=near%360;
+  if(m==='ethane')return a%120===0?{n:'éclipsée',d:'3 interactions H/H éclipsées'}:{n:'décalée',d:'liaisons à 60° : aucune liaison en face d\'une autre'};
+  if(a===0)return {n:'éclipsée CH₃/CH₃',d:'les deux méthyles l\'un derrière l\'autre : la plus haute en énergie'};
+  if(a===180)return {n:'décalée anti',d:'méthyles opposés à 180° : la plus stable'};
+  if(a===60||a===300)return {n:'décalée gauche',d:'méthyles à 60° : gêne stérique CH₃/CH₃'};
+  return {n:'éclipsée CH₃/H',d:'chaque méthyle en face d\'un H'};}
+let mA='ethane',th=60,playing=false;
+const nw=$('nw'),en=$('en');
+function drawNewman(){const {c,W,H}=fit(nw);c.clearRect(0,0,W,H);
+  const cx=W/2,cy=H/2+4,R=Math.min(W,H)*0.14;
+  const ang=d=>(-90+d)*D;   // 0° = en haut, sens horaire
+  const front=[0,120,240],back=[th,th+120,th+240];
+  const fl=mA==='butane'?['CH₃','H','H']:['H','H','H'],bl=fl.slice();
+  // carbone arrière : cercle + liaisons partant du bord
+  back.forEach((a,i)=>{const x1=cx+R*Math.cos(ang(a)),y1=cy+R*Math.sin(ang(a)),x2=cx+R*2.05*Math.cos(ang(a)),y2=cy+R*2.05*Math.sin(ang(a));
+    c.strokeStyle='#8aa4c8';c.lineWidth=4;c.lineCap='round';c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();});
+  c.fillStyle='#fff';c.strokeStyle='#13233a';c.lineWidth=2.5;c.beginPath();c.arc(cx,cy,R,0,7);c.fill();c.stroke();
+  // carbone avant : point central + liaisons
+  front.forEach(a=>{c.strokeStyle='#13233a';c.lineWidth=4;c.beginPath();c.moveTo(cx,cy);c.lineTo(cx+R*1.45*Math.cos(ang(a)),cy+R*1.45*Math.sin(ang(a)));c.stroke();});
+  c.fillStyle='#13233a';c.beginPath();c.arc(cx,cy,4.5,0,7);c.fill();
+  // étiquettes
+  back.forEach((a,i)=>{const isMe=bl[i]!=='H';const x=cx+R*2.62*Math.cos(ang(a)),y=cy+R*2.62*Math.sin(ang(a));
+    if(isMe){c.fillStyle='#d9f2e8';c.strokeStyle=GRN;c.lineWidth=1.5;c.beginPath();c.arc(x,y,17,0,7);c.fill();c.stroke();}
+    halo(c,bl[i],x,y,isMe?GRND:'#4d6b94','800 14px Mulish,system-ui,sans-serif');});
+  front.forEach((a,i)=>{const isMe=fl[i]!=='H';const x=cx+R*1.62*Math.cos(ang(a)),y=cy+R*1.62*Math.sin(ang(a));
+    if(isMe){c.fillStyle='#d9f2e8';c.strokeStyle=GRN;c.lineWidth=1.5;c.beginPath();c.arc(x,y,17,0,7);c.fill();c.stroke();}
+    halo(c,fl[i],x,y,isMe?GRND:INK,'800 14px Mulish,system-ui,sans-serif');});
+  // angle dièdre entre les deux groupes de référence
+  c.strokeStyle=OR;c.lineWidth=2;c.setLineDash([4,3]);c.beginPath();
+  if(th%360!==0)c.arc(cx,cy,R*0.62,ang(0),ang(th%360===0?0:th),false);c.stroke();c.setLineDash([]);
+  halo(c,'θ = '+Math.round(th)+'°',cx,cy+R*0.38+2,OR,'800 12px Mulish,system-ui,sans-serif');
+  halo(c,'avant : point central',10,14,INK,'600 12px Mulish,system-ui,sans-serif','left');
+  halo(c,'arrière : cercle',10,32,'#4d6b94','600 12px Mulish,system-ui,sans-serif','left');
+  NW={cx,cy,R};}
+let NW=null;
+function drawEnergy(){const {c,W,H}=fit(en);c.clearRect(0,0,W,H);
+  const mL=W<480?40:52,mR=14,mT=16,mB=34,Emax=20;const X=t=>mL+(W-mL-mR)*t/360,Y=e=>H-mB-(H-mB-mT)*e/Emax;
+  c.strokeStyle='#eef0f2';c.lineWidth=1;c.font='600 11px Mulish,system-ui,sans-serif';c.fillStyle='#8a95a3';c.textAlign='right';c.textBaseline='middle';
+  for(let e=0;e<=Emax;e+=5){c.beginPath();c.moveTo(mL,Y(e));c.lineTo(W-mR,Y(e));c.stroke();c.fillText(String(e),mL-6,Y(e));}
+  c.textAlign='center';c.textBaseline='top';for(let t=0;t<=360;t+=60){c.beginPath();c.moveTo(X(t),mT);c.lineTo(X(t),H-mB);c.stroke();c.fillText(t+'°',X(t),H-mB+6);}
+  c.save();c.translate(12,(mT+H-mB)/2);c.rotate(-Math.PI/2);c.textAlign='center';c.fillStyle=MUT;c.font='700 11px Mulish,system-ui,sans-serif';c.fillText('E (kJ/mol)',0,0);c.restore();
+  c.textAlign='right';c.fillStyle=MUT;c.font='700 11px Mulish,system-ui,sans-serif';c.fillText('θ',W-mR,H-mB+6);
+  c.strokeStyle=BLUE;c.lineWidth=2.5;c.beginPath();for(let t=0;t<=360;t+=1){const x=X(t),y=Y(E(mA,t));t?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();
+  // repères des conformations remarquables
+  const keys=mA==='ethane'?[[0,'éclipsée'],[60,'décalée'],[120,'éclipsée'],[180,'décalée'],[240,'éclipsée'],[300,'décalée']]
+    :[[0,'CH₃/CH₃ ≈ 19'],[60,'gauche 3,8'],[120,'éclipsée'],[180,'anti 0'],[240,'éclipsée'],[300,'gauche 3,8']];
+  keys.forEach(([t,l])=>{const e=E(mA,t);if(W<480&&t>180)return;halo(c,l,X(t)+(t===0?44:0),Y(e)+(e>8?-10:12),MUT,'700 10.5px Mulish,system-ui,sans-serif');});
+  if(mA==='ethane')halo(c,'barrière : 12 kJ/mol',X(90),Y(16.5),BLUE,'700 11px Mulish,system-ui,sans-serif');
+  const e=E(mA,th);c.fillStyle=OR;c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.arc(X(th),Y(e),6.5,0,7);c.fill();c.stroke();
+  c.strokeStyle=OR;c.setLineDash([3,3]);c.lineWidth=1;c.beginPath();c.moveTo(X(th),Y(e));c.lineTo(X(th),H-mB);c.stroke();c.setLineDash([]);}
+function panelA(){const e=E(mA,th),n=confName(mA,th);let h=`<h3>Conformation à θ = ${Math.round(th)}°</h3><div class="verdict">${n.n}</div><p>${n.d}.</p>`;
+  h+=`<p>Énergie potentielle relative : <b>${fr(e,1)} kJ/mol</b></p>`;
+  if(mA==='ethane')h+=`<p>Décalée : 0 kJ/mol. Éclipsée : 12 kJ/mol, pour 3 paires H/H en face l'une de l'autre, soit environ 4 kJ/mol chacune. Cette barrière est franchie des milliards de fois par seconde à température ambiante.</p>`;
+  else h+=`<ul><li>Anti (180°) : 0 kJ/mol, la plus stable.</li><li>Gauche (60° et 300°) : 3,8 kJ/mol.</li><li>Éclipsée CH₃/H (120° et 240°) : environ ${fr(KEY.butane[2],0)} kJ/mol.</li><li>Éclipsée CH₃/CH₃ (0°) : environ 19 kJ/mol.</li></ul>`;
+  h+=`<p class="hint">Toutes ces formes sont des conformères d'une même molécule : elles passent de l'une à l'autre sans rompre de liaison et ne sont pas isolables.</p>`;$('pA').innerHTML=h;}
+function updA(){$('thv').textContent=Math.round(th)+'°';$('th').value=Math.round(th)%361;drawNewman();drawEnergy();panelA();}
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{mA=b.dataset.m;document.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('on',x===b));updA();});
+$('th').oninput=e=>{th=+e.target.value;updA();};
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{th=+b.dataset.go;updA();});
+$('play').onclick=()=>{playing=!playing;$('play').textContent=playing?'Arrêter':'Faire tourner';$('play').classList.toggle('on',playing);};
+let dragA=false;
+function angAt(e){const r=nw.getBoundingClientRect(),x=e.clientX-r.left-NW.cx,y=e.clientY-r.top-NW.cy;return ((Math.atan2(y,x)/D+90)%360+360)%360;}
+nw.addEventListener('pointerdown',e=>{dragA=true;playing=false;$('play').textContent='Faire tourner';$('play').classList.remove('on');nw.setPointerCapture(e.pointerId);th=Math.round(angAt(e));updA();e.preventDefault();});
+nw.addEventListener('pointermove',e=>{if(dragA){th=Math.round(angAt(e));updA();}});
+['pointerup','pointercancel'].forEach(t=>nw.addEventListener(t,()=>dragA=false));
+
+/* ================= B. Chaise ================= */
+const RR=1.45,HH=0.42;           // géométrie schématique de la chaise (plissement exagéré pour la lisibilité)
+const GR={CH3:{lab:'CH₃',w:1,r:15,col:'#2e9e4f'},tBu:{lab:'C(CH₃)₃',w:10,r:21,col:'#7a4fb8'}};   // w : ordre qualitatif de volume, pas une énergie
+let nSub=1,g1='CH3',pos2=1,ctB='cis',chair=0,flipT=null,az=0,dragB=null;
+const sgn=(i,c)=>(i%2===0?1:-1)*(c?-1:1);                 // atome i au-dessus (+1) ou au-dessous (−1) du plan moyen
+const isAx=(i,face,c)=>(face==='haut')===(sgn(i,c)>0);   // la face « haut » est axiale sur un carbone « haut »
+function subs(){const s=[];if(nSub>=1)s.push({i:0,face:'haut',g:g1,n:1});if(nSub===2)s.push({i:pos2,face:ctB==='cis'?'haut':'bas',g:'CH3',n:pos2+1});return s;}
+function slotDir(i,face,c){const a=i*60*D,rad=[Math.cos(a),Math.sin(a),0],s=sgn(i,c);
+  const ax=[0,0,s],eq=(()=>{const v=[rad[0]*0.94,rad[1]*0.94,-s*0.33];const l=Math.hypot(...v);return v.map(x=>x/l);})();
+  const axial=isAx(i,face,c);return axial?ax:eq;}
+function geom(t){ // t : avancement du basculement (0 → chaise courante, 1 → chaise basculée)
+  const c0=chair,c1=1-chair;const at=[];
+  for(let i=0;i<6;i++){const a=i*60*D;const z=HH*(sgn(i,c0)*(1-t)+sgn(i,c1)*t);at.push([RR*Math.cos(a),RR*Math.sin(a),z]);}
+  const slot=(i,face)=>{const d0=slotDir(i,face,c0),d1=slotDir(i,face,c1);const v=d0.map((x,k)=>x*(1-t)+d1[k]*t);const l=Math.hypot(...v);return v.map(x=>x/l);};
+  return {at,slot};}
+function chairState(c){return subs().map(s=>({...s,ax:isAx(s.i,s.face,c)}));}
+function chairScore(c){return chairState(c).reduce((a,s)=>a+(s.ax?GR[s.g].w:0),0);}
+const ch=$('ch');
+function drawChair(){const {c,W,H}=fit(ch);c.clearRect(0,0,W,H);
+  let t=0;if(flipT){t=Math.min(1,(performance.now()-flipT)/1100);t=t<.5?2*t*t:1-2*(1-t)*(1-t);}
+  const g=geom(t),el=22*D,sc=Math.min(W/6.6,H/3.9);
+  const P=v=>{const ca=Math.cos(az),sa=Math.sin(az);const x=v[0]*ca-v[1]*sa,y=v[0]*sa+v[1]*ca,z=v[2];
+    return {x:W/2+x*sc,y:H/2-(z*Math.cos(el)-y*Math.sin(el))*sc*1.0,d:y*Math.cos(el)+z*Math.sin(el)};};
+  const items=[];const S=subs();
+  for(let i=0;i<6;i++){const j=(i+1)%6,a=P(g.at[i]),b=P(g.at[j]);items.push({d:(a.d+b.d)/2,f:()=>{c.strokeStyle='#13233a';c.lineWidth=5;c.lineCap='round';c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();}});}
+  const subPos={};
+  for(let i=0;i<6;i++)for(const face of ['haut','bas']){
+    const d=g.slot(i,face),sub=S.find(s=>s.i===i&&s.face===face);const L=sub?1.25:0.85;
+    const p0=g.at[i],p1=p0.map((x,k)=>x+d[k]*L);const a=P(p0),b=P(p1);
+    const ax=Math.abs(d[2])>0.7;const col=ax?RED:EQ;
+    if(sub)subPos[i+face]={b,ax};
+    items.push({d:(a.d+b.d)/2,f:()=>{c.strokeStyle=col;c.lineWidth=3;c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();}});
+    items.push({d:b.d-0.01,f:()=>{if(sub){const G=GR[sub.g];c.fillStyle=G.col;c.strokeStyle='#fff';c.lineWidth=2;c.beginPath();c.arc(b.x,b.y,G.r*Math.min(1,sc/70),0,7);c.fill();c.stroke();
+        halo(c,G.lab,b.x,b.y-G.r*Math.min(1,sc/70)-9,G.col,'800 12px Mulish,system-ui,sans-serif');}
+      else{c.fillStyle='#fff';c.strokeStyle='#9aa3ad';c.lineWidth=1.3;c.beginPath();c.arc(b.x,b.y,5.5,0,7);c.fill();c.stroke();}}});}
+  items.sort((u,v)=>v.d-u.d).forEach(it=>it.f());
+  // atomes de carbone et numéros
+  for(let i=0;i<6;i++){const a=P(g.at[i]);c.fillStyle='#13233a';c.beginPath();c.arc(a.x,a.y,4,0,7);c.fill();
+    const up=g.at[i][2]>=0;halo(c,'C'+(i+1),a.x+(a.x<W/2?-14:14),a.y+(up?14:-14),'#8a95a3','700 10.5px Mulish,system-ui,sans-serif');}
+  // gênes 1,3-diaxiales (chaise stable seulement, hors animation)
+  if(t===0||t===1){const cc=t===1?1-chair:chair;
+    S.forEach(s=>{if(!isAx(s.i,s.face,cc))return;const sp=subPos[s.i+s.face];if(!sp)return;
+      [(s.i+2)%6,(s.i+4)%6].forEach(j=>{const d=g.slot(j,s.face),p=g.at[j].map((x,k)=>x+d[k]*(S.find(q=>q.i===j&&q.face===s.face)?1.25:0.85));const q=P(p);
+        c.strokeStyle=OR;c.lineWidth=2;c.setLineDash([2,4]);c.beginPath();c.moveTo(sp.b.x,sp.b.y);c.lineTo(q.x,q.y);c.stroke();c.setLineDash([]);});});}
+  if(flipT&&t<1)halo(c,'basculement en cours (trajet schématique)',W/2,H-14,MUT,'700 12px Mulish,system-ui,sans-serif');
+  if(flipT&&t>=1){flipT=null;chair=1-chair;panelB();}}
+const faceTxt=f=>f==='haut'?'en haut':'en bas';
+function panelB(){const S=chairState(chair),T=chairState(1-chair),sA=chairScore(chair),sB=chairScore(1-chair);let h='';
+  if(nSub===0){h=`<h3>Cyclohexane</h3><p>Chaque carbone porte un H <span class="tagax">axial</span> et un H <span class="tageq">équatorial</span>. Bascule la chaise : les axiaux deviennent équatoriaux, et inversement.</p><p>Les deux chaises sont identiques : même énergie.</p><p class="hint">La chaise est la conformation la plus stable du cyclohexane : angles proches de 109,5° et liaisons toutes décalées.</p>`;$('pB').innerHTML=h;return;}
+  const name=nSub===1?(g1==='CH3'?'Méthylcyclohexane':'tert-Butylcyclohexane'):(g1==='CH3'?`${ctB}-1,${pos2+1}-Diméthylcyclohexane`:`${ctB}-1-tert-Butyl-${pos2+1}-méthylcyclohexane`);
+  h+=`<h3>${name}</h3><p><b>Chaise affichée :</b></p><ul>`+S.map(s=>`<li>C${s.n} : ${GR[s.g].lab} ${s.ax?'<span class="tagax">axial</span>':'<span class="tageq">équatorial</span>'} (${faceTxt(s.face)})</li>`).join('')+'</ul>';
+  h+=`<p><b>Après basculement :</b> `+T.map(s=>`C${s.n} ${s.ax?'axial':'équatorial'}`).join(', ')+'.</p>';
+  if(nSub===2)h+=`<p>Isomère <b>${ctB}</b> dans les deux chaises : les deux groupes restent ${ctB==='cis'?'du même côté':'de part et d\'autre'} du cycle.</p>`;
+  const best=sA===sB?null:(sA<sB?'affichée':'basculée');
+  h+=`<div class="verdict">${best===null?'Les deux chaises ont la même stabilité':best==='affichée'?'La chaise affichée est la plus stable':'La chaise basculée est la plus stable'}</div>`;
+  const nAx=x=>x.filter(s=>s.ax);
+  if(best===null)h+=`<p>Chaque chaise a le même groupe en axial (${nAx(S).map(s=>GR[s.g].lab).join(', ')}) : énergies égales, les deux chaises sont présentes à parts égales.</p>`;
+  else{const good=best==='affichée'?S:T;const ax=nAx(good);
+    h+=`<p>${ax.length?`Elle ne garde en axial que ${ax.map(s=>GR[s.g].lab).join(' et ')}`:'Tous les groupes y sont équatoriaux'}${ax.length&&nSub===2&&g1==='tBu'?' : le tert-butyle, plus volumineux, est équatorial':''}. Un groupe axial subit deux gênes 1,3-diaxiales avec les H axiaux du même côté (pointillés orange).</p>`;
+    if(nSub===1&&g1==='tBu')h+=`<p>Le tert-butyle est si volumineux que la chaise où il est axial est pratiquement absente : il « bloque » la conformation.</p>`;}
+  h+=`<p class="hint">Les deux chaises sont des conformères : elles s'interconvertissent en permanence et ne sont pas isolables. Cis et trans, eux, sont des isomères (diastéréoisomères).</p>`;
+  $('pB').innerHTML=h;}
+function setB(){document.querySelectorAll('[data-s]').forEach(b=>b.classList.toggle('on',+b.dataset.s===nSub));
+  document.querySelectorAll('[data-g]').forEach(b=>b.classList.toggle('on',b.dataset.g===g1));
+  document.querySelectorAll('[data-p]').forEach(b=>b.classList.toggle('on',+b.dataset.p===pos2));
+  document.querySelectorAll('[data-ct]').forEach(b=>b.classList.toggle('on',b.dataset.ct===ctB));
+  $('ctlG').style.display=nSub?'flex':'none';$('ctlD').style.display=nSub===2?'flex':'none';
+  $('ctlG').querySelector('.lab').textContent=nSub===2?'Groupe sur C1 (l\'autre : méthyle)':'Groupe sur C1';panelB();}
+document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{nSub=+b.dataset.s;chair=0;setB();});
+document.querySelectorAll('[data-g]').forEach(b=>b.onclick=()=>{g1=b.dataset.g;setB();});
+document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{pos2=+b.dataset.p;setB();});
+document.querySelectorAll('[data-ct]').forEach(b=>b.onclick=()=>{ctB=b.dataset.ct;setB();});
+$('flip').onclick=()=>{if(!flipT)flipT=performance.now();};
+ch.addEventListener('pointerdown',e=>{dragB=e.clientX;ch.setPointerCapture(e.pointerId);e.preventDefault();});
+ch.addEventListener('pointermove',e=>{if(dragB!==null){az+=(e.clientX-dragB)*0.01;dragB=e.clientX;}});
+['pointerup','pointercancel'].forEach(t=>ch.addEventListener(t,()=>dragB=null));
+
+let last=0;
+function loop(ts){const dt=Math.min(.05,(ts-(last||ts))/1000);last=ts;
+  if(playing){th=(th+dt*45)%360;updA();}
+  drawChair();requestAnimationFrame(loop);}
+new ResizeObserver(()=>{drawNewman();drawEnergy();}).observe(en);
+window.__conf={E,confName,setA:(m,t)=>{mA=m;th=t;document.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('on',x.dataset.m===m));updA();},
+  stateA:()=>({m:mA,th,E:$('pA').querySelector('b')?$('pA').textContent:'',name:confName(mA,th).n}),
+  setB:o=>{if('n' in o)nSub=o.n;if(o.g)g1=o.g;if(o.p)pos2=o.p;if(o.ct)ctB=o.ct;chair=0;flipT=null;setB();},
+  flipNow:()=>{chair=1-chair;panelB();},
+  stateB:()=>({chair,S:chairState(chair),T:chairState(1-chair),sA:chairScore(chair),sB:chairScore(1-chair),txt:$('pB').textContent})};
+updA();setB();requestAnimationFrame(loop);
+})();
+</script>
+<script src="../../kit/sfa-nav.js"></script></body>
+</html>

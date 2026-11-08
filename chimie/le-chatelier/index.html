@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Équilibre chimique et Le Chatelier · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style id="sfa-chim">
+/* Compléments communs aux simulations de chimie SFA (mêmes cartes et même typo que le kit) */
+*{box-sizing:border-box}
+.sfa-card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-top:14px}
+.sfa-card h2{font:800 15px var(--f-ui);margin:0 0 8px;color:var(--ink)}
+.sfa-card ul{margin:0;padding-left:20px}.sfa-card li{margin:4px 0}
+.sfa-card.trap{border-left:4px solid #BA7517}
+.sfa-card.keep{border-left:4px solid var(--green)}
+.defi{border-top:1px solid var(--line);padding:10px 0}.defi:first-of-type{border-top:0}
+.defi p{margin:0 0 6px;font-weight:600}
+.defi details summary{cursor:pointer;font:800 13px var(--f-ui);color:var(--green);list-style:none}
+.defi details summary::-webkit-details-marker{display:none}
+.defi details summary::before{content:"+ ";}.defi details[open] summary::before{content:"− ";}
+.defi details div{margin-top:6px;color:var(--ink2);background:var(--bg);border-radius:8px;padding:8px 12px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.ctl .lab{font:700 .86rem var(--f-ui);color:var(--ink2);margin-right:2px}
+.hint{font:500 .84rem var(--f-ui);color:var(--muted)}
+.btn{background:var(--paper);border:1px solid var(--line2);border-radius:8px;color:var(--ink);font:800 .82rem var(--f-ui);padding:8px 12px;cursor:pointer;touch-action:manipulation}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.chem{font-family:var(--f-ui)}
+.big{font:800 1.6rem/1.1 var(--f-ui);color:var(--ink)}
+.ok{color:var(--green);font-weight:800}.warn{color:#a32d2d;font-weight:800}
+sub,sup{font-size:.72em;line-height:0}
+</style>
+<script>
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche (repris du kit SFA). */
+addEventListener('DOMContentLoaded',()=>{
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+});
+</script>
+<style>
+.panel{display:none}.panel.on{display:block}
+[hidden]{display:none!important}
+.box{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0;font-size:14px}
+.box h3{font:800 14px var(--f-ui);margin:0 0 6px}
+.box p{margin:4px 0}.box ul{margin:4px 0;padding-left:20px}
+.eqn{font:700 15px/1.6 var(--f-ui);color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:6px 0;overflow-wrap:anywhere}
+.eqn small{display:block;font-weight:600;color:var(--muted);font-size:12.5px}
+.vis{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:12px;align-items:start}
+@media (max-width:700px){.vis{grid-template-columns:minmax(0,1fr)}}
+.vis svg{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:10px;background:#fff}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin:10px 0}
+.stat{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:0}
+.stat small{display:block;font:800 10.5px var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat b{display:block;font:800 1.05rem/1.3 var(--f-ui);font-variant-numeric:tabular-nums;color:var(--ink);overflow-wrap:anywhere}
+.stat span{display:block;font:600 .78rem/1.35 var(--f-ui);color:var(--muted)}
+.note{border-radius:10px;padding:10px 14px;margin:10px 0;font:600 .88rem/1.5 var(--f-ui)}
+.note.warn{background:#fff6e6;border-left:4px solid #BA7517;color:#5a3d00}
+.note.ok{background:#ecf6f1;border-left:4px solid #2e6b55;color:#1d4637}
+.note.info2{background:var(--sel);border-left:4px solid var(--navy);color:var(--ink2)}
+table.t{border-collapse:collapse;width:100%;font:600 .84rem var(--f-ui);font-variant-numeric:tabular-nums}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top}
+table.t th{font:800 .72rem var(--f-ui);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.tw{overflow-x:auto}
+.acts{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
+.acts .lab{font:700 .86rem var(--f-ui);color:var(--ink2);margin-right:2px;flex:0 0 auto}
+.slid{display:flex;align-items:center;gap:10px;margin:8px 0;flex-wrap:wrap}
+.slid .lab{font:700 .86rem var(--f-ui);color:var(--ink2);min-width:150px}
+.slid input{flex:1;min-width:140px}
+.slid .val{min-width:90px}
+.qk{margin:8px 0}
+.qk svg{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font:700 12px var(--f-ui);color:var(--ink2);margin:4px 0}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.hist{font:600 12.5px var(--f-ui);color:var(--muted);margin:4px 0}
+</style>
+<link rel="stylesheet" href="../../kit/sfa-nav.css"></head>
+<body>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a class="on" href="../">Simulations de chimie</a><a href="../exercices/">Exercices de chimie</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations de physique</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="../">Simulations de chimie</a>›<a href="../#equilibres-energie">Équilibres et énergie</a>›<b>Équilibre chimique et Le Chatelier</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Chimie · Équilibres</span><span class="sfa-chip free">Gratuit</span></div><h1>Équilibre chimique et Le Chatelier</h1><p>Perturbe un équilibre, compare Q à K, et regarde le système évoluer vers un nouvel état d'équilibre, calculé exactement.</p></div>
+<section class="sfa-sim">
+  <div class="tabs" role="tablist" data-tabs="main">
+    <button class="btn on" data-tab="haber" role="tab">Ammoniac (gaz)</button>
+    <button class="btn" data-tab="cobalt" role="tab">Complexes du cobalt (solution)</button>
+    <button class="btn" data-tab="salt" role="tab">Sel peu soluble (Ks)</button>
+  </div>
+  <div class="ctl" id="saltsel" hidden></div>
+  <div class="eqn" id="eq"></div>
+  <div class="vis"><svg id="scene" viewBox="0 0 300 220" role="img" aria-label="Schéma du système"></svg><div><svg id="chart" viewBox="0 0 420 240" role="img" aria-label="Concentrations en fonction du temps"></svg><div class="legend" id="leg"></div></div></div>
+  <p class="hint" style="margin:2px 0 8px">Courbe des concentrations en fonction du temps : <b>allure qualitative</b> (la vitesse n'est pas calculée). Les paliers, eux, sont les valeurs d'équilibre calculées.</p>
+
+  <div class="box" id="actbox"></div>
+
+  <div class="note info2" id="msg"></div>
+  <div class="qk" id="qk"></div>
+  <div class="stats" id="stats"></div>
+  <div class="box"><h3>Tableau d'avancement de la dernière évolution</h3><div class="tw" id="tab"></div><p class="hint" id="solvnote"></p></div>
+  <p class="hint">Modèle simplifié : concentrations (mol/L) à la place des activités, gaz parfaits, solutions idéales. Les valeurs de K marquées « illustrative » sont choisies pour l'exemple : ordre de grandeur plausible, sens de variation avec T conforme au signe de ΔH, valeurs cohérentes entre elles. Ne les apprends pas. Seules les valeurs de Ks à 25 °C sont des valeurs tabulées. Températures en kelvins.</p>
+</section>
+
+<div class="sfa-card keep"><h2>Ce qu'il faut retenir</h2><ul>
+  <li>À l'équilibre, Q = K. Après une perturbation, on compare : Q &lt; K, la réaction évolue dans le sens direct (→) ; Q &gt; K, dans le sens inverse (←) ; Q = K, rien ne bouge.</li>
+  <li>Le Chatelier : le système modère la perturbation sans l'annuler. Un réactif ajouté est en partie consommé, mais sa concentration reste plus grande qu'avant.</li>
+  <li>Seule la température change K. Ajouter ou retirer une espèce, changer le volume ou diluer peut changer Q, jamais K. Un gaz inerte ajouté à volume constant ne change même pas Q.</li>
+  <li>Comprimer un mélange gazeux favorise le côté qui compte le moins de moles de gaz.</li>
+  <li>Solides purs et solvant n'apparaissent pas dans K : ajouter du solide à une solution saturée ne change rien.</li>
+</ul></div>
+
+<div class="sfa-card trap"><h2>Pièges classiques</h2><ul>
+  <li>Un catalyseur ne déplace pas l'équilibre : il fait atteindre le même état plus vite, dans les deux sens.</li>
+  <li>Gaz inerte à volume constant : la pression totale augmente, mais les pressions partielles et les concentrations ne changent pas. Aucun déplacement. À pression constante, en revanche, le volume augmente : c'est une dilution.</li>
+  <li>Chauffer ne favorise pas « toujours les produits » : cela favorise le sens endothermique. Si ΔH &lt; 0 dans le sens direct, chauffer diminue K.</li>
+  <li>Diluer une solution saturée en présence de solide : plus de solide se dissout, mais les concentrations des ions restent les mêmes tant qu'il reste du solide.</li>
+</ul></div>
+
+<div class="sfa-card"><h2>Défis</h2>
+  <div class="defi"><p>1. Onglet Ammoniac : ajoute un catalyseur, puis de l'argon à volume constant. Q change-t-il ? Et si tu ajoutes l'argon à pression constante ?</p>
+    <details><summary>Voir la réponse</summary><div>Catalyseur et argon à volume constant : Q = K, aucun déplacement (seule la pression totale augmente avec l'argon). À pression constante, le volume augmente : toutes les concentrations baissent, Q devient plus grand que K, et l'équilibre se déplace vers la gauche, du côté qui compte le plus de moles de gaz (4 contre 2).</div></details></div>
+  <div class="defi"><p>2. Onglet Cobalt : la solution est violette. Comment la rendre bleue sans ajouter de chlorure ? Et rose sans ajouter d'eau ?</p>
+    <details><summary>Voir la réponse</summary><div>Bleue : chauffe. La formation de [CoCl₄]²⁻ est endothermique, K augmente. Rose : refroidis (K diminue), ou retire du Cl⁻ en ajoutant Ag⁺ (précipité de AgCl).</div></details></div>
+  <div class="defi"><p>3. Onglet Sel peu soluble, AgCl : compare la solubilité dans l'eau pure et après ajout de 1·10⁻² mol de Cl⁻ dans 1 L. De combien de fois diminue-t-elle ?</p>
+    <details><summary>Voir la réponse</summary><div>Dans l'eau pure, s = √Ks ≈ 1,34·10⁻⁵ mol/L. Avec [Cl⁻] ≈ 1,0·10⁻² mol/L, s ≈ Ks/[Cl⁻] ≈ 1,8·10⁻⁸ mol/L : environ 750 fois moins. C'est l'effet d'ion commun.</div></details></div>
+</div>
+</main>
+<aside class="sfa-side">
+  <div class="sfa-list"><h2>Équilibres et énergie<span>1 simulation</span></h2><ol><li><a class="on" aria-current="page" href="../le-chatelier/"><i>01</i>Équilibre chimique et Le Chatelier</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside>
+</div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de chimie</footer>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const R=0.0821; /* L·atm/(mol·K), VALEURS-REFERENCE */
+/* ---------- nombres à la française ---------- */
+const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+function fmt(x,sig){sig=sig||3;if(x===Infinity)return '∞';if(!isFinite(x))return '—';if(x===0)return '0';const a=Math.abs(x);
+  if(a>=1e-3&&a<1e4){let s=x.toPrecision(sig);if(s.includes('e'))s=String(+s);return s.replace('-','−').replace('.',',');}
+  const e=Math.floor(Math.log10(a));let m=x/Math.pow(10,e);let ms=m.toPrecision(sig);if(Math.abs(+ms)>=10){m/=10;ms=m.toPrecision(sig);return ms.replace('.',',').replace('-','−')+'·10'+String(e+1).split('').map(c=>SUP[c]).join('');}
+  return ms.replace('.',',').replace('-','−')+'·10'+String(e).split('').map(c=>SUP[c]).join('');}
+
+/* ---------- les trois systèmes ----------
+   sp : espèces ; nu = coefficient (négatif : réactif) ; inK = figure dans l'expression de K (solides : non)
+   K  : valeur à chaque température proposée                                                                 */
+const SYS={
+ haber:{nom:'Synthèse de l\'ammoniac',phase:'gaz',eq:'N₂(g) + 3 H₂(g) ⇌ 2 NH₃(g)',dH:-1,
+   Kexpr:'K = [NH₃]² / ([N₂]·[H₂]³)',Kunit:'concentrations en mol/L ; K sans unité avec c° = 1 mol/L',
+   sp:[{id:'N2',f:'N₂',nu:-1,col:'#185fa5',inK:true},{id:'H2',f:'H₂',nu:-3,col:'#8a95a3',inK:true},{id:'NH3',f:'NH₃',nu:2,col:'#0F6E56',inK:true}],
+   T:[600,700,800],Tn:['600 K','700 K','800 K'],K:[5.0,0.50,0.050],Kill:true,Ti0:1, /* Valeurs illustratives validées (VALEURS-REFERENCE, section équilibre) : Kc, ordre de grandeur réaliste, K diminue quand T augmente (ΔH < 0) */
+   init:{n:{N2:1,H2:3,NH3:0},V:1},log:false},
+ cobalt:{nom:'Complexes du cobalt',phase:'sol',eq:'[Co(H₂O)₆]²⁺ (rose) + 4 Cl⁻ ⇌ [CoCl₄]²⁻ (bleu) + 6 H₂O(l)',dH:1,
+   Kexpr:'K = [CoCl₄²⁻] / ([Co(H₂O)₆²⁺]·[Cl⁻]⁴) : l\'eau, solvant, n\'apparaît pas',Kunit:'concentrations en mol/L ; K sans unité avec c° = 1 mol/L',
+   sp:[{id:'A',f:'[Co(H₂O)₆]²⁺',nu:-1,col:'#c2477a',inK:true},{id:'B',f:'Cl⁻',nu:-4,col:'#5f6b7a',inK:true},{id:'C',f:'[CoCl₄]²⁻',nu:1,col:'#2f5fd0',inK:true}],
+   T:[273,298,353],Tn:['273 K (glace)','298 K (ambiante)','353 K (bain chaud)'],K:[1.6e-4,1.0e-3,2.3e-2],Kill:true,Ti0:1, /* Valeurs illustratives validées (VALEURS-REFERENCE, section équilibre) : 1,0·10⁻³ à 298 K, les deux autres par van 't Hoff avec ΔH = +50 kJ/mol constant (cohérentes entre elles) */
+   init:{n:{A:0.005,B:0.6,C:0},V:0.1},log:true},
+ AgCl:{nom:'Chlorure d\'argent',phase:'sel',eq:'AgCl(s) ⇌ Ag⁺ + Cl⁻',dH:1,cat:'AgNO₃',an:'NaCl',
+   Kexpr:'Ks = [Ag⁺]·[Cl⁻] : le solide n\'apparaît pas',Kunit:'concentrations en mol/L ; Ks sans unité avec c° = 1 mol/L',
+   sp:[{id:'S',f:'AgCl(s)',nu:-1,inK:false,col:'#999'},{id:'M',f:'Ag⁺',nu:1,col:'#185fa5',inK:true},{id:'X',f:'Cl⁻',nu:1,col:'#0F6E56',inK:true}],
+   T:[298,323],Tn:['298 K (25 °C)','323 K (50 °C)'],K:[1.8e-10,1.4e-9],Kill:[false,true],Ti0:0, /* 1,8·10⁻¹⁰ : VALEURS-REFERENCE ; 323 K : estimation van 't Hoff, ΔH(dissolution) = +65,5 kJ/mol (ΔH°f NBS), valeur illustrative validée */
+   init:{n:{S:1e-4,M:0,X:0},V:1},log:true},
+ BaSO4:{nom:'Sulfate de baryum',phase:'sel',eq:'BaSO₄(s) ⇌ Ba²⁺ + SO₄²⁻',dH:0,cat:'Ba(NO₃)₂',an:'Na₂SO₄',
+   Kexpr:'Ks = [Ba²⁺]·[SO₄²⁻] : le solide n\'apparaît pas',Kunit:'concentrations en mol/L ; Ks sans unité avec c° = 1 mol/L',
+   sp:[{id:'S',f:'BaSO₄(s)',nu:-1,inK:false,col:'#999'},{id:'M',f:'Ba²⁺',nu:1,col:'#185fa5',inK:true},{id:'X',f:'SO₄²⁻',nu:1,col:'#0F6E56',inK:true}],
+   T:[298],Tn:['298 K (25 °C)'],K:[1.1e-10],Kill:[false],Ti0:0,init:{n:{S:1e-4,M:0,X:0},V:1},log:true},
+ CaF2:{nom:'Fluorure de calcium',phase:'sel',eq:'CaF₂(s) ⇌ Ca²⁺ + 2 F⁻',dH:0,cat:'Ca(NO₃)₂',an:'NaF',
+   Kexpr:'Ks = [Ca²⁺]·[F⁻]² : le solide n\'apparaît pas',Kunit:'concentrations en mol/L ; Ks sans unité avec c° = 1 mol/L',
+   sp:[{id:'S',f:'CaF₂(s)',nu:-1,inK:false,col:'#999'},{id:'M',f:'Ca²⁺',nu:1,col:'#185fa5',inK:true},{id:'X',f:'F⁻',nu:2,col:'#0F6E56',inK:true}],
+   T:[298],Tn:['298 K (25 °C)'],K:[3.9e-11],Kill:[false],Ti0:0,init:{n:{S:1e-3,M:0,X:0},V:1},log:true}
+};
+const isIll=(S,Ti)=>Array.isArray(S.Kill)?S.Kill[Ti]:S.Kill;
+
+/* ---------- résolution exacte de Q(ξ) = K ----------
+   n_i(ξ) = n_i + ν_i·ξ ; à P constante (gaz inerte ajouté à P constante), V suit la quantité totale de gaz.
+   f(ξ) = Σ ν_i ln n_i − Δν ln V − ln K est croissante. On encadre ξ entre ses bornes (une espèce s'épuise),
+   puis on cherche la racine par dichotomie sur ln(distance à la borne la plus proche) : aucune soustraction
+   de nombres voisins, donc même une concentration de 10⁻²⁰ est obtenue avec toute sa précision relative.    */
+function gasTot(S,n){let t=0;for(const s of S.sp)if(S.phase==='gaz')t+=n[s.id];return t;}
+function lnQ(S,n,V){let q=0;for(const s of S.sp){if(!s.inK)continue;const c=n[s.id]/V;if(c<=0){if(s.nu>0)return -Infinity;return Infinity;}q+=s.nu*Math.log(c);}return q;}
+function solve(S,st){const K=S.K[st.Ti],lnK=Math.log(K);const sp=S.sp;
+  let lo=-Infinity,hi=Infinity;
+  for(const s of sp){const n=st.n[s.id];if(s.nu>0)lo=Math.max(lo,-n/s.nu);else hi=Math.min(hi,n/(-s.nu));}
+  const loL=new Set(sp.filter(s=>s.nu>0&&-st.n[s.id]/s.nu===lo).map(s=>s.id)),hiL=new Set(sp.filter(s=>s.nu<0&&st.n[s.id]/(-s.nu)===hi).map(s=>s.id));
+  const G0=gasTot(S,st.n)+(st.inert||0);
+  const Vof=n=>st.mode==='P'?st.V*(gasTot(S,n)+(st.inert||0))/G0:st.V;
+  const nLo=u=>{const o={};for(const s of sp)o[s.id]=(loL.has(s.id)?0:st.n[s.id]+s.nu*lo)+s.nu*u;return o;};
+  const nHi=w=>{const o={};for(const s of sp)o[s.id]=(hiL.has(s.id)?0:st.n[s.id]+s.nu*hi)-s.nu*w;return o;};
+  const f=n=>{const V=Vof(n);return lnQ(S,n,V)-lnK;};
+  const res=(n,xi,extra)=>Object.assign({n,V:Vof(n),xi,Ti:st.Ti,inert:st.inert||0,mode:st.mode,cat:st.cat},extra||{});
+  if(!(hi>lo))return res(Object.assign({},st.n),0,{deg:true});
+  const mid=(lo+hi)/2,L=mid-lo;const fm=f(nLo(L));
+  if(fm>0){let a=Math.log(L)-745,b=Math.log(L);for(let i=0;i<200;i++){const m=(a+b)/2;if(f(nLo(Math.exp(m)))>0)b=m;else a=m;}
+    const u=Math.exp((a+b)/2);return res(nLo(u),lo+u);}
+  const fhi=f(nHi(0));
+  if(fhi<=0)return res(nHi(0),hi,{unsat:true}); /* tout le solide se dissout : solution non saturée, Q ≤ Ks */
+  let a=Math.log(hi-mid)-745,b=Math.log(hi-mid);for(let i=0;i<200;i++){const m=(a+b)/2;if(f(nHi(Math.exp(m)))>0)a=m;else b=m;}
+  const w=Math.exp((a+b)/2);return res(nHi(w),hi-w);}
+
+/* ---------- état et historique ---------- */
+let addedIon={M:0,X:0};let cur=null,sysKey='haber',saltKey='AgCl',hist=[],anim=null;
+const S_=()=>SYS[sysKey==='salt'?saltKey:sysKey];
+const copy=o=>JSON.parse(JSON.stringify(o));
+function reset(){const S=S_();const st={n:Object.assign({},S.init.n),V:S.init.V,Ti:S.Ti0,inert:0,mode:'V',cat:false};
+  addedIon={M:0,X:0};const eq=solve(S,st);hist=[{pre:copy(st),post:copy(st),eq,lab:'mélange initial',first:true,tau:1.6}];cur=eq;
+  lastMsg={t:'Mélange initial : le système évolue seul jusqu\'à l\'équilibre (Q = K).',kind:'ok'};anim={t0:performance.now()};render();}
+let lastMsg=null;
+const TAU=st=>st.cat?0.55:1.6;
+function act(type,arg){const S=S_();const pre=copy(cur);const post=copy(cur);post.mode='V';delete post.deg;delete post.unsat;delete post.xi;let note='';
+  const lnK0=Math.log(S.K[pre.Ti]);
+  const name=id=>S.sp.find(s=>s.id===id).f;
+  switch(type){
+   case 'add':post.n[arg.id]+=arg.amt;if(arg.id in addedIon)addedIon[arg.id]+=arg.amt;note=`Tu ajoutes ${fmt(arg.amt)} mol de ${name(arg.id)}.`;break;
+   case 'rem':{/* en solution, AgCl qui précipite laisse toujours un peu de Cl⁻ libre : plancher de 1·10⁻⁴ mol/L (choix du modèle) */
+     const fl=S.phase==='sol'?1e-4*post.V:0,n0=post.n[arg.id];const r=Math.max(0,Math.min(arg.amt,n0-fl));post.n[arg.id]=r>=n0-fl?Math.min(n0,fl):n0-r;
+     note=`Tu retires ${fmt(r)} mol de ${name(arg.id)}${r<arg.amt?(fl?' (il reste toujours un peu de Cl⁻ libre : 1·10⁻⁴ mol/L au moins dans ce modèle)':' (tout ce qu\'il y avait)'):''}.`;break;}
+   case 'V':note=`Le volume passe de ${fmt(pre.V)} L à ${fmt(arg)} L.`;post.V=arg;break;
+   case 'water':note=`Tu ajoutes ${fmt(arg)} L d'eau (dilution).`;post.V=pre.V+arg;break;
+   case 'T':note=`La température passe de ${S.T[pre.Ti]} K à ${S.T[arg]} K.`;post.Ti=arg;break;
+   case 'inertV':post.inert+=arg;note=`Tu ajoutes ${fmt(arg)} mol d'argon à volume constant.`;break;
+   case 'inertP':{const G=gasTot(S,pre.n)+pre.inert;post.inert+=arg;post.V=pre.V*(G+arg)/G;post.mode='P';note=`Tu ajoutes ${fmt(arg)} mol d'argon à pression constante : le volume passe de ${fmt(pre.V)} L à ${fmt(post.V)} L.`;break;}
+   case 'cat':post.cat=true;note='Tu ajoutes un catalyseur.';break;}
+  const eq=solve(S,post);hist.push({pre,post,eq,type,arg,tau:TAU(post)});if(hist.length>7)hist.shift();cur=eq;
+  lastMsg={t:note,type,arg,pre,post,eq};anim={t0:performance.now()};render();}
+
+/* ---------- explication de chaque perturbation ---------- */
+function explain(){const S=S_();const m=lastMsg;if(!m.type)return {h:m.t,cls:'ok'};
+  const lq=lnQ(S,m.post.n,m.post.V),lk=Math.log(S.K[m.post.Ti]),lk0=Math.log(S.K[m.pre.Ti]);
+  const d=lq-lk;const eqq=Math.abs(d)<1e-9||(m.eq.deg);const sens=eqq?0:(d<0?1:-1);
+  let h=`<b>${m.t}</b> `;
+  const dnu=S.sp.filter(s=>s.inK).reduce((a,s)=>a+s.nu,0);
+  if(m.type==='T'){h+=`Seule la température change K : K passe de ${fmt(Math.exp(lk0))} à ${fmt(Math.exp(lk))}${isIll(S,m.post.Ti)?' (valeur illustrative)':''}. `;
+    h+=S.dH<0?'La réaction directe est exothermique (ΔH &lt; 0) : '+(m.post.Ti>m.pre.Ti?'chauffer favorise le sens inverse, endothermique.':'refroidir favorise le sens direct, exothermique.')
+      :'La réaction directe est endothermique (ΔH &gt; 0) : '+(m.post.Ti>m.pre.Ti?'chauffer favorise le sens direct.':'refroidir favorise le sens inverse.');
+    h+=' Q, lui, n\'a pas changé. ';}
+  else if(m.type==='cat')h+='Un catalyseur accélère autant le sens direct que le sens inverse : Q et K ne changent pas, l\'équilibre ne se déplace pas. Les prochaines évolutions seront seulement plus rapides (courbes plus raides). ';
+  else if(m.type==='inertV')h+='Les quantités de N₂, H₂ et NH₃ et le volume ne changent pas : les concentrations et les pressions partielles restent les mêmes, Q = K. Seule la pression totale augmente. ';
+  else if(m.type==='inertP')h+='À pression constante, le volume augmente : toutes les concentrations baissent, l\'effet est celui d\'une dilution (détente). ';
+  else if(m.type==='V'||m.type==='water'){
+    if(S.phase==='sel'){h+=m.eq.unsat&&m.pre.n.S>0?'La dilution fait baisser les concentrations ; ':'La dilution fait baisser les concentrations : Q &lt; Ks, du solide se dissout. ';}
+    else{h+=m.type==='water'?'L\'eau est le solvant : elle n\'apparaît pas dans K. Elle agit par dilution : toutes les concentrations baissent. ':'Changer le volume change toutes les concentrations. ';
+    if(dnu!==0)h+=`Δν (espèces dans K) = ${dnu>0?'+':'−'}${Math.abs(dnu)} : ${m.post.V<m.pre.V?'compresser':'diluer'} favorise le côté qui compte ${(m.post.V<m.pre.V)===(dnu<0)?'le moins':'le plus'} de particules${S.phase==='gaz'?' de gaz':' dissoutes'}. `;}}
+  else if(m.type==='add'||m.type==='rem'){const s=S.sp.find(x=>x.id===m.arg.id);
+    if(!s.inK){h+=m.pre.unsat?'La solution n\'était pas saturée : le solide ajouté peut se dissoudre. ':'Le solide n\'apparaît pas dans Ks : Q ne change pas. ';}
+    else{const up=(m.type==='add')===(s.nu>0);h+=`${s.f} est ${s.nu>0?'au numérateur':'au dénominateur'} de Q : Q ${up?'augmente':'diminue'}. `;}}
+  if(m.eq.deg)return {h:h+'Aucune réaction n\'est possible : il manque une espèce de chaque côté.',cls:'warn'};
+  if(sens===0)h+=`<b>Q = K : aucune évolution.</b>`;
+  else if(m.eq.unsat)h+=`<b>Q &lt; K${S.phase==='sel'?'s':''} : tout le solide se dissout. La solution n'est plus saturée : il n'y a plus d'équilibre (Q reste inférieur à Ks).</b>`;
+  else h+=`<b>Q ${sens>0?'&lt;':'&gt;'} K : évolution dans le sens ${sens>0?'direct (→)':'inverse (←)'}${S.phase==='sel'?(sens>0?', du solide se dissout':', du solide précipite'):''}.</b> Le système modère la perturbation, sans l'annuler.`;
+  return {h,cls:sens===0?'ok':'info2'};}
+
+/* ---------- rendu ---------- */
+function stat(a,b,c){return `<div class="stat"><small>${a}</small><b>${b}</b><span>${c||''}</span></div>`;}
+function nAt(seg,t){/* état à l'instant t (0 ≤ t ≤ 10) de l'évolution : avancement en exponentielle (allure qualitative) */
+  const S=S_();const P=seg.post,E=seg.eq;const sref=S.sp.reduce((b,s)=>Math.abs(E.n[s.id]-P.n[s.id])>Math.abs(E.n[b.id]-P.n[b.id])?s:b,S.sp[0]);
+  const dxi=(E.n[sref.id]-P.n[sref.id])/sref.nu;const k=t>=10?1:(1-Math.exp(-t/seg.tau))/(1-Math.exp(-10/seg.tau));
+  const n={};for(const s of S.sp)n[s.id]=k>=1?E.n[s.id]:Math.max(0,P.n[s.id]+s.nu*dxi*k);
+  const V=P.mode==='P'?P.V*(gasTot(S,n)+P.inert)/(gasTot(S,P.n)+P.inert):P.V;return {n,V};}
+function chart(p){const S=S_();const W=420,H=240,x0=46,x1=410,y0=24,y1=206;const sps=S.sp.filter(s=>s.inK);
+  const segs=hist;const nS=segs.length;const T=nS*10;const X=t=>x0+(x1-x0)*t/T;
+  const pts=[];segs.forEach((g,j)=>{const last=j===nS-1;const tmax=last?10*p:10;
+    const pre=g.first?null:{n:g.pre.n,V:g.pre.V};const arr=[];
+    if(pre)arr.push([j*10,pre]);
+    for(let i=0;i<=40;i++){const t=tmax*i/40;arr.push([j*10+t,nAt(g,t)]);}
+    pts.push(arr);});
+  let vals=[];pts.forEach(a=>a.forEach(([t,st])=>sps.forEach(s=>vals.push(st.n[s.id]/st.V))));
+  let Y;let ticks='';
+  if(S.log){const pos=vals.filter(v=>v>0);let lmin=Math.floor(Math.log10(Math.min(...pos))),lmax=Math.ceil(Math.log10(Math.max(...pos))+0.05);if(lmax-lmin<2)lmin=lmax-2;lmin=Math.max(lmin,lmax-14);
+    Y=v=>v<=0?y1:y1-(y1-y0)*(Math.max(Math.log10(v),lmin)-lmin)/(lmax-lmin);
+    const step=Math.ceil((lmax-lmin)/6);for(let e=lmin;e<=lmax;e+=step)ticks+=`<line x1="${x0}" x2="${x1}" y1="${Y(Math.pow(10,e))}" y2="${Y(Math.pow(10,e))}" stroke="#eef1f5"/><text x="${x0-4}" y="${Y(Math.pow(10,e))+4}" text-anchor="end" font-size="10" fill="#5f6b7a" font-family="Mulish,sans-serif">10${String(e).split('').map(c=>SUP[c]).join('')}</text>`;}
+  else{const mx=Math.max(...vals)*1.1||1;Y=v=>y1-(y1-y0)*v/mx;const st=Math.pow(10,Math.floor(Math.log10(mx/4)));const k=mx/st>20?5:mx/st>8?2:1;
+    for(let v=0;v<=mx;v+=st*k)ticks+=`<line x1="${x0}" x2="${x1}" y1="${Y(v)}" y2="${Y(v)}" stroke="#eef1f5"/><text x="${x0-4}" y="${Y(v)+4}" text-anchor="end" font-size="10" fill="#5f6b7a" font-family="Mulish,sans-serif">${fmt(v,2)}</text>`;}
+  let g=ticks;
+  segs.forEach((s,j)=>{if(j)g+=`<line x1="${X(j*10)}" x2="${X(j*10)}" y1="${y0}" y2="${y1}" stroke="#d3d9e2" stroke-dasharray="3 3"/>`;
+    g+=`<text x="${X(j*10+5)}" y="${y1+14}" text-anchor="middle" font-size="9.5" font-weight="700" fill="#5f6b7a" font-family="Mulish,sans-serif">${s.first?'départ':'perturbation'}</text>`;});
+  sps.forEach((s,si)=>{let d='';pts.forEach(a=>a.forEach(([t,st],i)=>{d+=(d===''?'M':'L')+X(t).toFixed(1)+' '+Y(st.n[s.id]/st.V).toFixed(1);}));
+    g+=`<path d="${d}" fill="none" stroke="${s.col}" stroke-width="2.2" stroke-linejoin="round"${S.phase==='sel'&&si===1?' stroke-dasharray="6 4"':''}/>`;});
+  g+=`<line x1="${x0}" x2="${x0}" y1="${y0}" y2="${y1}" stroke="#8a95a3"/><line x1="${x0}" x2="${x1}" y1="${y1}" y2="${y1}" stroke="#8a95a3"/>`;
+  g+=`<text x="${x1}" y="${H-4}" text-anchor="end" font-size="10" fill="#5f6b7a" font-family="Mulish,sans-serif">temps (allure qualitative) →</text><text x="4" y="10" font-size="10" fill="#5f6b7a" font-family="Mulish,sans-serif">c (mol/L)${S.log?', échelle log':''}</text>`;
+  $('chart').innerHTML=g;
+  $('leg').innerHTML=sps.map(s=>`<span><i style="background:${s.col}"></i>${s.f}</span>`).join('');}
+function rng(seed){let x=seed;return ()=>{x=(x*16807)%2147483647;return x/2147483647;};}
+function scene(st){const S=S_();let g='';
+  if(S.phase==='gaz'){const lv=Math.log(st.V/0.1)/Math.log(200);const w=70+200*Math.max(0,Math.min(1,lv));const x=150-w/2;
+    g+=`<rect x="${x}" y="40" width="${w}" height="140" rx="6" fill="#f6f7f9" stroke="#13233a" stroke-width="2"/>`;
+    const r=rng(7);const dot=(n,col,pair,key)=>{const k=Math.min(60,Math.round(n*8));let o='';for(let i=0;i<k;i++){const px=x+8+r()*(w-16),py=48+r()*124;o+=pair?`<circle cx="${px-2.2}" cy="${py}" r="2.6" fill="${col}"/><circle cx="${px+2.2}" cy="${py}" r="2.6" fill="${col}"/>`:`<circle cx="${px}" cy="${py}" r="3.4" fill="${col}"/>`;}return o;};
+    g+=dot(st.n.N2,'#185fa5',1)+dot(st.n.H2,'#8a95a3',1)+dot(st.n.NH3,'#0F6E56',0)+dot(st.inert,'#7a5fc0',0);
+    const P=(gasTot(S,st.n)+st.inert)*R*S.T[st.Ti]/st.V;
+    g+=`<text x="150" y="24" text-anchor="middle" font-size="13" font-weight="800" fill="#13233a" font-family="Mulish,sans-serif">V = ${fmt(st.V)} L · P = ${fmt(P)} atm · T = ${S.T[st.Ti]} K</text>`;
+    g+=`<text x="150" y="205" text-anchor="middle" font-size="10.5" font-weight="700" fill="#5f6b7a" font-family="Mulish,sans-serif">● N₂ (bleu) ● H₂ (gris) ● NH₃ (vert)${st.inert?' ● Ar (violet)':''} · 1 point ≈ 0,125 mol</text>`;
+    if(st.cat)g+=`<rect x="${x+4}" y="170" width="${w-8}" height="6" fill="#BA7517" opacity=".7"/>`;}
+  else{const Vmax=S.phase==='sol'?2:100;const h=40+110*Math.min(1,Math.log(1+st.V*9/S.init.V)/Math.log(1+Vmax*9/S.init.V));
+    g+=`<path d="M90 30v150a10 10 0 0 0 10 10h100a10 10 0 0 0 10-10V30" fill="none" stroke="#13233a" stroke-width="2"/>`;
+    let col='#e6eef8';
+    if(S.phase==='sol'){const tot=st.n.A+st.n.C,fr=tot>0?st.n.C/tot:0;const c0=[226,120,166],c1=[47,95,208];const mix=c0.map((v,i)=>Math.round(v+(c1[i]-v)*fr));
+      const inten=Math.min(1,0.25+0.75*(tot/st.V)/0.05);col=`rgba(${mix.join(',')},${inten.toFixed(2)})`;}
+    g+=`<path d="M91 ${190-h}V180a9 9 0 0 0 9 9h100a9 9 0 0 0 9-9V${190-h}Z" fill="${col}"/>`;
+    if(S.phase==='sel'){const ns=st.n.S;if(ns>0){const ph=Math.max(3,Math.min(26,4+22*(Math.log10(ns/1e-7))/5));g+=`<path d="M105 189 Q150 ${189-ph*2} 195 189Z" fill="#cfd5dd" stroke="#8a95a3"/>`;}
+      g+=`<text x="150" y="24" text-anchor="middle" font-size="13" font-weight="800" fill="#13233a" font-family="Mulish,sans-serif">V = ${fmt(st.V)} L · ${ns>0?'solide présent : saturée':'plus de solide : non saturée'}</text>`;}
+    else g+=`<text x="150" y="24" text-anchor="middle" font-size="13" font-weight="800" fill="#13233a" font-family="Mulish,sans-serif">V = ${fmt(st.V)} L · T = ${S.T[st.Ti]} K</text>`;
+    if(st.cat)g+=`<text x="150" y="208" text-anchor="middle" font-size="10.5" font-weight="700" fill="#BA7517" font-family="Mulish,sans-serif">catalyseur présent</text>`;
+    else if(S.phase==='sol')g+=`<text x="150" y="208" text-anchor="middle" font-size="10.5" font-weight="700" fill="#5f6b7a" font-family="Mulish,sans-serif">rose : Co(H₂O)₆²⁺ · bleu : CoCl₄²⁻ (schématique)</text>`;}
+  $('scene').innerHTML=g;}
+function qkBar(){const S=S_();const m=lastMsg;const post=m.post||hist[hist.length-1].post;const lk=Math.log10(S.K[post.Ti]);let lq=lnQ(S,post.n,post.V)/Math.LN10;
+  const W=Math.max(340,Math.min(600,Math.round($('qk').clientWidth||600))),x0=40,x1=W-40;const span=4;const X=v=>x0+(x1-x0)*(Math.max(-span,Math.min(span,v-lk))+span)/(2*span);
+  let g=`<line x1="${x0}" x2="${x1}" y1="34" y2="34" stroke="#d3d9e2" stroke-width="4" stroke-linecap="round"/>`;
+  g+=`<line x1="${X(lk)}" x2="${X(lk)}" y1="20" y2="48" stroke="#13233a" stroke-width="3"/><text x="${X(lk)}" y="14" text-anchor="middle" font-size="13" font-weight="800" fill="#13233a" font-family="Mulish,sans-serif">K = ${fmt(S.K[post.Ti])}</text>`;
+  const qx=isFinite(lq)?X(lq):(lq>0?x1:x0);
+  g+=`<circle cx="${qx}" cy="34" r="7" fill="#c0392b"/><text x="${qx}" y="64" text-anchor="${qx>x1-70?'end':qx<x0+70?'start':'middle'}" font-size="12.5" font-weight="800" fill="#c0392b" font-family="Mulish,sans-serif">Q juste après = ${isFinite(lq)?fmt(Math.pow(10,lq)):(lq>0?'∞':'0')}</text>`;
+  g+=`<text x="${x0}" y="50" font-size="10.5" fill="#5f6b7a" font-family="Mulish,sans-serif">÷10⁴</text><text x="${x1}" y="50" text-anchor="end" font-size="10.5" fill="#5f6b7a" font-family="Mulish,sans-serif">×10⁴</text>`;
+  $('qk').innerHTML=`<svg viewBox="0 0 ${W} 72" role="img" aria-label="Q comparé à K (échelle logarithmique)">${g}</svg>`;}
+function table(){const S=S_();const seg=hist[hist.length-1];const P=seg.post,E=seg.eq,Pre=seg.pre;
+  let h=`<table class="t"><tr><th>Espèce</th><th>n avant</th><th>n juste après</th><th>variation</th><th>n à l'équilibre</th><th>c à l'équilibre</th></tr>`;
+  for(const s of S.sp){const d=E.n[s.id]-P.n[s.id];h+=`<tr><td><b>${s.f}</b>${s.inK?'':'<br><small>absent de K</small>'}</td><td>${seg.first?'—':fmt(Pre.n[s.id])} mol</td><td>${fmt(P.n[s.id])} mol</td><td>${d===0?'0':(s.nu>0?'+':'−')+Math.abs(s.nu)+'ξ = '+(d>0?'+':'−')+fmt(Math.abs(d))} mol</td><td><b>${fmt(E.n[s.id],4)} mol</b></td><td>${s.inK?fmt(E.n[s.id]/E.V,4)+' mol/L':'—'}</td></tr>`;}
+  h+=`</table>`;$('tab').innerHTML=h;
+  const lq=lnQ(S,E.n,E.V),lk=Math.log(S.K[E.Ti]);
+  $('solvnote').innerHTML=E.deg?'Aucune évolution possible.':E.unsat?`Tout le solide est dissous : Q = ${fmt(Math.exp(lq))} &lt; Ks = ${fmt(Math.exp(lk))}. Pas d'équilibre.`:
+    `Avancement ξ = ${fmt(E.xi,4)} mol${E.xi<0?' (négatif : sens inverse)':''}. Résolution numérique exacte de l'expression de K (dichotomie, précision relative 10⁻¹²) : au nouvel état, Q/K = ${(Math.exp(lq-lk)).toFixed(6).replace('.',',')}.`+(E.mode==='P'?' Volume final à P constante : '+fmt(E.V,4)+' L.':'');}
+function stats(){const S=S_();const E=cur;const K=S.K[E.Ti];let s='';
+  s+=stat(`K à ${S.T[E.Ti]} K`,fmt(K),isIll(S,E.Ti)?'valeur illustrative':(S.phase==='sel'?'valeur tabulée (25 °C)':''));
+  s+=stat('Q au nouvel état',E.unsat?fmt(Math.exp(lnQ(S,E.n,E.V))):fmt(Math.exp(lnQ(S,E.n,E.V))),E.unsat?'Q &lt; Ks : non saturée':'Q = K : équilibre');
+  if(S.phase==='gaz'){const P=(gasTot(S,E.n)+E.inert)*R*S.T[E.Ti]/E.V;s+=stat('Pression totale',fmt(P)+' atm','P = n·R·T/V, R = 0,0821');
+    s+=stat('Pressions partielles','N₂ '+fmt(E.n.N2*R*S.T[E.Ti]/E.V,2)+' · H₂ '+fmt(E.n.H2*R*S.T[E.Ti]/E.V,2)+' · NH₃ '+fmt(E.n.NH3*R*S.T[E.Ti]/E.V,2),'atm'+(E.inert?' ; argon : '+fmt(E.inert*R*S.T[E.Ti]/E.V,2)+' atm':''));}
+  if(S.phase==='sol'){const tot=E.n.A+E.n.C;s+=stat('Cobalt sous forme bleue',fmt(100*E.n.C/tot,3)+' %','[CoCl₄]²⁻ / cobalt total');s+=stat('[Cl⁻] libre',fmt(E.n.B/E.V)+' mol/L','');}
+  if(S.phase==='sel'){const M=S.sp[1],X=S.sp[2];s+=stat('['+M.f+']',fmt(E.n.M/E.V)+' mol/L','');s+=stat('['+X.f+']',fmt(E.n.X/E.V)+' mol/L','');
+    if(E.n.S>0){const sm=addedIon.M===0?E.n.M/E.V:addedIon.X===0?E.n.X/E.V/X.nu:null;s+=stat('Solubilité s',sm==null?'—':fmt(sm)+' mol/L',sm==null?'les deux ions ont été ajoutés':(addedIon.M||addedIon.X?'réduite par l\'ion commun':'dans l\'eau pure'));}
+    s+=stat('Solide restant',fmt(E.n.S)+' mol','absent de Ks');}
+  $('stats').innerHTML=s;}
+function render(){const S=S_();
+  $('eq').innerHTML=`${S.eq}<small>${S.Kexpr} (${S.Kunit}). ${S.dH<0?'Réaction directe exothermique : ΔH &lt; 0.':S.dH>0?'Réaction directe endothermique : ΔH &gt; 0.':'Signe de ΔH non utilisé ici.'}</small>`;
+  const e=explain();$('msg').className='note '+e.cls;$('msg').innerHTML=e.h;
+  qkBar();table();stats();renderActs();draw();}
+function draw(){const p=anim?Math.min(1,(performance.now()-anim.t0)/1400):1;const seg=hist[hist.length-1];
+  scene(p>=1?cur:Object.assign({},seg.post,nAt(seg,10*p)));chart(p);if(p>=1)anim=null;}
+
+/* ---------- commandes ---------- */
+const AM={haber:{v:1.0},cobalt:{v:0.10,w:0.05},salt:{v:-3,w:1}};
+function slider(id,lab,min,max,step,val,show){return `<div class="slid"><span class="lab">${lab}</span><input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${val}"><span class="val" id="${id}v">${show(val)}</span></div>`;}
+function renderActs(){const S=S_();const k=sysKey;let h='<h3>Perturbe l\'équilibre</h3>';
+  const tb=`<div class="acts"><span class="lab">Température</span>${S.T.map((t,i)=>`<button class="btn${i===cur.Ti?' on':''}" data-ti="${i}"${S.T.length<2?' disabled':''}>${S.Tn[i]}</button>`).join('')}</div>`;
+  const cb=`<button class="btn" data-a="cat"${cur.cat?' disabled':''}>${cur.cat?'Catalyseur présent':'Ajouter un catalyseur'}</button><button class="btn" data-a="reset">Recommencer</button>`;
+  if(k==='haber'){h+=slider('amt','Quantité ajoutée ou retirée',0.1,3,0.1,AM.haber.v,v=>fmt(+v,2)+' mol');
+    h+=`<div class="acts"><span class="lab">Espèce</span>`+S.sp.map(s=>`<button class="btn" data-a="add" data-id="${s.id}">+ ${s.f}</button><button class="btn" data-a="rem" data-id="${s.id}">− ${s.f}</button>`).join('')+`</div>`;
+    h+=`<div class="acts"><span class="lab">Argon (inerte)</span><button class="btn" data-a="inertV">+ argon à V constant</button><button class="btn" data-a="inertP">+ argon à P constante</button></div>`;
+    h+=slider('vol','Volume du récipient (relâche pour appliquer)',-1,1.301,0.01,Math.log10(cur.V).toFixed(3),v=>fmt(Math.pow(10,+v),3)+' L');
+    h+=tb+`<div class="acts">${cb}</div>`;}
+  else if(k==='cobalt'){h+=slider('amt','Quantité de Cl⁻',0.01,1,0.01,AM.cobalt.v,v=>fmt(+v,2)+' mol');
+    h+=`<div class="acts"><button class="btn" data-a="add" data-id="B">+ Cl⁻ (HCl concentré, volume supposé inchangé)</button><button class="btn" data-a="rem" data-id="B">− Cl⁻ (Ag⁺ ajouté : AgCl précipite)</button></div>`;
+    h+=slider('wat','Volume d\'eau ajouté',0.01,0.5,0.01,AM.cobalt.w,v=>fmt(+v,2)+' L');
+    h+=`<div class="acts"><button class="btn" data-a="water"${cur.V>=2?' disabled':''}>+ eau (dilution)</button><span class="hint">Gaz inerte : sans objet pour une solution. Retrait de Cl⁻ par Ag⁺ : le modèle garde au moins 1·10⁻⁴ mol/L de Cl⁻ libre (choix du modèle ; le précipité de AgCl n\'est pas dessiné).</span></div>`+tb+`<div class="acts">${cb}</div>`;}
+  else{const C=S.sp[1].f,X=S.sp[2].f;h+=slider('amt','Quantité ajoutée',-6,-1,0.1,AM.salt.v,v=>fmt(Math.pow(10,+v),2)+' mol');
+    h+=`<div class="acts"><button class="btn" data-a="add" data-id="S">+ ${S.sp[0].f}</button><button class="btn" data-a="add" data-id="M">+ ${C} (${S.cat})</button><button class="btn" data-a="add" data-id="X">+ ${X} (${S.an})</button></div>`;
+    h+=slider('wat','Volume d\'eau ajouté',0.1,10,0.1,AM.salt.w,v=>fmt(+v,2)+' L');
+    h+=`<div class="acts"><button class="btn" data-a="water"${cur.V>=100?' disabled':''}>+ eau (dilution)</button><span class="hint">Les ions spectateurs (Na⁺, NO₃⁻) ne figurent pas dans Ks.</span></div>`+tb+
+      (S.T.length<2?'<p class="hint">Variation de Ks avec T non proposée pour ce sel (données non fournies ici).</p>':'<p class="hint">Dissolution de AgCl : endothermique (ΔH &gt; 0), Ks augmente avec T. Ks à 323 K : valeur illustrative, estimée par la loi de van \'t Hoff avec ΔH ≈ +65 kJ/mol.</p>')+`<div class="acts">${cb}</div>`;}
+  $('actbox').innerHTML=h;
+  const amt=()=>{const v=+$('amt').value;return k==='salt'?Math.pow(10,v):v;};
+  $('actbox').querySelectorAll('input[type=range]').forEach(r=>r.oninput=()=>{const sh={amt:k==='haber'||k==='cobalt'?v=>fmt(+v,2)+' mol':v=>fmt(Math.pow(10,+v),2)+' mol',wat:v=>fmt(+v,2)+' L',vol:v=>fmt(Math.pow(10,+v),3)+' L'}[r.id];$(r.id+'v').textContent=sh(r.value);
+    if(r.id==='amt')AM[k].v=+r.value;if(r.id==='wat')AM[k].w=+r.value;});
+  if($('vol'))$('vol').onchange=()=>{const V=Math.pow(10,+$('vol').value);if(Math.abs(V-cur.V)>1e-9*cur.V)act('V',V);};
+  $('actbox').querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const a=b.dataset.a;
+    if(a==='reset')return reset();if(a==='cat')return act('cat');
+    if(a==='add'||a==='rem')return act(a,{id:b.dataset.id,amt:amt()});
+    if(a==='inertV'||a==='inertP')return act(a,amt());
+    if(a==='water'){const vmax=k==='cobalt'?2:100;return act('water',Math.min(+$('wat').value,vmax-cur.V));}});
+  $('actbox').querySelectorAll("[data-ti]").forEach(b=>b.onclick=()=>{const i=+b.dataset.ti;if(i!==cur.Ti)act('T',i);});}
+function setSys(k){sysKey=k;document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('on',x.dataset.tab===k));
+  $('saltsel').hidden=k!=='salt';
+  if(k==='salt'){$('saltsel').innerHTML='<span class="lab">Sel</span>'+['AgCl','BaSO4','CaF2'].map(s=>`<button class="btn${s===saltKey?' on':''}" data-salt="${s}">${SYS[s].eq.split('(s)')[0]} (Ks = ${fmt(SYS[s].K[0],2)})</button>`).join('')+'<span class="hint">Ks à 25 °C, valeurs tabulées.'+(saltKey==='CaF2'?' F⁻ supposé non protoné (solution neutre).':'')+'</span>';
+    $('saltsel').querySelectorAll('[data-salt]').forEach(b=>b.onclick=()=>{saltKey=b.dataset.salt;setSys('salt');});}
+  reset();}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>setSys(b.dataset.tab));
+function loop(){if(anim)draw();requestAnimationFrame(loop);}
+setSys('haber');requestAnimationFrame(loop);
+
+/* accès pour les tests */
+window.__lc={set:(k,s)=>{if(s)saltKey=s;setSys(k);},act:(t,a)=>act(t,a),
+  state:()=>copy({sys:sysKey==='salt'?saltKey:sysKey,cur,hist:hist.map(h=>({type:h.type||null,arg:h.arg==null?null:h.arg,pre:h.pre,post:h.post,eq:h.eq})),
+    K:S_().K,T:S_().T,sp:S_().sp,phase:S_().phase}),
+  msg:()=>$('msg').textContent};
+})();
+</script>
+<script src="../../kit/sfa-nav.js"></script></body>
+</html>

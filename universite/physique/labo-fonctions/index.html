@@ -1,0 +1,832 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratoire de fonctions · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+<style>
+#lf,#lf *{box-sizing:border-box}
+#lf{min-width:0}
+#lf [hidden]{display:none!important}
+#lf .row{display:flex;align-items:center;flex-wrap:wrap}
+#lf .lf-tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 4px}
+#lf .lf-h{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;
+  font:800 .8rem var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:18px 0 2px;padding-top:12px;border-top:1px solid var(--line)}
+#lf .lf-h.first{border-top:0;padding-top:0;margin-top:8px}
+#lf .lf-seg{display:inline-flex;flex-wrap:wrap;gap:6px;text-transform:none;letter-spacing:0}
+#lf .btn.sm{padding:5px 10px!important;font-size:.78rem!important}
+#lf .btn i{font-style:italic}
+#lf .lf-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 4px}
+#lf .lf-chips .btn{min-width:3.4em}
+/* équation principale */
+#lf .fml .lf-kind{display:block;font:600 .78rem/1.4 var(--f-ui);color:var(--muted)}
+#lf .eq{font:700 clamp(1.08rem,2.5vw,1.4rem)/1.6 var(--f-ui);color:var(--ink);white-space:nowrap;overflow-x:auto;overflow-y:hidden;max-width:100%}
+#lf .eq i,#lf .m i,#lf .info i{font-style:italic}
+#lf .eq sup{font-size:.62em;vertical-align:.8em;line-height:0}
+#lf .frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.82em;line-height:1.2;margin:0 .1em}
+#lf .frac>span:first-child{border-bottom:1.5px solid currentColor}
+#lf .frac>span{padding:0 .2em}
+#lf .ov{border-top:1.5px solid currentColor;padding:0 .12em;margin-left:-.05em}
+#lf .ca{color:#a32d2d}#lf .cb{color:#0F6E56}#lf .cc{color:#BA7517}#lf .ch{color:#6159c9}#lf .ck{color:#185fa5}
+/* zone de dessin */
+#lf #cv{display:block;touch-action:none;user-select:none;-webkit-user-select:none;cursor:crosshair}
+#lf #cv.grab{cursor:grab}#lf #cv.grabbing{cursor:grabbing}
+#lf .lf-under{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:8px 0 0}
+#lf .lf-zoom{display:flex;gap:6px}
+#lf .lf-zoom .btn{min-width:38px;font-size:1rem!important;padding:4px 10px!important}
+#lf .hint{font:500 .82rem/1.45 var(--f-ui);color:var(--muted);flex:1 1 260px;min-width:0}
+/* paramètres */
+#lf .lf-params .row{margin:8px 0!important}
+#lf .lf-params .pill{min-width:15.5em}
+#lf .lf-params .pill i{font:italic 800 1.05rem var(--f-ui);margin-right:.35em}
+#lf .lf-params .val{min-width:3.4em}
+#lf .lf-play{min-width:5.6em}
+#lf .lf-opts{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;font:600 .84rem var(--f-ui);color:var(--muted);margin-top:10px}
+#lf .lf-opts label{display:inline-flex;gap:7px;align-items:center;cursor:pointer;color:var(--ink2)}
+#lf .lf-opts input[type=checkbox]{accent-color:#13233a;width:16px;height:16px;margin:0}
+/* écritures et lecture */
+#lf .lf-cols{display:grid;grid-template-columns:minmax(0,1fr);gap:0 22px}
+@media (min-width:760px){#lf .lf-cols.two{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr)}}
+#lf .lf-forms{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+#lf .lf-forms .fr{display:grid;grid-template-columns:6.6em minmax(0,1fr);align-items:baseline;gap:8px}
+#lf .lf-forms .lbl{font:700 .8rem var(--f-ui)!important;color:var(--muted)}
+#lf .lf-forms .eq{font-size:1.05rem}
+#lf .lf-forms .fr.dim .eq{font:600 .86rem/1.4 var(--f-ui);color:var(--faint);white-space:normal}
+#lf .info{margin-top:8px}
+#lf .info .li{display:grid;grid-template-columns:8.6em minmax(0,1fr);gap:2px 12px;padding:4px 0;border-top:1px solid var(--line);line-height:1.55}
+#lf .info .li:first-child{border-top:0}
+#lf .info .li>b{font:800 .78rem/1.9 var(--f-ui);color:var(--ink2)}
+#lf .info .li>span{color:var(--ink2)}
+#lf .m{font-weight:800;color:var(--ink);white-space:nowrap}
+#lf .m sub{font-size:.72em}
+#lf .warn{color:#a32d2d;font-weight:700}
+@media (max-width:520px){
+  #lf .lf-params .pill{min-width:0}
+  #lf .info .li{grid-template-columns:minmax(0,1fr);gap:0}
+  #lf .lf-forms .fr{grid-template-columns:minmax(0,1fr);gap:0}
+}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#MA">Outils mathématiques</a>›<b>Laboratoire de fonctions</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Maths · Outils mathématiques</span><span class="sfa-chip free">Gratuit</span></div><h1>Laboratoire de fonctions</h1><p>Bouge les paramètres d&#x27;une fonction et regarde sa courbe et son équation changer ensemble</p></div>
+<section class="sfa-sim">
+
+
+
+<div id="lf">
+  <div class="lf-tabs" role="tablist" id="tabs">
+    <button class="btn" role="tab" data-mode="lin" id="tab-lin">Premier degré</button>
+    <button class="btn" role="tab" data-mode="quad" id="tab-quad">Second degré</button>
+    <button class="btn" role="tab" data-mode="usu" id="tab-usu">Fonctions usuelles</button>
+  </div>
+
+  <div class="fml" id="fml"><span class="lf-kind" id="eqKind"></span><div class="eq" id="eqMain"></div></div>
+
+  <canvas id="cv" style="width:100%;height:62vh;min-height:400px;" aria-label="Graphique interactif de la fonction : glisse les points de couleur pour la modifier"></canvas>
+  <div class="lf-under">
+    <div class="lf-zoom">
+      <button class="btn" id="zIn" title="Zoomer" aria-label="Zoomer">+</button>
+      <button class="btn" id="zOut" title="Dézoomer" aria-label="Dézoomer">−</button>
+      <button class="btn" id="zHome" title="Recentrer" aria-label="Recentrer">⟲</button>
+    </div>
+    <span class="hint" id="hint">Glisse un point de couleur pour modifier la courbe. Glisse le fond pour te déplacer ; zoome avec + et − (ou la molette).</span>
+  </div>
+
+  <div id="cardG" hidden>
+    <div class="lf-h">Fonction de référence</div>
+    <div class="lf-chips" id="chips"></div>
+  </div>
+
+  <div class="lf-h" id="hParams"><span>Paramètres</span><span class="lf-seg" id="formSeg" hidden>
+    <button class="btn sm" data-form="dev" id="seg-dev">a, b, c</button><button class="btn sm" data-form="can" id="seg-can">a, α, β</button></span></div>
+  <div class="lf-params" id="params"></div>
+  <div class="lf-opts">
+    <span>Arrondi</span>
+    <span class="lf-seg" id="stepSeg"><button class="btn sm" data-step="0.1" id="st1">0,1</button><button class="btn sm" data-step="0.5" id="st5">0,5</button><button class="btn sm" data-step="1" id="st10">1</button></span>
+    <label><input type="checkbox" id="ghost" checked> courbe de référence</label>
+    <button class="btn sm" id="reset">Réinitialiser</button>
+  </div>
+
+  <div class="lf-cols" id="cols">
+    <div id="cardForms" hidden>
+      <div class="lf-h">Trois écritures, une même parabole</div>
+      <div class="lf-forms" id="forms"></div>
+    </div>
+    <div>
+      <div class="lf-h">Lecture du graphique</div>
+      <div class="info" id="info"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const cv=$('#cv'), ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1, dirty=true;
+const view={cx:0,cy:0,s:40};
+const EPS=1e-9;
+
+/* couleurs de la charte (dessin) — même teinte que le texte de la grandeur */
+const COL={ca:'#E24B4A',cb:'#1D9E75',cc:'#BA7517',ch:'#7F77DD',ck:'#378ADD',
+  curve:'#13233a',ink:'#13233a',ghost:'#8a95a3',axis:'#8a95a3',tick:'#8a95a3',
+  grid:'#f0f2f5',grid2:'#e3e7ed',paper:'#ffffff'};
+const TXT={ca:'#a32d2d',cb:'#0F6E56',cc:'#BA7517',ch:'#6159c9',ck:'#185fa5'};
+const FONT='600 13px Mulish,system-ui,sans-serif', FONTB='700 13px Mulish,system-ui,sans-serif', FONTN='600 12px Mulish,system-ui,sans-serif';
+
+const DEFAULTS={
+  lin:{m:0.5,p:1,xA:-2,xB:2},
+  quad:{a:1,b:-2,c:-3},
+  usu:{g:'sq',a:1,b:1,h:0,k:0}
+};
+const S={mode:'quad',form:'dev',step:0.1,ghost:true,
+  lin:{...DEFAULTS.lin},quad:{...DEFAULTS.quad},usu:{...DEFAULTS.usu}};
+
+const G={
+  sq:  {lab:'x²',   f:x=>x*x,               u0:0,v0:0,u1:1,v1:1},
+  cube:{lab:'x³',   f:x=>x*x*x,             u0:0,v0:0,u1:1,v1:1},
+  abs: {lab:'|x|',  f:Math.abs,             u0:0,v0:0,u1:1,v1:1},
+  sqrt:{lab:'√x',   f:x=>x>=0?Math.sqrt(x):NaN, u0:0,v0:0,u1:1,v1:1},
+  inv: {lab:'1/x',  f:x=>1/x,               u0:0,v0:0,u1:1,v1:1, center:true},
+  sin: {lab:'sin x',f:Math.sin,             u0:0,v0:0,u1:Math.PI/2,v1:1},
+  cos: {lab:'cos x',f:Math.cos,             u0:0,v0:1,u1:Math.PI,v1:-1},
+  exp: {lab:'eˣ',   f:Math.exp,             u0:0,v0:1,u1:1,v1:Math.E},
+  ln:  {lab:'ln x', f:x=>x>0?Math.log(x):NaN, u0:1,v0:0,u1:Math.E,v1:1},
+};
+
+const PARAMS={
+  lin:[{k:'m',sym:'m',nm:'pente (coefficient directeur)',min:-5,max:5,cls:'ca'},
+       {k:'p',sym:'p',nm:'ordonnée à l’origine',min:-8,max:8,cls:'ck'}],
+  quad_dev:[{k:'a',sym:'a',nm:'ouverture et sens',min:-4,max:4,cls:'ca'},
+       {k:'b',sym:'b',nm:'déplace le sommet en biais',min:-10,max:10,cls:'cb'},
+       {k:'c',sym:'c',nm:'ordonnée à l’origine',min:-10,max:10,cls:'cc'}],
+  quad_can:[{k:'a',sym:'a',nm:'ouverture et sens',min:-4,max:4,cls:'ca'},
+       {k:'al',sym:'α',nm:'abscisse du sommet',min:-8,max:8,cls:'ch'},
+       {k:'be',sym:'β',nm:'ordonnée du sommet',min:-8,max:8,cls:'ck'}],
+  usu:[{k:'a',sym:'a',nm:'étirement vertical',min:-5,max:5,cls:'ca'},
+       {k:'b',sym:'b',nm:'étirement horizontal',min:-4,max:4,cls:'cb'},
+       {k:'h',sym:'h',nm:'translation horizontale',min:-8,max:8,cls:'ch'},
+       {k:'k',sym:'k',nm:'translation verticale',min:-8,max:8,cls:'ck'}]
+};
+const plist=()=>S.mode==='quad'?PARAMS['quad_'+S.form]:PARAMS[S.mode];
+
+/* ---------- format ---------- */
+function fmt(v,d=2){
+  if(!isFinite(v)) return '∞';
+  let r=Math.round(v*10**d)/10**d; if(Object.is(r,-0)||Math.abs(r)<EPS) r=0;
+  let s=String(r); if(s.includes('e')) s=r.toFixed(d);
+  return s.replace('-','−').replace('.',',');
+}
+const sp=(c,t)=>`<span class="${c}">${t}</span>`;
+const X='<i>x</i>';
+function poly(terms){
+  const t=terms.filter(o=>Math.abs(o.c)>5e-3);
+  if(!t.length) return '0';
+  return t.map((o,i)=>{
+    const neg=o.c<0, ab=Math.abs(o.c), one=o.body&&Math.abs(ab-1)<5e-3;
+    const n=one?'':fmt(ab);
+    if(i===0) return sp(o.cls,(neg?'−':'')+n)+o.body;
+    return (neg?' − ':' + ')+sp(o.cls,n)+o.body;
+  }).join('');
+}
+function shifted(v,cls){
+  if(Math.abs(v)<5e-3) return {h:X,simple:true};
+  return {h:`${X} ${v>0?'−':'+'} ${cls?sp(cls,fmt(Math.abs(v))):fmt(Math.abs(v))}`,simple:false};
+}
+
+/* ---------- maths ---------- */
+const quadAB=()=>{const {a,b,c}=S.quad;return {al:-b/(2*a),be:c-b*b/(4*a)}};
+function fx(x){
+  if(S.mode==='lin') return S.lin.m*x+S.lin.p;
+  if(S.mode==='quad'){const {a,b,c}=S.quad;return a*x*x+b*x+c}
+  const {g,a,b,h,k}=S.usu; return a*G[g].f(b*(x-h))+k;
+}
+function getP(k){
+  if(S.mode==='lin') return S.lin[k];
+  if(S.mode==='usu') return S.usu[k];
+  if(k==='al'||k==='be') return quadAB()[k];
+  return S.quad[k];
+}
+function setP(k,v){
+  if(S.mode==='lin'){S.lin[k]=v;return}
+  if(S.mode==='usu'){
+    if(k==='b'&&Math.abs(v)<0.1) v=v<0?-0.1:0.1;
+    S.usu[k]=v;return}
+  const q=S.quad;
+  if(k==='a'&&S.form==='can'){
+    if(Math.abs(q.a)<1e-6){q.a=v;return}
+    const {al,be}=quadAB(); q.a=v; q.b=-2*v*al; q.c=v*al*al+be; return}
+  if(k==='al'||k==='be'){
+    if(Math.abs(q.a)<1e-6) return;
+    const cur=quadAB(); const al=k==='al'?v:cur.al, be=k==='be'?v:cur.be;
+    q.b=-2*q.a*al; q.c=q.a*al*al+be; return}
+  q[k]=v;
+}
+const snap=(v,st)=>Math.round(Math.round(v/st)*st*1000)/1000;
+
+/* ---------- équations ---------- */
+function eqLin(){const {m,p}=S.lin; return `<i>f</i>(${X}) = `+poly([{c:m,cls:'ca',body:X},{c:p,cls:'ck',body:''}])}
+function eqDev(){const {a,b,c}=S.quad;return `<i>f</i>(${X}) = `+poly([{c:a,cls:'ca',body:X+'²'},{c:b,cls:'cb',body:X},{c:c,cls:'cc',body:''}])}
+function eqCan(){
+  const {a}=S.quad; if(Math.abs(a)<5e-3) return null;
+  const {al,be}=quadAB(); const s=shifted(al,'ch');
+  const body=s.simple?X+'²':`(${s.h})²`;
+  return `<i>f</i>(${X}) = `+poly([{c:a,cls:'ca',body},{c:be,cls:'ck',body:''}]);
+}
+function roots(){
+  const {a,b,c}=S.quad; if(Math.abs(a)<5e-3) return null;
+  const D=b*b-4*a*c;
+  if(D>1e-9){const r=Math.sqrt(D);let x1=(-b-r)/(2*a),x2=(-b+r)/(2*a);if(x1>x2)[x1,x2]=[x2,x1];return {D,r:[x1,x2]}}
+  if(Math.abs(D)<=1e-9) return {D:0,r:[-b/(2*a)]};
+  return {D,r:[]};
+}
+function eqFac(){
+  const R=roots(); if(!R) return null; const {a}=S.quad;
+  if(!R.r.length) return null;
+  const pre=Math.abs(a-1)<5e-3?'':Math.abs(a+1)<5e-3?sp('ca','−'):sp('ca',fmt(a));
+  const f=v=>{const s=shifted(v);return s.simple?X:`(${s.h})`};
+  if(R.r.length===1){const s=shifted(R.r[0]);return `<i>f</i>(${X}) = ${pre}${s.simple?X+'²':`(${s.h})²`}`}
+  return `<i>f</i>(${X}) = ${pre}${f(R.r[0])}${f(R.r[1])}`;
+}
+function eqUsu(){
+  const {g,a,b,h,k}=S.usu;
+  let inner, simple=false;
+  const hs=shifted(h,'ch');
+  if(Math.abs(b-1)<5e-3){inner=hs.h;simple=hs.simple}
+  else{
+    const bs=Math.abs(b+1)<5e-3?sp('cb','−'):sp('cb',fmt(b));
+    inner=hs.simple?bs+X:`${bs}(${hs.h})`;
+  }
+  let core;
+  switch(g){
+    case 'sq':  core=simple?X+'²':`(${inner})²`;break;
+    case 'cube':core=simple?X+'³':`(${inner})³`;break;
+    case 'abs': core=`|${inner}|`;break;
+    case 'sqrt':core=`√<span class="ov">${inner}</span>`;break;
+    case 'sin': core=`sin(${inner})`;break;
+    case 'cos': core=`cos(${inner})`;break;
+    case 'exp': core=`e<sup>${inner}</sup>`;break;
+    case 'ln':  core=`ln(${inner})`;break;
+  }
+  let main;
+  if(Math.abs(a)<5e-3) return `<i>f</i>(${X}) = `+poly([{c:k,cls:'ck',body:''}]);
+  if(g==='inv') main=`<span class="frac"><span>${sp('ca',fmt(a))}</span><span>${inner}</span></span>`;
+  else{
+    const pre=Math.abs(a-1)<5e-3?'':Math.abs(a+1)<5e-3?sp('ca','−'):sp('ca',fmt(a));
+    main=pre+core;
+  }
+  const kt=Math.abs(k)<5e-3?'':(k<0?' − ':' + ')+sp('ck',fmt(Math.abs(k)));
+  return `<i>f</i>(${X}) = ${main}${kt}`;
+}
+
+/* ---------- lecture ---------- */
+const li=(b,t)=>`<div class="li"><b>${b}</b><span>${t}</span></div>`;
+const m=t=>`<span class="m">${t}</span>`;
+function info(){
+  if(S.mode==='lin'){
+    const {m:mm,p}=S.lin; let o='';
+    o+=li('Variation', Math.abs(mm)<5e-3?'Fonction constante (droite horizontale).':mm>0?'Croissante : la droite monte.':'Décroissante : la droite descend.');
+    o+=li('Pente',`Quand ${m('<i>x</i>')} avance de 1, ${m('<i>f</i>(<i>x</i>)')} ${mm>=0?'monte':'descend'} de ${m(sp('ca',fmt(Math.abs(mm))))}.`);
+    o+=li('Ordonnée à l’origine',`La droite coupe l’axe des y en ${m('(0 ; '+sp('ck',fmt(p))+')')}.`);
+    o+=li('Racine',Math.abs(mm)<5e-3?(Math.abs(p)<5e-3?'Tous les réels (f = 0).':'Aucune : la droite ne coupe pas l’axe des x.'):m(`<i>x</i> = −<span class="ck">p</span> / <span class="ca">m</span> = ${fmt(-p/mm)}`));
+    return o;
+  }
+  if(S.mode==='quad'){
+    const {a,b,c}=S.quad;
+    if(Math.abs(a)<5e-3) return li('Attention','<span class="warn">a = 0 : ce n’est plus du second degré, la courbe devient une droite.</span>');
+    const {al,be}=quadAB(), R=roots(); let o='';
+    o+=li('Concavité',a>0?'Parabole ouverte vers le haut (∪) : le sommet est un minimum.':'Parabole ouverte vers le bas (∩) : le sommet est un maximum.');
+    o+=li('Sommet',m(`S(${sp('ch',fmt(al))} ; ${sp('ck',fmt(be))})`)+` · axe ${m('<i>x</i> = '+sp('ch',fmt(al)))}`);
+    o+=li('Discriminant',m(`Δ = ${sp('cb','b')}² − 4${sp('ca','a')}${sp('cc','c')} = ${fmt(R.D)}`));
+    o+=li('Racines',R.r.length===2?`Δ > 0 : deux racines ${m('<i>x</i><sub>1</sub> = '+fmt(R.r[0]))} ; ${m('<i>x</i><sub>2</sub> = '+fmt(R.r[1]))}`:R.r.length===1?`Δ = 0 : une racine double ${m('<i>x</i><sub>0</sub> = '+fmt(R.r[0]))}`:'Δ < 0 : aucune racine réelle, la parabole ne touche pas l’axe des x.');
+    o+=li('Ordonnée à l’origine',m(`(0 ; ${sp('cc',fmt(c))})`));
+    return o;
+  }
+  const {g,a,b,h,k}=S.usu; let o=''; const eff=[];
+  if(a<0) eff.push('symétrie par rapport à l’axe des x');
+  if(Math.abs(Math.abs(a)-1)>5e-3&&Math.abs(a)>5e-3) eff.push(Math.abs(a)>1?`étirement vertical × ${fmt(Math.abs(a))}`:`compression verticale × ${fmt(Math.abs(a))}`);
+  if(b<0) eff.push('symétrie par rapport à l’axe des y');
+  if(Math.abs(Math.abs(b)-1)>5e-3) eff.push(Math.abs(b)>1?`compression horizontale ÷ ${fmt(Math.abs(b))}`:`étirement horizontal ÷ ${fmt(Math.abs(b))}`);
+  if(Math.abs(h)>5e-3) eff.push(`${fmt(Math.abs(h))} vers la ${h>0?'droite':'gauche'}`);
+  if(Math.abs(k)>5e-3) eff.push(`${fmt(Math.abs(k))} vers le ${k>0?'haut':'bas'}`);
+  o+=li('Transformations',eff.length?eff.map((e,i)=>i?e:e[0].toUpperCase()+e.slice(1)).join(', ')+'.':'Aucune : c’est la fonction de référence.');
+  const Hs=fmt(h);
+  const dom={sq:'ℝ',cube:'ℝ',abs:'ℝ',sin:'ℝ',cos:'ℝ',exp:'ℝ',
+    sqrt:b>0?`[${Hs} ; +∞[`:`]−∞ ; ${Hs}]`, ln:b>0?`]${Hs} ; +∞[`:`]−∞ ; ${Hs}[`, inv:`ℝ \\ {${Hs}}`}[g];
+  o+=li('Domaine',m(dom));
+  if(g==='inv') o+=li('Asymptotes',m(`<i>x</i> = ${sp('ch',Hs)}`)+' (verticale) et '+m(`<i>y</i> = ${sp('ck',fmt(k))}`)+' (horizontale)');
+  if(g==='exp') o+=li('Asymptote',m(`<i>y</i> = ${sp('ck',fmt(k))}`)+` (horizontale, du côté ${b>0?'−∞':'+∞'})`);
+  if(g==='ln') o+=li('Asymptote',m(`<i>x</i> = ${sp('ch',Hs)}`)+' (verticale)');
+  if(g==='sin'||g==='cos') o+=li('Période, amplitude',m(`T = 2π / |${sp('cb','b')}| ≈ ${fmt(2*Math.PI/Math.abs(b))}`)+' · amplitude '+m(sp('ca',fmt(Math.abs(a)))));
+  if(g==='sq'||g==='abs') o+=li('Sommet',m(`(${sp('ch',Hs)} ; ${sp('ck',fmt(k))})`));
+  if(g==='cube') o+=li('Centre de symétrie',m(`(${sp('ch',Hs)} ; ${sp('ck',fmt(k))})`));
+  return o;
+}
+
+/* ---------- poignées ---------- */
+function handles(){
+  if(S.mode==='lin'){const {xA,xB}=S.lin;return [
+    {id:'A',x:xA,y:fx(xA),col:COL.curve,lab:'A'},{id:'B',x:xB,y:fx(xB),col:COL.curve,lab:'B'},
+    {id:'P',x:0,y:S.lin.p,col:COL.ck,lab:'',sq:true}]}
+  if(S.mode==='quad'){
+    const {a,c:cc}=S.quad; const out=[{id:'C',x:0,y:cc,col:COL.cc,lab:'',sq:true}];
+    if(Math.abs(a)>5e-3){const {al,be}=quadAB();
+      out.push({id:'V',x:al,y:be,col:COL.ch,lab:'S'},{id:'Q',x:al+1,y:be+a,col:COL.ca,lab:''});}
+    return out}
+  const {g,a,b,h,k}=S.usu, gg=G[g];
+  return [{id:'H1',x:h+gg.u0/b,y:k+a*gg.v0,col:COL.ch,lab:'',ring:gg.center},
+          {id:'H2',x:h+gg.u1/b,y:k+a*gg.v1,col:COL.ca,lab:''}];
+}
+function dragTo(id,x,y){
+  const st=S.step, sa=Math.min(st,0.5);
+  if(S.mode==='lin'){
+    const L=S.lin;
+    if(id==='P'){L.p=snap(y,st);return}
+    x=snap(x,st);y=snap(y,st);
+    const oth=id==='A'?L.xB:L.xA, oy=fx(oth);
+    if(Math.abs(x-oth)<1e-6) return;
+    L.m=(oy-y)/(oth-x); L.p=y-L.m*x; if(id==='A')L.xA=x;else L.xB=x; return}
+  if(S.mode==='quad'){
+    const q=S.quad;
+    if(id==='C'){q.c=snap(y,st);return}
+    if(id==='V'){const al=snap(x,st),be=snap(y,st);q.b=-2*q.a*al;q.c=q.a*al*al+be;return}
+    if(id==='Q'){const {al,be}=quadAB();let a=snap(y-be,sa);if(Math.abs(a)<0.1)a=q.a<0?-0.1:0.1;q.a=a;q.b=-2*a*al;q.c=a*al*al+be;return}
+  }
+  const U=S.usu, gg=G[U.g];
+  if(id==='H1'){U.h=snap(x-gg.u0/U.b,st);U.k=snap(y-U.a*gg.v0,st);return}
+  if(id==='H2'){
+    const x1=U.h+gg.u0/U.b, y1=U.k+U.a*gg.v0;
+    if(Math.abs(x-x1)>1e-3){let b=snap((gg.u1-gg.u0)/(x-x1),sa);if(Math.abs(b)<0.1)b=b<0?-0.1:0.1;if(Math.abs(b)>8)b=Math.sign(b)*8;U.b=b}
+    U.a=snap((y-y1)/(gg.v1-gg.v0),sa);
+    U.k=snap(y1-U.a*gg.v0,0.001); U.h=snap(x1-gg.u0/U.b,0.001);
+  }
+}
+
+/* ---------- canevas ---------- */
+const toPx=(x,y)=>[W/2+(x-view.cx)*view.s, H/2-(y-view.cy)*view.s];
+const toW=(px,py)=>[view.cx+(px-W/2)/view.s, view.cy-(py-H/2)/view.s];
+function resize(){
+  const r=cv.getBoundingClientRect(); DPR=Math.min(window.devicePixelRatio||1,3);
+  W=r.width;H=r.height;cv.width=Math.max(1,Math.round(W*DPR));cv.height=Math.max(1,Math.round(H*DPR));dirty=true;
+}
+new ResizeObserver(resize).observe(cv);
+function niceStep(){const raw=60/view.s, p=10**Math.floor(Math.log10(raw)), n=raw/p;return (n<1.5?1:n<3.5?2:n<7.5?5:10)*p}
+function plot(f,col,width,dash){
+  ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=width;ctx.setLineDash(dash||[]);ctx.lineJoin='round';ctx.lineCap='round';
+  let pen=false, py0=null;
+  for(let px=-2;px<=W+2;px+=0.5){
+    const [x]=toW(px,0), y=f(x);
+    if(!isFinite(y)){pen=false;py0=null;continue}
+    const py=H/2-(y-view.cy)*view.s;
+    if(pen&&py0!==null&&Math.abs(py-py0)>H*1.5){pen=false}
+    const cy=Math.max(-H*3,Math.min(H*4,py));
+    if(!pen){ctx.moveTo(px,cy);pen=true}else ctx.lineTo(px,cy);
+    py0=py;
+  }
+  ctx.stroke();ctx.setLineDash([]);
+}
+function vline(x,col){const [px]=toPx(x,0);ctx.beginPath();ctx.setLineDash([6,5]);ctx.strokeStyle=col;ctx.lineWidth=1.4;ctx.moveTo(px,0);ctx.lineTo(px,H);ctx.stroke();ctx.setLineDash([])}
+function hline(y,col){const [,py]=toPx(0,y);ctx.beginPath();ctx.setLineDash([6,5]);ctx.strokeStyle=col;ctx.lineWidth=1.4;ctx.moveTo(0,py);ctx.lineTo(W,py);ctx.stroke();ctx.setLineDash([])}
+
+/* placement d'étiquettes sans chevauchement */
+const LH=17;
+const inter=(a,b)=>a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h;
+/* la courbe traverse-t-elle la boîte ? (échantillonnage tous les 2 px, segments compris) */
+function curveHits(b){
+  let prev=null;
+  for(let px=b.x-2;px<=b.x+b.w+2;px+=2){
+    const y=fx(toW(px,0)[0]); if(!isFinite(y)){prev=null;continue}
+    const py=H/2-(y-view.cy)*view.s;
+    if(px>=b.x&&px<=b.x+b.w){
+      if(py>=b.y-2&&py<=b.y+b.h+2) return true;
+      if(prev!==null&&Math.min(prev,py)<b.y+b.h&&Math.max(prev,py)>b.y&&Math.abs(py-prev)<H*1.5) return true;
+    }
+    prev=py;
+  }
+  return false;
+}
+function cand(name,ax,ay,w,g){
+  const h=LH;
+  switch(name){
+    case 'ne':return {x:ax+g,y:ay-g-h};
+    case 'se':return {x:ax+g,y:ay+g};
+    case 'nw':return {x:ax-g-w,y:ay-g-h};
+    case 'sw':return {x:ax-g-w,y:ay+g};
+    case 'n': return {x:ax-w/2,y:ay-g-h};
+    case 's': return {x:ax-w/2,y:ay+g};
+    case 'e': return {x:ax+g,y:ay-h/2};
+    case 'w': return {x:ax-g-w,y:ay-h/2};
+  }
+}
+function placeAll(list,obst){
+  const placed=[];
+  for(const L of list){
+    ctx.font=L.font||FONTB; const w=ctx.measureText(L.t).width+6;
+    let best=null;
+    for(const strict of [true,false]){
+    for(const g of [L.gap||9,(L.gap||9)+14,(L.gap||9)+30]){
+      for(const nm of L.c){
+        const p=cand(nm,L.ax,L.ay,w,g), b={x:p.x,y:p.y,w,h:LH};
+        if(b.x<2||b.y<2||b.x+w>W-2||b.y+LH>H-2) continue;
+        if(obst.some(o=>inter(o,b))||placed.some(o=>inter(o,b))) continue;
+        if(strict&&curveHits(b)) continue;
+        best=b;break;
+      }
+      if(best) break;
+    }
+    if(best) break;
+    }
+    if(!best){const p=cand(L.c[0],L.ax,L.ay,w,L.gap||9);best={x:Math.max(2,Math.min(W-w-2,p.x)),y:Math.max(2,Math.min(H-LH-2,p.y)),w,h:LH}}
+    placed.push({...best,t:L.t,col:L.col,font:L.font||FONTB});
+  }
+  return placed;
+}
+function drawLabel(b){
+  ctx.font=b.font;ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle='rgba(255,255,255,.95)';
+  ctx.strokeText(b.t,b.x+3,b.y+13);ctx.fillStyle=b.col;ctx.fillText(b.t,b.x+3,b.y+13);
+}
+
+let hover=null, active=null;
+function draw(){
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.fillStyle=COL.paper;ctx.fillRect(0,0,W,H);
+  const st=niceStep(), [x0,y1]=toW(0,0), [x1,y0]=toW(W,H);
+  const crisp=v=>(Math.round(v*DPR)+.5)/DPR;
+  // grille
+  const mi=st/5;
+  ctx.lineWidth=1/DPR*Math.max(1,Math.round(DPR*0.75));
+  if(mi*view.s>=8){ctx.strokeStyle=COL.grid;ctx.beginPath();
+    for(let x=Math.ceil(x0/mi)*mi;x<=x1;x+=mi){const [p]=toPx(x,0);ctx.moveTo(crisp(p),0);ctx.lineTo(crisp(p),H)}
+    for(let y=Math.ceil(y0/mi)*mi;y<=y1;y+=mi){const [,p]=toPx(0,y);ctx.moveTo(0,crisp(p));ctx.lineTo(W,crisp(p))}
+    ctx.stroke()}
+  ctx.lineWidth=1;ctx.strokeStyle=COL.grid2;ctx.beginPath();
+  for(let x=Math.ceil(x0/st)*st;x<=x1;x+=st){const [p]=toPx(x,0);ctx.moveTo(crisp(p),0);ctx.lineTo(crisp(p),H)}
+  for(let y=Math.ceil(y0/st)*st;y<=y1;y+=st){const [,p]=toPx(0,y);ctx.moveTo(0,crisp(p));ctx.lineTo(W,crisp(p))}
+  ctx.stroke();
+  // axes
+  const [ox,oy]=toPx(0,0), ax=Math.max(1,Math.min(W-1,ox)), ay=Math.max(1,Math.min(H-1,oy));
+  ctx.strokeStyle=COL.axis;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,ay);ctx.lineTo(W,ay);ctx.moveTo(ax,0);ctx.lineTo(ax,H);ctx.stroke();
+  ctx.fillStyle=COL.axis;ctx.beginPath();ctx.moveTo(W,ay);ctx.lineTo(W-10,ay-4.5);ctx.lineTo(W-10,ay+4.5);ctx.fill();
+  ctx.beginPath();ctx.moveTo(ax,0);ctx.lineTo(ax-4.5,10);ctx.lineTo(ax+4.5,10);ctx.fill();
+
+  /* ---- annotations (calculées d'abord pour que les graduations s'effacent dessous) ---- */
+  const HS=handles(), obst=[], ann=[];
+  for(const hd of HS){const [px,py]=toPx(hd.x,hd.y);hd.px=px;hd.py=py;hd.vis=!(px<-30||px>W+30||py<-30||py>H+30);
+    if(hd.vis) obst.push({x:px-(hd.ring?13:9),y:py-(hd.ring?13:9),w:hd.ring?26:18,h:hd.ring?26:18})}
+  const dots=[];
+  ann.push({t:'x',ax:W-4,ay:ay,c:['nw','sw'],col:COL.ink,font:'italic 700 15px Mulish,system-ui,sans-serif',gap:4});
+  ann.push({t:'y',ax:ax,ay:4,c:['se','sw'],col:COL.ink,font:'italic 700 15px Mulish,system-ui,sans-serif',gap:8});
+  // aides propres à chaque mode
+  let slope=null;
+  if(S.mode==='lin'){
+    const {m:mm,p,xA}=S.lin, yA=fx(xA);
+    const [a1,b1]=toPx(xA,yA),[a2,b2]=toPx(xA+1,yA),[a3,b3]=toPx(xA+1,yA+mm);
+    slope={a1,b1,a2,b2,a3,b3};
+    obst.push({x:Math.min(a1,a2),y:b2-3,w:Math.abs(a2-a1),h:6},{x:a2-3,y:Math.min(b2,b3)-2,w:6,h:Math.abs(b3-b2)+4});
+    ann.push({t:'1',ax:(a1+a2)/2,ay:b2,c:mm>=0?['s','n']:['n','s'],col:'#5f6b7a',gap:4});
+    ann.push({t:'m = '+fmt(mm),ax:a3,ay:(b2+b3)/2,c:['e','w'],col:TXT.ca,gap:8});
+    if(Math.abs(mm)>5e-3){const r=-p/mm,[rx,ry]=toPx(r,0);dots.push([rx,ry]);
+      ann.push({t:'x = '+fmt(r),ax:rx,ay:ry,c:mm>0?['se','nw','s','n']:['sw','ne','s','n'],col:COL.ink})}
+  }
+  if(S.mode==='quad'){
+    const R=roots();
+    if(R) R.r.forEach((r,i)=>{const [rx,ry]=toPx(r,0);dots.push([rx,ry]);
+      const up=S.quad.a>0;
+      ann.push({t:(R.r.length>1?'x'+(i?'₂':'₁'):'x₀')+' = '+fmt(r),ax:rx,ay:ry,
+        c:up?(i?['ne','nw','se','sw']:['nw','ne','sw','se']):(i?['se','sw','ne','nw']:['sw','se','nw','ne']),col:COL.ink})});
+  }
+  for(const [dx,dy] of dots) obst.push({x:dx-6,y:dy-6,w:12,h:12});
+  for(const hd of HS){ if(!hd.vis) continue;
+    const isA=active&&active.id===hd.id, isH=hover&&hover.hid===hd.id;
+    if(isA||isH) ann.push({t:(hd.lab||'')+'('+fmt(hd.x)+' ; '+fmt(hd.y)+')',ax:hd.px,ay:hd.py,c:['ne','nw','se','sw','n','s'],col:hd.col===COL.curve?COL.ink:(TXT[Object.keys(COL).find(k=>COL[k]===hd.col)]||hd.col),gap:13,pri:1});
+    else if(hd.lab) ann.push({t:hd.lab,ax:hd.px,ay:hd.py,c:['ne','nw','se','sw','e','w'],col:hd.col===COL.curve?COL.ink:TXT.ch,gap:10});
+  }
+  let tracer=null;
+  if(hover&&!active&&!hover.hid){
+    const y=fx(hover.x); if(isFinite(y)){const [px,py]=toPx(hover.x,y);
+      if(py>-10&&py<H+10){tracer=[px,py];obst.push({x:px-5,y:py-5,w:10,h:10});
+        ann.push({t:'('+fmt(hover.x)+' ; '+fmt(y)+')',ax:px,ay:py,c:['ne','nw','se','sw'],col:COL.ink,gap:10})}}
+  }
+  // les étiquettes actives passent en premier
+  ann.sort((a,b)=>(b.pri||0)-(a.pri||0));
+  const placed=placeAll(ann,obst);
+
+  // graduations (sautées si elles touchent une étiquette ou une poignée)
+  const dec=st<1?Math.max(0,-Math.floor(Math.log10(st))):0;
+  const block=[...placed,...obst];
+  ctx.font=FONTN;ctx.fillStyle=COL.tick;
+  const tickLab=(t,x,y,align)=>{const w=ctx.measureText(t).width;const bx=align==='center'?x-w/2:x-w;
+    const b={x:bx-2,y:y-8,w:w+4,h:16}; if(b.x<1||b.x+b.w>W-1||b.y<1||b.y+b.h>H-1) return;
+    if(block.some(o=>inter(o,b))||curveHits(b)) return;
+    ctx.lineWidth=3;ctx.strokeStyle='#fff';ctx.strokeText(t,bx,y+4.5);ctx.fillText(t,bx,y+4.5)};
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';
+  const tyX=Math.min(H-10,Math.max(10,ay+14));
+  for(let x=Math.ceil(x0/st)*st;x<=x1;x+=st){if(Math.abs(x)<st/2)continue;const [p]=toPx(x,0);tickLab(fmt(x,dec),p,tyX,'center')}
+  const txY=Math.max(ax-7,8+ctx.measureText('−00').width);
+  for(let y=Math.ceil(y0/st)*st;y<=y1;y+=st){if(Math.abs(y)<st/2)continue;const [,p]=toPx(0,y);tickLab(fmt(y,dec),txY,p,'right')}
+  if(ox>10&&ox<W&&oy>0&&oy<H-12) tickLab('0',ox-6,oy+12,'right');
+
+  // courbes de référence et aides
+  if(S.mode==='usu'){
+    const U=S.usu,gg=G[U.g];
+    if(S.ghost) plot(gg.f,COL.ghost,1.6,[5,5]);
+    if(U.g==='inv'){vline(U.h,COL.ch);hline(U.k,COL.ck)}
+    if(U.g==='exp') hline(U.k,COL.ck);
+    if(U.g==='ln') vline(U.h,COL.ch);
+  }
+  if(S.mode==='quad'){
+    const q=S.quad;
+    if(S.ghost) plot(x=>x*x,COL.ghost,1.6,[5,5]);
+    if(Math.abs(q.a)>5e-3) vline(quadAB().al,COL.ch);
+  }
+  if(S.mode==='lin'&&S.ghost) plot(x=>x,COL.ghost,1.6,[5,5]);
+
+  // courbe : léger liseré blanc puis trait plein
+  ctx.save();ctx.shadowColor='rgba(19,35,58,.18)';ctx.shadowBlur=4;ctx.shadowOffsetY=1;
+  plot(fx,COL.curve,3);ctx.restore();
+
+  if(slope){
+    const {a1,b1,a2,b2,a3,b3}=slope;
+    ctx.lineWidth=1.6;ctx.strokeStyle='#8a95a3';ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(a1,b1);ctx.lineTo(a2,b2);ctx.stroke();
+    ctx.setLineDash([]);ctx.strokeStyle=COL.ca;ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a2,b2);ctx.lineTo(a3,b3);ctx.stroke();
+  }
+  for(const [dx,dy] of dots){ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(dx,dy,5.5,0,7);ctx.fill();
+    ctx.fillStyle=COL.ink;ctx.beginPath();ctx.arc(dx,dy,4,0,7);ctx.fill()}
+
+  // poignées
+  for(const hd of HS){ if(!hd.vis) continue;
+    const {px,py}=hd, isA=active&&active.id===hd.id;
+    if(isA){ctx.strokeStyle=hd.col;ctx.globalAlpha=.5;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px-18,py);ctx.lineTo(px+18,py);ctx.moveTo(px,py-18);ctx.lineTo(px,py+18);ctx.stroke();ctx.globalAlpha=1}
+    if(isA||(hover&&hover.hid===hd.id)){ctx.fillStyle=hd.col;ctx.globalAlpha=.14;ctx.beginPath();ctx.arc(px,py,15,0,7);ctx.fill();ctx.globalAlpha=1}
+    ctx.save();ctx.shadowColor='rgba(19,35,58,.28)';ctx.shadowBlur=5;ctx.shadowOffsetY=1.5;
+    const gr=ctx.createRadialGradient(px-2,py-2.5,1,px,py,8);gr.addColorStop(0,'#ffffff');gr.addColorStop(.28,hd.col);gr.addColorStop(1,hd.col);
+    ctx.fillStyle=gr;ctx.beginPath();
+    if(hd.sq) ctx.roundRect?ctx.roundRect(px-6.5,py-6.5,13,13,2.5):ctx.rect(px-6.5,py-6.5,13,13); else ctx.arc(px,py,7,0,7);
+    ctx.fill();ctx.restore();
+    ctx.lineWidth=2;ctx.strokeStyle='#fff';ctx.stroke();
+    if(hd.ring){ctx.strokeStyle=hd.col;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(px,py,12,0,7);ctx.stroke()}
+  }
+  if(tracer){const [px,py]=tracer;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(px,py,5.5,0,7);ctx.fill();ctx.fillStyle=COL.curve;ctx.beginPath();ctx.arc(px,py,4,0,7);ctx.fill()}
+
+  // étiquettes en dernier, avec halo blanc
+  for(const b of placed) drawLabel(b);
+}
+
+/* ---------- interaction ---------- */
+let pan=null;
+function hit(px,py){
+  const R=matchMedia('(pointer:coarse)').matches?26:16;
+  let best=null,bd=R;
+  for(const hd of handles()){const [hx,hy]=toPx(hd.x,hd.y);const d=Math.hypot(hx-px,hy-py);if(d<bd){bd=d;best=hd}}
+  return best;
+}
+const rel=e=>{const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top]};
+cv.addEventListener('pointerdown',e=>{
+  const [px,py]=rel(e); try{cv.setPointerCapture(e.pointerId)}catch(_){}
+  const h=hit(px,py);
+  if(h){active={id:h.id};stopAnim();cv.className='grabbing'}
+  else{pan={px,py,cx:view.cx,cy:view.cy};cv.className='grabbing'}
+  dirty=true;
+});
+cv.addEventListener('pointermove',e=>{
+  const [px,py]=rel(e);
+  if(active){const [x,y]=toW(px,py);dragTo(active.id,x,y);refresh();return}
+  if(pan){view.cx=pan.cx-(px-pan.px)/view.s;view.cy=pan.cy+(py-pan.py)/view.s;dirty=true;return}
+  const h=hit(px,py); cv.className=h?'grab':'';
+  hover={x:toW(px,py)[0],hid:h?h.id:null}; dirty=true;
+});
+const end=e=>{active=null;pan=null;cv.className='';if(e&&e.pointerType==='touch')hover=null;dirty=true};
+cv.addEventListener('pointerup',end);cv.addEventListener('pointercancel',end);
+cv.addEventListener('pointerleave',()=>{hover=null;dirty=true});
+function zoom(f,px=W/2,py=H/2){
+  const [wx,wy]=toW(px,py); view.s=Math.max(6,Math.min(400,view.s*f));
+  view.cx=wx-(px-W/2)/view.s; view.cy=wy+(py-H/2)/view.s; dirty=true;
+}
+cv.addEventListener('wheel',e=>{e.preventDefault();const [px,py]=rel(e);zoom(Math.exp(-e.deltaY*0.0015),px,py)},{passive:false});
+$('#zIn').onclick=()=>zoom(1.3);$('#zOut').onclick=()=>zoom(1/1.3);
+function home(){view.cx=0;view.cy=S.mode==='usu'&&['sin','cos'].includes(S.usu.g)?0:S.mode==='quad'?-1:0;view.s=Math.max(18,Math.min(W,H)/14);dirty=true}
+$('#zHome').onclick=home;
+
+/* ---------- animation d'un paramètre ---------- */
+let anim=null;
+function stopAnim(){if(anim){anim=null;syncPlay()}}
+function syncPlay(){document.querySelectorAll('.lf-play').forEach(b=>{const on=!!(anim&&anim.k===b.dataset.k);b.setAttribute('aria-pressed',on?'true':'false');b.classList.toggle('on',on);b.textContent=on?'arrêter':'animer'})}
+function tick(t){
+  const r=cv.getBoundingClientRect();
+  if(Math.abs(r.width-W)>.5||Math.abs(r.height-H)>.5||Math.min(window.devicePixelRatio||1,3)!==DPR) resize();
+  if(anim){
+    const p=plist().find(o=>o.k===anim.k), ph=(t-anim.t0)/1000*1.3;
+    let v;
+    if(S.mode==='usu'&&anim.k==='b') v=anim.base*Math.pow(2.2,Math.sin(ph));
+    else{const amp=(p.max-p.min)/5;v=anim.base+amp*Math.sin(ph)}
+    setP(anim.k,v); refresh();
+  }
+  if(dirty&&W>0){draw();dirty=false}
+  requestAnimationFrame(tick);
+}
+
+/* ---------- panneau ---------- */
+function buildPanel(){
+  document.querySelectorAll('#tabs button').forEach(b=>{const on=b.dataset.mode===S.mode;b.setAttribute('aria-selected',on?'true':'false');b.classList.toggle('on',on)});
+  $('#cardG').hidden=S.mode!=='usu'; $('#formSeg').hidden=S.mode!=='quad'; $('#cardForms').hidden=S.mode!=='quad';
+  $('#cols').classList.toggle('two',S.mode==='quad');
+  document.querySelectorAll('#formSeg button').forEach(b=>{const on=b.dataset.form===S.form;b.setAttribute('aria-pressed',on?'true':'false');b.classList.toggle('on',on)});
+  document.querySelectorAll('#stepSeg button').forEach(b=>{const on=+b.dataset.step===S.step;b.setAttribute('aria-pressed',on?'true':'false');b.classList.toggle('on',on)});
+  $('#chips').innerHTML=Object.entries(G).map(([k,g])=>`<button class="btn sm${S.usu.g===k?' on':''}" data-g="${k}" id="g-${k}" aria-pressed="${S.usu.g===k}">${g.lab.replace('x','<i>x</i>')}</button>`).join('');
+  $('#params').innerHTML=plist().map(p=>`<div class="row">
+    <span class="pill" style="color:${TXT[p.cls]}"><i>${p.sym}</i>${p.nm}</span>
+    <input type="range" id="r-${S.mode}-${p.k}" data-k="${p.k}" min="${p.min}" max="${p.max}" step="0.1" aria-label="${p.sym} : ${p.nm}" style="accent-color:${COL[p.cls]}">
+    <span class="val" id="v-${p.k}" style="color:${TXT[p.cls]}"></span>
+    <button class="btn sm lf-play" data-k="${p.k}" aria-pressed="false">animer</button>
+  </div>`).join('');
+  $('#params').querySelectorAll('input').forEach(inp=>inp.addEventListener('input',()=>{if(anim&&anim.k===inp.dataset.k)stopAnim();setP(inp.dataset.k,+inp.value);refresh(inp)}));
+  $('#params').querySelectorAll('.lf-play').forEach(b=>b.onclick=()=>{
+    const k=b.dataset.k; if(anim&&anim.k===k){stopAnim();return}
+    anim={k,base:getP(k),t0:performance.now()}; syncPlay();
+  });
+  syncPlay(); refresh();
+}
+function refresh(skip){
+  const kind={lin:'Fonction du premier degré · f(x) = mx + p',quad:'Fonction du second degré',usu:'f(x) = a · g(b(x − h)) + k   avec   g(x) = '+G[S.usu.g].lab}[S.mode];
+  $('#eqKind').textContent=kind;
+  let main;
+  if(S.mode==='lin') main=eqLin();
+  else if(S.mode==='usu') main=eqUsu();
+  else main=(S.form==='can'?eqCan():null)||eqDev();
+  $('#eqMain').innerHTML=main;
+  for(const p of plist()){
+    const v=getP(p.k), el=$('#v-'+p.k); if(el) el.textContent=fmt(v);
+    const inp=$(`#r-${S.mode}-${p.k}`); if(inp&&inp!==skip) inp.value=isFinite(v)?v:0;
+  }
+  if(S.mode==='quad'){
+    const fac=eqFac(), R=roots(), can=eqCan();
+    $('#forms').innerHTML=
+      `<div class="fr"><span class="lbl">Développée</span><div class="eq">${eqDev()}</div></div>`+
+      (can?`<div class="fr"><span class="lbl">Canonique</span><div class="eq">${can}</div></div>`:'')+
+      (fac?`<div class="fr"><span class="lbl">Factorisée</span><div class="eq">${fac}</div></div>`:
+        `<div class="fr dim"><span class="lbl">Factorisée</span><div class="eq">${R?'Impossible dans ℝ car Δ < 0.':'—'}</div></div>`);
+  }
+  $('#info').innerHTML=info();
+  dirty=true;
+}
+
+$('#tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;stopAnim();S.mode=b.dataset.mode;buildPanel();home()});
+$('#chips').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;stopAnim();S.usu={...DEFAULTS.usu,g:b.dataset.g};buildPanel();home()});
+$('#formSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;stopAnim();
+  if(b.dataset.form==='can'&&Math.abs(S.quad.a)<5e-3)S.quad.a=1;S.form=b.dataset.form;buildPanel()});
+$('#stepSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;S.step=+b.dataset.step;buildPanel()});
+$('#ghost').addEventListener('change',e=>{S.ghost=e.target.checked;dirty=true});
+$('#reset').onclick=()=>{stopAnim();S[S.mode]=S.mode==='usu'?{...DEFAULTS.usu,g:S.usu.g}:{...DEFAULTS[S.mode]};buildPanel();home()};
+if(document.fonts) document.fonts.ready.then(()=>dirty=true);
+
+resize(); buildPanel(); home();
+/* démonstration au chargement : b varie, le sommet glisse le long d'une parabole ; un clic sur « arrêter » ou une prise en main l'interrompt */
+anim={k:'b',base:S.quad.b,t0:performance.now()}; syncPlay();
+requestAnimationFrame(tick);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Outils mathématiques : fonctions, dérivées, vecteurs<span>3 simulations</span></h2><ol><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/labo-fonctions/"><i>01</i>Laboratoire de fonctions</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/d-riv-e/"><i>02</i>Dérivée</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/vecteurs/"><i>03</i>Vecteurs</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

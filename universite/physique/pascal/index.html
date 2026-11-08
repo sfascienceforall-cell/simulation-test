@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Principe de Pascal · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#fff;font-family:system-ui,-apple-system,sans-serif;}
+canvas{display:block;border-radius:12px;border:1.5px solid #e8e8e8;touch-action:none;}
+.fml{font-size:13px;padding:10px 16px;border-radius:20px;background:#f5f5f5;border:1.5px solid #d0d0d0;color:#2c2c2a;margin:6px 0;font-family:ui-monospace,monospace;line-height:1.8;}
+.row{display:flex;align-items:center;gap:10px;margin:6px 0;flex-wrap:wrap;}
+.pill{font-size:13px;font-weight:500;color:#2c2c2a;background:#f5f5f5;border:1.5px solid #d0d0d0;border-radius:20px;padding:6px 14px;white-space:nowrap;}
+.val{min-width:78px;text-align:center;font-size:13px;font-weight:500;color:#2c2c2a;background:#f5f5f5;border:1.5px solid #d0d0d0;border-radius:20px;padding:5px 10px;}
+.btn{padding:8px 18px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid #d0d0d0;background:#fff;color:#2c2c2a;}
+.btn.on{border-color:#185fa5;background:#e6f1fb;color:#185fa5;}
+.info{font-size:12px;padding:8px 14px;border-radius:20px;background:#f5f5f5;border:1.5px solid #d0d0d0;color:#555;margin:6px 0;font-family:ui-monospace,monospace;line-height:1.8;}
+input[type=range]{flex:1;min-width:110px;}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#FL">Fluides</a>›<b>Principe de Pascal</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Fluides</span><span class="sfa-chip free">Gratuit</span></div><h1>Principe de Pascal</h1><p>Transmission de la pression et presse hydraulique</p></div>
+<section class="sfa-sim">
+
+
+
+<canvas id="cv" style="width:100%;height:58vh;min-height:360px;"></canvas>
+
+<div class="fml">
+  <b style="color:#185fa5">P₁ = P₂</b> partout &nbsp;⇒&nbsp; <b style="color:#E24B4A">F₂ = F₁ × (S₂/S₁) = F₁ × (r₂/r₁)²</b> &nbsp;|&nbsp; force <b>multipliée</b> si piston de sortie plus gros ; il monte moins haut (F₁·d₁ = F₂·d₂)
+</div>
+
+<div class="row">
+  <span class="pill" style="min-width:150px;border-color:#9FE1CB;color:#1D9E75;">F₁ &nbsp;ce que TU pousses</span>
+  <input type="range" id="F1" min="5" max="60" value="20" step="1" style="accent-color:#1D9E75;">
+  <span class="val" id="F1v" style="border-color:#9FE1CB;color:#1D9E75;">20 N</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;border-color:#9FE1CB;color:#1D9E75;">r₁ &nbsp;petit piston (entrée)</span>
+  <input type="range" id="r1" min="3" max="12" value="5" step="0.5" style="accent-color:#1D9E75;">
+  <span class="val" id="r1v" style="border-color:#9FE1CB;color:#1D9E75;">5 cm</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;border-color:#f09595;color:#E24B4A;">r₂ &nbsp;grand piston (sortie)</span>
+  <input type="range" id="r2" min="3" max="20" value="15" step="0.5" style="accent-color:#E24B4A;">
+  <span class="val" id="r2v" style="border-color:#f09595;color:#E24B4A;">15 cm</span>
+</div>
+<div class="row">
+  <button class="btn" id="bA" onclick="anim=!anim;this.className=anim?'btn on':'btn';this.textContent=anim?'Déplacement : ON':'Montrer le déplacement (d₁, d₂)';">Montrer le déplacement (d₁, d₂)</button>
+</div>
+
+<div class="info" id="info"></div>
+
+<script>
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const RED='#E24B4A',DRED='#a32d2d',BLUE='#378ADD',BLUE_D='#185fa5',FLUID='#cfe4f7',FLUID2='#9cc7ee',GREEN='#1D9E75',GREEN_D='#0F6E56',GREY='#9aa0a6',AX='#c8ccd0';
+let W=0,H=0,dpr=1,anim=false,phase=0;
+let F1=20,r1=5,r2=15;
+const g=9.81;
+function bind(id,fmt,f){const s=document.getElementById(id),o=document.getElementById(id+'v');
+  s.addEventListener('input',()=>{const v=parseFloat(s.value);f(v);o.textContent=fmt(v);});}
+bind('F1',v=>v+' N',v=>F1=v);
+bind('r1',v=>v+' cm',v=>r1=v);
+bind('r2',v=>v+' cm',v=>r2=v);
+
+function syncSize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;
+  const nW=Math.round(r.width)||700,nH=Math.round(r.height)||370;
+  if(nW!==W||nH!==H){W=nW;H=nH;cv.width=W*dpr;cv.height=H*dpr;}
+  ctx.setTransform(dpr,0,0,dpr,0,0);}
+
+const FNT=(w,s)=>w+' '+s+'px Mulish,system-ui,sans-serif';
+function halo(txt,x,y,col,font,align){ctx.font=font;ctx.textAlign=align||'center';ctx.textBaseline='middle';ctx.lineJoin='round';
+  ctx.strokeStyle='rgba(255,255,255,0.95)';ctx.lineWidth=4.5;ctx.strokeText(txt,x,y);ctx.fillStyle=col;ctx.fillText(txt,x,y);ctx.textBaseline='alphabetic';}
+// flèche à largeur variable (corps + tête), coins adoucis, sans label
+function fatArrow(x,y,dir,len,wdt,col){
+  // dir = -1 (haut) ou +1 (bas) ; y = base
+  const tip=y+dir*len, hh=Math.max(12,wdt*1.4), hw=wdt*1.45;
+  const shaftEnd=tip-dir*hh;
+  ctx.save();ctx.shadowColor='rgba(19,35,58,0.18)';ctx.shadowBlur=4;ctx.shadowOffsetY=1;ctx.fillStyle=col;ctx.lineJoin='round';ctx.strokeStyle=col;ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(x-wdt/2,y);ctx.lineTo(x-wdt/2,shaftEnd);ctx.lineTo(x-hw,shaftEnd);ctx.lineTo(x,tip);ctx.lineTo(x+hw,shaftEnd);ctx.lineTo(x+wdt/2,shaftEnd);ctx.lineTo(x+wdt/2,y);ctx.closePath();
+  ctx.fill();ctx.stroke();ctx.restore();
+}
+
+function draw(){
+  syncSize();
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);ctx.lineCap='round';ctx.lineJoin='round';
+
+  const S1=Math.PI*(r1/100)**2, S2=Math.PI*(r2/100)**2;
+  const P=F1/S1, F2=P*S2, ratio=S2/S1, mass=F2/g;
+  const amp=ratio>=1;
+
+  // échelle adaptée au cadre (les pistons gardent leurs proportions r₁ : r₂)
+  const sc=Math.max(2.4,Math.min(5.2,(0.46*W-24)/32,(0.28*W-14)/20)), w1=r1*2*sc, w2=r2*2*sc;
+  const xL=W*0.26, xR=W*0.72;
+  const chY=H*0.78, chH=26;
+  const topRest=Math.max(H*0.46,206);
+  const wallTop=topRest-60;
+
+  let dL=anim?16*Math.max(0,Math.sin(phase)):0;
+  let dR=dL/ratio;
+  if(dR>40){dL*=40/dR;dR=40;}   // borne visuelle : le grand déplacement reste dans le cylindre (rapport d₁/d₂ conservé)
+  const flL=topRest+dL, flR=topRest-dR;
+  const pistH=16;
+
+  // ---- récipient : fluide (dégradé) dans un tube en U, parois épaisses ----
+  const cL=xL-w1/2, cR=xR+w2/2, bot=chY+chH;
+  const fg=ctx.createLinearGradient(0,wallTop,0,bot);fg.addColorStop(0,'#dcecfa');fg.addColorStop(1,'#a9cdef');
+  ctx.fillStyle=fg;
+  ctx.beginPath();ctx.moveTo(cL,flL);ctx.lineTo(xL+w1/2,flL);ctx.lineTo(xL+w1/2,chY);ctx.lineTo(xR-w2/2,chY);ctx.lineTo(xR-w2/2,flR);ctx.lineTo(cR,flR);ctx.lineTo(cR,bot);ctx.lineTo(cL,bot);ctx.closePath();ctx.fill();
+  // reflet léger
+  ctx.fillStyle='rgba(255,255,255,0.35)';ctx.fillRect(cL+2,flL+2,Math.max(2,w1*0.18),chY-flL-2);ctx.fillRect(xR-w2/2+3,flR+2,Math.max(2,w2*0.12),chY-flR-2);
+  // parois
+  ctx.strokeStyle='#5f6b7a';ctx.lineWidth=4;
+  ctx.beginPath();ctx.moveTo(cL-2,wallTop);ctx.lineTo(cL-2,bot+2);ctx.lineTo(cR+2,bot+2);ctx.lineTo(cR+2,wallTop);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(xL+w1/2+2,wallTop);ctx.lineTo(xL+w1/2+2,chY-2);ctx.lineTo(xR-w2/2-2,chY-2);ctx.lineTo(xR-w2/2-2,wallTop);ctx.stroke();
+  // surface libre
+  ctx.strokeStyle='#7fb3ea';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(cL,flL);ctx.lineTo(xL+w1/2,flL);ctx.moveTo(xR-w2/2,flR);ctx.lineTo(cR,flR);ctx.stroke();
+
+  // POINTS de même pression reliés par des pointillés
+  const py=chY+chH/2;
+  ctx.strokeStyle='rgba(24,95,165,0.7)';ctx.setLineDash([2,6]);ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(xL,py);ctx.lineTo(xR,py);ctx.stroke();ctx.setLineDash([]);
+  for(let i=0;i<=6;i++){const gx=xL+i/6*(xR-xL);ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(gx,py,4.5,0,7);ctx.fill();ctx.fillStyle=BLUE_D;ctx.beginPath();ctx.arc(gx,py,3,0,7);ctx.fill();}
+  ctx.font=FNT(700,12);
+  const ptxt=(W<520?'même pression partout  (P₁ = P₂)':'points à la même pression  (P₁ = P₂)');
+  halo(ptxt,Math.min(Math.max((xL+xR)/2,ctx.measureText(ptxt).width/2+8),W-ctx.measureText(ptxt).width/2-8),bot+20,BLUE_D,FNT(700,12));
+
+  // pistons (métal, léger dégradé)
+  function piston(x,w,fltop){const g=ctx.createLinearGradient(0,fltop-pistH,0,fltop);g.addColorStop(0,'#eef1f5');g.addColorStop(1,'#b9c2cd');
+    ctx.fillStyle=g;ctx.strokeStyle='#5f6b7a';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.roundRect(x-w/2+1,fltop-pistH,w-2,pistH,3);ctx.fill();ctx.stroke();}
+  piston(xL,w1,flL);piston(xR,w2,flR);
+
+  // charge sur grand piston
+  ctx.font=FNT(800,14);
+  const bw=Math.max(Math.min(w2*0.82,110),ctx.measureText(mass.toFixed(0)+' kg').width+18);
+  const loadTop=flR-pistH-44;
+  ctx.save();ctx.shadowColor='rgba(19,35,58,0.2)';ctx.shadowBlur=8;ctx.shadowOffsetY=3;
+  const lg=ctx.createLinearGradient(0,loadTop,0,loadTop+42);lg.addColorStop(0,'#eaf3fc');lg.addColorStop(1,'#c9def4');ctx.fillStyle=lg;
+  ctx.beginPath();ctx.roundRect(xR-bw/2,loadTop,bw,42,7);ctx.fill();ctx.restore();
+  ctx.strokeStyle=BLUE_D;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(xR-bw/2,loadTop,bw,42,7);ctx.stroke();
+  ctx.fillStyle=BLUE_D;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(mass.toFixed(0)+' kg',xR,loadTop+21.5);ctx.textBaseline='alphabetic';
+
+  // ---- FORCES ----
+  // largeur ∝ force (même échelle) ; longueur bornée -> jamais hors écran
+  const wOf=F=>Math.max(6,Math.min(4+F*0.16,30));
+  const wl1=wOf(F1), wl2=wOf(F2);
+  const lenF1=46, lenF2=52;
+  // F1 verte : vers le BAS, appuie sur le petit piston
+  const baseF1=flL-pistH-4;
+  fatArrow(xL, baseF1-lenF1, +1, lenF1, wl1, GREEN);
+  halo('F̄₁', Math.min(xL-wl1*1.45-8,cL-12), baseF1-lenF1/2, GREEN_D, FNT(800,15),'right');
+  // F2 rouge : vers le HAUT, soulève la charge (plus LARGE, pas plus longue)
+  const baseF2=loadTop-4;
+  fatArrow(xR, baseF2, -1, lenF2, wl2, RED);
+  halo('F̄₂', xR+wl2*1.45+8, baseF2-lenF2/2, DRED, FNT(800,15),'left');
+
+  // étiquettes entrée / sortie
+  const labY=baseF2-lenF2-16;   // au-dessus de la pointe de F̄₂
+  ctx.font=FNT(800,12);
+  const tE=W<520?'ENTRÉE':'ENTRÉE — tu pousses',tS=W<520?'SORTIE':'SORTIE — ça soulève';
+  halo(tE,xL,labY,GREEN_D,FNT(800,12));halo(tS,xR,labY,DRED,FNT(800,12));
+  const labHW=Math.max(ctx.measureText(tE).width,ctx.measureText(tS).width)/2;
+  // rayons : à gauche du petit cylindre, dans l'espace entre les deux pour le grand
+  // rayons : sous chaque cylindre, ligne au-dessous du texte de pression
+  ctx.font=FNT(700,12);[['r₁ = '+r1+' cm',xL],['r₂ = '+r2+' cm',xR]].forEach(([t,x])=>{const w=ctx.measureText(t).width;halo(t,Math.min(Math.max(x,w/2+8),W-w/2-8),bot+40,'#5f6b7a',FNT(700,12));});
+
+  // déplacements
+  if(anim){
+    ctx.lineWidth=2;ctx.setLineDash([4,4]);
+    const x1=xL+w1/2+12;ctx.strokeStyle=GREEN_D;ctx.beginPath();ctx.moveTo(x1,topRest);ctx.lineTo(x1,flL);ctx.stroke();
+    const x2=xR-w2/2-12;ctx.strokeStyle=DRED;ctx.beginPath();ctx.moveTo(x2,topRest);ctx.lineTo(x2,flR);ctx.stroke();ctx.setLineDash([]);
+    [[x1,topRest,GREEN_D],[x1,flL,GREEN_D],[x2,topRest,DRED],[x2,flR,DRED]].forEach(([x,y,c])=>{ctx.strokeStyle=c;ctx.beginPath();ctx.moveTo(x-4,y);ctx.lineTo(x+4,y);ctx.stroke();});
+    const roomy=(x2-x1)>170;   // place entre les cylindres : texte complet, sinon d₁ / d₂ seuls
+    halo(roomy?'d₁ (grand)':'d₁',x1+6,topRest+30,GREEN_D,FNT(800,12),'left');
+    halo(roomy?'d₂ (petit)':'d₂',x2-6,topRest-22,DRED,FNT(800,12),'right');
+  }
+
+  // BADGE d'amplification (centre, entre les colonnes)
+  const bxc=(xL+xR)/2;
+  ctx.font=FNT(800,22);const txt='× '+ratio.toFixed(1);const tw=ctx.measureText(txt).width;
+  const clash=(bxc-tw/2-16)<xL+labHW+8||(bxc+tw/2+16)>xR-labHW-8;
+  const byc=Math.max(56,labY-46);
+  ctx.save();ctx.shadowColor='rgba(19,35,58,0.08)';ctx.shadowBlur=10;ctx.shadowOffsetY=2;
+  ctx.fillStyle=amp?'#e3f4ed':'#f3f5f8';ctx.beginPath();ctx.roundRect(bxc-tw/2-18,byc-20,tw+36,40,20);ctx.fill();ctx.restore();
+  ctx.strokeStyle=amp?'#9fd8c1':'#d3d9e2';ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(bxc-tw/2-18,byc-20,tw+36,40,20);ctx.stroke();
+  ctx.fillStyle=amp?GREEN_D:'#5f6b7a';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,bxc,byc+1);ctx.textBaseline='alphabetic';
+  halo(amp?'force AMPLIFIÉE':'force RÉDUITE',bxc,byc-32,amp?GREEN_D:DRED,FNT(800,12));
+
+  document.getElementById('info').innerHTML=
+    '<b style="color:'+GREEN+'">F₁ = '+F1+' N</b> → <b style="color:'+RED+'">F₂ = F₁×(r₂/r₁)² = '+F1+'×'+ratio.toFixed(1)+' = '+F2.toFixed(0)+' N</b> &nbsp;|&nbsp; '+
+    '<b style="color:'+BLUE_D+'">charge soulevée = F₂/g = '+mass.toFixed(0)+' kg</b> &nbsp;|&nbsp; '+
+    'petit piston bouge '+ratio.toFixed(1)+'× plus loin (travail identique)';
+
+  if(anim)phase+=0.03;
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Mécanique des fluides<span>3 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/archimede/"><i>01</i>Poussée d&#x27;Archimède</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/pascal/"><i>02</i>Principe de Pascal</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Bernouilli-/"><i>03</i>Bernoulli</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

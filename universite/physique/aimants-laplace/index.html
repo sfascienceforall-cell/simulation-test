@@ -1,0 +1,612 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aimants, courants et force de Laplace · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+/* Scène 3D plein cadre : lecture en haut à gauche, étiquettes HTML projetées et placées sans chevauchement. */
+.t-stage{position:relative;width:100%;height:66vh;min-height:440px;background:#fff;border:1px solid var(--rule);border-radius:4px;overflow:hidden;
+  box-shadow:0 1px 2px rgba(12,31,46,.05),0 8px 24px -16px rgba(12,31,46,.18);touch-action:none;user-select:none;-webkit-user-select:none}
+.t-stage canvas{display:block;width:100%!important;height:100%!important;border:0!important;box-shadow:none!important;border-radius:0!important}
+.t-lab{position:absolute;left:0;top:0;font:700 13px var(--f-ui);white-space:nowrap;pointer-events:none;padding:1px 6px;border-radius:3px;
+  background:rgba(255,255,255,.9);opacity:0}
+.t-hud{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.95);border:1px solid var(--rule);border-radius:4px;padding:9px 13px;
+  font:500 13px/1.5 var(--f-ui);color:var(--ink);pointer-events:none;max-width:min(380px,calc(100% - 24px))}
+.t-hud .big{font:400 1.05rem var(--f-math)}
+.t-hud .sub{color:var(--muted);font-size:12px}
+.t-hint{position:absolute;right:12px;bottom:10px;font:500 12px var(--f-ui);color:var(--faint);pointer-events:none;text-align:right;background:rgba(255,255,255,.92);padding:2px 6px;border-radius:3px}
+.t-err{position:absolute;inset:0;display:grid;place-items:center;color:#a32d2d;font:600 14px var(--f-ui);padding:20px;text-align:center}
+.val{white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font:600 .82rem var(--f-ui);color:var(--muted);margin:10px 0 2px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+@media (max-width:640px){.t-stage{height:62vh;min-height:420px}.t-hint{display:none}.t-hud{font-size:12px;padding:7px 9px;left:8px;top:8px;max-width:calc(100% - 16px)}
+  .t-hud .big{font-size:.92rem}.t-hud .sub{font-size:11px}.t-lab{font-size:11px}}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH11">Magnétisme</a>›<b>Aimants, courants et force de Laplace</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Magnétisme</span><span class="sfa-chip free">Gratuit</span></div><h1>Aimants, courants et force de Laplace</h1><p>Lignes de champ B, champ d&#x27;un courant et force F = I·L·B</p></div>
+<section class="sfa-sim">
+
+
+
+<div class="row">
+  <span class="pill">Scène</span>
+  <button class="btn on" id="sA">Aimant droit</button>
+  <button class="btn" id="sB">Fil et bobine</button>
+  <button class="btn" id="sC">Rails de Laplace</button>
+</div>
+
+<div id="stage" class="t-stage" aria-label="Scène 3D : glisse pour tourner la vue, molette pour zoomer, déplace les boussoles">
+  <div class="t-hud" id="hud"></div>
+  <div class="t-hint" id="hint">Glisse le fond pour tourner la vue · molette pour zoomer</div>
+</div>
+
+<div class="legend" id="leg"></div>
+<div class="fml" id="fml"></div>
+
+<!-- scène A -->
+<div class="row oA">
+  <button class="btn" id="flipA">Retourner l'aimant</button>
+  <button class="btn" id="resA">Replacer les boussoles</button>
+  <button class="btn" id="pause">Pause</button>
+</div>
+<!-- scène B -->
+<div class="row oB">
+  <span class="pill">Conducteur</span>
+  <button class="btn on" id="bFil">Fil rectiligne</button>
+  <button class="btn" id="bBob">Bobine (10 spires)</button>
+</div>
+<div class="row oB">
+  <span class="pill" style="min-width:150px;color:#BA7517">I &nbsp;intensité du courant</span>
+  <input type="range" id="iB" min="0" max="20" value="10" step="0.5" style="accent-color:#BA7517;">
+  <span class="val" id="iBv" style="color:#BA7517">10,0 A</span>
+</div>
+<div class="row oB">
+  <button class="btn" id="invB">Inverser le sens du courant</button>
+  <button class="btn" id="resB">Replacer les boussoles</button>
+</div>
+<!-- scène C -->
+<div class="row oC">
+  <span class="pill" style="min-width:150px;color:#BA7517">I &nbsp;intensité du courant</span>
+  <input type="range" id="iC" min="0" max="10" value="5" step="0.1" style="accent-color:#BA7517;">
+  <span class="val" id="iCv" style="color:#BA7517">5,0 A</span>
+</div>
+<div class="row oC">
+  <span class="pill" style="min-width:150px;color:#185fa5">B &nbsp;champ de l'aimant</span>
+  <input type="range" id="bC" min="0.05" max="0.5" value="0.2" step="0.01" style="accent-color:#378ADD;">
+  <span class="val" id="bCv" style="color:#185fa5">0,20 T</span>
+</div>
+<div class="row oC">
+  <button class="btn on" id="swC">Interrupteur fermé</button>
+  <button class="btn" id="invI">Inverser I</button>
+  <button class="btn" id="invBC">Inverser B (retourner l'aimant)</button>
+  <button class="btn" id="resC">Remettre la tige</button>
+</div>
+<div class="row">
+  <button class="btn" id="v3d">Vue 3D</button>
+  <button class="btn" id="vTop">Vue du dessus</button>
+  <button class="btn" id="vSide">Vue de face</button>
+</div>
+
+<div class="info" id="info"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const box=$('stage');
+if(!window.THREE){box.insertAdjacentHTML('beforeend','<div class="t-err">Impossible de charger la 3D (three.js). Vérifie la connexion internet.</div>');return;}
+const fx=(v,n=2)=>v.toFixed(n).replace('.',',');
+const C={blue:'#378ADD',blueD:'#185fa5',green:'#1D9E75',greenD:'#0F6E56',red:'#E24B4A',redD:'#a32d2d',orange:'#BA7517',violet:'#7F77DD',ink:'#3d3d3a',grey:'#9aa0a6'};
+const MU0=4*Math.PI*1e-7;
+
+// ---------- scène ----------
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+box.prepend(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#ffffff');
+const cam=new THREE.PerspectiveCamera(40,1,0.1,300);
+scene.add(new THREE.HemisphereLight('#ffffff','#9aa6b2',0.75));
+const sun=new THREE.DirectionalLight('#ffffff',0.6);sun.position.set(5,10,7);scene.add(sun);
+const mat=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.55,metalness:0},o));
+const basic=(c,o={})=>new THREE.MeshBasicMaterial(Object.assign({color:c},o));
+const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+const UP=V(0,1,0);
+
+// flèche 3D (tige + pointe), toujours visible
+function arrow(col,r=0.06,parent=scene){const g=new THREE.Group();const m=basic(col,{depthTest:false,transparent:true});
+  const sh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,1,10),m),hd=new THREE.Mesh(new THREE.ConeGeometry(r*2.6,r*6,16),m);
+  sh.renderOrder=hd.renderOrder=10;g.add(sh,hd);g.userData={sh,hd,hl:r*6};parent.add(g);return g;}
+function setArrow(a,o,v){const L=v.length();a.visible=L>0.05;if(!a.visible)return;const hl=Math.min(a.userData.hl,L*0.5);
+  a.position.copy(o);a.quaternion.setFromUnitVectors(UP,v.clone().normalize());
+  a.userData.sh.scale.set(1,L-hl,1);a.userData.sh.position.set(0,(L-hl)/2,0);a.userData.hd.position.set(0,L-hl/2,0);}
+
+// plaque de plexiglas horizontale (y = 0) où sont posées les boussoles
+const plate=new THREE.Group();scene.add(plate);
+const pl=new THREE.Mesh(new THREE.PlaneGeometry(18,13),basic('#e9f0f7',{transparent:true,opacity:.45,depthWrite:false,side:THREE.DoubleSide}));pl.rotation.x=-Math.PI/2;plate.add(pl);
+const grid=new THREE.GridHelper(18,18,'#d5dde6','#e4e9ef');grid.scale.z=13/18;grid.position.y=-0.002;plate.add(grid);
+
+// ---------- lignes de champ : tracé numérique et petites pointes qui défilent dans le sens de B ----------
+function trace(start,F,ds,max,stop){const pts=[start.slice()];let p=start.slice();
+  for(let i=0;i<max;i++){let b=F(p),n=Math.hypot(...b)||1e-12;const m=[p[0]+b[0]/n*ds/2,p[1]+b[1]/n*ds/2,p[2]+b[2]/n*ds/2];
+    b=F(m);n=Math.hypot(...b)||1e-12;p=[p[0]+b[0]/n*ds,p[1]+b[1]/n*ds,p[2]+b[2]/n*ds];pts.push(p);if(stop(p,i))break;}
+  return pts;}
+function lineSet(parent,list,col){ // list : [{pts,main}] → lignes + pointes animées
+  const out=[];
+  list.forEach(L=>{if(L.pts.length<3)return;const vs=L.pts.map(p=>V(...p));
+    const ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints(vs),new THREE.LineBasicMaterial({color:col,transparent:true,opacity:L.main?0.85:0.32}));parent.add(ln);
+    const cum=[0];for(let i=1;i<vs.length;i++)cum.push(cum[i-1]+vs[i].distanceTo(vs[i-1]));
+    const len=cum[cum.length-1],sp=L.sp||1.5,n=Math.max(1,Math.round(len/sp)),cones=[];
+    const cm=basic(col,{transparent:true,opacity:L.main?1:0.45});
+    for(let j=0;j<n;j++){const c=new THREE.Mesh(new THREE.ConeGeometry(L.main?0.085:0.06,L.main?0.26:0.18,10),cm);parent.add(c);cones.push(c);}
+    out.push({vs,cum,len,cones,closed:L.closed,sp:len/n});});
+  return out;}
+function flow(set,t,dir){set.forEach(L=>{L.cones.forEach((c,j)=>{let s=j*L.sp+t*0.7*dir;s=((s%L.len)+L.len)%L.len;
+  if(!L.closed){s=Math.min(L.len-1e-3,s);}
+  let lo=0,hi=L.cum.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(L.cum[m]<=s)lo=m;else hi=m;}
+  const f=(s-L.cum[lo])/((L.cum[hi]-L.cum[lo])||1);c.position.lerpVectors(L.vs[lo],L.vs[hi],f);
+  const tg=L.vs[hi].clone().sub(L.vs[lo]).normalize().multiplyScalar(dir);c.quaternion.setFromUnitVectors(UP,tg);});});}
+function clearGroup(g){while(g.children.length){const c=g.children.pop();c.geometry&&c.geometry.dispose();}}
+
+// ---------- boussoles (sur la plaque, déplaçables) ----------
+const compasses=[];
+function compass(){const g=new THREE.Group();
+  const disk=new THREE.Mesh(new THREE.CylinderGeometry(0.42,0.42,0.06,32),mat('#ffffff',{roughness:.3}));g.add(disk);
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(0.42,0.035,8,36),mat('#8d9aa8'));rim.rotation.x=Math.PI/2;rim.position.y=0.03;g.add(rim);
+  const nd=new THREE.Group();nd.position.y=0.07;g.add(nd);
+  const n1=new THREE.Mesh(new THREE.ConeGeometry(0.075,0.36,4),mat('#E24B4A'));n1.rotation.z=-Math.PI/2;n1.position.x=0.18;n1.scale.z=0.35;nd.add(n1);
+  const n2=new THREE.Mesh(new THREE.ConeGeometry(0.075,0.36,4),mat('#c8ccd0'));n2.rotation.z=Math.PI/2;n2.position.x=-0.18;n2.scale.z=0.35;nd.add(n2);
+  const pin=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.05,8),mat('#3d3d3a'));pin.position.y=0.1;g.add(pin);
+  g.userData={nd,ang:0,w:0};scene.add(g);compasses.push(g);return g;}
+for(let i=0;i<5;i++)compass();
+const DEF={A:[[0,1.7],[2.9,1.2],[-2.9,1.2],[3.6,-0.9],[-1.6,-1.9]],B:[[1.6,0.6],[-1.2,1.4],[0.4,-2.4],[-2.6,-1.0],[3.2,1.8]],
+  Bc:[[3.4,0.5],[-3.4,0.5],[0,2.4],[1.8,-2.6],[-2.2,-2.4]]};
+let selComp=0;
+
+// =====================================================================
+// A : aimant droit
+// =====================================================================
+const gA=new THREE.Group();scene.add(gA);
+const halfL=1.5,half=0.32,QP=1.3;let flipA=false;
+const magN=new THREE.Mesh(new THREE.BoxGeometry(halfL,2*half,2*half),mat('#E24B4A')),magS=new THREE.Mesh(new THREE.BoxGeometry(halfL,2*half,2*half),mat('#d5dbe1'));
+gA.add(magN,magS);
+const linesA=new THREE.Group();gA.add(linesA);let setA=[];
+function fieldA(p){const s=flipA?-1:1,n=[p[0]-QP*s,p[1],p[2]],q=[p[0]+QP*s,p[1],p[2]];
+  const a=Math.pow(n[0]*n[0]+n[1]*n[1]+n[2]*n[2],1.5)||1e-9,b=Math.pow(q[0]*q[0]+q[1]*q[1]+q[2]*q[2],1.5)||1e-9;
+  return [n[0]/a-q[0]/b,n[1]/a-q[1]/b,n[2]/a-q[2]/b];}
+const KA=15;   // mT par unité du modèle à deux pôles (aimant en ferrite, quelques dizaines de mT près des pôles)
+function buildA(){const s=flipA?-1:1;magN.position.set(s*halfL/2,0,0);magS.position.set(-s*halfL/2,0,0);
+  clearGroup(linesA);const list=[];
+  [0,Math.PI/2,Math.PI/4,3*Math.PI/4].forEach((ph,k)=>{[15,38,62,88,115,140].forEach(th=>{
+    const t=th*Math.PI/180,dir=[s*Math.cos(t),Math.sin(t)*Math.sin(ph),Math.sin(t)*Math.cos(ph)];
+    const st=[s*QP+dir[0]*0.42,dir[1]*0.42,dir[2]*0.42];
+    for(const sg of [1,-1]){const d0=[st[0],st[1]*sg,st[2]*sg];if(k>=2&&sg<0)continue;
+      const pts=trace(d0,fieldA,0.05,900,p=>Math.hypot(p[0]+s*QP,p[1],p[2])<0.36||Math.abs(p[0])>7.5||Math.abs(p[1])>4.5||Math.abs(p[2])>5.5);
+      list.push({pts,main:k===0,sp:1.6});}});});
+  setA=lineSet(linesA,list,C.blueD);}
+
+// =====================================================================
+// B : fil rectiligne et bobine
+// =====================================================================
+const gB=new THREE.Group();scene.add(gB);
+const gW=new THREE.Group(),gK=new THREE.Group();gB.add(gW,gK);
+let IB=10,sgnB=1,modeB='fil';
+// fil vertical
+const wire=new THREE.Mesh(new THREE.CylinderGeometry(0.09,0.09,7,16),mat('#c27c3e',{metalness:.4,roughness:.35}));gW.add(wire);
+const circW=new THREE.Group();gW.add(circW);let setW=[];
+const dotsW=[];for(let i=0;i<9;i++){const d=new THREE.Mesh(new THREE.SphereGeometry(0.07,10,8),basic('#f4c542'));gW.add(d);dotsW.push(d);}
+const aIw=arrow(C.orange,0.06,gW);
+// rappel de la main droite : flèche courbe autour du fil
+const curl=new THREE.Group();gW.add(curl);
+const curlT=new THREE.Mesh(new THREE.TorusGeometry(0.55,0.03,8,40,Math.PI*1.5),basic(C.blueD));curlT.rotation.x=Math.PI/2;curl.add(curlT);
+const curlH=new THREE.Mesh(new THREE.ConeGeometry(0.09,0.26,12),basic(C.blueD));curl.add(curlH);curl.position.y=2.6;
+function fieldWire(p,I){const r=Math.hypot(p[0],p[2])||1e-6,B=MU0*I/(2*Math.PI*r*0.01);return [p[2]/r*B,0,-p[0]/r*B];}
+function buildW(){clearGroup(circW);const list=[],Bs=5e-5;   // un cercle chaque fois que B augmente de 0,05 mT
+  for(let k=1;k<=6;k++){const r=MU0*IB/(2*Math.PI*k*Bs)*100;if(r<0.5||r>7)continue;
+    [-1.8,0,1.8].forEach(y=>{const pts=[];for(let i=0;i<=72;i++){const a=i/72*2*Math.PI;pts.push([r*Math.cos(a),y,-r*Math.sin(a)]);}   // sens trigonométrique vu du dessus
+      list.push({pts,main:y===0,closed:true,sp:Math.max(1.2,r*0.9)});});}
+  setW=lineSet(circW,list,C.blueD);}
+// bobine : hélice de 10 spires (rayon 1 cm, longueur 4 cm)
+const NT=10,RC=1,LC=4;
+const helixPts=[];for(let i=0;i<=NT*48;i++){const t=i/(NT*48);helixPts.push([-LC/2+LC*t,RC*Math.sin(2*Math.PI*NT*t),RC*Math.cos(2*Math.PI*NT*t)]);}
+class HelixCurve extends THREE.Curve{getPoint(t){const a=2*Math.PI*NT*t;return V(-LC/2+LC*t,RC*Math.sin(a),RC*Math.cos(a));}}
+const coil=new THREE.Mesh(new THREE.TubeGeometry(new HelixCurve(),NT*60,0.07,8,false),mat('#c27c3e',{metalness:.4,roughness:.35}));gK.add(coil);
+const leads=new THREE.Group();gK.add(leads);
+[[-LC/2,0,RC],[LC/2,0,RC]].forEach(p=>{const l=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,2.4,8),mat('#c27c3e',{metalness:.4}));l.position.set(p[0],1.2,p[2]);leads.add(l);});
+const linesK=new THREE.Group();gK.add(linesK);let setK=[];
+// Biot et Savart sur l'hélice (unités : cm) → B en tesla pour I = 1 A
+function fieldK(p){let bx=0,by=0,bz=0;for(let i=0;i<helixPts.length-1;i++){const a=helixPts[i],b=helixPts[i+1];
+  const dl=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],r=[p[0]-(a[0]+b[0])/2,p[1]-(a[1]+b[1])/2,p[2]-(a[2]+b[2])/2];
+  const r3=Math.pow(r[0]*r[0]+r[1]*r[1]+r[2]*r[2],1.5)+1e-9;
+  bx+=(dl[1]*r[2]-dl[2]*r[1])/r3;by+=(dl[2]*r[0]-dl[0]*r[2])/r3;bz+=(dl[0]*r[1]-dl[1]*r[0])/r3;}
+  return [bx*1e-5,by*1e-5,bz*1e-5];}   // μ0/4π · (1/0,01) = 1e-5
+const BK0=fieldK([0,0,0])[0];       // champ au centre pour 1 A (signe : sens de l'axe)
+function buildK(){clearGroup(linesK);const list=[];
+  const starts=[[0,0,-0.68],[0,0,-0.4],[0,0,-0.13],[0,0,0.13],[0,0,0.4],[0,0,0.68],[0,0.45,0],[0,-0.45,0]];
+  starts.forEach((st,k)=>{const out=(p)=>Math.abs(p[0])>7.5||Math.abs(p[1])>4.5||Math.abs(p[2])>5.5;
+    const fw=trace(st,fieldK,0.05,1400,(p,i)=>out(p)||(i>60&&Math.hypot(p[0]-st[0],p[1]-st[1],p[2]-st[2])<0.07));
+    const closed=!out(fw[fw.length-1]);let pts=fw;
+    if(!closed){const bw=trace(st,p=>fieldK(p).map(v=>-v),0.05,1400,out);pts=bw.reverse().concat(fw.slice(1));}
+    list.push({pts,main:k<6,closed,sp:1.6});});
+  setK=lineSet(linesK,list,C.blueD);}
+const dotsK=[];for(let i=0;i<14;i++){const d=new THREE.Mesh(new THREE.SphereGeometry(0.06,8,6),basic('#f4c542'));gK.add(d);dotsK.push(d);}
+
+// =====================================================================
+// C : rails de Laplace
+// =====================================================================
+const gC=new THREE.Group();scene.add(gC);
+const ZR=2,LR=0.04,MR=0.02,MUF=0.03,G=9.81,XF=3;   // rails à ±2 cm (L = 4 cm), tige de 20 g, champ entre x = −3 et +3 cm
+let IC=5,BC=0.2,sgnI=1,sgnBC=1,closedC=true,xr=-2.4,vr=0,waitC=0,dragRod=false;
+const railM=mat('#a9b4bf',{metalness:.6,roughness:.3});
+[-ZR,ZR].forEach(z=>{const r=new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.13,17,12),railM);r.rotation.z=Math.PI/2;r.position.set(-0.5,0,z);gC.add(r);});
+[-8.4,7.6].forEach(x=>[-ZR,ZR].forEach(z=>{const s=new THREE.Mesh(new THREE.BoxGeometry(0.3,1.6,0.3),mat('#d5dbe1'));s.position.set(x,-0.85,z);gC.add(s);}));
+[7.7].forEach(x=>{const b=new THREE.Mesh(new THREE.BoxGeometry(0.25,0.5,5),mat('#9aa0a6'));b.position.set(x+0.15,0.2,0);gC.add(b);});
+const rod=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,5,20),mat('#c27c3e',{metalness:.5,roughness:.35}));rod.rotation.x=Math.PI/2;gC.add(rod);
+const rodMark=new THREE.Mesh(new THREE.BoxGeometry(0.06,0.42,5.02),mat('#7a4a1e'));gC.add(rodMark);
+const RY=0.33;
+const topP=new THREE.Mesh(new THREE.BoxGeometry(6,0.8,6.6),mat('#E24B4A',{transparent:true,opacity:.42,depthWrite:false})),botP=new THREE.Mesh(new THREE.BoxGeometry(6,0.8,6.6),mat('#d5dbe1'));
+topP.position.set(0,2.2,-0.4);botP.position.set(0,-1.8,-0.4);gC.add(topP,botP);
+const yoke=new THREE.Mesh(new THREE.BoxGeometry(6,4.8,0.9),mat('#8d9aa8'));yoke.position.set(0,0.2,-4.15);gC.add(yoke);
+const gen=new THREE.Mesh(new THREE.BoxGeometry(1.3,1.2,4.8),mat('#3d4a57'));gen.position.set(-9.6,0.1,0);gC.add(gen);
+[-ZR,ZR].forEach(z=>{const w=new THREE.Mesh(new THREE.CylinderGeometry(0.06,0.06,1.0,8),mat('#c27c3e'));w.rotation.z=Math.PI/2;w.position.set(-8.9,0,z);gC.add(w);});
+const termP=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.16,0.3,12),mat('#E24B4A')),termM=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.16,0.3,12),mat('#378ADD'));gC.add(termP,termM);
+const aBC=[];[[-2,-2.9],[0,-2.9],[2,-2.9],[-2,2.9],[0,2.9],[2,2.9]].forEach(()=>aBC.push(arrow(C.blue,0.045,gC)));
+const aF=arrow(C.violet,0.075,gC),aI=arrow(C.orange,0.06,gC),aV=arrow(C.green,0.06,gC);
+const dotsC=[];for(let i=0;i<22;i++){const d=new THREE.Mesh(new THREE.SphereGeometry(0.075,8,6),basic('#f4c542',{depthTest:true}));gC.add(d);dotsC.push(d);}
+const zPlus=()=>sgnI>0?-ZR:ZR;      // borne + reliée au rail arrière (I > 0) : le courant traverse la tige de l'arrière vers l'avant
+function forceC(){const inF=Math.abs(xr)<=XF;return inF&&closedC?IC*LR*BC*sgnI*sgnBC:0;}   // F = I·L·B, selon +x si I et B positifs
+
+// ---------- étiquettes HTML projetées, placées sans chevauchement ----------
+const LABS={};
+function lab(id,col){if(!LABS[id]){const e=document.createElement('div');e.className='t-lab';e.style.color=col;box.appendChild(e);LABS[id]={e,w:0,h:0,txt:''};}return LABS[id];}
+let queue=[],blocks=[];
+function block(pos,r){blocks.push({pos,r});}
+function blockArrow(a){if(!a.visible)return;const d=new THREE.Vector3(0,1,0).applyQuaternion(a.quaternion),L=a.userData.sh.scale.y+a.userData.hl;for(let i=0;i<=6;i++)block(a.position.clone().add(d.clone().multiplyScalar(L*i/6)),0.14);}
+function want(id,txt,col,pos,cands,prio=5){queue.push({id,txt,col,pos,cands,prio});}
+function placeLabels(){const W=box.clientWidth,H=box.clientHeight,placed=[];
+  const hb=$('hud').getBoundingClientRect(),sb=box.getBoundingClientRect();placed.push({x:hb.left-sb.left-4,y:hb.top-sb.top-4,w:hb.width+8,h:hb.height+8});
+  blocks.forEach(b=>{const p=b.pos.clone().project(cam);if(p.z>1)return;const q=b.pos.clone().add(V(0,b.r,0)).project(cam),q2=b.pos.clone().add(new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld,0).multiplyScalar(b.r)).project(cam);
+    const sx=(p.x+1)/2*W,sy=(1-p.y)/2*H,R=Math.max(Math.hypot((q.x-p.x)/2*W,(q.y-p.y)/2*H),Math.hypot((q2.x-p.x)/2*W,(q2.y-p.y)/2*H));placed.push({x:sx-R,y:sy-R,w:2*R,h:2*R});});
+  blocks=[];
+  const used=new Set();
+  queue.sort((a,b)=>b.prio-a.prio).forEach(q=>{const L=lab(q.id,q.col);used.add(q.id);
+    if(L.txt!==q.txt){L.e.textContent=q.txt;L.txt=q.txt;L.w=L.e.offsetWidth;L.h=L.e.offsetHeight;}
+    L.e.style.color=q.col;
+    const p=q.pos.clone().project(cam);if(p.z>1){L.e.style.opacity=0;return;}
+    const sx=(p.x+1)/2*W,sy=(1-p.y)/2*H;const w=L.w,h=L.h;
+    const cands=q.cands||[[0,-16],[w/2+12,0],[-w/2-12,0],[0,16]];let ok=null;
+    for(const [dx,dy] of cands.concat([[0,-34],[0,34],[w/2+14,-18],[-w/2-14,-18],[w/2+14,18],[-w/2-14,18]])){const r={x:sx+dx-w/2,y:sy+dy-h/2,w,h};
+      if(r.x<4||r.y<4||r.x+w>W-4||r.y+h>H-4)continue;
+      if(placed.some(o=>r.x<o.x+o.w&&o.x<r.x+r.w&&r.y<o.y+o.h&&o.y<r.y+r.h))continue;ok=r;break;}
+    if(!ok){L.e.style.opacity=0;return;}
+    placed.push(ok);L.e.style.opacity=1;L.e.style.transform=`translate(${ok.x}px,${ok.y}px)`;});
+  for(const k in LABS)if(!used.has(k))LABS[k].e.style.opacity=0;
+  queue=[];}
+
+// ---------- caméra en orbite ----------
+let orb={th:0.55,ph:0.95,r:12},goal=null;const tgt=V(0,0,0);
+const VIEWS={A:{v3d:{th:0.5,ph:0.95,r:12.5},vTop:{th:0,ph:0.03,r:13},vSide:{th:0,ph:1.45,r:12}},
+  B:{v3d:{th:0.55,ph:1.0,r:12},vTop:{th:0,ph:0.03,r:12.5},vSide:{th:0,ph:1.42,r:12}},
+  C:{v3d:{th:0.62,ph:1.12,r:21},vTop:{th:0,ph:0.03,r:21},vSide:{th:0,ph:1.4,r:21}}};
+let sc='A';
+['v3d','vTop','vSide'].forEach(k=>$(k).onclick=()=>goal={...VIEWS[sc][k]});
+function placeCam(){const k=Math.max(1,(sc==='C'?1.1:0.92)/cam.aspect),r=orb.r*k;
+  cam.position.set(tgt.x+r*Math.sin(orb.ph)*Math.sin(orb.th),tgt.y+r*Math.cos(orb.ph),tgt.z+r*Math.sin(orb.ph)*Math.cos(orb.th));
+  cam.up.set(0,1,0);if(orb.ph<0.06)cam.up.set(-Math.sin(orb.th),0,-Math.cos(orb.th));cam.lookAt(tgt);}
+
+// ---------- pointeur : boussole / tige / orbite ----------
+const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
+function onPlane(e,y){const r=box.getBoundingClientRect();ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,cam);
+  const pl=new THREE.Plane(UP,-y),p=new THREE.Vector3();return ray.ray.intersectPlane(pl,p)?p:null;}
+let drag=null,dragC=null;
+function grabComp(e){if(sc==='C')return -1;const p=onPlane(e,0);if(!p)return -1;let best=-1,bd=0.6;
+  compasses.forEach((c,i)=>{const d=Math.hypot(p.x-c.position.x,p.z-c.position.z);if(d<bd){bd=d;best=i;}});return best;}
+function grabRod(e){if(sc!=='C')return false;const r=box.getBoundingClientRect();ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,cam);
+  return ray.intersectObject(rod).length>0;}
+function clampComp(x,z){ // pas dans l'aimant, ni dans le fil, ni sur les spires
+  x=Math.max(-8.5,Math.min(8.5,x));z=Math.max(-6,Math.min(6,z));
+  if(sc==='A'&&Math.abs(x)<halfL+0.5&&Math.abs(z)<half+0.5){if(halfL+0.5-Math.abs(x)<half+0.5-Math.abs(z))x=Math.sign(x||1)*(halfL+0.5);else z=Math.sign(z||1)*(half+0.5);}
+  if(sc==='B'&&modeB==='fil'){const r=Math.hypot(x,z);if(r<0.6){x=x/(r||1)*0.6;z=z/(r||1)*0.6;if(!r)x=0.6;}}
+  if(sc==='B'&&modeB==='bob'&&Math.abs(x)<LC/2+0.55&&Math.abs(z)>0.5&&Math.abs(z)<RC+0.55){z=Math.sign(z)*(Math.abs(z)<RC?0.5:RC+0.55);}
+  return [x,z];}
+box.addEventListener('pointerdown',e=>{box.setPointerCapture(e.pointerId);goal=null;
+  const c=grabComp(e);if(c>=0){dragC=c;selComp=c;box.style.cursor='grabbing';return;}
+  if(grabRod(e)){dragRod=true;vr=0;box.style.cursor='grabbing';return;}
+  drag={x:e.clientX,y:e.clientY};});
+box.addEventListener('pointermove',e=>{
+  if(dragC!==null){const p=onPlane(e,0);if(p){const [x,z]=clampComp(p.x,p.z);compasses[dragC].position.set(x,0.03,z);}return;}
+  if(dragRod){const p=onPlane(e,RY);if(p){xr=Math.max(-7.3,Math.min(7.3,p.x));vr=0;}return;}
+  if(drag){orb.th-=(e.clientX-drag.x)*0.008;orb.ph=Math.max(0.03,Math.min(1.5,orb.ph-(e.clientY-drag.y)*0.008));drag={x:e.clientX,y:e.clientY};return;}
+  box.style.cursor=(grabComp(e)>=0||grabRod(e))?'grab':'default';});
+const end=()=>{drag=null;dragC=null;if(dragRod){dragRod=false;waitC=0;}box.style.cursor='default';};
+box.addEventListener('pointerup',end);box.addEventListener('pointercancel',end);
+box.addEventListener('wheel',e=>{e.preventDefault();orb.r=Math.max(5,Math.min(40,orb.r*Math.exp(e.deltaY*0.0012)));},{passive:false});
+
+// ---------- champ à l'endroit d'une boussole ----------
+function Bat(x,z){const p=[x,0,z];
+  if(sc==='A'){const b=fieldA(p);return b.map(v=>v*KA*1e-3);}     // en tesla
+  if(modeB==='fil')return fieldWire(p,IB*sgnB);
+  return fieldK(p).map(v=>v*IB*sgnB);}
+function resetComps(){const L=sc==='A'?DEF.A:modeB==='fil'?DEF.B:DEF.Bc;compasses.forEach((c,i)=>{const [x,z]=clampComp(L[i][0],L[i][1]);c.position.set(x,0.03,z);
+  const b=Bat(x,z);c.userData.ang=Math.atan2(-b[2],b[0]);c.userData.w=0;});}
+
+// ---------- contrôles ----------
+let paused=false;
+function setScene(s){sc=s;['A','B','C'].forEach(k=>{$('s'+k).classList.toggle('on',k===s);document.querySelectorAll('.o'+k).forEach(e=>e.style.display=k===s?'':'none');});
+  gA.visible=s==='A';gB.visible=s==='B';gC.visible=s==='C';plate.visible=s!=='C';compasses.forEach(c=>c.visible=s!=='C');
+  goal={...VIEWS[s].v3d};tgt.set(0,s==='C'?0.2:0,0);
+  $('hint').textContent=s==='C'?'Glisse le fond pour tourner la vue · attrape la tige pour la déplacer':'Glisse le fond pour tourner la vue · attrape une boussole pour la déplacer';
+  $('leg').innerHTML=s==='C'
+    ?'<span><i style="background:#378ADD"></i>Champ B (de N vers S)</span><span><i style="background:#BA7517"></i>Courant I</span><span><i style="background:#7F77DD"></i>Force de Laplace F</span><span><i style="background:#1D9E75"></i>Vitesse v</span><span><i style="background:#f4c542"></i>Sens du courant (charges +)</span>'
+    :'<span><i style="background:#185fa5"></i>Lignes de champ B (les pointes indiquent le sens)</span><span><i style="background:#E24B4A"></i>Pôle nord (aimant, aiguille)</span>'+(s==='B'?'<span><i style="background:#BA7517"></i>Courant I</span><span><i style="background:#f4c542"></i>Sens du courant</span>':'');
+  if(s!=='C')resetComps();setFml();}
+function setFml(){
+  $('fml').innerHTML=sc==='A'
+    ?'Autour d’un aimant, les <b style="color:#185fa5">lignes de champ B</b> sortent du pôle <b style="color:#E24B4A">Nord</b> et entrent dans le pôle Sud (à l’intérieur, elles vont du S au N : elles sont fermées). Une boussole s’aligne sur B : son pôle nord (rouge) pointe dans le sens de <b style="color:#185fa5">B</b>. Là où les lignes sont serrées, B est intense.'
+    :sc==='B'?(modeB==='fil'
+      ?'Fil rectiligne : <b style="color:#185fa5">B = μ₀·I / (2π·r)</b>, lignes de champ en cercles centrés sur le fil. <b>Main droite</b> : le pouce dans le sens de <b style="color:#BA7517">I</b>, les doigts enroulés donnent le sens de <b style="color:#185fa5">B</b>. Doubler la distance r divise B par 2.'
+      :'Bobine (solénoïde) : à l’intérieur, B est presque uniforme, <b style="color:#185fa5">B ≈ μ₀·N·I / ℓ</b> ; à l’extérieur, elle ressemble à un aimant droit. <b>Main droite</b> : les doigts dans le sens du courant dans les spires, le pouce donne <b style="color:#185fa5">B</b> à l’intérieur et indique la face nord.')
+    :'Force de Laplace : <b style="color:#7F77DD">F = I·L·B</b> (tige ⟂ B), perpendiculaire à la tige et à B. <b>Main droite</b> : pouce = <b style="color:#BA7517">I</b>, index = <b style="color:#185fa5">B</b>, majeur = <b style="color:#7F77DD">F</b>. Inverser I <i>ou</i> B inverse F ; inverser les deux ne change rien.';}
+$('sA').onclick=()=>setScene('A');$('sB').onclick=()=>setScene('B');$('sC').onclick=()=>setScene('C');
+$('flipA').onclick=()=>{flipA=!flipA;buildA();};
+$('resA').onclick=resetComps;$('resB').onclick=resetComps;
+$('pause').onclick=()=>{paused=!paused;$('pause').textContent=paused?'Reprendre':'Pause';$('pause').classList.toggle('on',paused);};
+function setModeB(m){modeB=m;$('bFil').classList.toggle('on',m==='fil');$('bBob').classList.toggle('on',m==='bob');gW.visible=m==='fil';gK.visible=m==='bob';
+  goal={...VIEWS.B.v3d,r:m==='fil'?12:13};resetComps();setFml();}
+$('bFil').onclick=()=>setModeB('fil');$('bBob').onclick=()=>setModeB('bob');
+$('iB').addEventListener('input',()=>{IB=+$('iB').value;$('iBv').textContent=fx(IB,1)+' A';buildW();});
+$('invB').onclick=()=>{sgnB=-sgnB;};
+$('iC').addEventListener('input',()=>{IC=+$('iC').value;$('iCv').textContent=fx(IC,1)+' A';});
+$('bC').addEventListener('input',()=>{BC=+$('bC').value;$('bCv').textContent=fx(BC,2)+' T';});
+$('swC').onclick=()=>{closedC=!closedC;$('swC').classList.toggle('on',closedC);$('swC').textContent=closedC?'Interrupteur fermé':'Interrupteur ouvert';waitC=0;};
+$('invI').onclick=()=>{sgnI=-sgnI;waitC=0;};
+$('invBC').onclick=()=>{sgnBC=-sgnBC;waitC=0;};
+function resetRod(){const F=IC*sgnI*sgnBC;xr=F>=0?-2.4:2.4;vr=0;waitC=0;}
+$('resC').onclick=resetRod;
+
+function size(){const w=box.clientWidth,h=box.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
+new ResizeObserver(size).observe(box);size();
+
+// ---------- boucle ----------
+let tPrev=performance.now(),T=0;
+function stepC(dt){ // tige : F = I·L·B dans le champ, frottement faible, butées au bout des rails
+  if(dragRod)return;
+  const F=forceC(),fr=MUF*MR*G;
+  if(Math.abs(vr)<1e-4&&Math.abs(F)<=fr){vr=0;}
+  else{const a=(F-Math.sign(vr||F)*fr)/MR;const nv=vr+a*dt;vr=(vr!==0&&Math.sign(nv)!==Math.sign(vr)&&Math.abs(F)<=fr)?0:nv;}
+  xr+=vr*dt*100;
+  if(xr>7.3){xr=7.3;vr=0;}if(xr<-7.3){xr=-7.3;vr=0;}
+  // une fois arrêtée hors du champ, on la remet au départ (démonstration en boucle)
+  if(closedC&&vr===0&&Math.abs(F)<1e-9&&Math.abs(IC)>0){waitC+=dt;if(waitC>1.6)resetRod();}else waitC=0;}
+function loop(t){const dt=Math.min(0.033,(t-tPrev)/1000);tPrev=t;if(!paused)T+=dt;
+  if(goal){['th','ph','r'].forEach(k=>orb[k]+=(goal[k]-orb[k])*0.12);if(Math.abs(goal.ph-orb.ph)<1e-3&&Math.abs(goal.th-orb.th)<1e-3&&Math.abs(goal.r-orb.r)<1e-2)goal=null;}
+  placeCam();
+  // boussoles : l'aiguille tourne vers B (oscillation amortie)
+  if(sc!=='C')compasses.forEach(c=>{const b=Bat(c.position.x,c.position.z),tg=Math.atan2(-b[2],b[0]);let d=tg-c.userData.ang;d=Math.atan2(Math.sin(d),Math.cos(d));
+    c.userData.w+=(d*40-c.userData.w*7)*dt;c.userData.ang+=c.userData.w*dt;c.userData.nd.rotation.y=c.userData.ang;});
+  const sel=compasses[selComp];
+  let hud='',info='';
+  if(sc==='A'){
+    flow(setA,paused?0:T,1);
+    const s=flipA?-1:1;
+    want('N','N',C.redD,V(s*(halfL+0.05),0.45,0),[[0,-12],[s*18,-10]],9);want('S','S',C.ink,V(-s*(halfL+0.05),0.45,0),[[0,-12],[-s*18,-10]],9);
+    const b=Bat(sel.position.x,sel.position.z),Bm=Math.hypot(...b)*1000;
+    want('cmp','B ≈ '+fx(Bm,Bm<10?1:0)+' mT',C.blueD,sel.position.clone().add(V(0,0.1,0)),[[0,-24],[0,24],[50,0],[-50,0]],6);
+    {let best=null;setA.forEach(L=>{if(!L.main)return;L.vs.forEach(v=>{if(v.z>1.2&&Math.abs(v.x)<0.4&&(!best||v.z>best.z)&&v.z<3.2)best=v;});});if(best)want('lB','ligne de champ',C.blueD,best,[[0,-14],[0,14],[60,0]],2);}
+    hud=`<div class="big">Le champ <b style="color:#185fa5">B</b> va du pôle <b style="color:#E24B4A">N</b> au pôle S</div><div class="sub">Déplace les boussoles : leur aiguille rouge suit les lignes de champ.</div>`;
+    info=`Boussole sélectionnée : B ≈ ${fx(Bm,Bm<10?1:0)} mT (modèle d’aimant en ferrite) &nbsp;|&nbsp; champ terrestre ≈ 0,05 mT, négligé ici &nbsp;|&nbsp; pôle nord de l’aimant : ${flipA?'à gauche':'à droite'} sur la vue de départ`;
+  } else if(sc==='B'){
+    if(modeB==='fil'){
+      flow(setW,paused?0:T,sgnB);
+      dotsW.forEach((d,i)=>{let y=((i/9*7+T*1.2*sgnB*(IB>0?1:0))%7+7)%7-3.5;d.position.set(0,y,0);d.visible=IB>0;});
+      setArrow(aIw,V(0,sgnB>0?2.2:3.8,0).add(V(0.25,0,0)),V(0,1.6*sgnB,0));aIw.visible=IB>0;
+      // flèche courbe : sens de B vu du dessus
+      // arc de 270° dans le plan horizontal ; la pointe indique le sens de B (main droite)
+      if(sgnB>0){curlH.position.set(0.55,0,0);curlH.quaternion.setFromUnitVectors(UP,V(0,0,-1));}
+      else{curlH.position.set(0,0,-0.55);curlH.quaternion.setFromUnitVectors(UP,V(1,0,0));}
+      curl.visible=IB>0;block(V(0,2.6,0),0.7);block(V(0,3.3,0),0.35);blockArrow(aIw);
+      const r=Math.hypot(sel.position.x,sel.position.z),Bm=MU0*IB/(2*Math.PI*r*0.01)*1000;
+      want('I','I = '+fx(IB,1)+' A',C.orange,V(0.25,sgnB>0?3.8:2.2,0),[[30,0],[-30,0]],9);
+      want('mdr','main droite',C.blueD,V(0.6,2.6,0),[[46,0],[-46,0],[0,-14]],4);
+      want('cmp','B = '+fx(Bm,Bm<0.1?3:2)+' mT',C.blueD,sel.position.clone().add(V(0,0.1,0)),[[0,-24],[0,24],[56,0],[-56,0]],6);
+      hud=`<div class="big"><b style="color:#185fa5">B</b> = μ₀·<b style="color:#BA7517">I</b>/(2π·r) = ${fx(Bm,3)} mT</div><div class="sub">à r = ${fx(r,1)} cm du fil (boussole sélectionnée) · courant ${sgnB>0?'vers le haut':'vers le bas'} : B tourne ${sgnB>0?'dans le sens trigonométrique':'dans le sens horaire'} vu du dessus</div>`;
+      info=`I = ${fx(IB,1)} A ${sgnB>0?'(vers le haut)':'(vers le bas)'} &nbsp;|&nbsp; <b style="color:#185fa5">B = μ₀I/(2πr) = ${fx(Bm,3)} mT à r = ${fx(r,1)} cm</b> &nbsp;|&nbsp; à 2r : ${fx(Bm/2,3)} mT &nbsp;|&nbsp; un cercle tous les 0,05 mT : plus I est grand, plus il y a de lignes &nbsp;|&nbsp; champ terrestre négligé`;
+    } else {
+      flow(setK,paused?0:T,sgnB);
+      block(V(-1.1,0,0),1.15);block(V(1.1,0,0),1.15);
+      const tot=helixPts.length-1;
+      dotsK.forEach((d,i)=>{let u=((i/14+T*0.05*sgnB)%1+1)%1;const k=Math.floor(u*tot),f=u*tot-k,a=helixPts[k],b=helixPts[k+1];
+        d.position.set(a[0]+(b[0]-a[0])*f,a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f);d.visible=IB>0;});
+      const Bc=Math.abs(BK0)*IB*1000,Blong=MU0*NT*IB/(LC*0.01)*1000,nx=Math.sign(BK0*sgnB);
+      want('fN','face nord',C.redD,V(nx*(LC/2+0.3),1.35,0),[[0,-14],[nx*40,0]],9);want('fS','face sud',C.ink,V(-nx*(LC/2+0.3),1.35,0),[[0,-14],[-nx*40,0]],9);
+      want('I','I = '+fx(IB,1)+' A',C.orange,V(-LC/2,2.4,RC),[[0,-14],[40,0]],7);
+      const b=Bat(sel.position.x,sel.position.z),Bm=Math.hypot(...b)*1000;
+      want('cmp','B ≈ '+fx(Bm,Bm<0.1?3:2)+' mT',C.blueD,sel.position.clone().add(V(0,0.1,0)),[[0,-24],[0,24],[56,0],[-56,0]],6);
+      hud=`<div class="big"><b style="color:#185fa5">B</b> au centre = ${fx(Bc,2)} mT</div><div class="sub">bobine longue : μ₀·N·I/ℓ = ${fx(Blong,2)} mT (N = 10, ℓ = 4 cm ; un peu moins ici car la bobine est courte)</div>`;
+      info=`I = ${fx(IB,1)} A &nbsp;|&nbsp; <b style="color:#185fa5">B au centre (calcul de Biot et Savart) = ${fx(Bc,2)} mT</b> &nbsp;|&nbsp; μ₀NI/ℓ = ${fx(Blong,2)} mT &nbsp;|&nbsp; boussole sélectionnée : ${fx(Bm,3)} mT &nbsp;|&nbsp; la face nord est celle par où B sort`;
+    }
+  } else {
+    if(!paused)for(let i=0;i<4;i++)stepC(dt*0.15/4);   // ralenti ×0,15
+    rod.position.set(xr,RY,0);rod.rotation.set(Math.PI/2,0,0);
+    const roll=xr/0.2*0.01*100;rodMark.position.set(xr,RY,0);rodMark.rotation.set(0,0,-xr/0.2);
+    const nTop=sgnBC>0;topP.material.color.set(nTop?'#E24B4A':'#d5dbe1');botP.material.color.set(nTop?'#d5dbe1':'#E24B4A');
+    [[-2,-2.9],[0,-2.9],[2,-2.9],[-2,2.9],[0,2.9],[2,2.9]].forEach(([x,z],i)=>{const y0=nTop?1.65:-1.25;setArrow(aBC[i],V(x,y0,z),V(0,(nTop?-1:1)*2.9,0));});
+    const zp=zPlus();termP.position.set(-9.6,0.85,zp);termM.position.set(-9.6,0.85,-zp);
+    const F=forceC(),on=closedC&&IC>0;
+    setArrow(aF,V(xr,RY+0.05,0),V(F/0.2*5.5+(F?Math.sign(F)*0.6:0),0,0));aF.visible=Math.abs(F)>1e-9;
+    setArrow(aI,V(xr,RY+0.55,-1.7*Math.sign(-zp)),V(0,0,3.4*Math.sign(-zp)));aI.visible=on;
+    setArrow(aV,V(xr,RY+0.9,-1.3),V(vr*6,0,0));
+    [aF,aI,aV,...aBC].forEach(blockArrow);
+    // charges qui circulent : borne + → rail → tige → autre rail → borne −
+    const path=[V(-9,0.15,zp),V(xr,0.15,zp),V(xr,RY+0.22,zp*0.98),V(xr,RY+0.22,-zp*0.98),V(xr,0.15,-zp),V(-9,0.15,-zp)];
+    const seg=[];let tl=0;for(let i=1;i<path.length;i++){const l=path[i].distanceTo(path[i-1]);seg.push(l);tl+=l;}
+    dotsC.forEach((d,i)=>{d.visible=on;if(!on)return;let s=((i/dotsC.length+T*0.12)%1)*tl,k=0;while(k<seg.length-1&&s>seg[k]){s-=seg[k];k++;}
+      d.position.lerpVectors(path[k],path[k+1],Math.min(1,s/seg[k]));});
+    want('Np','N',C.redD,V(0,nTop?2.2:-1.8,2.95),[[0,0]],9);want('Sp','S',C.ink,V(0,nTop?-1.8:2.2,2.95),[[0,0]],9);
+    want('tp','+',C.redD,termP.position.clone().add(V(0,0.4,0)),[[0,-10],[16,0]],8);want('tm','−',C.blueD,termM.position.clone().add(V(0,0.4,0)),[[0,-10],[16,0]],8);
+    if(Math.abs(F)>1e-9)want('F','F = '+fx(Math.abs(F),3).replace(/0+$/,'').replace(/,$/,'')+' N',C.violet,V(xr+F/0.2*5.5+Math.sign(F)*0.6,RY,0),[[Math.sign(F)*48,0],[0,-16],[0,16]],8);
+    if(on)want('I','I',C.orange,V(xr,RY+0.55,1.7*Math.sign(-zp)),[[0,-14],[14,0],[-14,0]],7);
+    want('B','B = '+fx(BC,2)+' T',C.blueD,V(2,0.2,-2.9),[[52,0],[-52,0],[52,-20],[0,-24]],6);
+    if(Math.abs(vr)>0.02)want('v','v',C.greenD,V(xr+vr*6,RY+0.9,-1.3),[[Math.sign(vr)*14,0],[0,-16],[0,16]],5);
+    const inF=Math.abs(xr)<=XF,fr=MUF*MR*G,Fm=IC*LR*BC;
+    hud=`<div class="big"><b style="color:#7F77DD">F</b> = <b style="color:#BA7517">I</b>·L·<b style="color:#185fa5">B</b> = ${fx(IC,1)} × 0,04 × ${fx(BC,2)} = ${fx(Fm,3)} N</div><div class="sub">${!closedC?'Circuit ouvert : pas de courant, pas de force.':IC===0?'I = 0 : pas de force.':!inF?'La tige est hors du champ de l’aimant : plus de force, elle roule sur sa lancée.':Fm<=fr&&Math.abs(vr)<1e-4?'Force trop faible pour vaincre le frottement : la tige reste immobile.':'La force pousse la tige '+(F>0?'vers la droite (+x)':'vers la gauche (−x)')+'.'} Ralenti ×0,15.</div>`;
+    info=`L = 4 cm (écart des rails) &nbsp;|&nbsp; m = 20 g &nbsp;|&nbsp; <b style="color:#7F77DD">F = ${fx(Fm,3)} N</b> ⇒ a = F/m = ${fx(Fm/MR,2)} m/s² (frottement ${fx(fr,4)} N) &nbsp;|&nbsp; <b style="color:#0F6E56">v = ${fx(Math.abs(vr),2)} m/s</b> &nbsp;|&nbsp; pôle nord ${nTop?'en haut : B vers le bas':'en bas : B vers le haut'} &nbsp;|&nbsp; induction négligée`;
+  }
+  $('hud').innerHTML=hud;$('info').innerHTML=info;
+  renderer.render(scene,cam);
+  placeLabels();
+  requestAnimationFrame(loop);}
+buildA();buildW();buildK();setModeB('fil');setScene('A');
+orb={...VIEWS.A.v3d};goal=null;
+requestAnimationFrame(loop);
+window.__m={setScene,setModeB,get orb(){return orb},view(k){goal=null;orb={...VIEWS[sc][k]};},flipA:()=>$('flipA').click(),
+  set I(v){IB=v;buildW();},invB:()=>{sgnB=-sgnB;},setC(i,b){IC=i;BC=b;},invI:()=>{sgnI=-sgnI;},invBC:()=>{sgnBC=-sgnBC;},get xr(){return xr},get vr(){return vr},resetRod,
+  moveComp(i,x,z){const [a,b]=clampComp(x,z);compasses[i].position.set(a,0.03,b);selComp=i;}};
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Magnétisme et forces électromagnétiques<span>5 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/regle-main-droite/"><i>01</i>Règle de la main droite</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/aimants-laplace/"><i>02</i>Aimants, courants et force de Laplace</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/forces-magn-tique-sur-fils-/"><i>03</i>Forces entre fils parallèles</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Cyclotron/"><i>04</i>Cyclotron</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/loi-de-lenz/"><i>05</i>Loi de Lenz : induction</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

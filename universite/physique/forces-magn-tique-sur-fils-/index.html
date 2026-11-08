@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forces entre fils parallèles · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+/* Deux fils parallèles en 3D : scène plein cadre, lecture chiffrée en haut à gauche, étiquettes HTML projetées. */
+.t-stage{position:relative;width:100%;height:66vh;min-height:440px;background:#fff;border:1px solid var(--rule);border-radius:4px;overflow:hidden;
+  box-shadow:0 1px 2px rgba(12,31,46,.05),0 8px 24px -16px rgba(12,31,46,.18);touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.t-stage:active{cursor:grabbing}
+.t-stage canvas{display:block;width:100%!important;height:100%!important;border:0!important;box-shadow:none!important;border-radius:0!important}
+.t-lab{position:absolute;left:0;top:0;font:700 13px Mulish,system-ui,sans-serif;white-space:nowrap;pointer-events:none;padding:2px 6px;border-radius:4px;
+  background:rgba(255,255,255,.92);box-shadow:0 0 0 1px rgba(19,35,58,.06);opacity:0;will-change:transform}
+.t-lab b{font-weight:800}
+.vc{position:relative;display:inline-block;font-style:italic;font-weight:800}
+.vc::after{content:"";position:absolute;left:12%;right:4%;top:-1px;height:1.6px;background:currentColor;border-radius:1px}
+.vc::before{content:"";position:absolute;right:2%;top:-3.4px;border:3.2px solid transparent;border-left:5px solid currentColor;border-right:0}
+.t-hud b,.t-hud .nw{white-space:nowrap}
+.t-hud{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.95);border:1px solid var(--rule);border-radius:6px;padding:9px 13px;
+  font:600 13px/1.5 Mulish,system-ui,sans-serif;color:#13233a;pointer-events:none;max-width:min(380px,calc(100% - 24px))}
+.t-hud .big{font:800 15px/1.35 Mulish,system-ui,sans-serif}
+.t-hud .sub{color:#5b6b7b;font-size:12px;font-weight:600}
+.t-hint{position:absolute;right:12px;bottom:10px;font:600 12px Mulish,system-ui,sans-serif;color:#8a95a3;pointer-events:none;text-align:right;background:rgba(255,255,255,.85);padding:1px 6px;border-radius:3px}
+.t-mode{position:absolute;left:12px;bottom:10px;font:700 12px Mulish,system-ui,sans-serif;color:#185fa5;background:rgba(255,255,255,.9);padding:2px 8px;border-radius:3px;pointer-events:none}
+.t-err{position:absolute;inset:0;display:grid;place-items:center;color:#a32d2d;font:600 14px Mulish,system-ui,sans-serif;padding:20px;text-align:center}
+.val{white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font:600 .82rem Mulish,system-ui,sans-serif;color:#5b6b7b;margin:10px 0 2px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.row input[type=range]{flex:1;min-width:120px}
+.row .val{min-width:62px;text-align:right}
+.row .pill{min-width:180px}
+.btns{flex-wrap:wrap}
+@media (max-width:640px){.t-stage{height:62vh;min-height:420px}.t-hint{display:none}
+  .t-hud{font-size:12px;padding:7px 10px;top:auto;bottom:34px;left:8px;max-width:calc(100% - 16px)}.t-hud .big{font-size:13px}
+  .t-lab{font-size:11.5px;padding:1px 5px}.row{flex-wrap:wrap!important}.row .pill{min-width:0;flex:1 1 100%}.row input[type=range]{flex:1}
+  .t-mode{left:8px;bottom:8px;white-space:nowrap;font-size:11px}}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH11">Magnétisme</a>›<b>Forces entre fils parallèles</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Magnétisme</span><span class="sfa-chip free">Gratuit</span></div><h1>Forces entre fils parallèles</h1><p>Courants de même sens ou de sens opposés</p></div>
+<section class="sfa-sim">
+
+
+
+<div id="stage" class="t-stage" aria-label="Deux fils parallèles en 3D : glisse pour tourner la vue, molette pour zoomer">
+  <div class="t-hud" id="hud"></div>
+  <div class="t-lab" id="lI1" style="color:#a32d2d"></div>
+  <div class="t-lab" id="lI2" style="color:#5b54b8"></div>
+  <div class="t-lab" id="lB1" style="color:#a32d2d"></div>
+  <div class="t-lab" id="lB2" style="color:#5b54b8"></div>
+  <div class="t-lab" id="lF1"></div>
+  <div class="t-lab" id="lF2"></div>
+  <div class="t-lab" id="lD" style="color:#13233a"></div>
+  <div class="t-mode" id="modeTag"></div>
+  <div class="t-hint">Glisse pour tourner la vue · molette pour zoomer</div>
+</div>
+
+<div class="legend">
+  <span><i style="background:#E24B4A"></i>Champ du fil 1 (cercles tous les 20 µT)</span>
+  <span><i style="background:#7F77DD"></i>Champ du fil 2</span>
+  <span><i style="background:#1D9E75"></i>Force d'attraction</span>
+  <span><i style="background:#BA7517"></i>Force de répulsion</span>
+</div>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill" style="color:#a32d2d">I₁ &nbsp;courant du fil 1</span>
+  <input type="range" id="i1" min="-20" max="20" value="10" step="1" style="accent-color:#E24B4A;">
+  <span class="val" id="i1v" style="color:#a32d2d">+10 A</span>
+</div>
+<div class="row">
+  <span class="pill" style="color:#5b54b8">I₂ &nbsp;courant du fil 2</span>
+  <input type="range" id="i2" min="-20" max="20" value="8" step="1" style="accent-color:#7F77DD;">
+  <span class="val" id="i2v" style="color:#5b54b8">+8 A</span>
+</div>
+<div class="row">
+  <span class="pill" style="color:#13233a">d &nbsp;distance entre les fils</span>
+  <input type="range" id="dd" min="2" max="16" value="5" step="0.5" style="accent-color:#13233a;">
+  <span class="val" id="ddv" style="color:#13233a">5,0 cm</span>
+</div>
+<div class="row">
+  <span class="pill" style="color:#5b6b7b">L &nbsp;longueur des fils</span>
+  <input type="range" id="ll" min="0.1" max="2" value="1" step="0.1" style="accent-color:#8a95a3;">
+  <span class="val" id="llv" style="color:#5b6b7b">1,0 m</span>
+</div>
+<div class="row btns">
+  <button class="btn" id="bInv">Inverser I₂</button>
+  <button class="btn on" id="bField">Lignes de champ</button>
+  <button class="btn on" id="bBend">Déformation des fils</button>
+  <button class="btn" id="bPause">Pause</button>
+</div>
+<div class="row btns">
+  <button class="btn on" id="v3d">Vue 3D</button>
+  <button class="btn" id="vCut">Vue en coupe (le long des fils)</button>
+</div>
+
+<div class="info" id="info"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const box=$('stage');
+if(!window.THREE){box.insertAdjacentHTML('beforeend','<div class="t-err">Impossible de charger la 3D (three.js). Vérifie la connexion internet.</div>');return;}
+
+// ---------- physique (SI) ----------
+const MU0=4*Math.PI*1e-7;                 // T·m/A
+let I1=10, I2=8, dcm=5, Lm=1;             // A, A, cm, m
+let showField=true, bend=true, paused=false;
+const phys=()=>{const d=dcm/100;
+  return {d, B1:MU0*Math.abs(I1)/(2*Math.PI*d), B2:MU0*Math.abs(I2)/(2*Math.PI*d), FL:MU0*Math.abs(I1*I2)/(2*Math.PI*d)};};
+
+// ---------- échelle d'affichage : 1 unité de la scène = 2,5 cm (fixe, ne dépend pas de l'écran) ----------
+const U=2.5;                              // cm par unité
+const HL=3.4, RW=0.085;                   // demi-longueur dessinée des fils, rayon dessiné
+const PLANES=[-2.3,0,2.3];                // plans perpendiculaires où l'on trace les cercles de champ
+const KMAX=5, BSTEP=20e-6;                // cercles là où B = 20, 40, 60 … µT
+
+// ---------- scène ----------
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+box.prepend(renderer.domElement);
+const scene=new THREE.Scene(); scene.background=new THREE.Color('#ffffff');
+const pcam=new THREE.PerspectiveCamera(36,1,0.1,200);
+const ocam=new THREE.OrthographicCamera(-1,1,1,-1,0.1,200);
+scene.add(new THREE.HemisphereLight('#ffffff','#a8b3c0',0.75));
+const sun=new THREE.DirectionalLight('#ffffff',0.7); sun.position.set(5,9,7); scene.add(sun);
+const rim=new THREE.DirectionalLight('#dfe8f5',0.35); rim.position.set(-6,-3,-5); scene.add(rim);
+
+// sol discret, pour la profondeur (caché en vue en coupe)
+const grid=new THREE.GridHelper(18,36,'#d3d9e2','#e8ecf1'); grid.position.y=-4.6; scene.add(grid);
+const floorM=new THREE.Mesh(new THREE.PlaneGeometry(18,18),new THREE.MeshBasicMaterial({color:'#f6f8fa'}));
+floorM.rotation.x=-Math.PI/2; floorM.position.y=-4.61; scene.add(floorM);
+
+// ---------- fils : cylindres métalliques déformables (extrémités fixes) ----------
+const WCOL=['#E24B4A','#7F77DD'], WDARK=['#a32d2d','#5b54b8'];
+const wires=[0,1].map(i=>{
+  const geo=new THREE.CylinderGeometry(RW,RW,2*HL,24,48,true); geo.rotateX(Math.PI/2);   // axe selon z
+  const base=Float32Array.from(geo.attributes.position.array);
+  const mesh=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:'#c98a58',metalness:.55,roughness:.32,emissive:'#3a1d08',emissiveIntensity:.15}));
+  scene.add(mesh);
+  // bague colorée près de chaque extrémité (repère du fil)
+  const rings=[-1,1].map(s=>{const r=new THREE.Mesh(new THREE.CylinderGeometry(RW*1.18,RW*1.18,0.18,24),new THREE.MeshStandardMaterial({color:WCOL[i],roughness:.5}));
+    r.rotation.x=Math.PI/2; r.position.z=s*(HL-0.2); scene.add(r); return r;});
+  // embouts : disque ⊙ / ⊗ (vu depuis +z et depuis −z)
+  const capF=new THREE.Mesh(new THREE.CircleGeometry(0.24,40),new THREE.MeshBasicMaterial({transparent:true}));
+  const capB=new THREE.Mesh(new THREE.CircleGeometry(0.24,40),new THREE.MeshBasicMaterial({transparent:true}));
+  capF.position.z=HL+0.002; capB.position.z=-HL-0.002; capB.rotation.y=Math.PI; capF.renderOrder=capB.renderOrder=3;
+  scene.add(capF,capB);
+  // « perles fléchées » qui défilent dans le sens du courant conventionnel
+  const beadM=new THREE.MeshStandardMaterial({color:WCOL[i],roughness:.45,emissive:WCOL[i],emissiveIntensity:.15});
+  const beads=[]; for(let k=0;k<9;k++){const b=new THREE.Mesh(new THREE.ConeGeometry(RW*1.75,RW*3.6,20),beadM); scene.add(b); beads.push(b);}
+  return {geo,base,mesh,rings,capF,capB,beads,x0:0,delta:0};
+});
+// textures des symboles
+function symTex(col,kind){const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');
+  g.fillStyle='#ffffff';g.beginPath();g.arc(128,128,124,0,7);g.fill();
+  g.strokeStyle=col;g.lineWidth=16;g.beginPath();g.arc(128,128,112,0,7);g.stroke();
+  g.fillStyle=col;g.lineCap='round';
+  if(kind==='out'){g.beginPath();g.arc(128,128,30,0,7);g.fill();}
+  else if(kind==='in'){g.lineWidth=20;g.beginPath();g.moveTo(66,66);g.lineTo(190,190);g.moveTo(190,66);g.lineTo(66,190);g.stroke();}
+  const t=new THREE.CanvasTexture(c);t.anisotropy=4;return t;}
+const TEX=[0,1].map(i=>({out:symTex(WDARK[i],'out'),in:symTex(WDARK[i],'in'),none:symTex('#b9c1cb','none')}));
+const wx=(i,z)=>wires[i].x0+wires[i].delta*(1-(z/HL)*(z/HL));     // position x de l'axe du fil i à la cote z
+
+function shapeWire(i){const w=wires[i],p=w.geo.attributes.position,a=p.array,b=w.base;
+  for(let k=0;k<a.length;k+=3){const z=b[k+2];a[k]=b[k]+wx(i,z);}
+  p.needsUpdate=true; w.geo.computeVertexNormals();
+  w.rings.forEach(r=>r.position.x=wx(i,r.position.z)); w.capF.position.x=w.x0; w.capB.position.x=w.x0;}
+
+// ---------- cercles de champ (tores fins) + pointes de flèche qui tournent ----------
+const circ=[0,1].map(i=>PLANES.map((zp,pi)=>{const arr=[];for(let k=1;k<=KMAX;k++){
+  const m=new THREE.Mesh(new THREE.BufferGeometry(),new THREE.MeshBasicMaterial({color:WCOL[i],transparent:true,opacity:pi===1?.7:.32,depthWrite:false}));
+  const hm=new THREE.MeshBasicMaterial({color:WDARK[i],transparent:true,opacity:pi===1?.95:.7,depthWrite:false});
+  const heads=[0,1].map(()=>{const h=new THREE.Mesh(new THREE.ConeGeometry(0.075,0.2,14),hm);scene.add(h);return h;});
+  m.position.z=zp; scene.add(m); arr.push({m,heads,r:0,on:false});}
+  return arr;}));
+let circKey='';
+function buildCircles(){
+  for(let i=0;i<2;i++){const I=i?I2:I1;
+    for(let k=1;k<=KMAX;k++){
+      const rcm=MU0*Math.abs(I)/(2*Math.PI*k*BSTEP)*100;        // rayon (cm) où B = k·20 µT
+      const on0=Math.abs(I)>0&&rcm>=0.9&&rcm<=10.5, ru=rcm/U;
+      PLANES.forEach((zp,pi)=>{const c=circ[i][pi][k-1];const on=on0&&(pi===1||k<=3);c.on=on;c.r=ru;
+        if(on){c.m.geometry.dispose();c.m.geometry=new THREE.TorusGeometry(ru,pi===1?0.016:0.012,6,Math.max(48,Math.round(ru*60)));}});
+    }}
+}
+
+// ---------- flèches 3D (tige + pointe), toujours visibles ----------
+function arrow(col){const g=new THREE.Group();
+  const m=new THREE.MeshBasicMaterial({color:col,depthTest:false,transparent:true});
+  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(0.045,0.045,1,12),m), head=new THREE.Mesh(new THREE.ConeGeometry(0.12,0.3,18),m);
+  g.add(shaft,head); shaft.renderOrder=head.renderOrder=10; g.userData={shaft,head,m}; scene.add(g); return g;}
+const Y=new THREE.Vector3(0,1,0);
+function setArrow(a,o,v){const L=v.length(); a.visible=L>0.04; if(!a.visible)return;
+  const d=v.clone().normalize(), hl=Math.min(0.3,L*0.55);
+  a.position.copy(o); a.quaternion.setFromUnitVectors(Y,d);
+  a.userData.shaft.scale.set(1,Math.max(0.001,L-hl),1); a.userData.shaft.position.set(0,(L-hl)/2,0);
+  a.userData.head.scale.set(1,hl/0.3,1); a.userData.head.position.set(0,L-hl/2,0);}
+const aB1=arrow('#E24B4A'), aB2=arrow('#7F77DD');
+const aF=[[],[]]; [0,1].forEach(i=>{for(let k=0;k<1;k++)aF[i].push(arrow('#1D9E75'));});
+const FZ=[0];                              // flèche de force dessinée au milieu de chaque fil
+
+// cote d (aux extrémités avant, là où les fils sont tenus)
+const coteM=new THREE.LineBasicMaterial({color:'#13233a',depthTest:false,transparent:true});
+const coteG=new THREE.BufferGeometry(); coteG.setAttribute('position',new THREE.BufferAttribute(new Float32Array(18),3));
+const cote=new THREE.LineSegments(coteG,coteM); cote.renderOrder=9; cote.frustumCulled=false; scene.add(cote);
+
+// ---------- caméra : orbite (perspective) ; vue en coupe = orthographique le long des fils ----------
+const V3D={th:0.95,ph:0.98,r:14}, VCUT={th:0,ph:Math.PI/2,r:12.5};
+let orb={...V3D}, goal=null, cut=false;
+function setView(k){if(k==='cut'){goal={...VCUT};}else{cut=false;goal={...V3D};}
+  $('v3d').classList.toggle('on',k!=='cut');$('vCut').classList.toggle('on',k==='cut');}
+$('v3d').onclick=()=>setView('3d'); $('vCut').onclick=()=>setView('cut');
+let drag=null;
+box.addEventListener('pointerdown',e=>{box.setPointerCapture(e.pointerId);drag={x:e.clientX,y:e.clientY,moved:false};});
+box.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+  if(!drag.moved&&Math.hypot(dx,dy)<3)return;
+  if(!drag.moved){drag.moved=true;goal=null;if(cut){cut=false;$('vCut').classList.remove('on');}$('v3d').classList.remove('on');}
+  orb.th-=dx*0.008;orb.ph=Math.max(0.12,Math.min(2.6,orb.ph-dy*0.008));drag.x=e.clientX;drag.y=e.clientY;});
+const end=()=>drag=null; box.addEventListener('pointerup',end); box.addEventListener('pointercancel',end);
+box.addEventListener('wheel',e=>{e.preventDefault();orb.r=Math.max(9,Math.min(40,orb.r*Math.exp(e.deltaY*0.0012)));},{passive:false});
+const tgt=new THREE.Vector3(0,-0.15,0);
+let cam=pcam;
+function placeCam(){const asp=pcam.aspect, k=Math.max(1,1.02/asp); tgt.y=box.clientWidth<=640?-1.5:-0.15;
+  // cadrage : les deux fils et leurs premiers cercles restent visibles même quand d est grand
+  const need=(dcm/U/2+1.6)/(Math.tan(pcam.fov*Math.PI/360)*asp*0.92), r=Math.max(orb.r*k,need);
+  pcam.position.set(tgt.x+r*Math.sin(orb.ph)*Math.sin(orb.th),tgt.y+r*Math.cos(orb.ph),tgt.z+r*Math.sin(orb.ph)*Math.cos(orb.th));
+  pcam.up.set(0,1,0); pcam.lookAt(tgt);
+  if(cut){const hh=r*Math.tan(pcam.fov*Math.PI/360);
+    ocam.left=-hh*asp;ocam.right=hh*asp;ocam.top=hh;ocam.bottom=-hh;ocam.position.copy(pcam.position);ocam.up.set(0,1,0);ocam.lookAt(tgt);ocam.updateProjectionMatrix();cam=ocam;}
+  else cam=pcam;}
+
+// ---------- contrôles ----------
+const fx=(v,n=1)=>v.toFixed(n).replace('.',',');
+const sg=v=>(v>0?'+':v<0?'−':'')+Math.abs(v);
+function fmtI(v){return sg(v)+' A';}
+let dirty=true;
+$('i1').addEventListener('input',e=>{I1=+e.target.value;$('i1v').textContent=fmtI(I1);dirty=true;});
+$('i2').addEventListener('input',e=>{I2=+e.target.value;$('i2v').textContent=fmtI(I2);dirty=true;});
+$('dd').addEventListener('input',e=>{dcm=+e.target.value;$('ddv').textContent=fx(dcm)+' cm';dirty=true;});
+$('ll').addEventListener('input',e=>{Lm=+e.target.value;$('llv').textContent=fx(Lm)+' m';});
+$('bInv').onclick=()=>{I2=-I2;$('i2').value=I2;$('i2').dispatchEvent(new Event('input',{bubbles:true}));};
+$('bField').onclick=()=>{showField=!showField;$('bField').classList.toggle('on',showField);};
+$('bBend').onclick=()=>{bend=!bend;$('bBend').classList.toggle('on',bend);};
+$('bPause').onclick=()=>{paused=!paused;$('bPause').textContent=paused?'Reprendre':'Pause';$('bPause').classList.toggle('on',paused);};
+
+// ---------- formats ----------
+function fB(B){const u=B*1e6;return (u<10?fx(u,1):String(Math.round(u)))+' µT';}
+function fN(F){const u=F*1e6;if(u===0)return '0';if(u<10)return fx(u,2);if(u<100)return fx(u,1);
+  return String(Math.round(u)).replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
+
+// ---------- étiquettes : placement puis anti-chevauchement ----------
+const LABS=['lI1','lI2','lB1','lB2','lF1','lF2','lD'].map(id=>({id,el:$(id),x:0,y:0,w:0,h:0,on:false,txt:''}));
+const L=Object.fromEntries(LABS.map(l=>[l.id,l]));
+function proj(v){const p=v.clone().project(cam);return {x:(p.x+1)/2*box.clientWidth,y:(1-p.y)/2*box.clientHeight,ok:p.z<1&&p.z>-1};}
+function setTxt(l,h){if(l.txt!==h){l.el.innerHTML=h;l.txt=h;l.w=0;}}
+// place l'étiquette au-delà de la pointe d'une flèche (dans le prolongement de la flèche, à l'écran)
+function atTip(l,o,v){const a=proj(o),b=proj(o.clone().add(v));let ux=b.x-a.x,uy=b.y-a.y;const n=Math.hypot(ux,uy);
+  if(n<1){ux=0;uy=-1;}else{ux/=n;uy/=n;}
+  const w=l.w/2+6,h=l.h/2+5,t=Math.min(Math.abs(ux)>1e-3?w/Math.abs(ux):1e9,Math.abs(uy)>1e-3?h/Math.abs(uy):1e9);
+  l.x=b.x+ux*t;l.y=b.y+uy*t;l.on=b.ok;}
+function resolve(){
+  const W=box.clientWidth,H=box.clientHeight,hud=$('hud'),hr={x:hud.offsetLeft,y:hud.offsetTop,w:hud.offsetWidth,h:hud.offsetHeight};
+  const act=LABS.filter(l=>l.on);
+  act.forEach(l=>{if(!l.w){l.w=l.el.offsetWidth;l.h=l.el.offsetHeight;}});
+  for(let it=0;it<14;it++){
+    for(let a=0;a<act.length;a++)for(let b=a+1;b<act.length;b++){const p=act[a],q=act[b];
+      const ox=(p.w+q.w)/2+4-Math.abs(p.x-q.x), oy=(p.h+q.h)/2+3-Math.abs(p.y-q.y);
+      if(ox>0&&oy>0){const s=(p.y<q.y||(p.y===q.y&&a<b))?-1:1;
+        if(ox<oy*0.7){const sx=p.x<q.x?-1:1;p.x+=sx*ox/2;q.x-=sx*ox/2;}else{p.y+=s*oy/2;q.y-=s*oy/2;}}}
+    act.forEach(l=>{ // le panneau de lecture est un obstacle fixe
+      const ox=Math.min(l.x+l.w/2,hr.x+hr.w)-Math.max(l.x-l.w/2,hr.x)+4, oy=Math.min(l.y+l.h/2,hr.y+hr.h)-Math.max(l.y-l.h/2,hr.y)+4;
+      if(ox>4&&oy>4){const below=hr.y+hr.h+l.h/2+4, above=hr.y-l.h/2-4, right=hr.x+hr.w+l.w/2+4;
+        const c=[[Math.abs(below-l.y),()=>l.y=below],[hr.y>40?Math.abs(above-l.y):1e9,()=>l.y=above],[Math.abs(right-l.x),()=>l.x=right]].sort((u,v)=>u[0]-v[0]);c[0][1]();}
+      l.x=Math.max(l.w/2+4,Math.min(W-l.w/2-4,l.x)); l.y=Math.max(l.h/2+4,Math.min(H-l.h/2-4,l.y));});
+  }
+  LABS.forEach(l=>{l.el.style.opacity=l.on?1:0; if(l.on)l.el.style.transform=`translate(${l.x-l.w/2}px,${l.y-l.h/2}px)`;});
+}
+
+function size(){const w=box.clientWidth,h=box.clientHeight;renderer.setSize(w,h,false);pcam.aspect=w/h;pcam.updateProjectionMatrix();}
+new ResizeObserver(size).observe(box); size();
+
+// ---------- boucle ----------
+let tPrev=performance.now(), tA=0, flowPh=0;
+const beadPh=[0,0];
+function loop(t){
+  const dt=Math.min(0.05,(t-tPrev)/1000); tPrev=t;
+  if(!paused){tA+=dt;}
+  const P=phys(), s=Math.sign(I1*I2), attract=s>0, FL=P.FL;
+  const dV=dcm/U;                           // distance dessinée (unités de scène), proportionnelle à d
+  if(dirty){buildCircles();dirty=false;}
+
+  // déformation (exagérée) : flèche au milieu, extrémités tenues ; elle grandit avec F/L
+  const gap=dV-2*RW, mag=FL>0?Math.min(1,Math.sqrt(FL/2.5e-3)):0;
+  const dmax=attract?Math.min(0.32*gap,0.55):0.55;
+  const tgtDelta=bend&&FL>0?dmax*mag:0;
+  wires[0].x0=-dV/2; wires[1].x0=dV/2;
+  const kB=paused?0:Math.min(1,dt*3);
+  wires[0].delta+=( s*tgtDelta-wires[0].delta)*kB;          // fil 1 : +x s'il est attiré
+  wires[1].delta+=(-s*tgtDelta-wires[1].delta)*kB;
+  if(Math.abs(wires[0].delta)>0.3*gap&&attract){wires[0].delta=0.3*gap;wires[1].delta=-0.3*gap;}
+  shapeWire(0); shapeWire(1);
+
+  // embouts ⊙ / ⊗ : vu depuis +z, un courant +z sort de l'écran (⊙) ; vu depuis −z il y rentre (⊗)
+  [I1,I2].forEach((I,i)=>{const w=wires[i],T=TEX[i];
+    w.capF.material.map=I>0?T.out:I<0?T.in:T.none; w.capB.material.map=I>0?T.in:I<0?T.out:T.none;
+    w.capF.material.needsUpdate=w.capB.material.needsUpdate=true;
+    // perles : vitesse ∝ I, dans le sens du courant
+    if(!paused)beadPh[i]+=dt*0.09*I;
+    const n=w.beads.length,span=2*HL-0.7;
+    w.beads.forEach((b,k)=>{b.visible=I!==0&&!cut;let u=((k/n+beadPh[i]/span)%1+1)%1; const z=-span/2+u*span;
+      b.position.set(wx(i,z),0,z); b.rotation.set(I>0?Math.PI/2:-Math.PI/2,0,0);
+      const fade=Math.min(1,(span/2-Math.abs(z))/0.5); b.scale.setScalar(Math.max(0.01,fade));});
+  });
+
+  // cercles de champ : centrés sur l'axe (éventuellement courbé) du fil, sens donné par la main droite
+  if(!paused)flowPh+=dt*0.55;
+  [I1,I2].forEach((I,i)=>{const sI=Math.sign(I);
+    circ[i].forEach((arr,pi)=>{const zp=PLANES[pi];arr.forEach((c,k)=>{
+      const vis=showField&&c.on&&(!cut||pi===1);
+      c.m.visible=vis; c.m.position.x=wx(i,zp);
+      c.heads.forEach((h,j)=>{h.visible=vis&&(pi===1||j===0); if(!h.visible)return;
+        const ph=sI*flowPh/(0.6+c.r*0.5)+j*Math.PI+k*0.9+pi*0.5+i*0.4;
+        const cx=wx(i,zp);h.position.set(cx+c.r*Math.cos(ph),c.r*Math.sin(ph),zp);
+        h.quaternion.setFromUnitVectors(Y,new THREE.Vector3(-Math.sin(ph)*sI,Math.cos(ph)*sI,0));});});});});
+
+  // champ d'un fil au niveau de l'autre : B = μ₀ I/(2π d), direction ẑ×r̂ (main droite) pour I>0
+  const Z=new THREE.Vector3(0,0,1);
+  const p1=new THREE.Vector3(wx(0,0),0,0), p2=new THREE.Vector3(wx(1,0),0,0);
+  const r12=new THREE.Vector3(1,0,0);                        // de 1 vers 2
+  const dirB1=Z.clone().cross(r12).multiplyScalar(Math.sign(I1));          // B₁ au fil 2
+  const dirB2=Z.clone().cross(r12.clone().negate()).multiplyScalar(Math.sign(I2)); // B₂ au fil 1
+  const lenB=B=>B>0?0.35+1.25*Math.sqrt(Math.min(1,B/200e-6)):0;
+  const vB1=dirB1.clone().multiplyScalar(lenB(P.B1)), vB2=dirB2.clone().multiplyScalar(lenB(P.B2));
+  setArrow(aB1,p2,vB1); setArrow(aB2,p1,vB2);
+  // force de Laplace sur chaque fil : F = I L ẑ × B
+  const dF2=Z.clone().cross(dirB1).multiplyScalar(Math.sign(I2));   // sur le fil 2
+  const dF1=Z.clone().cross(dirB2).multiplyScalar(Math.sign(I1));   // sur le fil 1
+  let lenF=FL>0?0.45+1.3*Math.sqrt(Math.min(1,FL/4e-3)):0;
+  // en attraction, les deux flèches se font face : leur pointe s'arrête avant le milieu de l'espace entre les fils
+  if(attract&&lenF>0)lenF=Math.max(0.12,Math.min(lenF,0.46*gap-0.02));
+  const off=RW+0.02;
+  const col=attract?'#1D9E75':'#BA7517';
+  [[0,dF1],[1,dF2]].forEach(([i,dv])=>aF[i].forEach((a,k)=>{const z=FZ[k];
+    a.userData.m.color.set(col); a.userData.m.opacity=1;
+    setArrow(a,new THREE.Vector3(wx(i,z),0,z).add(dv.clone().multiplyScalar(off)),dv.clone().multiplyScalar(lenF));
+    if(lenF<=0)a.visible=false;}));
+
+  // cote d entre les extrémités avant (fixes)
+  { const a=coteG.attributes.position.array, yC=-0.62, z=HL+0.02, x1=-dV/2, x2=dV/2, tk=0.14;
+    a.set([x1,yC,z,x2,yC,z, x1,yC-tk,z,x1,yC+tk,z, x2,yC-tk,z,x2,yC+tk,z]); coteG.attributes.position.needsUpdate=true; }
+
+  // caméra
+  if(goal){const kc=1-Math.exp(-dt*7);['th','ph','r'].forEach(k=>orb[k]+=(goal[k]-orb[k])*kc);
+    if(Math.abs(goal.ph-orb.ph)<0.01&&Math.abs(goal.th-orb.th)<0.01&&Math.abs(goal.r-orb.r)<0.1){Object.assign(orb,goal);if(goal.ph===VCUT.ph&&goal.th===VCUT.th)cut=true;goal=null;}}
+  placeCam();
+  grid.visible=floorM.visible=!cut&&orb.ph<1.5;
+
+  // ---------- étiquettes ----------
+  const v=(I)=>'<i class="vc">'+I+'</i>';
+  setTxt(L.lI1,'I₁ = '+fmtI(I1)+(cut?(I1>0?' ⊙':I1<0?' ⊗':''):''));
+  setTxt(L.lI2,'I₂ = '+fmtI(I2)+(cut?(I2>0?' ⊙':I2<0?' ⊗':''):''));
+  setTxt(L.lB1,v('B')+'₁ = '+fB(P.B1)); setTxt(L.lB2,v('B')+'₂ = '+fB(P.B2));
+  setTxt(L.lF1,v('F')+'₁'); setTxt(L.lF2,v('F')+'₂');
+  setTxt(L.lD,'d = '+fx(dcm)+' cm');
+  L.lF1.el.style.color=L.lF2.el.style.color=attract?'#0F6E56':'#8a5410';
+  // I : à côté de l'embout avant, du côté extérieur
+  [[L.lI1,0,-1],[L.lI2,1,1]].forEach(([l,i,sd])=>{const q=proj(new THREE.Vector3(wires[i].x0,0,HL));
+    if(!l.w){l.w=l.el.offsetWidth;l.h=l.el.offsetHeight;}
+    l.x=q.x+sd*(cut?l.w/2+4:l.w/2+16); l.y=cut?q.y+l.h/2+18:q.y-12; l.on=q.ok;});   // en coupe : sous le fil, pour laisser l'axe libre aux flèches F
+  if(aB1.visible)atTip(L.lB1,p2,vB1); else L.lB1.on=false;
+  if(aB2.visible)atTip(L.lB2,p1,vB2); else L.lB2.on=false;
+  if(lenF>0){atTip(L.lF1,new THREE.Vector3(wx(0,0),0,0).add(dF1.clone().multiplyScalar(off)),dF1.clone().multiplyScalar(lenF));
+    atTip(L.lF2,new THREE.Vector3(wx(1,0),0,0).add(dF2.clone().multiplyScalar(off)),dF2.clone().multiplyScalar(lenF));}
+  else L.lF1.on=L.lF2.on=false;
+  // en attraction, les deux flèches se font face dans l'espace entre les fils : étiquette au-dessus (F₂) / en dessous (F₁) du milieu de la flèche
+  if(lenF>0&&attract){[[L.lF1,0,dF1,1],[L.lF2,1,dF2,-1]].forEach(([l,i,dv,sd])=>{
+    const m=proj(new THREE.Vector3(wx(i,0),0,0).add(dv.clone().multiplyScalar(off+lenF/2)));
+    l.x=m.x; l.y=m.y+sd*(l.h/2+10);});}
+  { const q=proj(new THREE.Vector3(0,-0.62,HL+0.02)); const l=L.lD; if(!l.w){l.w=l.el.offsetWidth;l.h=l.el.offsetHeight;}
+    l.x=q.x; l.y=q.y+l.h/2+6; l.on=q.ok; }
+  resolve();
+
+  // ---------- lecture ----------
+  const relTxt=FL===0?'<span style="color:#5b6b7b">Aucune force</span> (un courant est nul)'
+    :attract?'<span style="color:#0F6E56">Attraction</span> : courants de même sens':'<span style="color:#8a5410">Répulsion</span> : courants de sens opposés';
+  $('hud').innerHTML=`<div class="big">${relTxt}</div>
+    <div>F/L = μ₀·|I₁·I₂| / (2π·d) = <b style="color:${FL===0?'#5b6b7b':attract?'#0F6E56':'#8a5410'}">${fN(FL)} µN/m</b></div>
+    <div class="sub"><span class="nw">Sur L = ${fx(Lm)} m : F = ${fN(FL*Lm)} µN</span> · <span class="nw">B₁ au fil 2 = ${fB(P.B1)}</span> · <span class="nw">B₂ au fil 1 = ${fB(P.B2)}</span></div>`;
+  $('modeTag').textContent=cut?(box.clientWidth<=640?'Coupe : ⊙ vers toi · ⊗ s’éloigne':'Vue en coupe : ⊙ courant vers toi, ⊗ courant qui s’éloigne'):'Vue 3D · déformation des fils exagérée';
+  $('modeTag').style.display=(!cut&&!bend)?'none':'';
+  $('info').innerHTML=`I₁ = ${fmtI(I1)} &nbsp;|&nbsp; I₂ = ${fmtI(I2)} &nbsp;|&nbsp; d = ${fx(dcm)} cm &nbsp;|&nbsp; `+
+    `<b style="color:#a32d2d">B₁</b> = μ₀·|I₁|/(2π·d) = ${fB(P.B1)} &nbsp;|&nbsp; <b style="color:#5b54b8">B₂</b> = ${fB(P.B2)} &nbsp;|&nbsp; `+
+    `<b style="color:${attract?'#0F6E56':'#8a5410'}">F/L = |I₂|·B₁ = ${fN(FL)} µN/m</b> &nbsp;|&nbsp; <span style="white-space:nowrap">F = (F/L)·L = ${fN(FL*Lm)} µN</span>`;
+
+  renderer.render(scene,cam);
+  requestAnimationFrame(loop);
+}
+$('fml').innerHTML='Le fil 1 crée au niveau du fil 2 un champ <b style="color:#a32d2d">B₁ = μ₀·I₁ / (2π·d)</b>, tangent aux cercles (règle de la main droite). '+
+  'Le fil 2 y subit la force de Laplace <b style="color:#0F6E56">F/L = I₂·B₁ = μ₀·I₁·I₂ / (2π·d)</b>, avec μ₀ = 4π·10⁻⁷ T·m/A. '+
+  'Le fil 1 subit une force égale et opposée. <b style="color:#0F6E56">Même sens → attraction</b>, <b style="color:#8a5410">sens opposés → répulsion</b>.';
+requestAnimationFrame(loop);
+window.__t={set(o){if('I1'in o){I1=o.I1;$('i1').value=I1;$('i1v').textContent=fmtI(I1);}if('I2'in o){I2=o.I2;$('i2').value=I2;$('i2v').textContent=fmtI(I2);}
+  if('d'in o){dcm=o.d;$('dd').value=dcm;$('ddv').textContent=fx(dcm)+' cm';}dirty=true;},
+  view:setView,get cut(){return cut},phys,labels:()=>LABS.filter(l=>l.on).map(l=>({id:l.id,x:l.x,y:l.y,w:l.w,h:l.h}))};
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Magnétisme et forces électromagnétiques<span>5 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/regle-main-droite/"><i>01</i>Règle de la main droite</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/aimants-laplace/"><i>02</i>Aimants, courants et force de Laplace</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/forces-magn-tique-sur-fils-/"><i>03</i>Forces entre fils parallèles</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Cyclotron/"><i>04</i>Cyclotron</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/loi-de-lenz/"><i>05</i>Loi de Lenz : induction</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forces sur un tourniquet · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+/* Tourniquet 3D : scène plein cadre, lecture des forces en haut à gauche, jauge du frottement en haut à droite. */
+.t-stage{position:relative;width:100%;height:66vh;min-height:440px;background:#fff;border:1px solid var(--rule);border-radius:4px;overflow:hidden;
+  box-shadow:0 1px 2px rgba(12,31,46,.05),0 8px 24px -16px rgba(12,31,46,.18);touch-action:none;user-select:none;-webkit-user-select:none}
+.t-stage canvas{display:block;width:100%!important;height:100%!important;border:0!important;box-shadow:none!important;border-radius:0!important}
+.t-lab{position:absolute;left:0;top:0;font:800 13px Mulish,system-ui,sans-serif;white-space:nowrap;pointer-events:none;padding:2px 7px;border-radius:5px;
+  background:rgba(255,255,255,.93);box-shadow:0 1px 3px rgba(19,35,58,.16);text-shadow:0 0 2px #fff;will-change:transform;opacity:0;transition:opacity .15s}
+.t-hud{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.95);border:1px solid var(--rule);border-radius:6px;padding:10px 14px;
+  font:600 13px/1.55 Mulish,system-ui,sans-serif;color:#13233a;pointer-events:none;max-width:min(370px,calc(100% - 24px));box-shadow:0 2px 10px -6px rgba(19,35,58,.25)}
+.t-hud .big{font:700 1rem Mulish,system-ui,sans-serif;white-space:nowrap}
+.t-hud .big b{font-weight:800}
+.t-hud .sub{color:#5d6876;font-size:12px;font-weight:600}
+.t-gauge{position:absolute;right:12px;top:12px;width:190px;background:rgba(255,255,255,.95);border:1px solid var(--rule);border-radius:6px;
+  padding:10px 12px;font:600 12px Mulish,system-ui,sans-serif;color:#5d6876;pointer-events:none;box-shadow:0 2px 10px -6px rgba(19,35,58,.25)}
+.t-gauge .bar{position:relative;height:10px;background:#eef1f4;border-radius:5px;margin:8px 0 6px;overflow:visible}
+.t-gauge .fill{position:absolute;left:0;top:0;bottom:0;background:#E24B4A;border-radius:5px;transition:width .1s}
+.t-gauge .lim{position:absolute;top:-4px;bottom:-4px;width:2px;background:#13233a;border-radius:1px}
+.t-gauge .st{font:800 13px Mulish,system-ui,sans-serif}
+.t-mode{position:absolute;left:12px;bottom:10px;font:700 12px Mulish,system-ui,sans-serif;color:#8a5a12;background:rgba(255,255,255,.92);padding:3px 8px;border-radius:4px;pointer-events:none}
+.t-slow{position:absolute;left:50%;top:12px;transform:translateX(-50%);font:800 12px Mulish,system-ui,sans-serif;color:#fff;background:#a32d2d;padding:3px 10px;border-radius:4px;pointer-events:none}
+.t-hint{position:absolute;right:12px;bottom:10px;font:600 12px Mulish,system-ui,sans-serif;color:#8a95a3;pointer-events:none;text-align:right}
+.t-err{position:absolute;inset:0;display:grid;place-items:center;color:#a32d2d;font:600 14px Mulish,system-ui,sans-serif;padding:20px;text-align:center}
+.val{white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font:600 .82rem Mulish,system-ui,sans-serif;color:#5d6876;margin:10px 0 2px}
+.legend i{display:inline-block;width:18px;height:4px;border-radius:2px;vertical-align:middle;margin-right:6px}
+@media (max-width:640px){.t-stage{height:60vh;min-height:380px}
+  .t-hint{display:none}.t-slow{left:12px;transform:none}.t-hud{font-size:12px;padding:8px 10px;top:auto;bottom:34px}
+  .t-hud .big{font-size:.9rem}.t-gauge{width:150px;padding:8px 10px}.t-lab{font-size:11px;padding:1px 5px}}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH2">Dynamique</a>›<b>Forces sur un tourniquet</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Dynamique</span><span class="sfa-chip free">Gratuit</span></div><h1>Forces sur un tourniquet</h1><p>Poids, réaction, frottement et force centrifuge sur une personne qui tourne</p></div>
+<section class="sfa-sim">
+
+
+
+<div id="stage" class="t-stage" aria-label="Tourniquet en 3D : glisse pour tourner la vue, molette pour zoomer">
+  <div class="t-hud" id="hud"></div>
+  <div class="t-gauge" id="gauge">
+    Frottement nécessaire / maximal
+    <div class="bar"><div class="fill" id="gFill"></div><div class="lim" id="gLim"></div></div>
+    <div class="st" id="gSt"></div>
+  </div>
+  <div class="t-lab" id="lP" style="color:#13233a">P</div>
+  <div class="t-lab" id="lN" style="color:#185fa5">N</div>
+  <div class="t-lab" id="lF" style="color:#a32d2d">f</div>
+  <div class="t-lab" id="lC" style="color:#8a5a12">centrifuge</div>
+  <div class="t-lab" id="lV" style="color:#0F6E56">v</div>
+  <div class="t-mode" id="modeTag"></div>
+  <div class="t-slow" id="slowTag" hidden>Ralenti ×0,3</div>
+  <div class="t-hint">Glisse pour tourner la vue · molette pour zoomer</div>
+</div>
+
+<div class="legend">
+  <span><i style="background:#3d4a57"></i>Poids P = mg</span>
+  <span><i style="background:#378ADD"></i>Réaction normale N</span>
+  <span><i style="background:#E24B4A"></i>Frottement des pieds f</span>
+  <span><i style="background:#1D9E75"></i>Vitesse v (pointillés : trajectoire)</span>
+  <span id="legC"><i style="background:#BA7517"></i>Force centrifuge (fictive)</span>
+</div>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill">Référentiel</span>
+  <button class="btn on" id="bSol">Vu du sol</button>
+  <button class="btn" id="bTour">Vu depuis le tourniquet</button>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#185fa5">ω &nbsp;vitesse de rotation</span>
+  <input type="range" id="om" min="0" max="3" value="1.2" step="0.05" style="accent-color:#378ADD;">
+  <span class="val" id="omv" style="color:#185fa5">1,20 rad/s</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#0F6E56">r &nbsp;distance au centre</span>
+  <input type="range" id="rr" min="0.3" max="1.85" value="1.3" step="0.05" style="accent-color:#1D9E75;">
+  <span class="val" id="rrv" style="color:#0F6E56">1,30 m</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#a32d2d">μₛ &nbsp;adhérence des pieds</span>
+  <input type="range" id="mu" min="0.1" max="1" value="0.5" step="0.05" style="accent-color:#E24B4A;">
+  <span class="val" id="muv" style="color:#a32d2d">0,50</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px">m &nbsp;masse</span>
+  <input type="range" id="ms" min="20" max="100" value="60" step="5" style="accent-color:#5b6b7b;">
+  <span class="val" id="msv">60 kg</span>
+</div>
+<div class="row">
+  <button class="btn" id="bReset">Remettre la personne</button>
+  <button class="btn" id="bPause">Pause</button>
+  <button class="btn" id="v3d">Vue 3D</button>
+  <button class="btn" id="vTop">Vue du dessus</button>
+  <button class="btn" id="vSide">Vue à hauteur d'yeux</button>
+</div>
+
+<div class="info" id="info"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const box=$('stage');
+if(!window.THREE){box.insertAdjacentHTML('beforeend','<div class="t-err">Impossible de charger la 3D (three.js). Vérifie la connexion internet.</div>');return;}
+
+// ---------- paramètres physiques (inchangés) ----------
+const g=9.81, R=2.0, H_PLAT=0.32, ALPHA_MAX=0.7;      // rayon du plateau (m), hauteur du plateau, accélération angulaire max (rad/s²)
+let omTarget=1.2, om=1.2, alpha=0, theta=0;           // vitesse cible, vitesse réelle, accélération, angle du plateau
+let r0=1.3, mu=0.5, m=60, frame='sol', paused=false;
+let state='stuck';                                     // 'stuck' | 'slide' | 'off'
+let phi=0;                                             // angle de la personne dans le repère du plateau
+let P={x:0,z:0,y:H_PLAT,vx:0,vz:0,vy:0};               // position/vitesse au sol quand elle glisse
+const tip={th:0,w:0,dir:0};                            // bascule au sol : angle, vitesse angulaire, direction
+const trail=[], ejTrail=[];
+
+// ---------- rendu ----------
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.0;
+renderer.physicallyCorrectLights=false;
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.setClearColor(0xffffff,1);
+box.prepend(renderer.domElement);
+const ANISO=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+const scene=new THREE.Scene(); scene.background=new THREE.Color(1,1,1);
+// le brouillard blanc fond le décor lointain dans le fond ; sa couleur est « surexposée » pour sortir blanche après le tone mapping ACES
+const FOG_W=9; scene.fog=new THREE.Fog(new THREE.Color(FOG_W,FOG_W,FOG_W),14,34);
+const cam=new THREE.PerspectiveCamera(42,1,0.05,90);
+
+const lin=h=>new THREE.Color(h).convertSRGBToLinear();
+const hemi=new THREE.HemisphereLight(lin('#f2f7ff'),lin('#b9c2a6'),0.5); scene.add(hemi);
+const sun=new THREE.DirectionalLight(lin('#fff1dc'),1.55); sun.position.set(3.2,7.5,4.2); sun.castShadow=true;
+sun.shadow.mapSize.set(1024,1024); sun.shadow.bias=-0.0004; sun.shadow.normalBias=0.025; sun.shadow.radius=3;
+Object.assign(sun.shadow.camera,{left:-3.6,right:3.6,top:3.6,bottom:-3.6,near:0.5,far:22}); sun.shadow.camera.updateProjectionMatrix();
+scene.add(sun); scene.add(sun.target);
+const fill=new THREE.DirectionalLight(lin('#dfe9ff'),0.22); fill.position.set(-5,3,-3); scene.add(fill);
+
+const mat=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:lin(c),roughness:.75,metalness:0},o));
+let seed=7; const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+function canvasTex(w,h,draw,rep){const c=document.createElement('canvas');c.width=w;c.height=h;draw(c.getContext('2d'),w,h);
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=ANISO;
+  if(rep){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep,rep);}return t;}
+function blobTex(){const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+  const gr=x.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(.55,'rgba(0,0,0,.45)');gr.addColorStop(1,'rgba(0,0,0,0)');
+  x.fillStyle=gr;x.fillRect(0,0,128,128);return new THREE.CanvasTexture(c);}
+const BLOB=blobTex();
+const blob=(rad,op)=>{const b=new THREE.Mesh(new THREE.PlaneGeometry(rad*2,rad*2),new THREE.MeshBasicMaterial({map:BLOB,transparent:true,opacity:op,depthWrite:false,color:0x1a2433}));
+  b.rotation.x=-Math.PI/2;b.renderOrder=1;return b;};
+
+// ---------- décor de parc, discret ----------
+const grassTex=canvasTex(256,256,(x,w,h)=>{x.fillStyle='#cfe0bd';x.fillRect(0,0,w,h);
+  for(let i=0;i<2600;i++){const v=rnd();x.fillStyle=v<.5?'rgba(120,160,95,.16)':'rgba(255,255,240,.18)';x.fillRect(rnd()*w,rnd()*h,1+rnd()*2,1+rnd()*3);}},18);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(90,90),new THREE.MeshStandardMaterial({map:grassTex,roughness:1}));
+ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
+// sol amortissant en caoutchouc (EPDM moucheté) autour du tourniquet
+const rubberTex=canvasTex(256,256,(x,w,h)=>{x.fillStyle='#d9c3ad';x.fillRect(0,0,w,h);
+  const cols=['rgba(150,110,85,.35)','rgba(255,250,240,.55)','rgba(120,140,150,.25)','rgba(190,140,110,.4)'];
+  for(let i=0;i<5200;i++){x.fillStyle=cols[i%4];const s=1+rnd()*2.2;x.fillRect(rnd()*w,rnd()*h,s,s);}},9);
+const rubber=new THREE.Mesh(new THREE.CircleGeometry(4.3,96),new THREE.MeshStandardMaterial({map:rubberTex,roughness:.95}));
+rubber.rotation.x=-Math.PI/2; rubber.position.y=0.004; rubber.receiveShadow=true; scene.add(rubber);
+const curb=new THREE.Mesh(new THREE.TorusGeometry(4.32,0.06,10,128),mat('#e9ebe6',{roughness:.9})); curb.rotation.x=Math.PI/2; curb.scale.z=0.5; curb.position.y=0.012; curb.receiveShadow=true; scene.add(curb);
+// quelques éléments de parc au loin (le brouillard blanc les estompe)
+const treeTrunk=mat('#8a6f58',{roughness:.9}), leafA=mat('#9cc58a',{roughness:.95}), leafB=mat('#b5d49c',{roughness:.95});
+const leafGeo=new THREE.IcosahedronGeometry(1,2);
+const DECOR=[];
+function tree(x,z,s){const t=new THREE.Group();DECOR.push(t);const tr=new THREE.Mesh(new THREE.CylinderGeometry(.09*s,.13*s,1.4*s,8),treeTrunk);tr.position.y=.7*s;t.add(tr);
+  [[0,1.9,0,.85],[.45,1.65,.2,.6],[-.4,1.7,-.15,.62],[.05,2.35,-.1,.6]].forEach(([a,b,c,r],i)=>{const l=new THREE.Mesh(leafGeo,i%2?leafB:leafA);l.position.set(a*s,b*s,c*s);l.scale.setScalar(r*s);t.add(l);});
+  t.position.set(x,0,z);scene.add(t);}
+for(let i=0;i<11;i++){const a=i/11*Math.PI*2+0.3*Math.sin(i*2.7), d=14+4*((i*7)%5)/4; tree(Math.cos(a)*d,Math.sin(a)*d,1.2+0.5*((i*3)%4)/3);}
+function bench(x,z,ry){const b=new THREE.Group();const wood=mat('#c79a6b',{roughness:.8}),iron=mat('#56606b',{roughness:.5,metalness:.4});
+  for(let i=0;i<3;i++){const p=new THREE.Mesh(new THREE.BoxGeometry(1.6,.04,.12),wood);p.position.set(0,.45,-.14+i*.14);b.add(p);}
+  for(let i=0;i<2;i++){const p=new THREE.Mesh(new THREE.BoxGeometry(1.6,.12,.04),wood);p.position.set(0,.62+i*.16,-.22);b.add(p);}
+  [-.7,.7].forEach(s=>{const l=new THREE.Mesh(new THREE.BoxGeometry(.05,.45,.4),iron);l.position.set(s,.22,0);b.add(l);});
+  b.position.set(x,0,z);b.rotation.y=ry;scene.add(b);DECOR.push(b);}
+bench(-8.6,-7.2,0.9); bench(9.6,-6.4,-0.6);
+function lamp(x,z){const l=new THREE.Group(),c=mat('#5d6874',{roughness:.45,metalness:.5});
+  const p=new THREE.Mesh(new THREE.CylinderGeometry(.05,.07,3.2,10),c);p.position.y=1.6;l.add(p);
+  const h=new THREE.Mesh(new THREE.SphereGeometry(.2,16,12),mat('#fffbe8',{emissive:lin('#fff3c4'),emissiveIntensity:.4}));h.position.y=3.3;l.add(h);
+  l.position.set(x,0,z);scene.add(l);}
+
+
+// ---------- le tourniquet ----------
+const plat=new THREE.Group(); scene.add(plat);
+const deckTex=canvasTex(1024,1024,(x,w,h)=>{const c=w/2,rr=w/2;
+  const cols=['#f7c97e','#a9cdee','#f3ab9c','#addcb4'];
+  for(let i=0;i<8;i++){x.beginPath();x.moveTo(c,c);x.arc(c,c,rr,i*Math.PI/4,(i+1)*Math.PI/4);x.closePath();x.fillStyle=cols[i%4];x.fill();}
+  // picots antidérapants
+  for(let yy=10;yy<h;yy+=22)for(let xx=10+((yy/22)%2)*11;xx<w;xx+=22){const d=Math.hypot(xx-c,yy-c);if(d<rr*0.97&&d>rr*0.14){
+    x.fillStyle='rgba(255,255,255,.38)';x.beginPath();x.arc(xx,yy,4.2,0,7);x.fill();x.fillStyle='rgba(60,40,20,.07)';x.beginPath();x.arc(xx+1.2,yy+1.4,4.2,0,7);x.fill();}}
+  // séparations des secteurs
+  x.strokeStyle='rgba(255,255,255,.95)';x.lineWidth=9;x.lineCap='round';
+  for(let i=0;i<8;i++){const a=i*Math.PI/4;x.beginPath();x.moveTo(c+Math.cos(a)*rr*.13,c+Math.sin(a)*rr*.13);x.lineTo(c+Math.cos(a)*rr*.985,c+Math.sin(a)*rr*.985);x.stroke();}
+  // anneau extérieur et boulons
+  x.lineWidth=14;x.strokeStyle='#ffffff';x.beginPath();x.arc(c,c,rr*.965,0,7);x.stroke();
+  for(let i=0;i<32;i++){const a=i*Math.PI/16+Math.PI/32;x.fillStyle='#b9c0c8';x.beginPath();x.arc(c+Math.cos(a)*rr*.92,c+Math.sin(a)*rr*.92,5,0,7);x.fill();}
+  const gr=x.createRadialGradient(c,c,0,c,c,rr*.14);gr.addColorStop(0,'#cfd5dc');gr.addColorStop(1,'#aeb7c1');
+  x.fillStyle=gr;x.beginPath();x.arc(c,c,rr*.14,0,7);x.fill();
+});
+const DECK_T=0.07;
+const deckSide=mat('#4f6f8c',{roughness:.45,metalness:.35});
+const deck=new THREE.Mesh(new THREE.CylinderGeometry(R,R,DECK_T,96,1),[deckSide,new THREE.MeshStandardMaterial({map:deckTex,roughness:.7}),mat('#3e4c5a',{roughness:.8})]);
+deck.position.y=H_PLAT-DECK_T/2; deck.castShadow=true; deck.receiveShadow=true; plat.add(deck);
+const rim=new THREE.Mesh(new THREE.TorusGeometry(R,0.032,12,128),mat('#f0c04a',{roughness:.35,metalness:.1}));
+rim.rotation.x=Math.PI/2; rim.position.y=H_PLAT-0.008; rim.castShadow=true; plat.add(rim);
+// dessous : jupe sombre + palier central fixe
+const skirt=new THREE.Mesh(new THREE.CylinderGeometry(R*0.9,R*0.82,0.12,64,1,true),mat('#33404d',{roughness:.8,side:THREE.DoubleSide}));
+skirt.position.y=H_PLAT-DECK_T-0.06; plat.add(skirt);
+const steelM=mat('#9aa7b4',{roughness:.35,metalness:.6});
+const base=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.34,H_PLAT-DECK_T,32),steelM); base.position.y=(H_PLAT-DECK_T)/2; base.castShadow=true; scene.add(base);
+const pad=new THREE.Mesh(new THREE.CylinderGeometry(0.62,0.66,0.05,48),mat('#d6d8d4',{roughness:.95})); pad.position.y=0.025; pad.receiveShadow=true; scene.add(pad);
+const deckAO=blob(2.55,0.42); deckAO.position.y=0.03; scene.add(deckAO);     // ombre de contact douce sous le plateau
+// moyeu central
+const railM=mat('#f2c14e',{roughness:.32,metalness:.15}), gripM=mat('#2f3a46',{roughness:.9});
+const hub=new THREE.Mesh(new THREE.CylinderGeometry(0.075,0.1,0.92,24),railM); hub.position.y=H_PLAT+0.46; hub.castShadow=true; plat.add(hub);
+const hubCap=new THREE.Mesh(new THREE.SphereGeometry(0.11,24,14),mat('#5b7fa3',{roughness:.35,metalness:.2})); hubCap.position.y=H_PLAT+0.94; hubCap.scale.y=0.7; hubCap.castShadow=true; plat.add(hubCap);
+const hubFoot=new THREE.Mesh(new THREE.CylinderGeometry(0.16,0.2,0.06,32),steelM); hubFoot.position.y=H_PLAT+0.03; plat.add(hubFoot);
+// 4 arceaux en U, coudés et arrondis, avec poignées (le centre reste libre pour les petits rayons)
+const RAIL_A=[0,1,2,3].map(i=>i*Math.PI/2+Math.PI/8);
+RAIL_A.forEach(a=>{
+  const ca=Math.cos(a), sa=-Math.sin(a), Y=H_PLAT;
+  const pts=[[0.6,0.01],[0.61,0.4],[0.66,0.72],[0.8,0.84],[1.25,0.84],[1.52,0.8],[1.66,0.6],[1.72,0.3],[1.73,0.01]].map(([r,y])=>new THREE.Vector3(r*ca,Y+y,r*sa));
+  const curve=new THREE.CatmullRomCurve3(pts,false,'catmullrom',0.25);
+  const tube=new THREE.Mesh(new THREE.TubeGeometry(curve,64,0.026,10,false),railM); tube.castShadow=true; plat.add(tube);
+  [1.73,0.6].forEach(rf=>{const foot=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.06,0.025,16),steelM); foot.position.set(rf*ca,Y+0.012,rf*sa); plat.add(foot);});
+  // traverse parallèle au bord + poignées caoutchouc
+  const t=new THREE.Vector3(-sa,0,ca);   // perpendiculaire au rayon (horizontal)
+  const crossC=new THREE.Vector3(1.0*ca,Y+0.84,1.0*sa);
+  const cross=new THREE.Mesh(new THREE.CylinderGeometry(0.022,0.022,0.5,10),railM); cross.position.copy(crossC);
+  cross.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),t); cross.castShadow=true; plat.add(cross);
+  [-1,1].forEach(s=>{const gp=new THREE.Mesh(new THREE.CylinderGeometry(0.032,0.032,0.13,12),gripM);gp.position.copy(crossC).addScaledVector(t,s*0.19);gp.quaternion.copy(cross.quaternion);plat.add(gp);
+    const cap=new THREE.Mesh(new THREE.SphereGeometry(0.034,12,8),gripM);cap.position.copy(crossC).addScaledVector(t,s*0.26);plat.add(cap);});
+  const g2=new THREE.Mesh(new THREE.CylinderGeometry(0.034,0.034,0.22,12),gripM); g2.position.set(1.38*ca,Y+0.84,1.38*sa); g2.rotation.set(0,0,0);
+  g2.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),new THREE.Vector3(ca,0,sa)); plat.add(g2);
+});
+
+// ---------- personnage ----------
+// Repère local : +x = vers l'avant (sens de rotation), +y = haut, +z = vers l'extérieur du tourniquet.
+// Chaque membre est un pivot (articulation) avec son segment suspendu dessous : on anime des angles, pas des positions.
+const person=new THREE.Group(); scene.add(person);
+const body=new THREE.Group(); person.add(body);                     // tout le corps : pivot aux pieds pour l'inclinaison
+const soft=(c,r=.82,o={})=>mat(c,Object.assign({roughness:r},o));
+const cShirt=soft('#7F77DD',.85), cShirtD=soft('#6a62c9',.85), cCollar=soft('#f5f3ff',.8), cPants=soft('#36496a',.9), cPantsD=soft('#2c3c58',.9),
+  cSkin=soft('#f2c4a0',.62), cSkinD=soft('#e7ae88',.65), cShoe=soft('#1f8a7a',.55), cSole=soft('#f6f7f8',.6), cLace=soft('#ffffff',.6),
+  cHair=soft('#5a3b26',.55), cEye=new THREE.MeshStandardMaterial({color:lin('#1b2230'),roughness:.15}), cWhite=new THREE.MeshBasicMaterial({color:0xffffff}),
+  cMouth=soft('#8c3b3b',.6), cBlush=new THREE.MeshBasicMaterial({color:lin('#f39c93'),transparent:true,opacity:.35,depthWrite:false});
+const sh=o=>{o.castShadow=true;return o;};
+// segment effilé à bouts arrondis (capsule de révolution), du pivot (y=0) vers le bas (y=-len)
+function capsuleGeo(len,r1,r2,seg=14){const pts=[],n=6;
+  for(let i=0;i<=n;i++){const a=-Math.PI/2+i/n*Math.PI/2;pts.push(new THREE.Vector2(Math.max(1e-4,r2*Math.cos(a)),-len+r2*Math.sin(a)));}
+  for(let i=0;i<=n;i++){const a=i/n*Math.PI/2;pts.push(new THREE.Vector2(Math.max(1e-4,r1*Math.cos(a)),r1*Math.sin(a)));}
+  return new THREE.LatheGeometry(pts,seg);}
+function seg(len,r1,r2,m){const g=new THREE.Group();g.add(sh(new THREE.Mesh(capsuleGeo(len,r1,r2),m)));g.userData.len=len;return g;}
+const L_TH=0.43, L_SH=0.41, ANK=0.045;
+const hips=new THREE.Group(); hips.position.y=0.92; body.add(hips);
+// bassin + ceinture
+const pelvis=sh(new THREE.Mesh(new THREE.LatheGeometry([[0,-.11],[.11,-.105],[.145,-.06],[.152,.02],[.148,.08],[0,.085]].map(p=>new THREE.Vector2(p[0]+1e-4,p[1])),20),cPants));
+pelvis.scale.set(0.72,1,1); hips.add(pelvis);
+const belt=new THREE.Mesh(new THREE.TorusGeometry(0.149,0.014,8,28),soft('#2a2f38',.5)); belt.rotation.x=Math.PI/2; belt.scale.set(0.72,1,1); belt.position.y=0.07; hips.add(belt);
+// jambes : cuisse -> tibia -> pied (basket)
+function leg(side){const thigh=seg(L_TH,0.072,0.056,cPants);thigh.position.set(0,-0.03,side*0.085);hips.add(thigh);
+  const shin=seg(L_SH,0.054,0.044,cPants);shin.position.y=-L_TH;thigh.add(shin);
+  const cuff=new THREE.Mesh(new THREE.TorusGeometry(0.047,0.012,8,20),cPantsD);cuff.rotation.x=Math.PI/2;cuff.position.y=-L_SH+0.05;shin.add(cuff);
+  const foot=new THREE.Group();foot.position.y=-L_SH;shin.add(foot);
+  const sole=sh(new THREE.Mesh(new THREE.CylinderGeometry(1,1,1,24),cSole));sole.scale.set(0.135,0.03,0.058);sole.position.set(0.045,-ANK+0.015,0);foot.add(sole);
+  const upper=sh(new THREE.Mesh(new THREE.SphereGeometry(1,20,14),cShoe));upper.scale.set(0.125,0.062,0.054);upper.position.set(0.035,-ANK+0.032,0);foot.add(upper);
+  const toe=new THREE.Mesh(new THREE.SphereGeometry(1,16,10),cSole);toe.scale.set(0.05,0.034,0.05);toe.position.set(0.122,-ANK+0.03,0);foot.add(toe);
+  const collar=new THREE.Mesh(new THREE.CylinderGeometry(0.048,0.054,0.05,16),cShoe);collar.position.set(-0.005,-0.005,0);foot.add(collar);
+  for(let i=0;i<3;i++){const l=new THREE.Mesh(new THREE.BoxGeometry(0.008,0.006,0.05),cLace);l.position.set(0.06+i*0.025,-ANK+0.08-i*0.012,0);l.rotation.z=-0.45;foot.add(l);}
+  return {thigh,shin,foot};}
+const LL=leg(-1), LR=leg(1);
+// buste (sweat), col, cou, tête
+const spine=new THREE.Group(); spine.position.y=0.06; hips.add(spine);
+const torso=sh(new THREE.Mesh(new THREE.LatheGeometry([[0,0],[.142,0],[.15,.1],[.168,.26],[.18,.38],[.178,.44],[.15,.5],[.08,.54],[0,.548]].map(p=>new THREE.Vector2(p[0]+1e-4,p[1])),26),cShirt));
+torso.scale.set(0.66,1,1); spine.add(torso);
+const hem=new THREE.Mesh(new THREE.TorusGeometry(0.146,0.016,8,28),cShirtD); hem.rotation.x=Math.PI/2; hem.scale.set(0.66,1,1); hem.position.y=0.01; spine.add(hem);
+const collarM=new THREE.Mesh(new THREE.TorusGeometry(0.062,0.013,8,24),cCollar); collarM.rotation.x=Math.PI/2; collarM.position.y=0.53; collarM.scale.set(0.9,1,1); spine.add(collarM);
+const neckM=new THREE.Mesh(new THREE.CylinderGeometry(0.048,0.054,0.08,16),cSkin); neckM.position.y=0.56; spine.add(neckM);
+const neck=new THREE.Group(); neck.position.y=0.565; spine.add(neck);
+const HC=new THREE.Vector3(0.008,0.118,0), HR=0.128;                 // centre et rayon de la tête
+const head=sh(new THREE.Mesh(new THREE.SphereGeometry(HR,32,22),cSkin)); head.position.copy(HC); head.scale.set(1,1.06,0.96); neck.add(head);
+const onHead=(lat,lon,k=1)=>new THREE.Vector3(Math.cos(lat)*Math.cos(lon)*HR*k,Math.sin(lat)*HR*1.06*k,Math.cos(lat)*Math.sin(lon)*HR*0.96*k).add(HC);
+const jaw=new THREE.Mesh(new THREE.SphereGeometry(HR*0.8,24,14),cSkin); jaw.position.copy(HC).add(new THREE.Vector3(0.012,-0.04,0)); jaw.scale.set(1,0.9,0.95); neck.add(jaw);
+// cheveux : calotte + mèches
+const hairCap=sh(new THREE.Mesh(new THREE.SphereGeometry(HR*1.07,30,18,0,Math.PI*2,0,Math.PI*0.56),cHair));
+hairCap.position.copy(HC).add(new THREE.Vector3(-0.012,0.01,0)); hairCap.rotation.z=0.42; hairCap.scale.set(1,1.06,0.99); neck.add(hairCap);
+// frange balayée sur le côté : deux volumes allongés et lisses
+[[0.66,-0.18,0.07,-0.5],[0.6,0.3,0.06,0.45]].forEach(([la,lo,r,rz])=>{const t=new THREE.Mesh(new THREE.SphereGeometry(r,20,14),cHair);t.position.copy(onHead(la,lo,0.9));t.scale.set(0.75,0.55,1.55);t.rotation.set(rz,0,-0.35);neck.add(t);});
+[[0.2,Math.PI,.09],[0.05,2.5,.07],[0.05,-2.5,.07],[-0.15,Math.PI,.075]].forEach(([la,lo,r])=>{const t=new THREE.Mesh(new THREE.SphereGeometry(r,14,10),cHair);t.position.copy(onHead(la,lo,0.72));neck.add(t);});
+// visage (regard vers l'avant +x)
+[-1,1].forEach(sd=>{
+  const ear=new THREE.Mesh(new THREE.SphereGeometry(1,12,10),cSkinD);ear.scale.set(0.022,0.03,0.014);ear.position.copy(onHead(0.0,sd*Math.PI/2,0.97));neck.add(ear);
+  const eye=new THREE.Mesh(new THREE.SphereGeometry(0.019,16,12),cEye);eye.position.copy(onHead(0.1,sd*0.36,0.94));eye.scale.set(0.7,1.2,1);neck.add(eye);eye.userData.eye=1;
+  const glint=new THREE.Mesh(new THREE.SphereGeometry(0.0055,8,6),cWhite);glint.position.copy(eye.position).add(new THREE.Vector3(0.012,0.008,sd*0.002-0.004));neck.add(glint);glint.userData.eye=1;
+  const brow=new THREE.Mesh(new THREE.TorusGeometry(0.022,0.0045,6,12,Math.PI*0.8),cHair);brow.position.copy(onHead(0.29,sd*0.36,0.99));brow.rotation.set(0,Math.PI/2,Math.PI*0.1);neck.add(brow);brow.userData.brow=sd;
+  const bl=new THREE.Mesh(new THREE.CircleGeometry(0.02,16),cBlush);bl.position.copy(onHead(-0.14,sd*0.62,1.01));bl.lookAt(bl.position.clone().sub(HC).multiplyScalar(3).add(HC));neck.add(bl);
+});
+const nose=new THREE.Mesh(new THREE.SphereGeometry(0.017,12,10),cSkinD); nose.position.copy(onHead(-0.07,0,1.0)); nose.scale.set(1,0.9,1.1); neck.add(nose);
+const mSmile=new THREE.Mesh(new THREE.TorusGeometry(0.028,0.0058,6,16,Math.PI),cMouth); mSmile.position.copy(onHead(-0.22,0,0.99)); mSmile.position.y+=0.012; mSmile.rotation.set(0,Math.PI/2,Math.PI); neck.add(mSmile);
+const mFlat=new THREE.Mesh(capsuleGeo(0.03,0.0055,0.0055,8),cMouth); mFlat.position.copy(onHead(-0.27,0,0.99)).add(new THREE.Vector3(0,0,0.015)); mFlat.rotation.x=Math.PI/2; neck.add(mFlat);
+const mO=new THREE.Mesh(new THREE.SphereGeometry(0.018,14,10),cMouth); mO.position.copy(onHead(-0.27,0,0.96)); mO.scale.set(0.5,1.15,0.9); neck.add(mO);
+// bras : épaule -> avant-bras -> main (moufle + pouce)
+function arm(side){const up=seg(0.27,0.052,0.045,cShirt);up.position.set(0,0.43,side*0.19);spine.add(up);
+  const sl=new THREE.Mesh(new THREE.TorusGeometry(0.046,0.011,8,20),cShirtD);sl.rotation.x=Math.PI/2;sl.position.y=-0.2;up.add(sl);
+  const fore=seg(0.25,0.04,0.033,cSkin);fore.position.y=-0.27;up.add(fore);
+  const hand=new THREE.Group();hand.position.y=-0.25;fore.add(hand);
+  const palm=sh(new THREE.Mesh(new THREE.SphereGeometry(1,16,12),cSkin));palm.scale.set(0.036,0.052,0.024);palm.position.y=-0.045;hand.add(palm);
+  const thumb=new THREE.Mesh(capsuleGeo(0.03,0.012,0.01,8),cSkin);thumb.position.set(0.02,-0.025,-side*0.008);thumb.rotation.z=0.75;hand.add(thumb);
+  return {up,fore,hand};}
+const AL=arm(-1), AR=arm(1);
+const blobP=blob(0.42,0.32); scene.add(blobP);            // ombre de contact sous les pieds
+
+// poses : angles (radians) des articulations, mélangés en douceur d'une image à l'autre
+const pose={lean:0,pitch:0,knee:0.1,stance:0.12,armOut:0.15,armFwd:0,elbow:0.25,flail:0,headTilt:0,lie:0,bend:0,wob:0,brace:0};
+const lerp=(a,b,k)=>a+(b-a)*k;
+let hipsPhys=0.92;    // hauteur de hanche utilisée par la physique (formule d'origine, inchangée)
+function applyPose(t){
+  const w=pose.wob, sw1=Math.sin(t*5.1), sw2=Math.sin(t*7.7+1.3);
+  // inclinaison vers le centre (axe avant x) + avant/arrière (axe z) + petites corrections d'équilibre
+  body.rotation.set(-pose.lean+w*0.035*sw1,0,pose.pitch+w*0.02*sw2);
+  body.rotation.z+= -pose.lie*Math.PI/2;                   // couché : on pivote tout le corps autour des pieds
+  const k=pose.knee, st=pose.stance;
+  [LL,LR].forEach((L,i)=>{const sd=i?1:-1;
+    L.thigh.rotation.set(-sd*st, 0, k*0.9);
+    L.shin.rotation.set(0,0,-k*1.8);
+    L.foot.rotation.set(sd*st*0.9,0,k*0.9-pose.lie*1.0);});   // pieds à plat (ou pointés quand elle est couchée)
+  hipsPhys=0.92-0.9*(1-Math.cos(k*1.0))*0.55;
+  // les pieds restent posés : hauteur de hanche exacte d'après la géométrie des jambes
+  hips.position.y=ANK+0.03+(L_TH+L_SH)*Math.cos(0.9*k)*Math.cos(st);
+  spine.rotation.set(pose.bend,0,-k*0.35);                 // buste penché en avant quand les genoux plient ; léger contre-appui
+  [AL,AR].forEach((A,i)=>{const sd=i?1:-1, fl=pose.flail?Math.sin(t*9+i*Math.PI)*pose.flail:0;
+    const out=pose.armOut*(1+0.18*sd*Math.min(1,pose.lean*3))+w*0.18*Math.sin(t*6.3+i*2);
+    A.up.rotation.set(-sd*(out+fl*0.6), 0, pose.armFwd+fl+pose.brace*0.15);
+    A.fore.rotation.set(0,0,pose.elbow+Math.abs(fl)*0.4);
+    A.hand.rotation.set(-sd*0.25*Math.min(1,out),0,0.2);});
+  neck.rotation.set(pose.headTilt,0,-pose.brace*0.5);
+}
+let tAnim=0, blinkT=2, dbgFocus=false;   // dbgFocus : cadrage serré sur la personne (tests uniquement)
+
+// ---------- flèches 3D (tige + pointe), toujours visibles, avec liseré blanc et ombre légère ----------
+const ARW=[];
+function arrow(col){
+  const g=new THREE.Group();
+  const m=new THREE.MeshStandardMaterial({color:lin(col),emissive:lin(col),emissiveIntensity:.3,roughness:.45,metalness:0,depthTest:false,transparent:true});
+  const halo=new THREE.MeshBasicMaterial({color:0xffffff,depthTest:false,transparent:true,opacity:.85,side:THREE.BackSide});
+  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,1,14),m), head=new THREE.Mesh(new THREE.ConeGeometry(0.08,1,20),m);
+  const hS=new THREE.Mesh(shaft.geometry,halo), hH=new THREE.Mesh(head.geometry,halo);
+  const ball=new THREE.Mesh(new THREE.SphereGeometry(0.042,14,10),m);      // petit point d'application
+  shaft.renderOrder=head.renderOrder=ball.renderOrder=11; hS.renderOrder=hH.renderOrder=10;
+  shaft.castShadow=head.castShadow=true;
+  g.add(hS,hH,shaft,head,ball); g.userData={shaft,head,hS,hH}; scene.add(g); ARW.push(g); return g;}
+const up=new THREE.Vector3(0,1,0);
+function setArrow(a,o,v){const L=v.length(); a.visible=L>0.03; if(!a.visible)return;
+  const d=v.clone().normalize(), hl=Math.min(0.22,L*0.45), hr=Math.min(1,hl/0.2);
+  a.position.copy(o); a.quaternion.setFromUnitVectors(up,d);
+  const U=a.userData;
+  U.shaft.scale.set(1,Math.max(0.001,L-hl*0.9),1); U.shaft.position.set(0,(L-hl*0.9)/2,0);
+  U.head.scale.set(hr,hl,hr); U.head.position.set(0,L-hl/2,0);
+  U.hS.scale.set(1.55,U.shaft.scale.y,1.55); U.hS.position.copy(U.shaft.position);
+  U.hH.scale.set(hr*1.3,hl*1.18,hr*1.3); U.hH.position.set(0,L-hl/2-0.006,0);}
+const aP=arrow('#3d4a57'), aN=arrow('#378ADD'), aF=arrow('#E24B4A'), aC=arrow('#BA7517'), aV=arrow('#1D9E75');
+
+// trajectoire : trait fin tant qu'elle tient, pointillés épais (tirets 3D) quand elle est éjectée
+const TRAIL_N=600; const tGeo=new THREE.BufferGeometry(); tGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(TRAIL_N*3),3));
+const tLine=new THREE.Line(tGeo,new THREE.LineBasicMaterial({color:lin('#1D9E75'),transparent:true,opacity:.45})); tLine.frustumCulled=false; scene.add(tLine);
+const DASH_N=160, dashGeo=new THREE.BoxGeometry(1,0.014,0.042);
+const dashes=new THREE.InstancedMesh(dashGeo,new THREE.MeshStandardMaterial({color:lin('#1D9E75'),emissive:lin('#1D9E75'),emissiveIntensity:.35,roughness:.6}),DASH_N);
+dashes.frustumCulled=false; dashes.count=0; scene.add(dashes);
+const dM=new THREE.Matrix4(), dQ=new THREE.Quaternion(), dS=new THREE.Vector3(), dP=new THREE.Vector3(), X1=new THREE.Vector3(1,0,0);
+function drawDashes(pts){
+  let n=0, acc=0; const SP=0.17, DL=0.1;
+  for(let i=1;i<pts.length&&n<DASH_N;i++){const a=pts[i-1],b=pts[i];const segL=a.distanceTo(b);if(segL<1e-5)continue;
+    let s=(SP-acc)%SP; if(s<0)s+=SP;
+    while(s<segL&&n<DASH_N){const t=s/segL;dP.lerpVectors(a,b,t);dP.y+=0.012;
+      const dir=b.clone().sub(a);dir.y=0;if(dir.lengthSq()<1e-8)dir.set(1,0,0);dir.normalize();
+      dQ.setFromUnitVectors(X1,dir);dS.set(DL,1,1);dM.compose(dP,dQ,dS);dashes.setMatrixAt(n++,dM);s+=SP;}
+    acc=(acc+segL)%SP;}
+  dashes.count=n; dashes.instanceMatrix.needsUpdate=true;}
+
+// ---------- caméra en orbite (en vue « tourniquet », elle tourne avec le plateau) ----------
+let orb={th:0.55,ph:1.05,r:7.2}, goal=null;
+const views={v3d:{th:0.55,ph:1.05,r:7.2},vTop:{th:0,ph:0.03,r:7.6},vSide:{th:0.2,ph:1.43,r:6.4}};
+['v3d','vTop','vSide'].forEach(k=>$(k).onclick=()=>goal={...views[k]});
+let drag=null;
+box.addEventListener('pointerdown',e=>{box.setPointerCapture(e.pointerId);drag={x:e.clientX,y:e.clientY};goal=null;});
+box.addEventListener('pointermove',e=>{if(!drag)return;orb.th-=(e.clientX-drag.x)*0.008;orb.ph=Math.max(0.03,Math.min(1.5,orb.ph-(e.clientY-drag.y)*0.008));drag={x:e.clientX,y:e.clientY};});
+const end=()=>drag=null; box.addEventListener('pointerup',end); box.addEventListener('pointercancel',end);
+box.addEventListener('wheel',e=>{e.preventDefault();orb.r=Math.max(3.5,Math.min(14,orb.r*Math.exp(e.deltaY*0.0012)));},{passive:false});
+const tgt=new THREE.Vector3(0,0.7,0);
+function placeCam(){const k=Math.max(1,1.1/cam.aspect), th=orb.th+(frame==='tour'?theta:0), r=orb.r*k;
+  cam.position.set(tgt.x+r*Math.sin(orb.ph)*Math.sin(th),tgt.y+r*Math.cos(orb.ph),tgt.z+r*Math.sin(orb.ph)*Math.cos(th));
+  cam.up.set(0,1,0); if(orb.ph<0.06){cam.up.set(-Math.sin(th),0,-Math.cos(th));} cam.lookAt(tgt);
+  scene.fog.near=r+3.5; scene.fog.far=r+22;
+  // le décor ne doit jamais masquer la scène : on cache ce qui est trop près de la caméra ou entre elle et le tourniquet
+  const ct=tgt.clone().sub(cam.position); ct.y=0; const L2=ct.lengthSq()||1;
+  DECOR.forEach(o=>{const co=o.position.clone().sub(cam.position);co.y=0;const t=Math.max(0,Math.min(1,co.dot(ct)/L2));
+    const dd=co.clone().sub(ct.clone().multiplyScalar(t)).setY(0).length();
+    o.visible=co.length()>7&&!(t>0&&t<1.15&&dd<3.5);});}
+
+// ---------- contrôles ----------
+const bind=(id,set,fmt)=>{const s=$(id),o=$(id+'v');s.addEventListener('input',()=>{set(+s.value);o.textContent=fmt(+s.value);});};
+const fx=(v,n=2)=>v.toFixed(n).replace('.',',');
+bind('om',v=>omTarget=v,v=>fx(v)+' rad/s');
+bind('rr',v=>{r0=v;if(state==='stuck')placeStuck();else reset();},v=>fx(v)+' m');
+bind('mu',v=>mu=v,v=>fx(v));
+bind('ms',v=>m=v,v=>v+' kg');
+function setFrame(f){frame=f;$('bSol').classList.toggle('on',f==='sol');$('bTour').classList.toggle('on',f==='tour');
+  $('legC').style.display=f==='tour'?'':'none';trail.length=0;ejTrail.length=0;}
+$('bSol').onclick=()=>setFrame('sol'); $('bTour').onclick=()=>setFrame('tour');
+$('bPause').onclick=()=>{paused=!paused;$('bPause').textContent=paused?'Reprendre':'Pause';$('bPause').classList.toggle('on',paused);};
+// position de départ : à 45° dans la vue, calée entre deux arceaux (un peu derrière l'arceau qui la précède)
+function reset(){state='stuck';tip.th=0;tip.w=0;
+  let p0=-theta+Math.PI*0.25; const gap=Math.PI/2, off=RAIL_A[0]-gap*0.33;
+  p0=off+Math.round((p0-off)/gap)*gap; phi=p0;
+  trail.length=0;ejTrail.length=0;placeStuck();}
+$('bReset').onclick=reset;
+function placeStuck(){const a=theta+phi;P.x=r0*Math.cos(a);P.z=-r0*Math.sin(a);P.y=H_PLAT;P.vx=0;P.vz=0;P.vy=0;}
+
+// ---------- étiquettes : position projetée, puis écartement mutuel (pas de chevauchement) ----------
+const LABS=['lP','lN','lF','lC','lV'].map(id=>({el:$(id),id,on:false,x:0,y:0,w:0,h:0,txt:''}));
+const LB={}; LABS.forEach(l=>LB[l.id]=l);
+function lab(id,v,dx=0,dy=0){const L=LB[id];const p=v.clone().project(cam);
+  L.on=p.z<1&&Math.abs(p.x)<1.08&&Math.abs(p.y)<1.08; L.x=(p.x+1)/2*box.clientWidth+dx; L.y=(1-p.y)/2*box.clientHeight+dy;}
+// étiquette placée dans le prolongement de la flèche (au-delà de la pointe, à l'écran)
+const scr=v=>{const p=v.clone().project(cam);return {x:(p.x+1)/2*box.clientWidth,y:(1-p.y)/2*box.clientHeight,ok:p.z<1};};
+function labBeyond(id,o,tipV){const L=LB[id];if(!L.w){L.w=L.el.offsetWidth;L.h=L.el.offsetHeight;}
+  const a=scr(o),b=scr(tipV);let dx=b.x-a.x,dy=b.y-a.y;const d=Math.hypot(dx,dy);
+  if(d<1){dx=0;dy=1;}else{dx/=d;dy/=d;}
+  const k=Math.abs(dx)*L.w/2+Math.abs(dy)*L.h/2+7;
+  L.on=b.ok&&b.x>-40&&b.x<box.clientWidth+40&&b.y>-40&&b.y<box.clientHeight+40; L.x=b.x+dx*k; L.y=b.y+dy*k;}
+function setTxt(id,t){const L=LB[id];if(L.txt!==t){L.el.textContent=t;L.txt=t;L.w=0;}}
+function rectOf(el){if(!el||el.hidden||el.offsetParent===null)return null;const r=el.getBoundingClientRect(),b=box.getBoundingClientRect();return {x:r.left-b.left,y:r.top-b.top,w:r.width,h:r.height};}
+function layoutLabels(){
+  const W=box.clientWidth,H=box.clientHeight, on=LABS.filter(l=>l.on);
+  on.forEach(l=>{if(!l.w){l.w=l.el.offsetWidth;l.h=l.el.offsetHeight;}});
+  const obst=[rectOf($('hud')),rectOf($('gauge')),rectOf($('modeTag')),rectOf($('slowTag'))].filter(Boolean), pad=4;
+  for(let it=0;it<40;it++){let moved=false;
+    for(let i=0;i<on.length;i++)for(let j=i+1;j<on.length;j++){const a=on[i],b=on[j];
+      const ox=(a.w+b.w)/2+pad-Math.abs(a.x-b.x), oy=(a.h+b.h)/2+pad-Math.abs(a.y-b.y);
+      if(ox>0&&oy>0){moved=true; if(oy<=ox*1.6){const s=(a.y<b.y||(a.y===b.y&&i<j))?-1:1;a.y+=s*oy/2;b.y-=s*oy/2;}
+        else{const s=a.x<b.x?-1:1;a.x+=s*ox/2;b.x-=s*ox/2;}}}
+    on.forEach(l=>{obst.forEach(o=>{const cx=o.x+o.w/2,cy=o.y+o.h/2;const ox=(l.w+o.w)/2+pad-Math.abs(l.x-cx),oy=(l.h+o.h)/2+pad-Math.abs(l.y-cy);
+        if(ox>0&&oy>0){moved=true;if(oy<ox){l.y+=(l.y<cy?-1:1)*oy;}else{l.x+=(l.x<cx?-1:1)*ox;}}});
+      l.x=Math.max(l.w/2+4,Math.min(W-l.w/2-4,l.x)); l.y=Math.max(l.h/2+4,Math.min(H-l.h/2-4,l.y));});
+    if(!moved)break;}
+  LABS.forEach(l=>{l.el.style.opacity=l.on?1:0; if(l.on)l.el.style.transform=`translate(${(l.x-l.w/2).toFixed(1)}px,${(l.y-l.h/2).toFixed(1)}px)`;});
+}
+
+function size(){const w=box.clientWidth,h=box.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();LABS.forEach(l=>l.w=0);}
+new ResizeObserver(size).observe(box); size();
+
+// ---------- physique (identique à la version d'origine) ----------
+let tPrev=performance.now(); reset();
+function step(dt){
+  // le moteur du tourniquet rejoint la vitesse demandée avec une accélération limitée
+  const dOm=omTarget-om; alpha=Math.abs(dOm)<1e-4?0:Math.sign(dOm)*Math.min(ALPHA_MAX,Math.abs(dOm)/dt);
+  om+=alpha*dt; theta+=om*dt;
+  const fmax=mu*m*g;
+  if(state==='stuck'){
+    // force de frottement nécessaire : radiale m ω² r (vers le centre) + tangentielle m α r
+    const need=m*r0*Math.hypot(om*om,alpha);
+    if(need>fmax*1.0001){ // ça ne tient plus : la personne part avec la vitesse du plateau
+      state='slide'; const a=theta+phi; P.x=r0*Math.cos(a);P.z=-r0*Math.sin(a);
+      P.vx=-om*r0*Math.sin(a); P.vz=-om*r0*Math.cos(a);
+    } else placeStuck();
+  }
+  if(state==='slide'){
+    // au sol (repère inertiel) : seul le frottement cinétique agit, opposé à la vitesse relative au plateau
+    const vpx=-om*(-P.z)*1, vpz=-om*P.x;               // vitesse du plateau sous la personne : ω × r (axe y)
+    const rx=P.vx-vpx, rz=P.vz-vpz, rl=Math.hypot(rx,rz)||1e-6, muk=mu*0.8;
+    const ax=-muk*g*rx/rl, az=-muk*g*rz/rl;
+    P.vx+=ax*dt; P.vz+=az*dt; P.x+=P.vx*dt; P.z+=P.vz*dt;
+    if(Math.hypot(P.x,P.z)>R){state='off';P.vy=0;}
+  } else if(state==='off'){
+    // 1) elle quitte le plateau : chute verticale de 32 cm, la vitesse horizontale est conservée
+    if(P.y>0){P.vy-=g*dt;P.y=Math.max(0,P.y+P.vy*dt);P.x+=P.vx*dt;P.z+=P.vz*dt;
+      if(P.y===0){ // 2) contact avec le sol : les pieds s'arrêtent net (adhérence), le corps continue sur sa lancée
+        const v=Math.hypot(P.vx,P.vz), h=hipsPhys+0.12;
+        tip.dir=Math.atan2(-P.vz,P.vx); tip.th=0.05; tip.w=v/h;   // moment cinétique conservé autour des pieds : ω = v/h
+        P.vx=0;P.vz=0;}}
+    // 3) bascule vers l'avant autour des pieds, comme un pendule inversé : θ'' = (g/h)·sin θ, jusqu'à plat ventre
+    else if(tip.th<Math.PI/2){const h=1.0; tip.w+=(g/h)*Math.sin(tip.th)*dt; tip.th=Math.min(Math.PI/2,tip.th+tip.w*dt);}
+  }
+}
+const tmpV=new THREE.Vector3();
+let prNow=Math.min(devicePixelRatio||1,2), perfN=0, perfT=0;
+function loop(t){
+  const rawDt=(t-tPrev)/1000;
+  const dt=Math.min(0.033,rawDt); tPrev=t;
+  // appareil trop lent : on baisse un peu la résolution de rendu (jamais sous 1)
+  if(rawDt<0.5){perfN++;perfT+=rawDt; if(perfN>=90){ if(perfT/perfN>0.045&&prNow>1){prNow=Math.max(1,prNow-0.5);renderer.setPixelRatio(prNow);size();} perfN=0;perfT=0;}}
+  // ralenti ×0,3 pendant l'éjection et la chute, pour qu'on la voie
+  const slow=state==='slide'||(state==='off'&&tip.th<Math.PI/2);
+  if(!paused){const n=4,ts=slow?0.3:1;for(let i=0;i<n;i++)step(dt*ts/n);}
+  $('slowTag').hidden=!slow;
+  // la caméra suit la personne quand elle quitte le plateau, puis revient au centre après « Remettre »
+  const follow=state!=='stuck';
+  if(dbgFocus){tgt.set(P.x,P.y+dbgFocus,P.z);}else{
+  tgt.x+=((follow?P.x*0.7:0)-tgt.x)*0.05; tgt.z+=((follow?P.z*0.7:0)-tgt.z)*0.05; tgt.y+=(0.7-tgt.y)*0.1;}
+  plat.rotation.y=theta;
+  if(goal){['th','ph','r'].forEach(k=>orb[k]+=(goal[k]-orb[k])*0.12);if(Math.abs(goal.ph-orb.ph)<1e-3&&Math.abs(goal.th-orb.th)<1e-3)goal=null;}
+  placeCam();
+  // l'ombre suit la zone d'action (cadre d'ombre serré = ombres nettes), calée sur la grille des texels pour ne pas scintiller
+  { const q=7.2/1024; const cx=Math.round(tgt.x/q)*q, cz=Math.round(tgt.z/q)*q;
+    sun.target.position.set(cx,0,cz); sun.position.set(cx+3.2,7.5,cz+4.2); }
+
+  // ---------- personnage : orientation et posture pilotées par la physique ----------
+  tAnim+=paused?0:dt*(slow?0.45:1);
+  const ratioP=state==='stuck'?Math.min(1.2,m*r0*Math.hypot(om*om,alpha)/(mu*m*g)):1;
+  let tgtP;
+  if(state==='stuck'){
+    const a=Math.atan2(-P.z,P.x); person.rotation.set(0,a+Math.PI/2,0);       // face au sens de rotation
+    const breath=Math.sin(tAnim*2.2)*0.03, lean=Math.atan(om*om*r0/g);       // angle d'équilibre réel : tan(β) = ω²r/g
+    const near=Math.max(0,ratioP-0.3)/0.7;                                   // 0 → 1 quand on approche de la limite
+    tgtP={lean,
+      pitch:-Math.atan(alpha*r0/g)*0.8,                  // le tourniquet accélère : on part en arrière
+      knee:0.1+0.5*Math.max(0,ratioP-0.35),             // plus on approche de la limite, plus on plie les genoux
+      stance:0.08+0.14*Math.min(1.2,ratioP), armOut:0.1+1.15*Math.min(1,near*near*0.6+near*0.4),
+      armFwd:0.06+breath+0.25*near, elbow:0.22+0.35*near,
+      flail:0, headTilt:lean*0.7, lie:0, bend:lean*0.18, wob:Math.max(0,(ratioP-0.6)/0.4), brace:0};
+  } else if(state==='slide'){
+    // glisse : corps face à sa vitesse, penché en arrière, bras qui moulinent
+    const vx=P.vx, vz=P.vz; if(Math.hypot(vx,vz)>0.05) person.rotation.set(0,Math.atan2(-vz,vx),0);
+    tgtP={lean:0,pitch:0.3,knee:0.5,stance:0.25,armOut:1.15,armFwd:-0.3,elbow:0.55,flail:0.7,headTilt:0,lie:0,bend:0,wob:0,brace:0};
+  } else if(P.y>0.001){
+    // en l'air (32 cm) : elle garde son allure de glissade, bras en avant pour se rattraper
+    const v=Math.hypot(P.vx,P.vz); if(v>0.05) person.rotation.set(0,Math.atan2(-P.vz,P.vx),0);
+    tgtP={lean:0,pitch:0.1,knee:0.4,stance:0.2,armOut:0.6,armFwd:1.1,elbow:0.35,flail:0.35,headTilt:0,lie:0,bend:0,wob:0,brace:0.3};
+  } else {
+    // au sol : pieds fixes, le corps pivote vers l'avant dans le sens de la vitesse ; les bras se tendent pour amortir
+    person.rotation.set(0,tip.dir,0);
+    const k=tip.th/(Math.PI/2);
+    tgtP={lean:0,pitch:0,knee:0.22*Math.sin(Math.PI*Math.min(1,k*1.2)),stance:0.14,armOut:0.42+0.25*k,armFwd:1.25+1.7*k,elbow:0.35-0.25*k,flail:0,
+      headTilt:0,lie:k,bend:0,wob:0,brace:k};
+  }
+  const kP=Math.min(1,dt*(state==='stuck'?6:9));
+  for(const key in tgtP) pose[key]=lerp(pose[key],tgtP[key],kP);
+  if(state==='off'&&P.y<=0.001) pose.lie=tip.th/(Math.PI/2);   // l'angle de chute vient de la physique, sans lissage
+  applyPose(tAnim);
+  person.position.set(P.x,P.y+0.1*pose.lie,P.z);                 // couchée : le buste repose sur le sol (pas dedans)
+  // expression : sourire → inquiet → « oh ! » ; clignement des yeux
+  const worried=state==='stuck'&&ratioP>=0.8, ohh=state!=='stuck';
+  mSmile.visible=!worried&&!ohh; mFlat.visible=worried; mO.visible=ohh;
+  blinkT-=dt; const blink=blinkT<0.12; if(blinkT<0)blinkT=2.5+Math.random()*2.5;
+  neck.children.forEach(c=>{if(c.userData.eye)c.scale.y=(blink?0.12:1)*(c.geometry.parameters.radius>0.01?1.2:1);
+    if(c.userData.brow)c.rotation.z=Math.PI*0.1+(worried||ohh?-0.35*c.userData.brow:0);});
+  // ombre de contact
+  blobP.position.set(P.x+Math.cos(tip.dir)*0.8*pose.lie,P.y+0.006,P.z-Math.sin(tip.dir)*0.8*pose.lie);
+  blobP.scale.set(1+2.4*pose.lie,1,1); blobP.rotation.z=pose.lie>0.01?tip.dir:0; blobP.material.opacity=0.3;
+
+  // trajectoire, enregistrée dans le repère de la vue choisie
+  if(!paused){const p=new THREE.Vector3(P.x,P.y+0.02,P.z); if(frame==='tour')p.applyAxisAngle(up,-theta);
+    if(state==='stuck'){trail.push(p); if(trail.length>TRAIL_N)trail.shift();}
+    else{const last=ejTrail[ejTrail.length-1]; if(!last||last.distanceTo(p)>0.01){ejTrail.push(p); if(ejTrail.length>TRAIL_N)ejTrail.shift();}}}
+  const arr=tGeo.attributes.position.array;
+  for(let i=0;i<TRAIL_N;i++){const q=trail[Math.min(i,trail.length-1)]||new THREE.Vector3(P.x,P.y,P.z);
+    const w=frame==='tour'?q.clone().applyAxisAngle(up,theta):q; arr[3*i]=w.x;arr[3*i+1]=w.y;arr[3*i+2]=w.z;}
+  tGeo.attributes.position.needsUpdate=true; tLine.visible=trail.length>2;
+  drawDashes(ejTrail.map(q=>frame==='tour'?q.clone().applyAxisAngle(up,theta):q));
+
+  // ---------- forces ----------
+  const S=1.1/(m*g);                                     // échelle : le poids fait 1,1 m
+  const comH=(hipsPhys+0.12)*(1-0.85*pose.lie);          // centre de gravité : descend quand il plie les genoux ou se couche
+  const feet=new THREE.Vector3(P.x,P.y,P.z), com=feet.clone().add(new THREE.Vector3(0,comH,0));
+  const rhat=new THREE.Vector3(P.x,0,P.z); const rl=rhat.length()||1; rhat.multiplyScalar(1/rl);
+  const that=new THREE.Vector3(-rhat.z,0,rhat.x).multiplyScalar(-1);    // sens de rotation (ω > 0)
+  let fvec=new THREE.Vector3();
+  if(state==='stuck') fvec=rhat.clone().multiplyScalar(-m*om*om*r0).add(that.clone().multiplyScalar(m*alpha*r0));
+  else if(state==='slide'){const vpx=om*P.z,vpz=-om*P.x;const rv=new THREE.Vector3(P.vx-vpx,0,P.vz-vpz);if(rv.length()>1e-4)fvec=rv.normalize().multiplyScalar(-mu*0.8*m*g);}
+  const side=that.clone().multiplyScalar(0.36);          // P d'un côté, N de l'autre : elles ne se recouvrent pas
+  const pO=com.clone().sub(side), nO=feet.clone().add(side).add(new THREE.Vector3(0,0.02,0));
+  setArrow(aP,pO,new THREE.Vector3(0,-m*g*S,0));
+  setArrow(aN,nO,new THREE.Vector3(0,(state==='off'&&P.y>0)?0:m*g*S,0));
+  setArrow(aF,feet.clone().add(new THREE.Vector3(0,0.05,0)),fvec.clone().multiplyScalar(S));
+  const fc=state==='stuck'?m*om*om*r0:0;
+  aC.visible=frame==='tour'&&state==='stuck'&&fc*S>0.03;
+  if(aC.visible)setArrow(aC,com.clone().add(new THREE.Vector3(0,0.15,0)),rhat.clone().multiplyScalar(fc*S));
+  // vitesse au sol (inertielle) ; dans le tourniquet, la personne qui tient est immobile
+  const vIn=state==='stuck'?that.clone().multiplyScalar(om*r0):new THREE.Vector3(P.vx,0,P.vz);
+  const vShow=frame==='tour'?(state==='stuck'?new THREE.Vector3():vIn.clone().sub(new THREE.Vector3(om*P.z,0,-om*P.x))):vIn;
+  const vO=com.clone().add(new THREE.Vector3(0,0.85,0)); if(pose.lie>0.5)vO.y=Math.max(vO.y,0.9);
+  setArrow(aV,vO,vShow.clone().multiplyScalar(0.35));   // au-dessus de la tête
+
+  // étiquettes
+  const fl=fvec.length();
+  setTxt('lP','P = '+Math.round(m*g)+' N'); setTxt('lN','N = '+Math.round(m*g)+' N');
+  setTxt('lF',(state==='stuck'?'f = ':'f cinétique = ')+Math.round(fl)+' N');
+  setTxt('lC','centrifuge (fictive) = '+Math.round(fc)+' N');
+  setTxt('lV','v = '+fx(vShow.length())+' m/s');
+  { // chaque étiquette du côté extérieur de sa flèche, quel que soit l'angle de vue
+    const pM=pO.clone().add(new THREE.Vector3(0,-m*g*S*0.5,0)), nM=nO.clone().add(new THREE.Vector3(0,m*g*S*0.62,0));
+    const sx=v=>v.clone().project(cam).x, pLeft=sx(pM)<sx(nM);
+    lab('lP',pM,pLeft?-60:60,0);
+    lab('lN',nM,pLeft?60:-60,0);}
+  const fO=feet.clone().add(new THREE.Vector3(0,0.05,0));
+  if(fl*S>0.03)labBeyond('lF',fO,fO.clone().add(fvec.clone().multiplyScalar(S))); else LB.lF.on=false;
+  if(aC.visible){const cO=com.clone().add(new THREE.Vector3(0,0.15,0));labBeyond('lC',cO,cO.clone().add(rhat.clone().multiplyScalar(fc*S)));} else LB.lC.on=false;
+  if(aV.visible)labBeyond('lV',vO,vO.clone().add(vShow.clone().multiplyScalar(0.35))); else LB.lV.on=false;
+  if(!aN.visible)LB.lN.on=false;
+  layoutLabels();
+
+  // ---------- lecture ----------
+  const fmax=mu*m*g, need=m*r0*Math.hypot(om*om,alpha), omMax=Math.sqrt(mu*g/r0);
+  const ratio=state==='stuck'?need/fmax:1.15;
+  $('gFill').style.width=Math.min(100,ratio/1.25*100)+'%'; $('gLim').style.left=(100/1.25)+'%';
+  $('gFill').style.background=ratio<0.8?'#1D9E75':ratio<1?'#BA7517':'#E24B4A';
+  $('gSt').innerHTML=state==='stuck'?(ratio<0.8?'<span style="color:#0F6E56">Ça tient</span>':'<span style="color:#8a5a12">Limite proche</span>')
+    :'<span style="color:#a32d2d">'+(state==='slide'?'Ça glisse !':'Éjectée du tourniquet')+'</span>';
+  $('hud').innerHTML=state==='stuck'
+    ?`<div class="big"><b style="color:#a32d2d">f</b> = m·ω²·r = ${m} × ${fx(om,2)}² × ${fx(r0)} = <b>${Math.round(m*om*om*r0)} N</b></div>
+      <div class="sub">f max = μₛ·m·g = ${Math.round(fmax)} N · ça glisse au-delà de ω = √(μₛg/r) = ${fx(omMax)} rad/s${Math.abs(alpha)>0.01?' · le tourniquet accélère : f penche vers l’avant':''}</div>`
+    :`<div class="big"><b style="color:#a32d2d">m·ω²·r</b> &gt; <b>μₛ·m·g</b></div><div class="sub">Le frottement ne suffit plus à la courber : vue du sol, elle part tout droit, selon la tangente (pointillés verts). Clique sur « Remettre la personne ».</div>`;
+  $('modeTag').textContent=frame==='sol'?'Référentiel du sol (galiléen)':'Référentiel du tourniquet (tournant, non galiléen)';
+  $('fml').innerHTML=frame==='sol'
+    ?'<b style="color:#a32d2d">Vu du sol</b> : la personne tourne, donc elle accélère vers le centre. La seule force horizontale est le <b style="color:#a32d2d">frottement de ses pieds</b> : c’est lui la force centripète, <b>f = m·ω²·r</b>. P et N se compensent.'
+    :'<b style="color:#8a5a12">Vu depuis le tourniquet</b> : la personne est immobile. Pour que le bilan soit nul, on ajoute une <b style="color:#8a5a12">force d’inertie centrifuge</b> fictive m·ω²·r, vers l’extérieur, qui équilibre le frottement.';
+  $('info').innerHTML=`ω = ${fx(om)} rad/s (${fx(om*60/(2*Math.PI),1)} tours/min) &nbsp;|&nbsp; v = ω·r = ${fx(om*r0)} m/s &nbsp;|&nbsp; a = ω²·r = ${fx(om*om*r0)} m/s² &nbsp;|&nbsp; <b style="color:#a32d2d">f nécessaire = ${Math.round(need)} N</b> / f max = ${Math.round(fmax)} N`;
+
+  renderer.render(scene,cam);
+  requestAnimationFrame(loop);
+}
+setFrame('sol');
+requestAnimationFrame(loop);
+window.__t={get state(){return state},get tip(){return tip.th},get y(){return P.y},set om(v){omTarget=v},set view(v){goal=v},set focus(v){dbgFocus=v},reset};
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Dynamique : forces et lois de Newton<span>11 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/diagramme-forces/"><i>01</i>Diagramme de forces et 2ᵉ loi</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/inertie/"><i>02</i>1re loi : le principe d&#x27;inertie</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/referentiels-inertiels/"><i>03</i>Équivalence des référentiels inertiels</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/chariot-poulie/"><i>04</i>2e loi : F = m·a</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ascenseur/"><i>05</i>Poids apparent dans un ascenseur</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/action-reaction/"><i>06</i>Action et réaction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/action-reaction-exemples/"><i>07</i>Action-réaction : la fusée et d&#x27;autres exemples</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/plan_incline/"><i>08</i>Plan incliné</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/frottement-coef/"><i>09</i>Coefficient de frottement</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/tourniquet/"><i>10</i>Forces sur un tourniquet</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/impulsion/"><i>11</i>Impulsion</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

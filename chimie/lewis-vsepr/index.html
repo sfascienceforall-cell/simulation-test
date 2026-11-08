@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lewis, VSEPR et polarité · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link rel="stylesheet" href="../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+.hint{font:500 .84rem var(--f-ui);color:var(--muted)}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:14px}
+.box h2{font:800 15px var(--f-ui);margin:0 0 8px}
+.box ul{margin:0;padding-left:18px}.box li{margin:4px 0}
+.box.warn{border-left:4px solid #BA7517}
+.box.keep{border-left:4px solid var(--green)}
+details.defi{border-top:1px solid var(--line);padding:9px 0}details.defi:first-of-type{border-top:0}
+details.defi summary{cursor:pointer;font-weight:700;color:var(--ink2)}
+details.defi div{margin-top:6px;color:var(--ink2);background:var(--bg);border-radius:8px;padding:8px 12px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.note{font:500 .8rem/1.45 var(--f-ui);color:var(--muted);margin-top:8px}
+sub,sup{font-size:.72em;line-height:0}
+.mols{display:flex;flex-wrap:wrap;gap:5px}
+.mols .btn{padding:5px 9px!important;font-size:.84rem!important}
+.stage{border:1px solid var(--line);border-radius:10px;background:#fff;position:relative;min-height:300px}
+#lw{display:flex;justify-content:center;align-items:center;padding:10px;min-height:300px}
+#lw svg{max-width:100%;height:auto}
+#lw svg text,#res svg text{font-family:Mulish,system-ui,sans-serif}
+#v3{position:relative;height:380px;touch-action:pan-y;cursor:grab}
+#v3 canvas{display:block;width:100%!important;height:100%!important;border:0!important;border-radius:10px!important}
+#v3 .msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;color:var(--muted);font-weight:600}
+.v3cap{position:absolute;left:10px;top:8px;font:800 12px var(--f-ui);color:var(--ink2);background:rgba(255,255,255,.85);padding:2px 6px;border-radius:6px;pointer-events:none}
+@media (max-width:640px){#v3{height:320px}}
+.res{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 8px;padding:10px}
+.res .rs{font:800 26px var(--f-ui);color:#1e3f8f}
+.res svg{width:150px;height:auto}
+.res figure{display:flex;flex-direction:column;align-items:center}
+.res figcaption{font:600 11px var(--f-ui);color:var(--muted)}
+.fct{border-collapse:collapse;font:600 .86rem var(--f-ui);margin:6px 0;width:100%}
+.fct th,.fct td{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left}
+.fct th{font-size:.76rem;color:var(--muted);font-weight:800}
+.leg3{display:flex;flex-wrap:wrap;gap:4px 12px;font:600 .8rem var(--f-ui);color:var(--muted);margin-top:8px}
+.leg3 i{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:4px;border:1px solid rgba(0,0,0,.25)}
+.leg3 i.ar{border-radius:2px;width:18px;height:4px;border:0;vertical-align:2px}
+.steps .btn{padding:7px 11px!important}
+.tag2{display:inline-block;font:800 11px var(--f-ui);padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:1px}
+.tag2.p{background:#fdeccb;color:#7a4b00}.tag2.np{background:#e6f3ee;color:#1f5a45}.tag2.i{background:#e9effb;color:#24428a}
+
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a class="on" href="../">Simulations de chimie</a><a href="../exercices/">Exercices de chimie</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations de physique</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="../">Simulations de chimie</a>›<a href="../#atome">Atome et liaison chimique</a>›<b>Lewis, VSEPR et polarité</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Chimie générale · Atome et liaison</span><span class="sfa-chip free">Gratuit</span></div><h1>Lewis, VSEPR et polarité</h1><p>De la structure de Lewis à la forme 3D et au moment dipolaire : quatre étapes, 22 molécules et ions.</p></div>
+<section class="sfa-sim">
+<div class="row" style="display:block"><span class="pill" style="display:block;margin-bottom:6px">Molécule ou ion</span><div class="mols" id="mols"></div></div>
+<div class="row steps" style="display:flex;flex-wrap:wrap;gap:6px" role="tablist">
+  <button class="btn on" data-st="1">1. Lewis</button><button class="btn" data-st="2">2. Mésomérie</button>
+  <button class="btn" data-st="3">3. Géométrie (VSEPR)</button><button class="btn" data-st="4">4. Polarité</button>
+</div>
+<div class="row" id="convRow" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center" hidden>
+  <span class="pill">Écriture</span><button class="btn on" data-cv="min">Charges formelles minimales</button><button class="btn" data-cv="oct">Octet respecté</button>
+</div>
+<div class="row" id="figRow" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center" hidden>
+  <span class="pill">Afficher</span><button class="btn on" data-fg="fig">Figure de répulsion (avec doublets non liants)</button><button class="btn" data-fg="geo">Géométrie de la molécule (atomes seuls)</button>
+</div>
+<div class="stage">
+  <div id="lw" aria-live="polite"></div>
+  <div id="res" class="res" hidden></div>
+  <div id="v3" hidden><span class="v3cap" id="v3cap"></span></div>
+</div>
+<div class="leg3" id="leg3"></div>
+<div class="fml" id="fml"></div>
+<div class="info" id="info"></div>
+<p class="note" id="note3"></p>
+</section>
+
+<div class="box keep"><h2>Ce qu'il faut retenir</h2><ul>
+<li>Lewis : compte les électrons de valence (ajoute un électron par charge −, retire-en un par charge +), place les doublets liants, puis complète les octets. Charge formelle = V − électrons non liants − nombre de liaisons.</li>
+<li>Mésomérie : plusieurs structures limites reliées par ↔ décrivent une seule molécule réelle, l'hybride. Ses liaisons équivalentes sont identiques.</li>
+<li>VSEPR : chaque liaison (simple, double ou triple) et chaque doublet non liant de l'atome central compte pour un domaine. Le nombre de domaines donne la figure de répulsion ; les atomes seuls donnent la géométrie.</li>
+<li>Une molécule est polaire si la somme vectorielle de ses dipôles de liaison n'est pas nulle. La symétrie peut les annuler.</li>
+</ul></div>
+<div class="box warn"><h2>Pièges classiques</h2><ul>
+<li>Écrire ⇌ entre deux structures limites : la mésomérie n'est pas un équilibre. On écrit ↔.</li>
+<li>Confondre figure de répulsion et géométrie : H₂O a une figure tétraédrique mais une géométrie coudée.</li>
+<li>Croire qu'une molécule à liaisons polaires est polaire : CO₂ et CCl₄ ne le sont pas.</li>
+<li>Donner un doublet non liant à l'azote de NH₄⁺ : ce doublet a servi à fixer H⁺. NH₄⁺ est AX₄.</li>
+</ul></div>
+<div class="box"><h2>Défis</h2>
+<details class="defi"><summary>Pourquoi CH₂Cl₂ est-il polaire alors que CCl₄ ne l'est pas ?</summary><div>Les deux sont tétraédriques (AX₄). Dans CCl₄, les quatre dipôles C–Cl sont identiques et s'annulent par symétrie. Dans CH₂Cl₂, deux dipôles C–Cl (Δχ = 0,61) et deux dipôles C–H (Δχ = 0,35, orientés vers C) ne se compensent pas : la somme n'est pas nulle. Regarde la flèche rouge à l'étape 4.</div></details>
+<details class="defi"><summary>XeF₄ : figure de répulsion et géométrie ?</summary><div>Xe a 4 liaisons et 2 doublets non liants : AX₄E₂, 6 domaines, figure octaédrique. Les deux doublets se placent à l'opposé l'un de l'autre : la géométrie est un plan carré, angles de 90°.</div></details>
+<details class="defi"><summary>Combien de structures limites pour CO₃²⁻, et quel indice de liaison C–O ?</summary><div>Trois structures limites (la double liaison change de place). Chaque liaison C–O vaut en moyenne (2 + 1 + 1)/3 = 4/3 ≈ 1,33 : les trois liaisons sont identiques dans l'ion réel.</div></details>
+</div>
+
+<script>
+addEventListener('DOMContentLoaded',()=>{
+const $=id=>document.getElementById(id);
+const fr=(v,d)=>v.toFixed(d).replace('.',',');
+/* Électrons de valence */
+const V={H:1,B:3,C:4,N:5,O:6,F:7,P:5,S:6,Cl:7,Br:7,Xe:8};
+/* Électronégativités de Pauling : H, C, N, O, F, S, Cl = VALEURS-REFERENCE ; B, P, Br, Xe = tables usuelles (CRC),
+   vérifiées par le professeur (section « Données tabulées des simulations atome/liaison »). Xe : une seule décimale. */
+const CHI={H:2.20,C:2.55,N:3.04,O:3.44,F:3.98,S:2.58,Cl:3.16,B:2.04,P:2.19,Br:2.96,Xe:2.6};
+const chiS=e=>e==='Xe'?'2,6':fr(CHI[e],2);
+const COL={H:'#f4f4f4',C:'#3c3c3c',N:'#3050f8',O:'#e0312a',F:'#8fd14f',Cl:'#1fb83a',S:'#e6c229',P:'#f08a24',B:'#f2a49d',Br:'#a62929',Xe:'#4fb0c6'};
+const NOMS={H:'hydrogène',C:'carbone',N:'azote',O:'oxygène',F:'fluor',Cl:'chlore',S:'soufre',P:'phosphore',B:'bore',Br:'brome',Xe:'xénon'};
+const P4=[[2,2,1,1],[2,1,2,1],[2,1,1,2],[1,2,2,1],[1,2,1,2],[1,1,2,2]];
+const R3=[[2,1,1],[1,2,1],[1,1,2]];
+/* ang : angles (°) des atomes terminaux dans le dessin de Lewis ; lp : angles imposés des doublets de l'atome central.
+   real : angles réels ; r3 : angle réel utilisé dans le modèle 3D. AV = valeur à valider (hors VALEURS-REFERENCE). */
+const M=[
+ {id:'H2O',f:'H₂O',c:'O',t:['H','H'],q:0,ang:[210,330],S:[[1,1]],real:'104,5°',r3:104.5},
+ {id:'NH3',f:'NH₃',c:'N',t:['H','H','H'],q:0,ang:[180,0,270],S:[[1,1,1]],real:'107°',r3:107},
+ {id:'NH4+',f:'NH₄⁺',c:'N',t:['H','H','H','H'],q:1,ang:[90,0,270,180],S:[[1,1,1,1]],real:'109,5° (symétrie)'},
+ {id:'CH4',f:'CH₄',c:'C',t:['H','H','H','H'],q:0,ang:[90,0,270,180],S:[[1,1,1,1]],real:'109,5° (symétrie)'},
+ {id:'CO2',f:'CO₂',c:'C',t:['O','O'],q:0,ang:[180,0],S:[[2,2]],real:'180° (symétrie)'},
+ {id:'BF3',f:'BF₃',c:'B',t:['F','F','F'],q:0,ang:[90,210,330],S:[[1,1,1]],real:'120° (symétrie)'},
+ {id:'SO2',f:'SO₂',c:'S',t:['O','O'],q:0,ang:[210,330],S:[[2,2]],oct:[[2,1],[1,2]],real:'≈ 119,5°',av:1,r3:119.5},
+ {id:'SO3',f:'SO₃',c:'S',t:['O','O','O'],q:0,ang:[90,210,330],S:[[2,2,2]],oct:R3,real:'120° (symétrie)'},
+ {id:'SO42-',f:'SO₄²⁻',c:'S',t:['O','O','O','O'],q:-2,ang:[90,0,270,180],S:P4,oct:[[1,1,1,1]],real:'109,5° (symétrie)'},
+ {id:'NO3-',f:'NO₃⁻',c:'N',t:['O','O','O'],q:-1,ang:[90,210,330],S:R3,real:'120° (symétrie)'},
+ {id:'CO32-',f:'CO₃²⁻',c:'C',t:['O','O','O'],q:-2,ang:[90,210,330],S:R3,real:'120° (symétrie)'},
+ {id:'O3',f:'O₃',c:'O',t:['O','O'],q:0,ang:[210,330],S:[[2,1],[1,2]],real:'≈ 117°',av:1,r3:117},
+ {id:'PCl5',f:'PCl₅',c:'P',t:['Cl','Cl','Cl','Cl','Cl'],q:0,ang:[90,270,180,330,30],S:[[1,1,1,1,1]],real:'90° et 120° (symétrie)'},
+ {id:'SF4',f:'SF₄',c:'S',t:['F','F','F','F'],q:0,ang:[90,270,150,210],S:[[1,1,1,1]],real:'≈ 102° (F équatoriaux) et ≈ 173° (F axiaux)',av:1},
+ {id:'ClF3',f:'ClF₃',c:'Cl',t:['F','F','F'],q:0,ang:[90,270,180],lp:[30,330],S:[[1,1,1]],real:'≈ 87,5°',av:1},
+ {id:'XeF2',f:'XeF₂',c:'Xe',t:['F','F'],q:0,ang:[180,0],lp:[60,120,270],S:[[1,1]],real:'180° (symétrie)'},
+ {id:'SF6',f:'SF₆',c:'S',t:['F','F','F','F','F','F'],q:0,ang:[0,60,120,180,240,300],S:[[1,1,1,1,1,1]],real:'90° (symétrie)'},
+ {id:'BrF5',f:'BrF₅',c:'Br',t:['F','F','F','F','F'],q:0,ang:[90,30,150,210,330],lp:[270],S:[[1,1,1,1,1]],real:'≈ 85°',av:1},
+ {id:'XeF4',f:'XeF₄',c:'Xe',t:['F','F','F','F'],q:0,ang:[0,90,180,270],lp:[45,225],S:[[1,1,1,1]],real:'90° (symétrie)'},
+ {id:'CH2Cl2',f:'CH₂Cl₂',c:'C',t:['H','H','Cl','Cl'],q:0,ang:[90,270,180,0],S:[[1,1,1,1]],real:'≈ 112° (Cl–C–Cl)',av:1},
+ {id:'CCl4',f:'CCl₄',c:'C',t:['Cl','Cl','Cl','Cl'],q:0,ang:[90,0,270,180],S:[[1,1,1,1]],real:'109,5° (symétrie)'},
+ {id:'HCN',f:'HCN',c:'C',t:['H','N'],q:0,ang:[180,0],S:[[1,3]],real:'180°'}];
+/* av:1 : angles expérimentaux (valeurs tabulées usuelles, vérifiées par le professeur) : SO2 119,5° ; O3 116,8° ;
+   SF4 101,6° et 173,1° ; ClF3 87,5° ; BrF5 84,8° ; CH2Cl2 (Cl–C–Cl) 112,0°. */
+
+/* ---------- Lewis : doublets et charges formelles calculés ---------- */
+function lewis(m,ord){const lpT=m.t.map((e,i)=>e==='H'?0:4-ord[i]);
+  const tot=V[m.c]+m.t.reduce((a,e)=>a+V[e],0)-m.q,sb=ord.reduce((a,b)=>a+b,0),lpC=(tot-2*sb-2*lpT.reduce((a,b)=>a+b,0))/2;
+  const fcC=V[m.c]-2*lpC-sb,fcT=m.t.map((e,i)=>V[e]-2*lpT[i]-ord[i]);return {tot,lpC,lpT,fcC,fcT,sb};}
+const structs=(m,cv)=>cv==='oct'&&m.oct?m.oct:m.S;
+const SUPS={'1':'','2':'2'};
+const fcTxt=v=>(Math.abs(v)>1?Math.abs(v):'')+(v>0?'+':'−');
+const D2R=Math.PI/180;
+function angDist(a,b){let d=Math.abs(a-b)%360;return d>180?360-d:d;}
+function greedy(n,taken){const out=[];for(let k=0;k<n;k++){let best=0,bd=-1;for(let a=0;a<360;a+=5){const d=Math.min(...[...taken,...out].map(x=>angDist(a,x)),360);if(d>bd+1e-9){bd=d;best=a;}}out.push(best);}return out;}
+/* doublets de l'atome central : répartis régulièrement dans le plus grand espace libre entre les liaisons */
+function inGap(k,ang){if(!k)return [];const a=[...ang].sort((x,y)=>x-y);let st=a[a.length-1],gap=a[0]+360-st;
+  for(let i=1;i<a.length;i++)if(a[i]-a[i-1]>gap){gap=a[i]-a[i-1];st=a[i-1];}
+  return Array.from({length:k},(_,j)=>(st+gap*(j+1)/(k+1))%360);}
+function svgLewis(m,ord,small){const L=small?48:66,FS=small?15:19,lw=lewis(m,ord);
+  const pts=[{e:m.c,x:0,y:0}],bonds=[];m.t.forEach((e,i)=>{const a=m.ang[i]*D2R;pts.push({e,x:L*Math.cos(a),y:-L*Math.sin(a),a:m.ang[i]});bonds.push([0,i+1,ord[i]]);});
+  let s='';const rA=e=>(e.length>1?13:10)*(small?0.85:1);
+  bonds.forEach(([i,j,o])=>{const A=pts[i],B=pts[j],dx=B.x-A.x,dy=B.y-A.y,d=Math.hypot(dx,dy),ux=dx/d,uy=dy/d,nx=-uy,ny=ux;
+    const a0=rA(A.e)+2,b0=rA(B.e)+2,offs=o===1?[0]:o===2?[-3.4,3.4]:[-5.5,0,5.5];
+    offs.forEach(k=>{s+=`<line x1="${(A.x+ux*a0+nx*k).toFixed(1)}" y1="${(A.y+uy*a0+ny*k).toFixed(1)}" x2="${(B.x-ux*b0+nx*k).toFixed(1)}" y2="${(B.y-uy*b0+ny*k).toFixed(1)}" stroke="#2c3a4e" stroke-width="2" stroke-linecap="round"/>`;});});
+  const lpDraw=(P,angles)=>angles.forEach(a=>{const r=rA(P.e)+(small?5:7),cx=P.x+r*Math.cos(a*D2R),cy=P.y-r*Math.sin(a*D2R),px=-Math.sin(a*D2R)*3.6,py=-Math.cos(a*D2R)*3.6;
+    s+=`<circle cx="${(cx+px).toFixed(1)}" cy="${(cy+py).toFixed(1)}" r="${small?1.8:2.3}" fill="#a32d2d"/><circle cx="${(cx-px).toFixed(1)}" cy="${(cy-py).toFixed(1)}" r="${small?1.8:2.3}" fill="#a32d2d"/>`;});
+  const used=[];
+  const cLP=m.lp&&m.lp.length===lw.lpC?m.lp:inGap(lw.lpC,m.ang);lpDraw(pts[0],cLP);used[0]=[...m.ang,...cLP];
+  m.t.forEach((e,i)=>{const back=(m.ang[i]+180)%360,k=lw.lpT[i];const offs=k===1?[0]:k===2?[-60,60]:k===3?[-90,0,90]:[];
+    const an=offs.map(o=>(m.ang[i]+o+360)%360);lpDraw(pts[i+1],an);used[i+1]=[back,...an];});
+  pts.forEach((P,i)=>{s+=`<text x="${P.x.toFixed(1)}" y="${(P.y+FS*0.36).toFixed(1)}" text-anchor="middle" font-weight="800" font-size="${FS}" fill="${i?'#0f1b2d':'#13233a'}">${P.e}</text>`;});
+  // charges formelles
+  const fcs=[lw.fcC,...lw.fcT];
+  pts.forEach((P,i)=>{const v=fcs[i];if(!v)return;const a=greedy(1,used[i])[0],r=rA(P.e)+(small?11:15),cx=P.x+r*Math.cos(a*D2R),cy=P.y-r*Math.sin(a*D2R),t=fcTxt(v);
+    s+=`<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${t.length>1?8.5:7}" fill="#fff" stroke="#1e3f8f" stroke-width="1.4"/><text x="${cx.toFixed(1)}" y="${(cy+4).toFixed(1)}" text-anchor="middle" font-weight="800" font-size="${t.length>1?10:12}" fill="#1e3f8f">${t}</text>`;});
+  const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y),pad=small?30:38;let x0=Math.min(...xs)-pad,x1=Math.max(...xs)+pad,y0=Math.min(...ys)-pad,y1=Math.max(...ys)+pad;
+  if(m.q){const bx0=x0+4,bx1=x1-4,by0=y0+4,by1=y1-4;s+=`<path d="M${bx0+7},${by0} h-7 v${by1-by0} h7 M${bx1-7},${by0} h7 v${by1-by0} h-7" fill="none" stroke="#2c3a4e" stroke-width="1.6"/>`+
+    `<text x="${bx1+3}" y="${by0+10}" font-weight="800" font-size="${small?12:14}" fill="#2c3a4e">${fcTxt(m.q)}</text>`;x1+=22;}
+  return `<svg viewBox="${x0.toFixed(0)} ${y0.toFixed(0)} ${(x1-x0).toFixed(0)} ${(y1-y0).toFixed(0)}" width="${small?150:Math.round((x1-x0)*1.25)}" role="img" aria-label="Structure de Lewis de ${m.f}">${s}</svg>`;}
+
+/* ---------- VSEPR ---------- */
+const FIG={2:'linéaire',3:'triangle plan (trigonale plane)',4:'tétraèdre',5:'bipyramide à base triangulaire',6:'octaèdre'};
+const GEO={'2,0':'linéaire','3,0':'trigonale plane','2,1':'coudée (en V)','4,0':'tétraédrique','3,1':'pyramide à base triangulaire','2,2':'coudée (en V)',
+  '5,0':'bipyramide à base triangulaire','4,1':'en bascule (tétraèdre déformé)','3,2':'en T','2,3':'linéaire','6,0':'octaédrique','5,1':'pyramide à base carrée','4,2':'plan carré'};
+const IDEAL={'2,0':'180°','3,0':'120°','2,1':'120° (figure), un peu moins en réalité','4,0':'109,5°','3,1':'109,5° (figure), moins en réalité','2,2':'109,5° (figure), moins en réalité',
+  '5,0':'90° et 120°','4,1':'90° et 120° (figure), déformés en réalité','3,2':'90° (figure), un peu moins en réalité','2,3':'180°','6,0':'90°','5,1':'90° (figure), un peu moins en réalité','4,2':'90°'};
+const HYB={2:'sp',3:'sp²',4:'sp³',5:'sp³d',6:'sp³d²'};
+const sub=n=>String(n).split('').map(d=>'₀₁₂₃₄₅₆₇₈₉'[d]).join('');
+function axe(m){const lw=lewis(m,m.S[0]);return {n:m.t.length,e:lw.lpC,txt:'AX'+sub(m.t.length)+(lw.lpC?'E'+(lw.lpC>1?sub(lw.lpC):''):'')};}
+function dirs(m){const {n,e}=axe(m),D=n+e;let P,E=[];const c=Math.cos,s=Math.sin;
+  if(D===2)P=[[1,0,0],[-1,0,0]];
+  else if(D===3)P=[90,210,330].map(a=>[c(a*D2R),s(a*D2R),0]);
+  else if(D===4){const r=Math.sqrt(8)/3;P=[[0,1,0],...[90,210,330].map(a=>[r*c(a*D2R),-1/3,r*s(a*D2R)])];}
+  else if(D===5)P=[[0,1,0],[0,-1,0],...[0,120,240].map(a=>[c(a*D2R),0,s(a*D2R)])];
+  else P=[[0,1,0],[0,-1,0],[1,0,0],[-1,0,0],[0,0,1],[0,0,-1]];
+  const Ei=D===3||D===4?[0,1].slice(0,e):D===5?[2,3,4].slice(0,e):D===6?(e===1?[1]:e===2?[0,1]:[]):[];
+  E=Ei.map(i=>P[i]);let X=P.filter((_,i)=>!Ei.includes(i));
+  if(m.r3){const h=m.r3/2*D2R;
+    if(n===2&&e===1){X=[[s(h),-c(h),0],[-s(h),-c(h),0]];E=[[0,1,0]];}
+    if(n===2&&e===2){X=[[s(h),-c(h),0],[-s(h),-c(h),0]];const g=55*D2R;E=[[0,c(g),s(g)],[0,c(g),-s(g)]];}
+    if(n===3&&e===1){const cb=Math.sqrt((2*Math.cos(m.r3*D2R)+1)/3),sb=Math.sqrt(1-cb*cb);X=[0,120,240].map(a=>[sb*c(a*D2R),-cb,sb*s(a*D2R)]);E=[[0,1,0]];}}
+  return {X,E};}
+function dipoles(m){const {X}=dirs(m);const list=m.t.map((e,i)=>{const d=CHI[e]-CHI[m.c];return {e,d,v:X[i].map(x=>x*d)};});
+  const S=[0,1,2].map(k=>list.reduce((a,b)=>a+b.v[k],0));return {list,S,mag:Math.hypot(...S)};}
+
+/* ---------- état ---------- */
+let cur=M[0],step=1,cv='min',fg='fig';
+$('mols').innerHTML=M.map(m=>`<button class="btn" data-m="${m.id}">${m.f}</button>`).join('');
+$('mols').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b)setMol(b.dataset.m);});
+document.querySelectorAll('[data-st]').forEach(b=>b.onclick=()=>setStep(+b.dataset.st));
+document.querySelectorAll('[data-cv]').forEach(b=>b.onclick=()=>{cv=b.dataset.cv;render();});
+document.querySelectorAll('[data-fg]').forEach(b=>b.onclick=()=>{fg=b.dataset.fg;render();});
+function setMol(id){cur=M.find(m=>m.id===id);if(!cur.oct)cv='min';render();}
+function setStep(n){step=n;render();}
+
+function fcTable(m,ord){const lw=lewis(m,ord),rows=[[m.c+' (central)',V[m.c],2*lw.lpC,lw.sb,lw.fcC]];const g={};
+  m.t.forEach((e,i)=>{const k=e+'|'+ord[i];if(!g[k])g[k]={e,n:0,v:V[e],nl:2*lw.lpT[i],b:ord[i],fc:lw.fcT[i]};g[k].n++;});
+  Object.values(g).forEach(r=>rows.push([r.e+(r.b>1?' ('+(r.b===2?'double':'triple')+' liaison)':'')+(r.n>1?' ×'+r.n:''),r.v,r.nl,r.b,r.fc]));
+  return '<table class="fct"><tr><th>Atome</th><th>V</th><th>électrons non liants</th><th>liaisons</th><th>charge formelle</th></tr>'+
+    rows.map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td><b>${r[4]?fcTxt(r[4]):'0'}</b> <span style="color:var(--faint)">= ${r[1]} − ${r[2]} − ${r[3]}</span></td></tr>`).join('')+'</table>';}
+
+function render(){const m=cur,S=structs(m,cv),ord=S[0],lw=lewis(m,ord),A=axe(m),key=A.n+','+A.e,D=A.n+A.e;
+  document.querySelectorAll('[data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===m.id));
+  document.querySelectorAll('[data-st]').forEach(b=>b.classList.toggle('on',+b.dataset.st===step));
+  document.querySelectorAll('[data-cv]').forEach(b=>b.classList.toggle('on',b.dataset.cv===cv));
+  document.querySelectorAll('[data-fg]').forEach(b=>b.classList.toggle('on',b.dataset.fg===fg));
+  $('convRow').hidden=!(m.oct&&step<=2);$('figRow').hidden=step!==3;
+  $('lw').hidden=step!==1;$('res').hidden=step!==2;$('v3').hidden=step<3;
+  let f='',inf='',note='';
+  const elec=`${V[m.c]} (${m.c})`+Object.entries(m.t.reduce((a,e)=>(a[e]=(a[e]||0)+1,a),{})).map(([e,n])=>` + ${n>1?n+' × ':''}${V[e]} (${e})`).join('')+(m.q<0?` + ${-m.q} (charge ${fcTxt(m.q)})`:m.q>0?` − ${m.q} (charge +)`:'');
+  if(step===1){$('lw').innerHTML=svgLewis(m,ord,false);
+    f=`<b>${m.f}</b> · électrons de valence : ${elec} = <b>${lw.tot} électrons</b>, soit ${lw.tot/2} doublets : ${lw.sb} liants et ${lw.tot/2-lw.sb} non liants.`;
+    if(S.length>1)f+=`<br>Une des ${S.length} structures limites (voir l'étape 2).`;
+    inf=fcTable(m,ord)+'Somme des charges formelles = '+(m.q?fcTxt(m.q):'0')+' (charge de l\'espèce). Charges non nulles entourées sur le dessin ; doublets en rouge.';
+    if(m.oct){const o=lewis(m,m.oct[0]),mn=lewis(m,m.S[0]);note=`<b>Deux conventions existent.</b> Charges formelles minimales : le soufre est entouré de ${2*(mn.sb+mn.lpC)} électrons (plus que l'octet, permis à partir de la période 3), charges formelles ${mn.fcC?'réduites':'nulles sur S'}. Octet respecté : S a 8 électrons, mais porte une charge formelle ${fcTxt(o.fcC)}. Les calculs modernes montrent que les orbitales d du soufre participent très peu : aucune écriture n'est « la vraie ». Dans les deux cas, les liaisons S–O réelles sont toutes identiques (hybride de résonance). Utilise la convention de ton énoncé ; la géométrie VSEPR est la même.`;}
+    if(m.id==='BF3')note='Le bore n\'a que 6 électrons autour de lui : octet incomplet. C\'est un acide de Lewis (il accepte un doublet, par exemple celui de NH₃).';
+    if(m.id==='NH4+')note='NH₃ + H⁺ → NH₄⁺ : le doublet non liant de N forme la 4ᵉ liaison N–H. Les quatre liaisons sont ensuite identiques. N porte la charge formelle +.';
+    if(['PCl5','SF4','ClF3','XeF2','SF6','BrF5','XeF4'].includes(m.id))note=`Atome central hypervalent : ${m.c} est entouré de ${2*(lw.sb+lw.lpC)} électrons. C'est possible à partir de la période 3 ; jamais pour C, N, O ou F.`;
+  }
+  if(step===2){let h='';S.forEach((o,i)=>{if(i)h+='<span class="rs" aria-label="structure limite suivante">↔</span>';h+=`<figure>${svgLewis(m,o,true)}<figcaption>structure ${i+1}</figcaption></figure>`;});$('res').innerHTML=h;
+    if(S.length>1){const avg=m.t.map((_,i)=>S.reduce((a,o)=>a+o[i],0)/S.length),same=avg.every(v=>Math.abs(v-avg[0])<1e-9);
+      const frac=v=>Math.abs(v-4/3)<1e-9?'4/3 ≈ 1,33':Math.abs(v-1.5)<1e-9?'3/2 = 1,5':fr(v,2);
+      f=`<b>${S.length} structures limites</b>, reliées par ↔. <b>La mésomérie n'est pas un équilibre</b> : la molécule ne passe pas d'une forme à l'autre. Elle est en permanence l'<b>hybride de résonance</b>, une moyenne des structures limites.`;
+      inf=same?`Indice moyen de chaque liaison ${m.c}–${m.t[0]} : <b>${frac(avg[0])}</b>. Les ${m.t.length} liaisons ${m.c}–${m.t[0]} sont identiques (même longueur, intermédiaire entre simple et double). `+(m.q<0?`La charge négative de l'ion est répartie sur les ${m.t.length} atomes d'oxygène.`:`Les charges formelles négatives sont réparties sur les ${m.t.length} atomes d'oxygène ; la molécule reste neutre.`):'';
+      if(m.id==='O3')inf=`Indice moyen de chaque liaison O–O : <b>1,5</b>. Les deux liaisons sont identiques ; l'atome central porte une charge formelle + dans les deux structures, la charge − est partagée entre les deux O terminaux.`;
+      if(m.id==='SO42-'&&cv==='min')inf+=' En charges formelles minimales, on peut placer les deux doubles liaisons de 6 façons : 6 structures limites.';}
+    else{f=`<b>Une seule structure de Lewis</b> pour ${m.f} avec cette écriture : pas de mésomérie à écrire.`;
+      inf=m.oct&&cv==='oct'?`Avec l'octet respecté, toutes les liaisons S–O sont simples (S porte ${fcTxt(lw.fcC)}, chaque O porte −) : une seule structure suffit, les ${m.t.length} liaisons sont déjà équivalentes.`:m.oct?'Passe en « Octet respecté » : il faut alors plusieurs structures limites pour décrire des liaisons identiques.':(m.id==='CO2'?'On peut écrire des formes à charges séparées (O≡C–O), mais elles sont très minoritaires : la structure O=C=O suffit.':'Toutes les liaisons sont déjà décrites par une seule écriture.');}
+    note='Symbole de la mésomérie : ↔ (flèche à deux pointes). Ne le confonds pas avec ⇌, réservé aux équilibres chimiques.';
+  }
+  if(step>=3){
+    if(step===3){f=`<b>${m.f} : ${A.txt}</b> · ${A.n} atome${A.n>1?'s':''} lié${A.n>1?'s':''} (X) et ${A.e} doublet${A.e>1?'s':''} non liant${A.e>1?'s':''} (E) sur ${m.c} → <b>${D} domaines électroniques</b>.<br>`+
+        `Figure de répulsion (tous les domaines) : <b>${FIG[D]}</b>. Géométrie de la molécule (atomes seuls) : <b>${GEO[key]}</b>.`+(A.e===0?' Sans doublet non liant, les deux coïncident.':' Les deux sont différentes : les doublets non liants ne se « voient » pas dans la forme de la molécule.');
+      inf=`Angle idéal de la figure : <b>${IDEAL[key]}</b> &nbsp;|&nbsp; angle réel : <b>${m.real}</b>${m.av?' (valeur expérimentale, valeurs tabulées usuelles)':''} &nbsp;|&nbsp; hybridation de ${m.c} : <b>${HYB[D]}</b>`;
+      note=`Une liaison double ou triple compte pour un seul domaine. Les doublets non liants prennent plus de place que les doublets liants : ils referment les angles (CH₄ 109,5° &gt; NH₃ 107° &gt; H₂O 104,5°). L'hybridation (${HYB[D]}) est un modèle qui décrit la géométrie, pas une observation`+(D>=5?' ; pour sp³d et sp³d², on sait aujourd\'hui que les orbitales d participent très peu.':'.')+' Modèle 3D : longueurs non à l\'échelle ; '+(m.r3?'angles réels':'angles idéaux')+'.';
+      if(m.id==='NH4+')note='NH₄⁺ est AX₄ (pas AX₃E) : le doublet de NH₃ est devenu la 4ᵉ liaison. Tétraèdre régulier, 109,5°, comme CH₄ avec qui il est isoélectronique. '+note;
+    }else{const dp=dipoles(m),ion=m.q!==0,pol=dp.mag>0.02;
+      const g={};dp.list.forEach(b=>{const k=b.e;if(!g[k])g[k]={...b,n:0};g[k].n++;});
+      f=Object.values(g).map(b=>`${m.c}–${b.e}${b.n>1?' (×'+b.n+')':''} : Δχ = ${chiS(CHI[b.e]>=CHI[m.c]?b.e:m.c)} − ${chiS(CHI[b.e]>=CHI[m.c]?m.c:b.e)} = <b>${fr(Math.abs(b.d),m.c==='Xe'?1:2)}</b>`+(Math.abs(b.d)<0.005?' → liaison non polaire':` → flèche vers <b>${b.d>0?b.e:m.c}</b> (δ−)`)).join('<br>');
+      let verdict;
+      if(m.id==='O3')verdict=`Somme des dipôles de liaison : nulle dans ce modèle (deux liaisons O–O). Pourtant <b>O₃ est polaire</b> <span class="tag2 p">polaire</span> : l'atome central (charge formelle +) et les O terminaux (charge − partagée) n'ont pas la même densité électronique, et la molécule est coudée. Moment dipolaire faible mais non nul. Ici, le modèle « somme des dipôles de liaison » (fondé sur Δχ) ne suffit pas.`;
+      else if(ion)verdict=`<b>${m.f} est un ion</b> <span class="tag2 i">ion</span> : il porte une charge globale, on ne le classe pas « polaire » ou « non polaire » comme une molécule. Ses dipôles de liaison ${pol?'ne s\'annulent pas':'s\'annulent par symétrie (Σ = 0)'}.`;
+      else verdict=pol?`Somme vectorielle ≠ 0 (|Σ| ≈ ${fr(dp.mag,2)}, en unités de Δχ) : <b>molécule polaire</b> <span class="tag2 p">polaire</span>.`:
+        `Somme vectorielle = 0 : les dipôles de liaison ${dp.list.some(b=>Math.abs(b.d)>0.005)?'se compensent par symétrie':'sont nuls'}. <b>Molécule non polaire</b> <span class="tag2 np">non polaire</span>${dp.list.some(b=>Math.abs(b.d)>0.005)?', malgré des liaisons polaires':''}.`;
+      inf=verdict+` &nbsp;|&nbsp; Géométrie : ${GEO[key]} (${A.txt})`;
+      note='Flèches orange : dipôles de liaison, orientés de δ+ vers δ− (convention usuelle des cours de chimie ; l\'IUPAC et les physiciens orientent le moment dipolaire de − vers + : vérifie la convention de ton énoncé), longueur proportionnelle à Δχ. Flèche rouge : leur somme. Modèle simplifié : il ignore la contribution propre des doublets non liants et ne donne pas le moment dipolaire en debye.'+
+        (m.t.some(e=>['B','P','Br','Xe'].includes(e))||['B','P','Br','Xe'].includes(m.c)?` Valeur de χ(${m.c}) utilisée : ${chiS(m.c)} (valeurs tabulées usuelles, échelle de Pauling).`:'');}
+    draw3D();}
+  $('fml').innerHTML=f;$('info').innerHTML=inf;$('note3').innerHTML=note;
+  legend();}
+
+function legend(){if(step<3){$('leg3').innerHTML='';return;}const els=[...new Set([cur.c,...cur.t])];
+  $('leg3').innerHTML=els.map(e=>`<span><i style="background:${COL[e]}"></i>${e} (${NOMS[e]})</span>`).join('')+(step===3&&fg==='fig'&&axe(cur).e?'<span><i style="background:#b9a8f0"></i>doublet non liant</span>':'')+
+    (step===4?'<span><i class="ar" style="background:#e08a1e"></i>dipôle de liaison</span><span><i class="ar" style="background:#b3261e"></i>somme</span>':'')+'<span>Fais glisser pour tourner.</span>';}
+
+/* ---------- 3D (three.js r128) ---------- */
+let T=null,rx=0.35,ry=0.6,auto=true,drag=null;
+function init3D(){if(T)return T;if(!window.THREE){$('v3').insertAdjacentHTML('beforeend','<div class="msg">Le modèle 3D n\'a pas pu se charger (bibliothèque three.js indisponible). Les étapes 1 et 2 et les textes restent valables.</div>');T={fail:1};return T;}
+  const host=$('v3'),rd=new THREE.WebGLRenderer({antialias:true,alpha:true});rd.setPixelRatio(Math.min(2,window.devicePixelRatio||1));host.appendChild(rd.domElement);
+  const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(36,1,0.1,100);cam.position.set(0,0,8.3);
+  sc.add(new THREE.AmbientLight(0xffffff,0.62));const dl=new THREE.DirectionalLight(0xffffff,0.55);dl.position.set(3,5,6);sc.add(dl);
+  const g=new THREE.Group();sc.add(g);T={rd,sc,cam,g,host};
+  host.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY];auto=false;host.style.cursor='grabbing';});
+  addEventListener('pointermove',e=>{if(!drag)return;ry+=(e.clientX-drag[0])*0.01;rx+=(e.clientY-drag[1])*0.01;rx=Math.max(-1.5,Math.min(1.5,rx));drag=[e.clientX,e.clientY];});
+  const up=()=>{drag=null;host.style.cursor='grab';};addEventListener('pointerup',up);addEventListener('pointercancel',up);
+  const loop=()=>{if(!$('v3').hidden){const w=host.clientWidth,h=host.clientHeight;if(rd._w!==w||rd._h!==h){rd.setSize(w,h,false);cam.aspect=w/h;cam.position.z=8.3/Math.min(1,w/h);cam.updateProjectionMatrix();rd._w=w;rd._h=h;}
+    if(auto)ry+=0.006;g.rotation.set(rx,ry,0);rd.render(sc,cam);}requestAnimationFrame(loop);};loop();return T;}
+const V3=a=>new THREE.Vector3(a[0],a[1],a[2]);
+function mat(c,o,top){return new THREE.MeshPhongMaterial({color:c,shininess:40,transparent:o<1||!!top,opacity:o==null?1:o,depthWrite:!(o<1)&&!top,depthTest:!top});}
+function cyl(a,b,r,c,o,top){const A=V3(a),B=V3(b),d=B.clone().sub(A),L=d.length(),m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,L,16),mat(c,o,top));if(top)m.renderOrder=10;
+  m.position.copy(A.clone().add(B).multiplyScalar(0.5));m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());return m;}
+function arrow(from,vec,color,r){const grp=new THREE.Group(),L=Math.hypot(...vec);if(L<1e-6)return grp;const u=vec.map(x=>x/L),hl=Math.min(0.42,L*0.45),body=L-hl;
+  const end=from.map((x,i)=>x+u[i]*body);grp.add(cyl(from,end,r,color,null,true));const cone=new THREE.Mesh(new THREE.ConeGeometry(r*2.6,hl,18),mat(color,null,true));cone.renderOrder=10;
+  cone.position.copy(V3(end.map((x,i)=>x+u[i]*hl/2)));cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),V3(u));grp.add(cone);return grp;}
+function draw3D(){const t=init3D();if(t.fail)return;const g=t.g;while(g.children.length){const c=g.children.pop();c.traverse&&c.traverse(o=>{if(o.geometry)o.geometry.dispose();});}
+  const m=cur,{X,E}=dirs(m),BL=1.75,S=structs(m,cv),ord=S.length===1?S[0]:null,rT=e=>e==='H'?0.3:(e==='Cl'||e==='Br')?0.5:0.42;
+  g.add(new THREE.Mesh(new THREE.SphereGeometry(m.c==='Xe'||m.c==='Br'?0.58:0.5,32,24),mat(COL[m.c])));
+  m.t.forEach((e,i)=>{const p=X[i].map(x=>x*BL);const at=new THREE.Mesh(new THREE.SphereGeometry(rT(e),28,20),mat(COL[e]));at.position.copy(V3(p));g.add(at);
+    const o=ord?ord[i]:1;const pv=Math.abs(X[i][1])>0.9?[1,0,0]:[0,1,0];const n=V3(X[i]).cross(V3(pv)).normalize().multiplyScalar(0.12);
+    const offs=o===1?[0]:o===2?[-1,1]:[-1.6,0,1.6];offs.forEach(k=>{const d=[n.x*k,n.y*k,n.z*k];g.add(cyl(d,p.map((x,j)=>x+d[j]),o===1?0.09:0.06,0x9aa3ad));});});
+  const showE=(step===3&&fg==='fig')||step===4;
+  if(showE)E.forEach(d=>{const lobe=new THREE.Mesh(new THREE.SphereGeometry(0.42,24,16),mat(0xb9a8f0,step===4?0.25:0.5));lobe.scale.set(0.8,1.5,0.8);
+    lobe.position.copy(V3(d.map(x=>x*1.05)));lobe.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),V3(d));g.add(lobe);
+    if(step===3){const dd=V3(d).multiplyScalar(1.15),pp=V3(d).cross(V3(Math.abs(d[1])>0.9?[1,0,0]:[0,1,0])).normalize().multiplyScalar(0.13);
+      [1,-1].forEach(k=>{const s=new THREE.Mesh(new THREE.SphereGeometry(0.07,12,8),mat(0xa32d2d));s.position.copy(dd.clone().add(pp.clone().multiplyScalar(k)));g.add(s);});}});
+  if(step===3&&fg==='fig')E.forEach(d=>g.add(cyl([0,0,0],d.map(x=>x*0.6),0.03,0xb9a8f0,0.7)));
+  if(step===4){const dp=dipoles(m),k=1.05;
+    dp.list.forEach((b,i)=>{if(Math.abs(b.d)<0.005)return;const L=Math.abs(b.d)*k,u=X[i],off=[u[1]*0.0,0,0];
+      const from=b.d>0?u.map(x=>x*(BL/2-L/2)):u.map(x=>x*(BL/2+L/2));const vec=u.map(x=>x*(b.d>0?L:-L));
+      const pv=Math.abs(u[1])>0.9?[1,0,0]:[0,1,0];const n=V3(u).cross(V3(pv)).normalize().multiplyScalar(0.32);
+      g.add(arrow(from.map((x,j)=>x+[n.x,n.y,n.z][j]),vec,0xe08a1e,0.05));});
+    if(dp.mag>0.02)g.add(arrow([0,0,0],dp.S.map(x=>x*k*1.5),0xb3261e,0.085));}
+  $('v3cap').textContent=step===4?'Dipôles de liaison et leur somme':fg==='fig'?'Figure de répulsion : '+FIG[axe(m).n+axe(m).e]:'Géométrie : '+GEO[axe(m).n+','+axe(m).e];}
+
+/* accès pour les tests */
+window.__lv={set:id=>setMol(id),step:n=>setStep(n),conv:c=>{cv=c;render();},fig:x=>{fg=x;render();},
+  get:(id,c)=>{const m=M.find(x=>x.id===id),S=structs(m,c||'min'),lw=S.map(o=>lewis(m,o)),A=axe(m),dp=dipoles(m);
+    return {lpC:lw[0].lpC,fcC:lw.map(l=>l.fcC),fcT:lw.map(l=>l.fcT),tot:lw[0].tot,axe:A.txt,n:A.n,e:A.e,nS:S.length,sum:dp.mag,S:dp.S,geo:GEO[A.n+','+A.e],fig:FIG[A.n+A.e],hyb:HYB[A.n+A.e]};},
+  ids:M.map(m=>m.id)};
+render();
+});
+</script>
+
+</main>
+<aside class="sfa-side">
+  <div class="sfa-list"><h2>Atome et liaison chimique<span>3 simulations</span></h2><ol><li><a href="../configuration-electronique/"><i>01</i>Configuration électronique et nombres quantiques</a></li><li><a href="../tendances-periodiques/"><i>02</i>Tendances du tableau périodique</a></li><li><a class="on" aria-current="page" href="../lewis-vsepr/"><i>03</i>Lewis, VSEPR et polarité</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de chimie</footer>
+<script src="../../kit/sfa-nav.js"></script></body>
+</html>

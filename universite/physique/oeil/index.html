@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L'œil et sa correction · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+canvas{display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+.verdict{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:12px 0 4px;font:600 .9rem var(--f-ui,system-ui)}
+.verdict .bd{display:inline-block;padding:4px 11px;border-radius:999px;font:800 .82rem var(--f-ui,system-ui);border:1.5px solid currentColor;background:#fff;white-space:nowrap}
+.verdict .why{flex-basis:100%;font:500 .86rem/1.5 var(--f-ui,system-ui);color:#5f6b7a}
+.verdict .why b{color:#2c3a4e}
+.pts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 16px;margin:10px 0 2px;font:500 .86rem/1.5 var(--f-ui,system-ui);color:#5f6b7a}
+.pts b{color:#2c3a4e}
+.val{white-space:nowrap}
+.hint{font:500 .84rem var(--f-ui,system-ui);color:#5f6b7a}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH7">Lentilles et optique</a>›<b>L&#x27;œil et sa correction</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Lentilles et optique</span><span class="sfa-chip free">Gratuit</span></div><h1>L&#x27;œil et sa correction</h1><p>Accommodation, myopie, hypermétropie et verres correcteurs</p></div>
+<section class="sfa-sim">
+
+
+
+<canvas id="cv" style="width:100%;height:62vh;min-height:400px;" aria-label="Œil en coupe : fais glisser l'objet sur la règle des distances, en bas"></canvas>
+
+<div class="verdict" id="verdict"></div>
+
+<div class="pts">
+  <div><b style="color:#0F6E56">PR, punctum remotum</b> : le point le plus éloigné que l'œil voit net <b>sans accommoder</b> (cristallin au repos, vergence minimale). Œil normal : à l'infini.</div>
+  <div><b style="color:#a32d2d">PP, punctum proximum</b> : le point le plus proche que l'œil voit net <b>en accommodant au maximum</b> (cristallin bombé, vergence maximale). Œil normal adulte : ≈ 25 cm.</div>
+</div>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill">Œil</span>
+  <button class="btn on" data-t="normal">Normal</button>
+  <button class="btn" data-t="myope">Myope</button>
+  <button class="btn" data-t="hyper">Hypermétrope</button>
+  <button class="btn" data-t="presbyte">Presbyte</button>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#185fa5">D &nbsp;distance de l'objet</span>
+  <input type="range" id="dd" min="0" max="100" value="100" step="1" style="accent-color:#378ADD;">
+  <span class="val" id="ddv" style="color:#185fa5">infini</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#5a52b8">C &nbsp;verre correcteur</span>
+  <input type="range" id="cc" min="-6" max="6" value="0" step="0.25" style="accent-color:#7F77DD;">
+  <span class="val" id="ccv" style="color:#5a52b8">0,00 δ</span>
+</div>
+<div class="row">
+  <button class="btn" id="bNo">Retirer le verre</button>
+  <button class="btn" id="bPause">Pause</button>
+  <span class="hint">Astuce : fais glisser l'objet (flèche bleue) sur la règle des distances. Le verre est supposé accolé à l'œil : les vergences s'additionnent.</span>
+</div>
+
+<div class="info" id="info"></div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const cv=$('cv'),ctx=cv.getContext('2d');
+const INK='#3d3d3a',BLUE='#378ADD',BLUE_D='#185fa5',RED='#E24B4A',RED_D='#a32d2d',GREEN='#1D9E75',GREEN_D='#0F6E56',ORANGE='#BA7517',VIO='#7F77DD',VIO_D='#5a52b8',GREY='#9aa0a6',AX='#c8ccd0';
+let W=0,H=0,dpr=1;
+// ---------- modèle : œil réduit, rétine à 1,7 cm du centre optique ----------
+const d=0.017, V0=1/d;                      // vergence d'un œil normal au repos (δ)
+const TYPES={
+  normal:{nom:'Œil normal',def:0,A:4},
+  myope:{nom:'Œil myope',def:4,A:4},       // trop convergent de 4 δ : PR = 25 cm
+  hyper:{nom:'Œil hypermétrope',def:-3,A:4},// pas assez convergent de 3 δ
+  presbyte:{nom:'Œil presbyte',def:0,A:1}   // le cristallin n'accommode presque plus
+};
+let type='normal',D=Infinity,C=0,acc=0,paused=false,phase=0,t0=0,drag=false,hover=false,G={};
+const SHARP=0.2;                            // profondeur de champ : ±0,2 δ
+const PUP=0.004;                            // diamètre de pupille (m)
+
+const fr=(x,n=2)=>(x<0?'−':x>0?'+':'')+Math.abs(x).toFixed(n).replace('.',',');
+const frn=(x,n=1)=>(x<0?'−':'')+Math.abs(x).toFixed(n).replace('.',',');
+const dist=m=>!isFinite(m)?'infini':m>=1?frn(m,m>=10?0:2)+' m':frn(m*100,m<0.2?1:0)+' cm';
+function syncSize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;
+  const nW=Math.round(r.width)||700,nH=Math.round(r.height)||420;
+  if(nW!==W||nH!==H){W=nW;H=nH;cv.width=W*dpr;cv.height=H*dpr;}
+  ctx.setTransform(dpr,0,0,dpr,0,0);}
+function head(x,y,ang,col,s){ctx.fillStyle=col;ctx.save();ctx.translate(x,y);ctx.rotate(ang);
+  ctx.beginPath();ctx.moveTo(s,0);ctx.lineTo(-s*0.8,-s*0.6);ctx.lineTo(-s*0.8,s*0.6);ctx.closePath();ctx.fill();ctx.restore();}
+// ---------- étiquettes sans chevauchement ----------
+let LB=[],OB=[];
+function lab(t,x,y,col,o={}){LB.push({t,x,y,col,font:o.font||'700 13px Mulish,system-ui,sans-serif',c:o.c||[[0,0]],p:o.p||0});}
+function obs(x1,y1,x2,y2){OB.push([Math.min(x1,x2),Math.min(y1,y2),Math.max(x1,x2),Math.max(y1,y2)]);}
+const ov=(a,b)=>Math.max(0,Math.min(a[2],b[2])-Math.max(a[0],b[0]))*Math.max(0,Math.min(a[3],b[3])-Math.max(a[1],b[1]));
+function drawLabels(){const placed=[];LB.sort((a,b)=>b.p-a.p);
+  for(const L of LB){ctx.font=L.font;const w=ctx.measureText(L.t).width+6,hh=17;let best=null,bs=1e18;
+    for(let i=0;i<L.c.length;i++){let cx=L.x+L.c[i][0],cy=L.y+L.c[i][1];
+      cx=Math.max(4+w/2,Math.min(W-4-w/2,cx));cy=Math.max(4+hh/2,Math.min(H-4-hh/2,cy));
+      const r=[cx-w/2,cy-hh/2,cx+w/2,cy+hh/2];let s=i*0.5;
+      for(const q of placed)s+=ov(r,q)*50;for(const q of OB)s+=ov(r,q)*8;
+      if(s<bs){bs=s;best=r;}if(s<1)break;}
+    placed.push(best);const cx=(best[0]+best[2])/2,cy=(best[1]+best[3])/2;
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';
+    ctx.lineWidth=5;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.strokeText(L.t,cx,cy);ctx.fillStyle=L.col;ctx.fillText(L.t,cx,cy);}
+  ctx.textBaseline='alphabetic';}
+
+// ---------- physique ----------
+function state(){const T=TYPES[type],Vr=V0+T.def;
+  const need=V0+(isFinite(D)?1/D:0);                 // vergence totale qu'il faudrait (δ)
+  const target=Math.max(0,Math.min(T.A,need-C-Vr));   // l'œil accommode dans la limite de son amplitude
+  const Veye=Vr+acc, Vt=Veye+C;
+  const xi=1/(Vt-(isFinite(D)?1/D:0));               // OA' (m) par 1/OA' − 1/OA = V
+  const dV=Vt-need;                                   // > 0 : trop convergent → image devant la rétine
+  const lo=Vr+C-V0, hi=Vr+T.A+C-V0;                   // 1/D vus nets : de lo (PR) à hi (PP)
+  return {T,Vr,need,target,Veye,Vt,xi,dV,lo,hi,sharp:Math.abs(dV)<SHARP};}
+
+// ---------- vignette « ce que voit la personne » ----------
+const chart=document.createElement('canvas');let chartW=0;
+function makeChart(w,h){chart.width=w*dpr;chart.height=h*dpr;const c=chart.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);
+  c.fillStyle='#fff';c.fillRect(0,0,w,h);c.fillStyle='#0f1b2d';c.textAlign='center';c.textBaseline='middle';
+  const lines=[['E',0.30],['F  P',0.17],['T  O  Z',0.12],['L  P  E  D',0.085]];let y=h*0.2;
+  lines.forEach(([t,k])=>{c.font='800 '+Math.round(h*k)+'px Mulish,system-ui,sans-serif';c.fillText(t,w/2,y);y+=h*k*1.05+h*0.04;});
+  chartW=w;}
+
+// ---------- dessin ----------
+function draw(ts){
+  syncSize();
+  const dt=Math.min(0.05,(ts-(t0||ts))/1000);t0=ts;if(!paused)phase+=dt;
+  let S=state();acc+=(S.target-acc)*Math.min(1,dt*7);if(Math.abs(S.target-acc)<1e-4)acc=S.target;S=state();
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);LB=[];OB=[];
+  const RH=98;                                // hauteur de la règle des distances
+  const narrow=W<600;
+  const s=Math.min((W-24)/(narrow?3.6:5.4),(H-RH-46)/2.75);
+  const X0=W-14-(narrow?2.35:2.5)*s, cy=(H-RH)/2+4;         // X0 = centre optique O
+  const X=x=>X0+x*s, Y=y=>cy-y*s;
+  G={X,Y,s,cy,RH};
+  // axe optique
+  ctx.strokeStyle=AX;ctx.lineWidth=1;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(10,cy);ctx.lineTo(W-10,cy);ctx.stroke();ctx.setLineDash([]);
+  // globe oculaire
+  const ec=0.55,R=1.15;
+  ctx.fillStyle='#fbf7f2';ctx.strokeStyle='#b9a99a';ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(X(ec),cy,R*s,0,7);ctx.fill();ctx.stroke();
+  // rétine (fond de l'œil)
+  ctx.strokeStyle='#e7a3a2';ctx.lineWidth=5;ctx.beginPath();ctx.arc(X(ec),cy,R*s-3,-0.95,0.95);ctx.stroke();
+  // cornée
+  const cc=0.0374,cr=0.787,ca=Math.atan2(0.66,-0.392-cc);
+  ctx.fillStyle='rgba(55,138,221,.07)';ctx.strokeStyle='#7fa9d4';ctx.lineWidth=2.2;
+  ctx.beginPath();ctx.arc(X(cc),cy,cr*s,ca,2*Math.PI-ca);ctx.fill();ctx.stroke();
+  // iris
+  ctx.strokeStyle='#8a6d4f';ctx.lineWidth=4;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(X(-0.12),Y(0.66));ctx.lineTo(X(-0.12),Y(0.34));ctx.moveTo(X(-0.12),Y(-0.66));ctx.lineTo(X(-0.12),Y(-0.34));ctx.stroke();
+  // cristallin : il se bombe quand l'œil accommode
+  const lw=(0.11+0.055*acc)*s, lhh=0.46*s;
+  ctx.fillStyle='rgba(55,138,221,.22)';ctx.strokeStyle=BLUE;ctx.lineWidth=2;
+  ctx.beginPath();ctx.ellipse(X(0),cy,lw,lhh,0,0,7);ctx.fill();ctx.stroke();
+  obs(X(0)-lw,cy-lhh,X(0)+lw,cy-lhh*0.4);obs(X(0)-lw,cy+lhh*0.4,X(0)+lw,cy+lhh);
+  // verre correcteur (accolé à l'œil)
+  if(Math.abs(C)>1e-9){const gx=X(-0.95),gh=0.62*s,k=Math.min(1,Math.abs(C)/6);
+    const tc=C>0?5+10*k:3, te=C>0?3:5+10*k;      // épaisseur au centre / au bord (px)
+    ctx.fillStyle='rgba(127,119,221,.22)';ctx.strokeStyle=VIO;ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(gx-te/2,cy-gh);ctx.quadraticCurveTo(gx-tc+te/2-(tc-te)/2,cy,gx-te/2,cy+gh);
+    ctx.lineTo(gx+te/2,cy+gh);ctx.quadraticCurveTo(gx+tc-te/2+(tc-te)/2,cy,gx+te/2,cy-gh);ctx.closePath();ctx.fill();ctx.stroke();
+    obs(gx-8,cy-gh,gx+8,cy+gh);
+    lab((C>0?'verre convergent ':'verre divergent ')+fr(C)+' δ',gx,cy-gh-14,VIO_D,{c:[[0,0],[0,-18],[-30,0],[-30,-18]],p:5});}
+  // rayons issus du point objet (sur l'axe) qui traversent la pupille
+  const a=0.27, hs=[a,a/2,-a/2,-a], xi=S.xi*100, ret=1.7;
+  const xStart=(10-X0)/s;
+  const P=[];
+  hs.forEach((h,k)=>{const col=k===0||k===3?ORANGE:'#d69a3c';
+    const yS=isFinite(D)?h*(xStart+D*100)/(D*100):h;
+    // avant l'œil
+    ctx.strokeStyle=col;ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(X(xStart),Y(yS));ctx.lineTo(X(0),Y(h));ctx.stroke();
+    // dans l'œil : vers A', jusqu'à la rétine
+    const yR=h*(1-ret/xi);
+    ctx.beginPath();ctx.moveTo(X(0),Y(h));ctx.lineTo(X(ret),Y(yR));ctx.stroke();
+    if(xi>ret){ctx.setLineDash([4,4]);ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(X(ret),Y(yR));ctx.lineTo(X(xi),Y(0));ctx.stroke();ctx.setLineDash([]);}
+    P.push([[X(xStart),Y(yS)],[X(0),Y(h)],[X(ret),Y(yR)]]);
+    if(k===0)head((X(xStart)+X(-0.75))/2,Y(isFinite(D)?h*((xStart-0.75)/2+D*100)/(D*100):h),Math.atan2(-(h-yS)*s,(0-xStart)*s),ORANGE,6);});
+  // impulsions lumineuses
+  P.forEach((pts,k)=>{const L=[];let tot=0;for(let i=1;i<pts.length;i++){const l=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);L.push(l);tot+=l;}
+    ctx.fillStyle=ORANGE;ctx.globalAlpha=0.85;
+    for(let q=(phase*90+k*17)%60;q<tot;q+=60){let r=q,i=0;while(i<L.length-1&&r>L[i]){r-=L[i];i++;}
+      const A=pts[i],B=pts[i+1],u=L[i]?r/L[i]:0;ctx.beginPath();ctx.arc(A[0]+(B[0]-A[0])*u,A[1]+(B[1]-A[1])*u,2.3,0,7);ctx.fill();}
+    ctx.globalAlpha=1;});
+  // tache sur la rétine + point image A'
+  const spot=Math.abs(a*(1-ret/xi))*s;
+  ctx.strokeStyle=S.sharp?GREEN:RED;ctx.lineWidth=6;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(X(ret),cy-Math.max(2,spot));ctx.lineTo(X(ret),cy+Math.max(2,spot));ctx.stroke();
+  ctx.fillStyle=S.sharp?GREEN_D:ORANGE;ctx.beginPath();ctx.arc(X(xi),cy,4.2,0,7);ctx.fill();
+  const dmm=(xi-ret)*10;
+  const where=S.sharp?"A' sur la rétine":dmm<0?"A' devant la rétine":"A' derrière la rétine";
+  lab(where,X(xi),cy,S.sharp?GREEN_D:RED_D,{c:[[0,-26-spot],[0,26+spot],[0,-44-spot],[0,44+spot],[-40,-26-spot],[-40,26+spot]],p:6});
+  // repères
+  lab('cornée',X(-0.62),Y(0.72),'#4f7fb0',{font:'600 12px Mulish,system-ui,sans-serif',c:[[-14,-10],[-30,-22],[-14,-28]],p:2});
+  lab('cristallin',X(0.1),Y(-0.62),BLUE_D,{font:'600 12px Mulish,system-ui,sans-serif',c:[[0,0],[0,14],[24,0],[24,14],[0,28]],p:2});
+  lab('rétine',X(ec)+R*s*Math.cos(0.75)+10,cy-R*s*Math.sin(0.75)-6,'#b5524f',{font:'600 12px Mulish,system-ui,sans-serif',c:[[0,0],[-8,-12],[-20,-14]],p:2});
+  // cote : 1,7 cm entre O et la rétine
+  const yd=Y(-1.27);ctx.strokeStyle=GREY;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(X(0),yd);ctx.lineTo(X(ret),yd);ctx.stroke();
+  [[X(0),0],[X(ret),Math.PI]].forEach(([x,an])=>{head(x+(an?-4:4),yd,an,GREY,5);ctx.beginPath();ctx.moveTo(x,yd-5);ctx.lineTo(x,yd+5);ctx.stroke();});
+  ctx.strokeStyle='#d6dade';ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(X(0),cy);ctx.lineTo(X(0),yd);ctx.stroke();ctx.setLineDash([]);
+  lab('OA\' = 1,7 cm (fixe)',X(ret/2),yd+12,GREY,{font:'600 12px Mulish,system-ui,sans-serif',c:[[0,0],[0,6]],p:1});
+  lab('O',X(0)-10,cy+12,INK,{font:'700 12px Mulish,system-ui,sans-serif',c:[[0,0],[-6,4]],p:1});
+  // texte : d'où vient la lumière
+  const src=narrow?(isFinite(D)?'lumière de l\'objet ('+dist(D)+')':'objet lointain : rayons parallèles'):isFinite(D)?'lumière venant de l\'objet, à '+dist(D):'lumière venant d\'un objet très lointain (rayons parallèles)';
+  ctx.font='600 12px Mulish,system-ui,sans-serif';
+  const sw=ctx.measureText(src).width;
+  if(narrow)lab(src,W/2,yd+34,ORANGE,{font:'600 12px Mulish,system-ui,sans-serif',c:[[0,0],[0,18]],p:3});
+  else lab(src,Math.max(14+sw/2,Math.min(X(-0.9)-sw/2,X(xStart)+14+sw/2)),cy+a*s+20,ORANGE,{font:'600 12px Mulish,system-ui,sans-serif',c:[[0,0],[0,16],[0,32],[0,-2*a*s-40],[0,-2*a*s-56]],p:3});
+
+  // ---------- vignette ----------
+  const vw=Math.round(Math.min(170,W*0.3)),vh=Math.round(vw*0.72),vx=12,vy=28;
+  if(chartW!==vw)makeChart(vw,vh);
+  ctx.font='700 12px Mulish,system-ui,sans-serif';ctx.textAlign='left';ctx.fillStyle=INK;ctx.fillText('Ce que voit la personne',vx,vy-9);
+  ctx.save();ctx.beginPath();ctx.rect(vx,vy,vw,vh);ctx.clip();ctx.fillStyle='#fff';ctx.fillRect(vx,vy,vw,vh);
+  const blur=S.sharp?0:Math.min(14,Math.abs(S.dV)*2.6)*vw/170;
+  if(blur<0.3)ctx.drawImage(chart,vx,vy,vw,vh);
+  else if('filter' in ctx){ctx.filter='blur('+(blur*0.55).toFixed(2)+'px)';ctx.drawImage(chart,vx,vy,vw,vh);ctx.filter='none';}
+  else{let n=0;const rings=[[0,1],[blur*0.5,8],[blur,14]];
+    rings.forEach(([r,m])=>{for(let i=0;i<m;i++){const an=i/m*2*Math.PI+r;ctx.globalAlpha=1/(++n);ctx.drawImage(chart,vx+r*Math.cos(an),vy+r*Math.sin(an),vw,vh);}});
+    ctx.globalAlpha=1;}
+  ctx.restore();
+  ctx.strokeStyle=S.sharp?GREEN:RED;ctx.lineWidth=2;ctx.strokeRect(vx,vy,vw,vh);
+  ctx.font='800 11px Mulish,system-ui,sans-serif';const tag=S.sharp?'NET':'FLOU';const tw=ctx.measureText(tag).width+10;
+  ctx.fillStyle=S.sharp?GREEN_D:RED_D;ctx.fillRect(vx+vw-tw,vy+vh-17,tw,17);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(tag,vx+vw-tw/2,vy+vh-5);
+  obs(vx,vy-22,vx+vw,vy+vh);
+
+  // ---------- règle des distances (échelle logarithmique) ----------
+  ruler(S);
+  drawLabels();
+  panel(S);
+  requestAnimationFrame(draw);
+}
+// position sur la règle : 10 cm → 10 m en logarithmique, puis l'infini
+function U(Dm){return isFinite(Dm)?Math.log10(Dm/0.1)/2:1.13;}
+function ruler(S){const y=H-34,x0=22,x1=W-26,ux=u=>x0+(x1-x0)*u/1.13;G.ry=y;G.ux=ux;G.x0=x0;G.x1=x1;
+  ctx.fillStyle='#f6f7f9';ctx.fillRect(0,H-G.RH,W,G.RH);ctx.strokeStyle='#e3e7ed';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,H-G.RH);ctx.lineTo(W,H-G.RH);ctx.stroke();
+  // zone vue nette
+  let uA=null,uB=null,ppTxt,prTxt;
+  if(S.hi>0){const Dpp=1/S.hi;uA=Dpp<0.1?0:U(Dpp);
+    uB=S.lo>1e-9?U(1/S.lo):1.13;if(1/Math.max(S.lo,1e-12)<0.1)uB=null;}
+  if(uA!==null&&uB!==null){ctx.fillStyle='rgba(29,158,117,.18)';ctx.fillRect(ux(uA),y-12,ux(uB)-ux(uA),12);
+    ctx.fillStyle=GREEN_D;ctx.fillRect(ux(uA),y-3,ux(uB)-ux(uA),3);}
+  ctx.strokeStyle='#9aa3ad';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(ux(1.0),y);ctx.stroke();
+  ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(ux(1.0),y);ctx.lineTo(ux(1.13),y);ctx.stroke();ctx.setLineDash([]);
+  const ticks=W<600?[[0.1,'10 cm'],[0.25,'25'],[1,'1 m'],[3,'3 m'],[Infinity,'∞']]:[[0.1,'10 cm'],[0.25,'25 cm'],[0.5,'50 cm'],[1,'1 m'],[2,'2 m'],[5,'5 m'],[10,'10 m'],[Infinity,'∞']];
+  ctx.font='600 11px Mulish,system-ui,sans-serif';ctx.textAlign='center';ctx.fillStyle='#7a8592';
+  const xob=ux(U(D));
+  ticks.forEach(([m,t])=>{const x=ux(U(m));ctx.strokeStyle='#9aa3ad';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+5);ctx.stroke();
+    const tw=ctx.measureText(t).width;if(Math.abs(x-xob)>tw/2+28)ctx.fillText(t,Math.max(4+tw/2,Math.min(W-4-tw/2,x)),y+17);});
+  [0.2,0.3,0.4,0.6,0.7,0.8,0.9,2,3,4,5,6,7,8,9].forEach(m=>{if(m*1<10){const x=ux(U(m));ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+3);ctx.stroke();}});
+  ctx.textAlign='left';ctx.font='600 11px Mulish,system-ui,sans-serif';ctx.fillStyle='#7a8592';ctx.fillText('distance œil–objet',x0-12,H-G.RH+13);obs(x0-12,H-G.RH+2,x0-8+ctx.measureText('distance œil–objet').width,H-G.RH+18);
+  // PP et PR
+  if(S.hi>0){const Dpp=1/S.hi;const x=ux(Dpp<0.1?0:U(Dpp));
+    ctx.fillStyle=RED_D;ctx.beginPath();ctx.moveTo(x,y-12);ctx.lineTo(x-5,y-21);ctx.lineTo(x+5,y-21);ctx.fill();
+    lab('PP '+(Dpp<0.1?'< 10 cm':dist(Dpp)),x,y-30,RED_D,{font:'700 12px Mulish,system-ui,sans-serif',c:[[0,0],[0,-18],[34,0],[-34,0],[34,-18],[-34,-18],[60,0],[-60,0]],p:8});}
+  {let x,t;if(S.lo>1e-9){const Dpr=1/S.lo;x=ux(Dpr<0.1?0:U(Dpr));t='PR '+(Dpr<0.1?'< 10 cm':dist(Dpr));}
+    else if(S.lo>-1e-9){x=ux(1.13);t='PR à l\'infini';}
+    else{x=ux(1.13);t='PR virtuel';}
+    ctx.fillStyle=GREEN_D;ctx.beginPath();ctx.moveTo(x,y-12);ctx.lineTo(x-5,y-21);ctx.lineTo(x+5,y-21);ctx.fill();
+    lab(t,x,y-30,GREEN_D,{font:'700 12px Mulish,system-ui,sans-serif',c:[[0,0],[0,-18],[-34,0],[-34,-18],[34,0],[34,-18],[-60,0],[-60,-18]],p:7});}
+  // objet (déplaçable)
+  const xo=ux(U(D));G.xo=xo;
+  ctx.fillStyle=drag||hover?'rgba(55,138,221,.28)':'rgba(55,138,221,.13)';ctx.beginPath();ctx.arc(xo,y-2,13,0,7);ctx.fill();
+  ctx.strokeStyle=BLUE;ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(xo,y+2);ctx.lineTo(xo,y-9);ctx.stroke();head(xo,y-12,-Math.PI/2,BLUE,7);
+  lab('objet',xo,y+17,BLUE_D,{font:'700 12px Mulish,system-ui,sans-serif',c:[[0,0],[0,14]],p:9});obs(xo-8,y-26,xo+8,y+4);
+}
+
+// ---------- textes ----------
+let lastKey='';
+function panel(S){
+  const key=[type,D,C,acc.toFixed(3)].join('|');if(key===lastKey)return;lastKey=key;
+  const T=S.T,dmm=(S.xi*100-1.7)*10;
+  const b1=`<span class="bd" style="color:${S.sharp?GREEN_D:RED_D}">${S.sharp?'Vision nette':'Vision floue'}</span>`;
+  const b2=`<span class="bd" style="color:${S.sharp?GREEN_D:RED_D}">${S.sharp?'Image sur la rétine':dmm<0?'Image devant la rétine ('+frn(-dmm,2)+' mm)':'Image derrière la rétine ('+frn(dmm,2)+' mm)'}</span>`;
+  const b3=`<span class="bd" style="color:${BLUE_D}">Accommodation : ${frn(acc,1)} δ sur ${frn(T.A,0)} δ possibles</span>`;
+  let why='';
+  if(type==='normal')why='<b>Œil normal</b> : au repos, il est réglé pour l\'infini (PR à l\'infini). Pour voir plus près, le cristallin se bombe : la vergence augmente, jusqu\'au PP ≈ 25 cm. Plus près que le PP, il ne peut plus compenser.';
+  if(type==='myope')why='<b>Œil myope</b> : trop convergent (ici +4 δ de trop). Au repos, l\'image d\'un objet lointain se forme <b>devant</b> la rétine : il voit flou de loin, net seulement entre PP et PR. Correction : un verre <b>divergent</b> qui renvoie le PR à l\'infini, C = 1/OA<sub>PR</sub> (en m, avec le signe).';
+  if(type==='hyper')why='<b>Œil hypermétrope</b> : pas assez convergent (ici 3 δ de moins). Sans accommoder, l\'image d\'un objet lointain se formerait <b>derrière</b> la rétine : il doit accommoder même pour voir loin, et il ne voit plus net de près (PP éloigné). Son PR est virtuel, derrière l\'œil. Correction : un verre <b>convergent</b>, C = 1/OA<sub>PR</sub> (en m, avec le signe).';
+  if(type==='presbyte')why='<b>Œil presbyte</b> : avec l\'âge, le cristallin durcit et n\'accommode presque plus (ici 1 δ). Le PR reste à l\'infini, mais le PP s\'éloigne (1 m) : la lecture devient floue. Correction : des verres <b>convergents</b> pour lire, qui ramènent le PP vers 25 cm, C = 1/0,25 − 1/PP.';
+  const pr=S.lo>1e-9?'à '+dist(1/S.lo):S.lo>-1e-9?'à l\'infini':'virtuel (à '+dist(-1/S.lo)+' derrière l\'œil)';
+  const pp=S.hi>0?'à '+dist(1/S.hi):'aucun (rien n\'est net)';
+  let res=` &nbsp;Avec ${Math.abs(C)>1e-9?'ce verre':'cet œil, sans verre'} : <b style="color:${GREEN_D}">PR ${pr}</b>, <b style="color:${RED_D}">PP ${pp}</b>.`;
+  if(Math.abs(C)>1e-9){
+    if(type==='myope'&&Math.abs(S.lo)<1e-9)res+=' <b style="color:'+GREEN_D+'">Bien corrigé : le PR est revenu à l\'infini.</b>';
+    else if(type==='hyper'&&Math.abs(S.lo)<1e-9)res+=' <b style="color:'+GREEN_D+'">Bien corrigé : il voit l\'infini sans accommoder.</b>';
+    else if(type==='presbyte'&&S.hi>0&&Math.abs(1/S.hi-0.25)<0.005)res+=' <b style="color:'+GREEN_D+'">Bien corrigé pour la lecture.</b> Mais de loin, avec ces verres, c\'est flou : d\'où les verres progressifs.';
+    else if(S.lo<-1e-9&&type!=='hyper')res+=' Pas assez convergent : avec ce verre, l\'œil se comporte comme un œil hypermétrope.';
+    else if(S.lo>1e-9&&type!=='myope')res+=' Trop convergent : l\'œil est devenu « myope » avec ce verre.';
+  }
+  $('verdict').innerHTML=b1+b2+b3+`<span class="why">${why}${res}</span>`;
+  const invD=isFinite(D)?1/D:0;
+  $('fml').innerHTML=`Œil + verre : <b style="color:${ORANGE}">1/OA'</b> − <b style="color:${BLUE_D}">1/OA</b> = <b style="color:${BLUE_D}">V<sub>œil</sub></b> + <b style="color:${VIO_D}">C</b>, avec <b style="color:${ORANGE}">OA'</b> = +0,017 m (rétine)`+
+    `<br>Il faudrait : 1/0,017 − 1/(<b style="color:${BLUE_D}">${isFinite(D)?fr(-D,3):'−∞'}</b>) = ${frn(V0,1)} + ${frn(invD,1)} = <b>${frn(S.need,1)} δ</b> &nbsp;|&nbsp; l'œil fournit <b style="color:${BLUE_D}">${frn(S.Veye,1)} δ</b>${Math.abs(C)>1e-9?` + verre <b style="color:${VIO_D}">${fr(C)} δ</b>`:''} = <b>${frn(S.Vt,1)} δ</b>`;
+  $('info').innerHTML=`D = ${dist(D)} &nbsp;|&nbsp; V au repos = ${frn(S.Vr,1)} δ, amplitude = ${frn(T.A,0)} δ &nbsp;|&nbsp; V<sub>œil</sub> = ${frn(S.Veye,2)} δ &nbsp;|&nbsp; C = ${fr(C)} δ &nbsp;|&nbsp; <b style="color:${S.sharp?GREEN_D:RED_D}">OA' = ${frn(S.xi*100,3)} cm (rétine : 1,700 cm) &nbsp;|&nbsp; écart de vergence = ${Math.abs(S.dV)<0.005?'0,00':fr(S.dV,2)} δ</b>`;
+}
+
+// ---------- réglages ----------
+const dFromV=v=>v>=97?Infinity:0.1*Math.pow(10,v/48);
+const vFromD=Dm=>isFinite(Dm)?Math.round(Math.log10(Dm/0.1)*48):100;
+function setD(Dm,fromSlider){D=Dm;if(isFinite(D))D=Math.max(0.1,Math.min(10,D));
+  if(!fromSlider)$('dd').value=vFromD(D);$('ddv').textContent=dist(D);}
+function setC(c){C=Math.round(c*4)/4;if(Math.abs(C)<1e-9)C=0;$('cc').value=C;$('ccv').textContent=(C===0?'0,00':fr(C))+' δ'+(C===0?' (sans)':'');}
+$('dd').addEventListener('input',e=>setD(dFromV(+e.target.value),true));
+$('cc').addEventListener('input',e=>setC(+e.target.value));
+document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{type=b.dataset.t;document.querySelectorAll('[data-t]').forEach(x=>x.classList.toggle('on',x===b));setC(0);});
+$('bNo').onclick=()=>setC(0);
+$('bPause').onclick=()=>{paused=!paused;$('bPause').classList.toggle('on',paused);$('bPause').textContent=paused?'Reprendre':'Pause';};
+// glisser l'objet sur la règle
+function pt(e){const r=cv.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};}
+function hit(p){return G.ry&&Math.abs(p.x-G.xo)<22&&Math.abs(p.y-G.ry)<26;}
+function moveTo(p){const u=(p.x-G.x0)/(G.x1-G.x0)*1.13;setD(u>1.06?Infinity:0.1*Math.pow(10,2*Math.max(0,Math.min(1,u))));}
+cv.addEventListener('pointerdown',e=>{const p=pt(e);if(hit(p)||(G.ry&&p.y>H-G.RH)){drag=true;moveTo(p);cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing';e.preventDefault();}});
+cv.addEventListener('pointermove',e=>{const p=pt(e);if(drag)moveTo(p);else{hover=hit(p);cv.style.cursor=hover?'grab':(G.ry&&p.y>H-G.RH?'pointer':'default');}});
+const rel=()=>{drag=false;cv.style.cursor='default';};
+cv.addEventListener('pointerup',rel);cv.addEventListener('pointercancel',rel);
+window.__oe={pos:()=>({x:G.xo,y:G.ry}),set:o=>{if(o.type)document.querySelector(`[data-t="${o.type}"]`).click();if('D'in o)setD(o.D);if('C'in o)setC(o.C);if(o.settle)acc=state().target;},get s(){return state();}};
+setD(0.5);setC(0);
+requestAnimationFrame(draw);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Lentilles et instruments d&#x27;optique<span>3 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/lentille-image/"><i>01</i>Lentille mince : construire l&#x27;image</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/oeil/"><i>02</i>L&#x27;œil et sa correction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/loupe-microscope/"><i>03</i>La loupe et le microscope</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

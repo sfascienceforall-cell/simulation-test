@@ -5,7 +5,7 @@ const ROOT = process.cwd(), out = [];
 const strip = t => String(t || "").replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
 function walk(d, acc) { for (const f of fs.readdirSync(d)) { const p = path.join(d, f); if (fs.statSync(p).isDirectory()) walk(p, acc); else if (f === "course-meta.js") acc.push(d); } return acc; }
 const deep = () => new Proxy(function () {}, { get: (t, k) => k === Symbol.toPrimitive ? () => "" : deep(), apply: () => deep() });
-for (const dir of walk(ROOT, []).sort()) {
+for (const dir of walk(ROOT, []).sort().filter(d => !/universite[\\/]chimie$/.test(d))) {
   const rel = path.relative(ROOT, dir).split(path.sep).join("/") + "/";
   const sims = [];
   const SFA = new Proxy({ meta: {}, page(o) { Object.assign(SFA.meta, o); }, sim(o) { sims.push(o); } }, { get: (t, k) => k in t ? t[k] : deep() });
@@ -29,5 +29,6 @@ for (const dir of walk(ROOT, []).sort()) {
   sims.forEach(s => { if (!s.id || idx[s.ch] == null) return; out.push({ k: "simulation", t: strip(s.titre), s: court + " · ch. " + (idx[s.ch] + 1) + " · " + strip(chs[idx[s.ch]].titre), u: rel + s.id + "/", m }); });
   console.error(rel, chs.length, "chapitres", sims.length, "sims");
 }
+try { JSON.parse(fs.readFileSync(path.join(__dirname, "extra-index.json"), "utf8")).forEach(e => out.push(e)); } catch (e) {}
 fs.writeFileSync(path.join(__dirname, "search-index.js"), "/* généré par kit/build_search_index.js */\nwindow.SFA_INDEX=" + JSON.stringify(out) + ";\n");
 console.error("total", out.length);

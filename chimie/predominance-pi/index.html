@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Espèces majoritaires et point isoélectrique · SFA</title>
+<meta name="description" content="Fais glisser le pH : vois quelle forme domine, dessine-la avec ses charges et trouve le point isoélectrique des acides aminés.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+canvas.cv{display:block;width:100%;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.row{display:flex;align-items:center;flex-wrap:wrap}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.hint{font:500 .84rem var(--f-ui);color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font:600 .82rem var(--f-ui);color:var(--muted);margin:10px 0 2px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.legend i.dash{background:repeating-linear-gradient(90deg,currentColor 0 5px,transparent 5px 9px)!important;height:2px}
+.legend i.box{height:10px;width:14px;border-radius:3px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:12px 0}
+.stat{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:0}
+.stat small{display:block;font:800 10.5px var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat b{display:block;font:800 1.2rem/1.3 var(--f-ui);font-variant-numeric:tabular-nums;color:var(--ink)}
+.stat span{display:block;font:600 .78rem/1.35 var(--f-ui);color:var(--muted)}
+.note{border-radius:10px;padding:10px 14px;margin:10px 0;font:600 .88rem/1.5 var(--f-ui)}
+.note.warn{background:#fff6e6;border-left:4px solid #BA7517;color:#5a3d00}
+.note.ok{background:#ecf6f1;border-left:4px solid #2e6b55;color:#1d4637}
+.note.info2{background:var(--sel);border-left:4px solid var(--navy);color:var(--ink2)}
+.chipok,.chipno{display:inline-block;font:800 11px var(--f-ui);padding:2px 8px;border-radius:999px;margin-right:6px}
+.chipok{background:#dcefe6;color:#1d4637}.chipno{background:#fbe1dc;color:#8a2a1a}
+table.t{border-collapse:collapse;width:100%;font:600 .84rem var(--f-ui);font-variant-numeric:tabular-nums}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top}
+table.t th{font:800 .72rem var(--f-ui);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.tw{overflow-x:auto}
+.sfa-card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-top:14px}
+.sfa-card h2{font:800 1.05rem var(--f-ui);margin:0 0 8px}
+.sfa-card ul{margin:0;padding-left:20px}.sfa-card li{margin:5px 0}
+.sfa-card.trap{border-left:4px solid #BA7517}
+.sfa-card details{border-top:1px solid var(--line);padding:10px 0}
+.sfa-card details:first-of-type{border-top:0}
+.sfa-card summary{cursor:pointer;font-weight:700;color:var(--ink)}
+.sfa-card details p{margin:8px 0 0;color:var(--ink2)}
+.sfa-card sub,.sfa-card sup,.stat sub,.stat sup,.note sub,.note sup,table.t sub,table.t sup,.btn sub{font-size:.72em}
+.panel[hidden]{display:none!important}
+
+#cv{height:540px;cursor:ew-resize}
+@media (max-width:640px){#cv{height:820px}}
+.stat b{font-size:1.05rem}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a class="on" href="../">Simulations de chimie</a><a href="../exercices/">Exercices de chimie</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations de physique</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="../">Simulations de chimie</a>›<a href="../#acides-bases">Acides et bases</a>›<b>Espèces majoritaires et point isoélectrique</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Chimie · Acides et bases</span><span class="sfa-chip free">Gratuit</span></div><h1>Espèces majoritaires et point isoélectrique</h1><p>Fais glisser le pH : vois quelle forme domine, dessine-la avec ses charges et trouve le point isoélectrique des acides aminés.</p></div>
+
+<section class="sfa-sim">
+<div class="row"><span class="pill">Espèce</span><div class="seg" id="sSp">
+  <button class="btn on" data-k="ac">Acide éthanoïque (acétique)</button><button class="btn" data-k="nh4">Ammonium</button>
+  <button class="btn" data-k="h2co3">H₂CO₃</button><button class="btn" data-k="h3po4">H₃PO₄</button>
+  <button class="btn" data-k="gly">Glycine</button><button class="btn" data-k="ala">Alanine</button></div></div>
+<canvas id="cv" class="cv" aria-label="Diagramme de distribution des formes en fonction du pH, diagramme de prédominance, charge moyenne et molécule majoritaire"></canvas>
+<div class="row"><span class="pill" style="min-width:120px;color:#0F6E56">pH</span>
+  <input type="range" id="pH" min="0" max="1400" step="1" value="700" style="accent-color:#1D9E75"><span class="val" id="pHv" style="color:#0F6E56"></span></div>
+<div class="row"><span class="pill">Aller à</span><div class="seg" id="jump"></div></div>
+<div class="row"><span class="hint">Astuce : tu peux aussi faire glisser le doigt ou la souris sur les graphiques.</span></div>
+<div class="stats" id="stats"></div>
+<div id="notes"></div>
+<div class="tw" id="tab"></div>
+<p class="hint" style="margin-top:10px">Fractions calculées exactement à partir des pKa (25 °C) : αᵢ = part de chaque forme dans le total. Modèle idéal (concentrations, pas activités). Pour les acides aminés, le modèle à deux pKa regroupe toutes les formes de charge nulle sous « zwitterion ».</p>
+</section>
+
+<section class="sfa-card"><h2>Ce qu'il faut retenir</h2><ul>
+<li>pH &lt; pKa : la forme acide domine. pH &gt; pKa : la forme basique domine. pH = pKa : 50 % de chaque.</li>
+<li>Pour un couple isolé, à pKa ± 1, le rapport des deux formes vaut 10 (environ 91 % contre 9 %) ; à pKa ± 2, il vaut 100.</li>
+<li>Pour un polyacide, chaque forme domine entre deux pKa successifs.</li>
+<li>Acide aminé : cation sous pKa₁, zwitterion entre pKa₁ et pKa₂, anion au-dessus de pKa₂.</li>
+<li>pI = moyenne des deux pKa qui encadrent l'espèce de charge nulle : 5,97 pour la glycine, 6,11 pour l'alanine.</li>
+</ul></section>
+
+<section class="sfa-card trap"><h2>Pièges classiques</h2><ul>
+<li>Au pI, c'est la charge <b>moyenne</b> qui est nulle. Il reste des cations et des anions, en quantités égales.</li>
+<li>La forme neutre non ionisée H₂N–CH₂–COOH est négligeable dans l'eau : la forme « neutre » d'un acide aminé, c'est le zwitterion ⁺H₃N–CH₂–COO⁻.</li>
+<li>« Majoritaire » ne veut pas dire « seule » : à pKa + 0,5, l'acide représente encore 24 % du total.</li>
+<li>Pour un acide aminé dont la chaîne latérale est ionisable, pI n'est pas ½(pKa₁ + pKa₂) : on prend les deux pKa qui encadrent la forme de charge nulle.</li>
+</ul></section>
+
+<section class="sfa-card"><h2>Défis</h2>
+<details><summary>1. Glycine à pH 1,34 : quelles proportions de cation et de zwitterion ?</summary>
+<p>pH = pKa₁ − 1 : le rapport cation/zwitterion vaut 10. Environ 91 % de cation et 9 % de zwitterion (l'anion est négligeable). Vérifie avec le curseur.</p></details>
+<details><summary>2. À pH 7,00, quelle forme du phosphate domine, et à quel point ?</summary>
+<p>H₂PO₄⁻, car pH &lt; pKa₂ = 7,20. Le rapport [HPO₄²⁻]/[H₂PO₄⁻] = 10<sup>7,00 − 7,20</sup> ≈ 0,63 : environ 61 % de H₂PO₄⁻ et 39 % de HPO₄²⁻. Majoritaire, mais loin d'être seule.</p></details>
+<details><summary>3. Quel est le pI de l'alanine ? À pH 9, vers quelle électrode migre-t-elle ?</summary>
+<p>pI = ½(2,35 + 9,87) = 6,11. À pH 9, au-dessus du pI, sa charge moyenne est négative (environ −0,12) : elle migre vers l'anode, l'électrode positive.</p></details>
+</section>
+
+</main>
+<aside class="sfa-side">
+  <div class="sfa-list"><h2>Acides et bases<span>3 simulations</span></h2><ol><li><a href="../titrage-tampon/"><i>01</i>Titrage et tampon</a></li><li><a href="../ph-metre/"><i>02</i>Calculer un pH</a></li><li><a class="on" aria-current="page" href="../predominance-pi/"><i>03</i>Espèces majoritaires et point isoélectrique</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside>
+</div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de chimie</footer>
+<script>
+(()=>{
+/* ---------- SFA chimie : outils communs (format, équilibres, dessin) ---------- */
+const $=id=>document.getElementById(id);
+const LN10=Math.LN10;
+const KW=1.0e-14;               /* VALEURS-REFERENCE : Kw = 1,0·10⁻¹⁴ à 25 °C */
+const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+/* nombre à n décimales, virgule décimale, vrai signe moins */
+const fr=(v,n)=>{if(!isFinite(v))return '—';let s=v.toFixed(n);if(/^-0[,.]?0*$/.test(s))s=s.slice(1);return s.replace('.',',').replace(/^-/,'−');};
+/* notation scientifique « 1,0·10⁻⁸ » avec s chiffres significatifs */
+function sci(v,s){if(v===0)return '0';if(!isFinite(v))return '—';const e=Math.floor(Math.log10(Math.abs(v))+1e-12);let m=v/Math.pow(10,e);
+  let ms=m.toFixed((s||2)-1);if(Math.abs(+ms)>=10){m/=10;ms=m.toFixed((s||2)-1);return fmtE(ms,e+1);}return fmtE(ms,e);}
+function fmtE(ms,e){ms=ms.replace('.',',').replace(/^-/,'−');if(e===0)return ms;return ms+'·10'+String(e).split('').map(c=>SUP[c]).join('');}
+/* concentration lisible */
+function conc(C){if(C>=0.01&&C<100)return (+C).toPrecision(2).replace('.',',');return sci(C,2);}
+function concU(C){return conc(C)+' mol/L';}
+/* valeurs « jolies » 1-2-3-5 par décade pour les curseurs logarithmiques */
+function niceList(e0,e1){const L=[];for(let e=e0;e<e1;e++)for(const m of [1,2,3,5])L.push(+(m*Math.pow(10,e)).toPrecision(3));L.push(Math.pow(10,e1));return L;}
+
+/* ---------- équilibres acide-base : calcul exact ----------
+   Un système = { C : concentration analytique (mol/L), pK : [pKa1, pKa2, …], z0 : charge de la forme la plus protonée }.
+   fracs(pH, pK)[i] = fraction de la forme qui a perdu i protons (charge z0 − i).
+   Électroneutralité : [H⁺] − [OH⁻] + Σ cations spectateurs − Σ anions spectateurs + Σ C·Σ αᵢ(z0 − i) = 0,
+   résolue par dichotomie sur le pH (la charge nette décroît strictement avec le pH). */
+function fracs(pH,pK){const l=[0];let a=0;for(const p of pK){a+=pH-p;l.push(a);}
+  const m=Math.max(...l);let s=0;const t=l.map(v=>{const e=Math.pow(10,v-m);s+=e;return e;});return t.map(e=>e/s);}
+function netQ(pH,S){const h=Math.pow(10,-pH);let q=h-KW/h+(S.cat||0)-(S.an||0);
+  for(const y of (S.sys||[])){const a=fracs(pH,y.pK);let z=0;for(let i=0;i<a.length;i++)z+=a[i]*(y.z0-i);q+=y.C*z;}return q;}
+function solvePH(S){let lo=-3,hi=17;for(let k=0;k<64;k++){const m=(lo+hi)/2;if(netQ(m,S)>0)lo=m;else hi=m;}return (lo+hi)/2;}
+const meanZ=(pH,pK,z0)=>{const a=fracs(pH,pK);let z=0;for(let i=0;i<a.length;i++)z+=a[i]*(z0-i);return z;};
+
+/* ---------- canevas ---------- */
+function makeCanvas(cv){const ctx=cv.getContext('2d');const o={cv,ctx,W:0,H:0};
+  o.sync=()=>{const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;const w=Math.round(r.width)||600,h=Math.round(r.height)||400;
+    if(w!==o.W||h!==o.H||cv.width!==Math.round(w*d)){o.W=w;o.H=h;cv.width=Math.round(w*d);cv.height=Math.round(h*d);}ctx.setTransform(d,0,0,d,0,0);};
+  return o;}
+const FT='700 12.5px Mulish,system-ui,sans-serif',FN='600 11.5px Mulish,system-ui,sans-serif',FB='800 13px Mulish,system-ui,sans-serif';
+function halo(ctx,t,x,y,col,font,al,bl){ctx.save();ctx.font=font||FT;ctx.textAlign=al||'left';ctx.textBaseline=bl||'middle';ctx.lineJoin='round';
+  ctx.lineWidth=4;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.strokeText(t,x,y);ctx.fillStyle=col;ctx.fillText(t,x,y);ctx.restore();}
+/* étiquettes sans chevauchement : on propose des positions, la meilleure libre est retenue */
+function Labeler(ctx,W,H){const Q=[],R=[];return {
+  block(x0,y0,x1,y1){R.push({x0,y0,x1,y1});},
+  add(t,col,cands,font){Q.push({t,col,cands,font:font||FT});},
+  flush(){const P=[];for(const L of Q){ctx.font=L.font;const w=ctx.measureText(L.t).width,h=15;let best=null,bs=Infinity;
+    L.cands.forEach((c,i)=>{const [x,y,al]=c;const x0=al==='left'?x:al==='right'?x-w:x-w/2;const b={x0:x0-2,x1:x0+w+2,y0:y-h/2,y1:y+h/2};let s=i;
+      if(b.x0<1||b.x1>W-1||b.y0<1||b.y1>H-1)s+=1e6;
+      for(const p of P.concat(R)){const ox=Math.min(b.x1,p.x1)-Math.max(b.x0,p.x0),oy=Math.min(b.y1,p.y1)-Math.max(b.y0,p.y0);if(ox>0&&oy>0)s+=1e4+ox*oy;}
+      if(s<bs){bs=s;best={b,x0,y};}});
+    let x0=Math.max(2,Math.min(W-2-w,best.x0)),y=Math.max(8,Math.min(H-8,best.y));P.push({x0:x0-2,x1:x0+w+2,y0:y-h/2,y1:y+h/2});halo(ctx,L.t,x0,y,L.col,L.font,'left');}}};}
+/* repère cartésien : renvoie les fonctions de passage */
+function axes(ctx,b,xr,yr,o){o=o||{};const X=x=>b.x+(x-xr[0])/(xr[1]-xr[0])*b.w,Y=y=>b.y+b.h-(y-yr[0])/(yr[1]-yr[0])*b.h;
+  ctx.save();ctx.fillStyle='#fff';ctx.fillRect(b.x,b.y,b.w,b.h);ctx.font=FN;ctx.lineWidth=1;
+  const yt=o.yticks||[];ctx.textAlign='right';ctx.textBaseline='middle';
+  for(const v of yt){ctx.strokeStyle='#eef0f3';ctx.beginPath();ctx.moveTo(b.x,Y(v));ctx.lineTo(b.x+b.w,Y(v));ctx.stroke();ctx.fillStyle='#8a95a3';ctx.fillText(o.yfmt?o.yfmt(v):fr(v,0),b.x-6,Y(v));}
+  const xt=o.xticks||[];ctx.textAlign='center';ctx.textBaseline='top';
+  for(const v of xt){ctx.strokeStyle='#f1f3f6';ctx.beginPath();ctx.moveTo(X(v),b.y);ctx.lineTo(X(v),b.y+b.h);ctx.stroke();ctx.fillStyle='#8a95a3';ctx.fillText(o.xfmt?o.xfmt(v):fr(v,0),X(v),b.y+b.h+5);}
+  ctx.strokeStyle='#c8ccd0';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x,b.y+b.h);ctx.lineTo(b.x+b.w,b.y+b.h);ctx.stroke();
+  ctx.fillStyle='#5f6b7a';ctx.font='700 11.5px Mulish,system-ui,sans-serif';
+  if(o.xlabel){ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText(o.xlabel,b.x+b.w,b.y+b.h+19);}
+  if(o.ylabel){ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(o.ylabel,b.x-(o.ylabelDx||28),b.y-6);}
+  ctx.restore();return {X,Y};}
+function niceStep(range,px,minPx){const raw=range*minPx/px,p=Math.pow(10,Math.floor(Math.log10(raw)));for(const m of [1,2,5,10])if(m*p>=raw)return m*p;return 10*p;}
+function ticks(a,b,st){const t=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)t.push(+v.toFixed(10));return t;}
+function poly(ctx,pts,col,w,dash){ctx.save();ctx.strokeStyle=col;ctx.lineWidth=w||2;ctx.lineJoin='round';if(dash)ctx.setLineDash(dash);ctx.beginPath();let on=false;
+  for(const p of pts){if(!p||!isFinite(p[1])){on=false;continue;}on?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);on=true;}ctx.stroke();ctx.restore();}
+/* couleur : mélange de deux couleurs rgba */
+const mix=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
+const rgba=c=>`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${(c[3]==null?1:c[3]).toFixed(3)})`;
+/* indicateurs colorés (pKa : VALEURS-REFERENCE). Couleurs des formes acide et basique ; zone de virage ≈ pKa ± 1 (règle simplifiée). */
+const INDIC={
+  none:{nom:'Aucun',pK:null},
+  mo:{nom:'Méthylorange',pK:3.6,ac:[205,45,45,.80],ba:[240,170,40,.80],acN:'rouge',baN:'jaune orangé'},
+  rm:{nom:'Rouge de méthyle',pK:5.1,ac:[214,40,80,.78],ba:[240,206,50,.80],acN:'rouge',baN:'jaune'},
+  pp:{nom:'Phénolphtaléine',pK:9.7,ac:[255,255,255,0],ba:[214,51,138,.78],acN:'incolore',baN:'rose fuchsia'}};
+function indicColor(key,pH){const I=INDIC[key];if(!I||I.pK==null)return [214,232,246,.55];const f=1/(1+Math.pow(10,I.pK-pH));
+  const base=[214,232,246,.45];const c=mix(I.ac,I.ba,f);const a=c[3];return [base[0]*(1-a)+c[0]*a,base[1]*(1-a)+c[1]*a,base[2]*(1-a)+c[2]*a,Math.max(.45,a)];}
+function indicFrac(key,pH){const I=INDIC[key];return I&&I.pK!=null?1/(1+Math.pow(10,I.pK-pH)):null;}
+/* bécher dessiné */
+function beaker(ctx,x,y,w,h,fill,lev){ctx.save();const r=8;
+  ctx.fillStyle=rgba(fill);const lh=h*Math.max(0.08,Math.min(0.95,lev));ctx.beginPath();ctx.moveTo(x+1,y+h-lh);ctx.lineTo(x+w-1,y+h-lh);ctx.lineTo(x+w-1,y+h-r);ctx.quadraticCurveTo(x+w-1,y+h-1,x+w-r,y+h-1);ctx.lineTo(x+r,y+h-1);ctx.quadraticCurveTo(x+1,y+h-1,x+1,y+h-r);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+4,y+h-lh+1);ctx.lineTo(x+w-4,y+h-lh+1);ctx.stroke();
+  ctx.strokeStyle='#7d8794';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-5,y);ctx.lineTo(x,y+4);ctx.lineTo(x,y+h-r);ctx.quadraticCurveTo(x,y+h,x+r,y+h);ctx.lineTo(x+w-r,y+h);ctx.quadraticCurveTo(x+w,y+h,x+w,y+h-r);ctx.lineTo(x+w,y);ctx.stroke();
+  ctx.strokeStyle='#c3c9d1';ctx.lineWidth=1;for(let k=1;k<5;k++){const yy=y+h-h*k/5;ctx.beginPath();ctx.moveTo(x+w-12,yy);ctx.lineTo(x+w-2,yy);ctx.stroke();}
+  ctx.restore();return y+h-lh;}
+/* afficheur de pH-mètre */
+function phMeter(ctx,x,y,w,h,pH,label){ctx.save();ctx.fillStyle='#13233a';ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,w,h,8):ctx.rect(x,y,w,h);ctx.fill();
+  ctx.fillStyle='#dff3e7';ctx.fillRect(x+7,y+7,w-14,h-24);ctx.fillStyle='#0f3d2c';ctx.font='800 '+Math.round(Math.min(26,(h-24)*0.75))+'px "JetBrains Mono",ui-monospace,monospace';
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(fr(pH,2),x+w/2,y+7+(h-24)/2+1);
+  ctx.fillStyle='#c9d3e0';ctx.font='800 10px Mulish,system-ui,sans-serif';ctx.fillText(label||'pH-mètre · 25 °C',x+w/2,y+h-9);ctx.restore();}
+function setHTML(id,h){const e=$(id);if(e&&e._h!==h){e.innerHTML=h;e._h=h;}}
+function segBtns(id,cb){const box=$(id);box.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{box.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.k);}));}
+function selectSeg(id,k){$(id).querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.k===k));}
+
+
+const cvo=makeCanvas($('cv')),ctx=cvo.ctx;
+const COL=['#185fa5','#1D9E75','#BA7517','#a32d2d'],GRD='#0F6E56',INK='#2c3a4e';
+const SUBD=['₀','₁','₂','₃'];
+/* pKa : VALEURS-REFERENCE */
+const SP={
+  ac:{nom:'acide éthanoïque (acide acétique)',pK:[4.76],z0:0,f:['CH₃COOH','CH₃COO⁻'],n:['acide éthanoïque (acétique)','ion éthanoate (acétate)']},
+  nh4:{nom:'ion ammonium / ammoniac',pK:[9.25],z0:1,f:['NH₄⁺','NH₃'],n:['ion ammonium','ammoniac']},
+  h2co3:{nom:'acide carbonique (CO₂ dissous compris)',pK:[6.35,10.33],z0:0,f:['H₂CO₃','HCO₃⁻','CO₃²⁻'],n:['acide carbonique','ion hydrogénocarbonate (bicarbonate)','ion carbonate']},
+  h3po4:{nom:'acide phosphorique',pK:[2.15,7.20,12.38],z0:0,f:['H₃PO₄','H₂PO₄⁻','HPO₄²⁻','PO₄³⁻'],n:['acide phosphorique','ion dihydrogénophosphate','ion hydrogénophosphate','ion phosphate']},
+  gly:{nom:'acide 2-aminoéthanoïque (glycine)',aa:true,pK:[2.34,9.60],z0:1,f:['⁺H₃N–CH₂–COOH','⁺H₃N–CH₂–COO⁻','H₂N–CH₂–COO⁻'],s:['Gly⁺','Gly±','Gly⁻'],n:['cation','zwitterion (charge nette nulle)','anion']},
+  ala:{nom:'acide 2-aminopropanoïque (alanine)',aa:true,pK:[2.35,9.87],z0:1,f:['⁺H₃N–CH(CH₃)–COOH','⁺H₃N–CH(CH₃)–COO⁻','H₂N–CH(CH₃)–COO⁻'],s:['Ala⁺','Ala±','Ala⁻'],n:['cation','zwitterion (charge nette nulle)','anion']}};
+let sp='ac',pH=7;
+const pI=s=>{const S=SP[s];return S.aa?(S.pK[0]+S.pK[1])/2:null;};
+/* pI vérifié numériquement : charge moyenne nulle */
+function pInum(s){const S=SP[s];let lo=0,hi=14;for(let k=0;k<60;k++){const m=(lo+hi)/2;if(meanZ(m,S.pK,S.z0)>0)lo=m;else hi=m;}return (lo+hi)/2;}
+const short=(S,i)=>S.s?S.s[i]:S.f[i];
+
+/* ---------- molécules : atomes {x,y,t,q} et liaisons [a,b,ordre], unités = longueur de liaison ---------- */
+function mol(s,i){const A=[],B=[];const at=(x,y,t,q,al)=>{A.push({x,y,t,q:q||0,al});return A.length-1;};
+  if(s==='ac'){const a=at(0,0,'CH₃'),c=at(1,-0.4,'C'),o1=at(1,-1.5,'O'),o2=at(2,0.15,i?'O':'OH',i?-1:0,'l');B.push([a,c,1],[c,o1,2],[c,o2,1]);}
+  if(s==='nh4'){const n=at(0,0,'N',i?0:1);if(i){for(const [x,y] of [[-1,0.35],[1,0.35],[0,1]])B.push([n,at(x,y,'H'),1]);A[n].lp=true;}
+    else for(const [x,y] of [[0,-1],[1,0],[0,1],[-1,0]])B.push([n,at(x,y,'H'),1]);}
+  if(s==='h2co3'){const c=at(0,0,'C'),o=at(0,-1.05,'O');B.push([c,o,2]);
+    B.push([c,at(-0.95,0.6,i>=2?'O':'HO',i>=2?-1:0,'r'),1]);B.push([c,at(0.95,0.6,i>=1?'O':'OH',i>=1?-1:0,'l'),1]);}
+  if(s==='h3po4'){const p=at(0,0,'P'),o=at(0,-1.05,'O');B.push([p,o,2]);
+    B.push([p,at(1.1,0,i>=1?'O':'OH',i>=1?-1:0,'l'),1]);B.push([p,at(-1.1,0,i>=2?'O':'HO',i>=2?-1:0,'r'),1]);B.push([p,at(0,1.05,i>=3?'O':'OH',i>=3?-1:0),1]);}
+  if(s==='gly'||s==='ala'){const n=at(0,0.35,i<2?'H₃N':'H₂N',i<2?1:0,'r'),ca=at(1,-0.2,s==='gly'?'CH₂':'CH'),c=at(2,0.35,'C'),o1=at(2,1.45,'O'),o2=at(3,-0.2,i>=1?'O':'OH',i>=1?-1:0,'l');
+    B.push([n,ca,1],[ca,c,1],[c,o1,2],[c,o2,1]);if(s==='ala')B.push([ca,at(1,-1.3,'CH₃'),1]);}
+  return {A,B};}
+function drawMol(s,i,box){const M=mol(s,i);let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;for(const a of M.A){x0=Math.min(x0,a.x);x1=Math.max(x1,a.x);y0=Math.min(y0,a.y);y1=Math.max(y1,a.y);}
+  const sc=Math.min(62,(box.w-90)/Math.max(1,x1-x0),(box.h-60)/Math.max(1,y1-y0));const cx=box.x+box.w/2-(x0+x1)/2*sc,cy=box.y+box.h/2-(y0+y1)/2*sc;
+  const P=a=>[cx+a.x*sc,cy+a.y*sc];ctx.save();ctx.font='800 18px Mulish,system-ui,sans-serif';
+  const half=a=>Math.max(9,ctx.measureText(a.t).width/2+3);
+  ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.lineCap='round';
+  for(const [a,b,o] of M.B){const A=M.A[a],Bb=M.A[b],[ax,ay]=P(A),[bx,by]=P(Bb),L=Math.hypot(bx-ax,by-ay),ux=(bx-ax)/L,uy=(by-ay)/L;
+    const ra=Math.min(half(A),14)*(Math.abs(ux)>0.6?Math.min(1.6,half(A)/10):1),rb=Math.min(half(Bb),14)*(Math.abs(ux)>0.6?Math.min(1.6,half(Bb)/10):1);
+    const sx=ax+ux*Math.min(ra,L/3),sy=ay+uy*Math.min(ra,L/3),ex=bx-ux*Math.min(rb,L/3),ey=by-uy*Math.min(rb,L/3);
+    const offs=o===2?[-3,3]:[0];for(const d of offs){ctx.beginPath();ctx.moveTo(sx-uy*d,sy+ux*d);ctx.lineTo(ex-uy*d,ey+ux*d);ctx.stroke();}}
+  ctx.textAlign='center';ctx.textBaseline='middle';
+  for(const a of M.A){const [x,y]=P(a);ctx.fillStyle=a.t==='O'||a.t==='OH'||a.t==='HO'?'#b0302a':a.t.includes('N')?'#1e3f8f':a.t==='P'?'#a35a00':INK;ctx.fillText(a.t,x,y);
+    if(a.lp){ctx.fillStyle=INK;for(const d of [-4,4]){ctx.beginPath();ctx.arc(x+d,y-15,2,0,7);ctx.fill();}}
+    if(a.q){const w=ctx.measureText(a.t).width/2;const qx=a.al==='r'?x-w-7:x+w+7,qy=y-12;ctx.fillStyle=a.q>0?'#1e3f8f':'#b0302a';ctx.beginPath();ctx.arc(qx,qy,8,0,7);ctx.fill();
+      ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(qx-4,qy);ctx.lineTo(qx+4,qy);if(a.q>0){ctx.moveTo(qx,qy-4);ctx.lineTo(qx,qy+4);}ctx.stroke();ctx.strokeStyle=INK;ctx.lineWidth=2;}}
+  ctx.restore();}
+
+/* ---------- contrôles ---------- */
+function jumpBtns(){const S=SP[sp];let h='';S.pK.forEach((p,i)=>{h+='<button class="btn" data-v="'+p+'">pKa'+(S.pK.length>1?SUBD[i+1]:'')+' = '+fr(p,2)+'</button>';});
+  if(S.aa)h+='<button class="btn" data-v="'+pI(sp)+'">pI = '+fr(pI(sp),2)+'</button>';$('jump').innerHTML=h;
+  $('jump').querySelectorAll('button').forEach(b=>b.onclick=()=>{setPH(+b.dataset.v);});}
+function setPH(v){pH=Math.max(0,Math.min(14,v));$('pH').value=Math.round(pH*100);$('pHv').textContent=fr(pH,2);update();}
+segBtns('sSp',k=>{sp=k;jumpBtns();update();});
+$('pH').oninput=e=>setPH(+e.target.value/100);
+const stat=(a,b,c)=>'<div class="stat"><small>'+a+'</small><b>'+b+'</b><span>'+c+'</span></div>';
+const note=(c,t)=>'<div class="note '+c+'">'+t+'</div>';
+const pc=x=>x<0.001?sci(x*100,2)+' %':x>0.999&&x<1?fr(x*100,2)+' %':fr(x*100,1)+' %';
+const zs=z=>(z>0?'+':z<0?'−':'')+Math.abs(z);
+function update(){const S=SP[sp],a=fracs(pH,S.pK),Z=meanZ(pH,S.pK,S.z0);let m=0;a.forEach((v,i)=>{if(v>a[m])m=i;});
+  let s=stat('Forme majoritaire',S.f[m],S.n[m]+' : '+pc(a[m]));
+  s+=stat('Charge nette moyenne',(Math.abs(Z)<0.0005?'0,000':(Z>0?'+':'')+fr(Z,3)),'Σ αᵢ × charge de la forme i');
+  if(S.aa)s+=stat('Point isoélectrique','pI = '+fr(pI(sp),2),'½(pKa₁ + pKa₂) = ½('+fr(S.pK[0],2)+' + '+fr(S.pK[1],2)+')');
+  else{let k=0;let best=1e9;S.pK.forEach((p,i)=>{if(Math.abs(p-pH)<best){best=Math.abs(p-pH);k=i;}});const r=Math.pow(10,pH-S.pK[k]);
+    s+=stat('Couple le plus proche',S.f[k+1]+' / '+S.f[k],'rapport base/acide = 10^(pH − pKa) = '+(r<0.01||r>100?sci(r,2):fr(r,2)));}
+  setHTML('stats',s);
+  let n='';
+  const near=S.pK.findIndex(p=>Math.abs(p-pH)<0.15);
+  if(near>=0)n+=note('info2','pH ≈ pKa'+(S.pK.length>1?SUBD[near+1]:'')+' = '+fr(S.pK[near],2)+' : '+S.f[near]+' et '+S.f[near+1]+' sont presque à égalité ('+pc(a[near])+' et '+pc(a[near+1])+').');
+  else if(a[m]<0.95)n+=note('info2',S.f[m]+' est majoritaire ('+pc(a[m])+') mais pas seule : majoritaire ne veut pas dire unique.');
+  if(S.aa){const p=pI(sp);
+    if(Math.abs(pH-p)<0.02)n+=note('ok','Tu es au pI : la charge <b>moyenne</b> est nulle. Pourtant, il reste '+pc(a[0])+' de cations et '+pc(a[2])+' d\'anions, en quantités égales ; le reste est du zwitterion, dont la charge nette est nulle.');
+    else n+=note(pH>S.pK[0]&&pH<S.pK[1]?'ok':'info2',pH<S.pK[0]?'pH &lt; pKa₁ : le cation domine, la molécule migre vers la cathode (−) en électrophorèse.':pH>S.pK[1]?'pH &gt; pKa₂ : l\'anion domine, la molécule migre vers l\'anode (+).':
+      'Entre pKa₁ et pKa₂ : le zwitterion domine. Charge moyenne '+(Z>0?'positive (pH &lt; pI) : migration vers la cathode (−).':'négative (pH &gt; pI) : migration vers l\'anode (+).'));
+    n+=note('warn','La forme neutre non ionisée '+(sp==='gly'?'H₂N–CH₂–COOH':'H₂N–CH(CH₃)–COOH')+' est négligeable dans l\'eau : la forme de charge nulle est le zwitterion. Le modèle à deux pKa ne la compte pas à part.');}
+  if(sp==='h2co3')n+=note('info2','Convention habituelle : « H₂CO₃ » regroupe le CO₂ dissous et H₂CO₃ ; pKa₁ = 6,35 est une valeur apparente.');
+  setHTML('notes',n);
+  let t='<table class="t"><tr><th>Forme</th><th>Nom</th><th>Charge</th><th>Part à pH '+fr(pH,2)+'</th></tr>';
+  S.f.forEach((f,i)=>{t+='<tr'+(i===m?' style="background:var(--sel)"':'')+'><td><b style="color:'+COL[i]+'">'+f+'</b></td><td>'+S.n[i]+'</td><td>'+zs(S.z0-i)+'</td><td>'+pc(a[i])+'</td></tr>';});
+  setHTML('tab',t+'</table>');}
+
+/* ---------- dessin ---------- */
+let G=null;
+function draw(){cvo.sync();const W=cvo.W,H=cvo.H,narrow=W<640,S=SP[sp];ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  const gx=40,gw=narrow?W-56:W*0.64-56,molBox=narrow?{x:0,y:H-250,w:W,h:240}:{x:W*0.64,y:10,w:W*0.36-8,h:H-20};
+  const totalH=narrow?H-262:H;const b1={x:gx,y:30,w:gw,h:totalH*0.44},bar={x:gx,y:b1.y+b1.h+46,w:gw,h:22},b2={x:gx,y:bar.y+bar.h+64,w:gw,h:totalH-(bar.y+bar.h+64)-40};
+  const lb=Labeler(ctx,W,H);
+  /* 1. distribution */
+  const r1=axes(ctx,b1,[0,14],[0,1],{yticks:[0,0.25,0.5,0.75,1],yfmt:v=>fr(v*100,0)+' %',xticks:ticks(0,14,narrow?2:1),xlabel:'pH',ylabel:'fraction αᵢ',ylabelDx:34});
+  ctx.save();ctx.beginPath();ctx.rect(b1.x,b1.y-2,b1.w,b1.h+4);ctx.clip();
+  for(const p of S.pK){ctx.strokeStyle='#d6dbe2';ctx.lineWidth=1;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(r1.X(p),b1.y);ctx.lineTo(r1.X(p),b1.y+b1.h);ctx.stroke();ctx.setLineDash([]);}
+  const N=420,curves=S.f.map(()=>[]);for(let k=0;k<=N;k++){const x=14*k/N,a=fracs(x,S.pK);a.forEach((v,i)=>curves[i].push([r1.X(x),r1.Y(v)]));}
+  curves.forEach((c,i)=>poly(ctx,c,COL[i],2.4));ctx.restore();
+  const a=fracs(pH,S.pK);
+  S.f.forEach((f,i)=>{/* étiquette au sommet de chaque courbe */const lo=i?S.pK[i-1]:0,hi=i<S.pK.length?S.pK[i]:14,xc=i===0?Math.max(0.4,lo+(hi-lo)/2-0.6):i===S.f.length-1?Math.min(13.6,lo+(hi-lo)/2+0.6):(lo+hi)/2;
+    lb.add(short(S,i),COL[i],[[r1.X(xc),b1.y+12,'center'],[r1.X(xc),b1.y+30,'center'],[r1.X(xc),b1.y+48,'center']],FB);});
+  for(const p of S.pK)lb.add('pKa '+fr(p,2),'#8a95a3',[[r1.X(p)+4,r1.Y(0.5)+12,'left'],[r1.X(p)-4,r1.Y(0.5)+12,'right'],[r1.X(p)+4,r1.Y(0.5)-12,'left'],[r1.X(p)+4,r1.Y(0.3),'left'],[r1.X(p)-4,r1.Y(0.3),'right'],[r1.X(p)+4,r1.Y(0.7),'left'],[r1.X(p)-4,r1.Y(0.7),'right'],[r1.X(p),r1.Y(0.12),'center']],FN);
+  a.forEach((v,i)=>{ctx.fillStyle=COL[i];ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(r1.X(pH),r1.Y(v),4.2,0,7);ctx.fill();ctx.stroke();});
+  /* 2. diagramme de prédominance */
+  ctx.save();ctx.font='800 11px Mulish,system-ui,sans-serif';halo(ctx,'Prédominance',bar.x,bar.y-14,'#5f6b7a','800 11px Mulish,system-ui,sans-serif','left');
+  const edges=[0,...S.pK,14];for(let i=0;i<S.f.length;i++){const x0=r1.X(edges[i]),x1=r1.X(edges[i+1]);ctx.fillStyle=COL[i]+'2e';ctx.fillRect(x0,bar.y,x1-x0,bar.h);ctx.fillStyle=COL[i];ctx.fillRect(x0,bar.y+bar.h-4,x1-x0,4);
+    const t=short(S,i);ctx.font='800 12px Mulish,system-ui,sans-serif';const tw=ctx.measureText(t).width;ctx.fillStyle=COL[i];ctx.textAlign='center';ctx.textBaseline='middle';
+    if(tw<x1-x0-6)ctx.fillText(t,(x0+x1)/2,bar.y+bar.h/2-1);else{ctx.fillText(t,Math.max(bar.x+tw/2,Math.min(bar.x+bar.w-tw/2,(x0+x1)/2)),bar.y+bar.h+14+(i%2)*14);}}
+  for(const p of S.pK){ctx.strokeStyle='#5f6b7a';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(r1.X(p),bar.y-4);ctx.lineTo(r1.X(p),bar.y+bar.h+4);ctx.stroke();}
+  ctx.strokeStyle='#c8ccd0';ctx.strokeRect(bar.x,bar.y,bar.w,bar.h);ctx.restore();
+  /* 3. charge moyenne */
+  const zmax=S.z0,zmin=S.z0-S.pK.length;const r2=axes(ctx,b2,[0,14],[zmin,zmax],{yticks:ticks(zmin,zmax,1),yfmt:v=>v>0?'+'+v:v<0?'−'+(-v):'0',xticks:ticks(0,14,narrow?2:1),xlabel:'pH',ylabel:'charge moyenne',ylabelDx:34});
+  ctx.save();ctx.beginPath();ctx.rect(b2.x,b2.y-2,b2.w,b2.h+4);ctx.clip();
+  if(zmin<0&&zmax>0){ctx.strokeStyle='#9aa0a6';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(b2.x,r2.Y(0));ctx.lineTo(b2.x+b2.w,r2.Y(0));ctx.stroke();}
+  const zc=[];for(let k=0;k<=N;k++){const x=14*k/N;zc.push([r2.X(x),r2.Y(meanZ(x,S.pK,S.z0))]);}poly(ctx,zc,'#5a3fa0',2.4);ctx.restore();
+  const Z=meanZ(pH,S.pK,S.z0);
+  if(S.aa){const p=pI(sp);ctx.save();ctx.strokeStyle='#5a3fa0';ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(r2.X(p),b2.y);ctx.lineTo(r2.X(p),b2.y+b2.h);ctx.stroke();ctx.restore();
+    ctx.fillStyle='#5a3fa0';ctx.beginPath();ctx.arc(r2.X(p),r2.Y(0),4,0,7);ctx.fill();lb.add('pI = '+fr(p,2),'#5a3fa0',[[r2.X(p)+6,r2.Y(0)+14,'left'],[r2.X(p)-6,r2.Y(0)+14,'right'],[r2.X(p)+6,r2.Y(0)-14,'left']],FB);}
+  ctx.fillStyle='#5a3fa0';ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(r2.X(pH),r2.Y(Z),5,0,7);ctx.fill();ctx.stroke();lb.block(r2.X(pH)-7,r2.Y(Z)-7,r2.X(pH)+7,r2.Y(Z)+7);
+  lb.add('Z = '+(Z>0.0005?'+':'')+fr(Math.abs(Z)<0.0005?0:Z,2),'#5a3fa0',[[r2.X(pH)+10,r2.Y(Z)-12,'left'],[r2.X(pH)-10,r2.Y(Z)-12,'right'],[r2.X(pH)+10,r2.Y(Z)+12,'left'],[r2.X(pH)-10,r2.Y(Z)+12,'right']],FN);
+  /* curseur pH commun */
+  ctx.save();ctx.strokeStyle=GRD;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(r1.X(pH),b1.y);ctx.lineTo(r1.X(pH),b2.y+b2.h);ctx.stroke();
+  ctx.fillStyle=GRD;ctx.beginPath();ctx.moveTo(r1.X(pH),bar.y-2);ctx.lineTo(r1.X(pH)-6,bar.y-10);ctx.lineTo(r1.X(pH)+6,bar.y-10);ctx.fill();ctx.restore();
+  lb.block(r1.X(pH)-1,b1.y,r1.X(pH)+1,b2.y+b2.h);
+  lb.add('pH '+fr(pH,2),GRD,[[r1.X(pH)+6,b1.y-12,'left'],[r1.X(pH)-6,b1.y-12,'right']],FB);
+  lb.flush();
+  /* 4. molécule majoritaire */
+  let m=0;a.forEach((v,i)=>{if(v>a[m])m=i;});
+  ctx.save();ctx.fillStyle='#f6f7f9';ctx.strokeStyle='#e3e7ed';ctx.beginPath();ctx.roundRect?ctx.roundRect(molBox.x+8,molBox.y+4,molBox.w-16,molBox.h-8,10):ctx.rect(molBox.x+8,molBox.y+4,molBox.w-16,molBox.h-8);ctx.fill();ctx.stroke();ctx.restore();
+  halo(ctx,'Forme majoritaire à pH '+fr(pH,2),molBox.x+molBox.w/2,molBox.y+24,'#5f6b7a','800 12px Mulish,system-ui,sans-serif','center');
+  halo(ctx,S.f[m]+' · '+pc(a[m]),molBox.x+molBox.w/2,molBox.y+44,COL[m],FB,'center');
+  drawMol(sp,m,{x:molBox.x+8,y:molBox.y+56,w:molBox.w-16,h:molBox.h-110});
+  const zq=S.z0-m;halo(ctx,S.n[m]+' · charge '+(zq===0?'nette 0':zs(zq)),molBox.x+molBox.w/2,molBox.y+molBox.h-30,INK,FN,'center');
+  if(S.aa&&m===1)halo(ctx,'zwitterion : un + et un −, charge nette nulle',molBox.x+molBox.w/2,molBox.y+molBox.h-14,'#5f6b7a',FN,'center');
+  G={r1,b1,b2,gx,gw};requestAnimationFrame(draw);}
+/* glisser sur les graphiques pour changer le pH */
+let drag=false;const cv=$('cv');
+const pick=e=>{if(!G)return false;const r=cv.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top;if(x<G.gx-10||x>G.gx+G.gw+10||y>G.b2.y+G.b2.h+10)return false;setPH(Math.round((x-G.gx)/G.gw*1400)/100);return true;};
+cv.addEventListener('pointerdown',e=>{if(pick(e)){drag=true;cv.setPointerCapture(e.pointerId);e.preventDefault();}});
+cv.addEventListener('pointermove',e=>{if(drag)pick(e);});
+cv.addEventListener('pointerup',()=>drag=false);cv.addEventListener('pointercancel',()=>drag=false);
+jumpBtns();setPH(7);requestAnimationFrame(draw);
+window.__sim={set(o){if(o.sp){sp=o.sp;selectSeg('sSp',sp);jumpBtns();}if(o.pH!=null)setPH(o.pH);else update();},get:()=>({sp,pH,a:fracs(pH,SP[sp].pK),Z:meanZ(pH,SP[sp].pK,SP[sp].z0),pI:pI(sp),pInum:pInum(sp)})};
+
+})();
+</script>
+<script src="../../kit/sfa-nav.js"></script></body>
+</html>

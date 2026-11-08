@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Travail de la gravité · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+ <style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#fff;font-family:system-ui,-apple-system,sans-serif;}
+canvas{display:block;border-radius:12px;border:1.5px solid #e8e8e8;touch-action:none;cursor:grab;}
+.fml{font-size:13px;padding:10px 16px;border-radius:20px;background:#f5f5f5;border:1.5px solid #d0d0d0;color:#2c2c2a;margin:6px 0;font-family:ui-monospace,monospace;line-height:1.8;}
+.row{display:flex;align-items:center;gap:10px;margin:6px 0;flex-wrap:wrap;}
+.pill{font-size:13px;font-weight:500;color:#2c2c2a;background:#f5f5f5;border:1.5px solid #d0d0d0;border-radius:20px;padding:6px 14px;white-space:nowrap;}
+.btn{padding:8px 16px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid #d0d0d0;background:#fff;color:#2c2c2a;}
+.info{font-size:12px;padding:8px 14px;border-radius:20px;background:#f5f5f5;border:1.5px solid #d0d0d0;color:#555;margin:6px 0;font-family:ui-monospace,monospace;line-height:1.8;}
+input[type=range]{flex:1;min-width:110px;}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH4">Travail et énergie</a>›<b>Travail de la gravité</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Travail et énergie</span><span class="sfa-chip free">Gratuit</span></div><h1>Travail de la gravité</h1><p>Le travail du poids ne dépend que de la hauteur</p></div>
+<section class="sfa-sim">
+
+
+
+<canvas id="cv" style="width:100%;height:60vh;min-height:400px;"></canvas>
+
+<div class="fml">
+  <b style="color:#E24B4A">F̄ = mḡ</b> (verticale) &nbsp;⇒&nbsp; <b style="color:#0F6E56">W = F̄·d̄ = mg·Δh</b> : on coupe le déplacement en <b style="color:#E24B4A">vertical (W=mg·Δh)</b> + <b style="color:#9aa0a6">horizontal (W=0)</b>. Seul le vertical compte.
+</div>
+
+<div class="row">
+  <span class="pill">🖐️ Attrape la balle et déplace-la</span>
+  <span class="pill" style="border-color:#b5d4f4;color:#185fa5;">m</span>
+  <input type="range" id="m" min="1" max="5" value="2" step="0.5" style="accent-color:#378ADD;max-width:170px;">
+  <span class="pill" id="mv" style="border-color:#b5d4f4;color:#185fa5;">2 kg</span>
+  <button class="btn" onclick="reset()">Effacer le chemin</button>
+</div>
+
+<div class="info" id="info"></div>
+
+<script>
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const RED='#E24B4A',DRED='#a32d2d',BLUE='#378ADD',BLUE_D='#185fa5',GREEN='#1D9E75',GREEN_D='#0F6E56',GREY='#8a95a3',AX='#d3d9e2',INK='#13233a';
+let W=0,H=0,dpr=1,mm=2;
+const g=9.81, mPerPx=0.02;
+let S=null,obj=null,trail=[],drag=false;
+document.getElementById('m').addEventListener('input',e=>{mm=+e.target.value;document.getElementById('mv').textContent=mm+' kg';});
+
+function syncSize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;
+  const nW=Math.round(r.width)||700,nH=Math.round(r.height)||410;
+  if(nW!==W||nH!==H){W=nW;H=nH;cv.width=W*dpr;cv.height=H*dpr;
+    S={x:W*0.24,y:W<600?Math.max(230,H*0.44):H*0.24}; /* téléphone : départ sous le panneau « Travail », avec de la place pour monter */ if(!obj){obj={x:W*0.64,y:W<600?H*0.80:H*0.60};trail=[{...S},{...obj}];}}
+  ctx.setTransform(dpr,0,0,dpr,0,0);}
+function reset(){trail=[{x:obj.x,y:obj.y}];}
+
+function arrow(x,y,vx,vy,col,w,dash){
+  const len=Math.hypot(vx,vy);if(len<2)return;
+  const ex=x+vx,ey=y+vy;
+  ctx.strokeStyle=col;ctx.lineWidth=w||2.5;ctx.lineCap='round';ctx.lineJoin='round';
+  if(dash)ctx.setLineDash(dash);
+  ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(ex,ey);ctx.stroke();ctx.setLineDash([]);
+  const hs=(w||2.5)*3.0,ang=Math.atan2(vy,vx);
+  ctx.fillStyle=col;ctx.save();ctx.translate(ex,ey);ctx.rotate(ang);
+  ctx.beginPath();ctx.moveTo(hs,0);ctx.lineTo(-hs*0.7,-hs*0.55);ctx.lineTo(-hs*0.7,hs*0.55);ctx.closePath();ctx.fill();ctx.restore();
+}
+function lbl(t,x,y,col,al){ctx.fillStyle=col;ctx.font='700 13px Mulish,system-ui,sans-serif';ctx.textAlign=al||'center';
+  const w=ctx.measureText(t).width;   // jamais rogné par le bord du canvas
+  if(!al||al==='center')x=Math.max(w/2+4,Math.min(W-w/2-4,x));else if(al==='right')x=Math.max(w+4,x);else x=Math.min(W-w-4,x);
+  ctx.lineWidth=4;ctx.lineJoin='round';ctx.strokeStyle='rgba(255,255,255,.92)';ctx.strokeText(t,x,y);
+  ctx.fillText(t,x,y);}
+
+function draw(){
+  syncSize();ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+
+  const dx=obj.x-S.x, dy=obj.y-S.y;
+  const V={x:S.x,y:obj.y};   // coin : on descend d'abord (à gauche), puis on va à droite
+
+  // niveaux
+  ctx.strokeStyle=AX;ctx.setLineDash([4,6]);ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.moveTo(20,S.y);ctx.lineTo(W-20,S.y);ctx.moveTo(20,obj.y);ctx.lineTo(W-20,obj.y);ctx.stroke();ctx.setLineDash([]);
+
+  // chemin réel
+  ctx.strokeStyle='rgba(55,138,221,.35)';ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.beginPath();trail.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
+
+  // ===== décomposition : VERTICALE d'abord (à gauche, loin de la balle) =====
+  arrow(S.x,S.y,0,dy,RED,3);            // composante verticale (rouge, fine) à x = S.x
+  arrow(V.x,V.y,dx,0,GREY,3);           // composante horizontale (grise) à y = obj.y
+  arrow(S.x,S.y,dx,dy,BLUE,2.5);          // déplacement total (hypoténuse)
+  // angle droit en V
+  const sgx=Math.sign(dx)||1, sgy=Math.sign(dy)||1;
+  ctx.strokeStyle=GREY;ctx.lineWidth=1.5;ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(V.x,V.y-sgy*12);ctx.lineTo(V.x+sgx*12,V.y-sgy*12);ctx.lineTo(V.x+sgx*12,V.y);ctx.stroke();
+
+  // labels composantes
+  // côté opposé au déplacement horizontal (pas de chevauchement avec d̄ / le chemin)
+  let rightSide=dx<0;
+  ctx.font='700 13px Mulish,system-ui,sans-serif';
+  if(rightSide && S.x+10+ctx.measureText('Δh vertical').width>W-216-16-28-6 && S.y+dy/2-14<14+116) rightSide=false; // éviter le panneau « Travail »
+  const lxV=rightSide?S.x+10:S.x-10, alV=rightSide?'left':'right';
+  lbl('Δh vertical',lxV,S.y+dy/2,DRED,alV);
+  lbl('W = mg·Δh',lxV,S.y+dy/2+16,DRED,alV);
+  lbl('horizontal  ·  W = 0',V.x+(dx-sgx*Math.min(22,Math.abs(dx)/2))/2,obj.y+(dy>0?22:-14),'#6b7785');
+  // d̄ au milieu de l'hypoténuse, décalé
+  {const L=Math.hypot(dx,dy)||1,mx=S.x+dx*0.5,my=S.y+dy*0.5;let nx=-dy/L,ny=dx/L;if(nx*(V.x-mx)+ny*(V.y-my)>0){nx=-nx;ny=-ny;}lbl('d̄',mx+nx*16,my+ny*16+5,BLUE);} // côté opposé à l'angle droit
+
+  // départ
+  ctx.fillStyle='#fff';ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.beginPath();ctx.arc(S.x,S.y,5,0,7);ctx.fill();ctx.stroke();
+  lbl('départ',S.x,dy<-8?S.y+22:S.y-14,INK);ctx.font='12px Mulish,system-ui,sans-serif';
+
+  // gravité + balle
+  arrow(obj.x,obj.y+14,0,40,RED,3);
+  if(obj.x>W-50)lbl('mḡ',obj.x-16,obj.y+40,RED,'right');else lbl('mḡ',obj.x+16,obj.y+40,RED,'left');
+  ctx.save();ctx.shadowColor='rgba(19,35,58,.22)';ctx.shadowBlur=drag?14:6;ctx.shadowOffsetY=drag?5:2;
+  {const gb=ctx.createRadialGradient(obj.x-5,obj.y-6,2,obj.x,obj.y,15);gb.addColorStop(0,'#ff9c9b');gb.addColorStop(1,RED);ctx.fillStyle=gb;}
+  ctx.beginPath();ctx.arc(obj.x,obj.y,14,0,7);ctx.fill();ctx.restore();ctx.strokeStyle=DRED;ctx.lineWidth=1.5;ctx.stroke();
+
+  // ===== panneau travail =====
+  const dhm=(obj.y-S.y)*mPerPx;
+  const Wtot=mm*g*dhm;
+  let Wpath=trail.length?mm*g*(trail[0].y-S.y)*mPerPx:0;/* le chemin part du point « départ » */for(let i=1;i<trail.length;i++)Wpath+=mm*g*(trail[i].y-trail[i-1].y)*mPerPx;
+  const pxW=200, pxX=W-pxW-16, pxY=14;
+  ctx.fillStyle='#ffffff';ctx.strokeStyle='#e3e7ed';ctx.lineWidth=1;
+  ctx.beginPath();ctx.roundRect(pxX,pxY,pxW,116,8);ctx.fill();ctx.stroke();
+  ctx.textAlign='left';ctx.font='800 13px Mulish,system-ui,sans-serif';ctx.fillStyle=INK;ctx.fillText('Travail de la gravité',pxX+14,pxY+22);
+  ctx.font='700 12px Mulish,system-ui,sans-serif';
+  ctx.fillStyle=GREY;ctx.fillText('horizontal : W = 0 J',pxX+14,pxY+43);
+  ctx.fillStyle=DRED;ctx.fillText('vertical : W = mg·Δh',pxX+14,pxY+62);
+  ctx.fillStyle=DRED;ctx.fillText('  = '+mm+'·'+g+'·('+dhm.toFixed(2)+')',pxX+14,pxY+80);
+  ctx.fillStyle=GREEN_D;ctx.font='800 15px Mulish,system-ui,sans-serif';ctx.fillText('W = '+Wtot.toFixed(1)+' J',pxX+14,pxY+104);
+  // jauge verticale
+  const gX=pxX-28,gTop=pxY+6,gH=104,gW=15;
+  ctx.fillStyle='#e9edf2';ctx.strokeStyle='#d3d9e2';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(gX,gTop,gW,gH,7);ctx.fill();ctx.stroke();
+  const maxW=mm*g*((H*0.42)*mPerPx),midY=gTop+gH/2,frac=Math.max(-1,Math.min(1,Wtot/(maxW||1))),hh=frac*gH/2;
+  ctx.fillStyle=Wtot>=0?GREEN:RED;ctx.beginPath();ctx.roundRect(gX,Math.min(midY,midY+hh),gW,Math.abs(hh),4);ctx.fill();
+  ctx.strokeStyle=INK;ctx.lineWidth=1.5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(gX-3,midY);ctx.lineTo(gX+gW+3,midY);ctx.stroke();
+
+  document.getElementById('info').innerHTML=
+    'Δh = '+Math.abs(dhm).toFixed(2)+' m ('+(dhm>=0?'descend ⇒ W>0':'monte ⇒ W<0')+') &nbsp;|&nbsp; '+
+    '<b style="color:'+GREEN_D+'">W = mg·Δh = '+Wtot.toFixed(1)+' J</b> &nbsp;|&nbsp; '+
+    '<b style="color:'+BLUE_D+'">W le long du chemin réel = '+Wpath.toFixed(1)+' J</b> → identique.';
+  requestAnimationFrame(draw);
+}
+
+function getPos(e){const r=cv.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
+/* bornes : étiquettes et flèche mḡ dans le canvas, balle hors du panneau « Travail » (coin haut droit) */
+function clampObj(p){obj.x=Math.max(16,Math.min(W-16,p.x));obj.y=Math.max(40,Math.min(H-62,p.y));
+  if(W<600||obj.x>W-216-16-28-30)obj.y=Math.max(obj.y,14+116+30);}
+function near(p){return Math.hypot(p.x-obj.x,p.y-obj.y)<28;}
+cv.addEventListener('mousedown',e=>{const p=getPos(e);if(near(p)){drag=true;cv.style.cursor='grabbing';}});
+cv.addEventListener('mousemove',e=>{if(!drag)return;const p=getPos(e);clampObj(p);
+  const l=trail[trail.length-1];if(!l||Math.hypot(p.x-l.x,p.y-l.y)>4)trail.push({x:obj.x,y:obj.y});});
+window.addEventListener('mouseup',()=>{drag=false;cv.style.cursor='grab';});
+cv.addEventListener('touchstart',e=>{const p=getPos(e);if(near(p))drag=true;},{passive:false});
+cv.addEventListener('touchmove',e=>{if(!drag)return;e.preventDefault();const p=getPos(e);clampObj(p);
+  const l=trail[trail.length-1];if(!l||Math.hypot(p.x-l.x,p.y-l.y)>4)trail.push({x:obj.x,y:obj.y});},{passive:false});
+window.addEventListener('touchend',()=>{drag=false;});
+draw();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Travail, énergie et puissance<span>5 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Travil/"><i>01</i>Travail d&#x27;une force</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Travail-gravite/"><i>02</i>Travail de la gravité</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/-n-rgies/"><i>03</i>Énergies</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/energie-exemples/"><i>04</i>Énergie : exemples</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/energie_ressort/"><i>05</i>Énergie d&#x27;un ressort</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

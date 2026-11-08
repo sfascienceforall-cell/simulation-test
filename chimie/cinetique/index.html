@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cinétique chimique · SFA</title>
+<meta name="description" content="Choisis l'ordre et k : trois graphes, une seule droite. Puis la température, l'énergie d'activation, le catalyseur, les collisions et la demi-vie d'un médicament.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+canvas.cv{display:block;width:100%;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.row{display:flex;align-items:center;flex-wrap:wrap}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.hint{font:500 .84rem var(--f-ui);color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font:600 .82rem var(--f-ui);color:var(--muted);margin:10px 0 2px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.legend i.dash{background:repeating-linear-gradient(90deg,currentColor 0 5px,transparent 5px 9px)!important;height:2px}
+.legend i.box{height:10px;width:14px;border-radius:3px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:12px 0}
+.stat{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:0}
+.stat small{display:block;font:800 10.5px var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat b{display:block;font:800 1.2rem/1.3 var(--f-ui);font-variant-numeric:tabular-nums;color:var(--ink)}
+.stat span{display:block;font:600 .78rem/1.35 var(--f-ui);color:var(--muted)}
+.note{border-radius:10px;padding:10px 14px;margin:10px 0;font:600 .88rem/1.5 var(--f-ui)}
+.note.warn{background:#fff6e6;border-left:4px solid #BA7517;color:#5a3d00}
+.note.ok{background:#ecf6f1;border-left:4px solid #2e6b55;color:#1d4637}
+.note.info2{background:var(--sel);border-left:4px solid var(--navy);color:var(--ink2)}
+.chipok,.chipno{display:inline-block;font:800 11px var(--f-ui);padding:2px 8px;border-radius:999px;margin-right:6px}
+.chipok{background:#dcefe6;color:#1d4637}.chipno{background:#fbe1dc;color:#8a2a1a}
+table.t{border-collapse:collapse;width:100%;font:600 .84rem var(--f-ui);font-variant-numeric:tabular-nums}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top}
+table.t th{font:800 .72rem var(--f-ui);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.tw{overflow-x:auto}
+.sfa-card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-top:14px}
+.sfa-card h2{font:800 1.05rem var(--f-ui);margin:0 0 8px}
+.sfa-card ul{margin:0;padding-left:20px}.sfa-card li{margin:5px 0}
+.sfa-card.trap{border-left:4px solid #BA7517}
+.sfa-card details{border-top:1px solid var(--line);padding:10px 0}
+.sfa-card details:first-of-type{border-top:0}
+.sfa-card summary{cursor:pointer;font-weight:700;color:var(--ink)}
+.sfa-card details p{margin:8px 0 0;color:var(--ink2)}
+.sfa-card sub,.sfa-card sup,.stat sub,.stat sup,.note sub,.note sup,table.t sub,table.t sup,.btn sub{font-size:.72em}
+.panel[hidden]{display:none!important}
+
+.stat b{font-size:1.05rem}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+.g3 canvas{height:250px}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+.g2 canvas{height:310px}
+#cvMed{height:330px}
+@media (max-width:760px){.g3,.g2{grid-template-columns:minmax(0,1fr)}.g3 canvas{height:215px}.g2 canvas{height:280px}#cvMed{height:300px}}
+.pill.w{min-width:190px}
+@media (max-width:520px){.pill.w{min-width:0}}
+table.t td b{font-weight:800}
+.stat small .nt{text-transform:none;display:inline;font:inherit;color:inherit;letter-spacing:0}
+table.t th.nt{text-transform:none}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a class="on" href="../">Simulations de chimie</a><a href="../exercices/">Exercices de chimie</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations de physique</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="../">Simulations de chimie</a>›<a href="../#equilibres-energie">Équilibres et énergie</a>›<b>Cinétique chimique</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Chimie · Équilibres et énergie</span><span class="sfa-chip free">Gratuit</span></div><h1>Cinétique chimique</h1><p>Choisis l'ordre et k : trois graphes, une seule droite. Puis la température, l'énergie d'activation, le catalyseur, les collisions et la demi-vie d'un médicament.</p></div>
+
+<section class="sfa-sim">
+<div class="row"><span class="pill">Mode</span><div class="seg" id="sMode">
+  <button class="btn on" data-k="ord">Ordres et demi-vie</button><button class="btn" data-k="find">Trouve l'ordre</button>
+  <button class="btn" data-k="arr">Arrhenius et catalyseur</button><button class="btn" data-k="col">Collisions</button>
+  <button class="btn" data-k="med">Médicament et radioactivité</button></div></div>
+
+<!-- ===== Ordres ===== -->
+<div id="pOrd" class="panel">
+<div class="row"><span class="pill">Ordre de la réaction A → produits</span><div class="seg" id="sN">
+  <button class="btn" data-k="0">Ordre 0</button><button class="btn on" data-k="1">Ordre 1</button><button class="btn" data-k="2">Ordre 2</button></div></div>
+<div class="row"><span class="pill w" style="color:#0F6E56">Constante de vitesse k</span>
+  <input type="range" id="k" min="0" max="16" step="1" value="8" style="accent-color:#1D9E75"><span class="val" id="kv" style="color:#0F6E56"></span></div>
+<div class="row"><span class="pill w" style="color:#185fa5">[A]<sub>0</sub> concentration initiale</span>
+  <input type="range" id="A0" min="10" max="200" step="5" value="100" style="accent-color:#378ADD"><span class="val" id="A0v" style="color:#185fa5"></span></div>
+<div class="row"><span class="pill w">t instant lu sur les graphes</span>
+  <input type="range" id="tf" min="0" max="1000" step="1" value="250" style="accent-color:#7F77DD"><span class="val" id="tfv"></span></div>
+<div class="g3"><canvas id="cO0" class="cv" aria-label="[A] en fonction du temps"></canvas><canvas id="cO1" class="cv" aria-label="ln[A] en fonction du temps"></canvas><canvas id="cO2" class="cv" aria-label="1/[A] en fonction du temps"></canvas></div>
+<div class="stats" id="stOrd"></div>
+<div id="nOrd"></div>
+<div class="tw" id="tOrd"></div>
+<p class="hint" style="margin-top:10px">Convention : v = −d[A]/dt = k[A]<sup>n</sup> (coefficient de A égal à 1). ln[A] est le logarithme de la valeur numérique de [A] exprimée en mol/L. Temps en secondes.</p>
+</div>
+
+<!-- ===== Trouve l'ordre ===== -->
+<div id="pFind" class="panel" hidden>
+<p class="hint">Une expérience simulée : 9 mesures de [A] avec une petite erreur de mesure (environ 1,5 %). Regarde les trois graphes. Lequel est une droite ?</p>
+<div class="row"><button class="btn" id="bNew">Nouvelle expérience</button><span class="pill">Ma réponse</span><div class="seg" id="sGuess">
+  <button class="btn" data-k="0">Ordre 0</button><button class="btn" data-k="1">Ordre 1</button><button class="btn" data-k="2">Ordre 2</button></div><button class="btn" id="bSol">Voir la solution</button></div>
+<div class="g3"><canvas id="cF0" class="cv" aria-label="Mesures : [A] en fonction du temps"></canvas><canvas id="cF1" class="cv" aria-label="Mesures : ln[A] en fonction du temps"></canvas><canvas id="cF2" class="cv" aria-label="Mesures : 1/[A] en fonction du temps"></canvas></div>
+<div id="nFind"></div>
+<div class="tw" id="tFind"></div>
+</div>
+
+<!-- ===== Arrhenius ===== -->
+<div id="pArr" class="panel" hidden>
+<div class="g2"><canvas id="cP" class="cv" aria-label="Profil énergétique de la réaction"></canvas><canvas id="cL" class="cv" aria-label="ln k en fonction de 1/T"></canvas></div>
+<div class="legend" id="lgArr"></div>
+<div class="row"><span class="pill w" style="color:#a32d2d">θ température</span>
+  <input type="range" id="th" min="-20" max="150" step="1" value="25" style="accent-color:#E24B4A"><span class="val" id="thv" style="color:#a32d2d"></span></div>
+<div class="row"><span class="pill w" style="color:#185fa5">E<sub>a</sub> énergie d'activation</span>
+  <input type="range" id="Ea" min="10" max="150" step="1" value="50" style="accent-color:#378ADD"><span class="val" id="Eav" style="color:#185fa5"></span></div>
+<div class="row"><span class="pill w">ΔH de la réaction</span>
+  <input type="range" id="dH" min="-100" max="100" step="5" value="-40" style="accent-color:#5f6b7a"><span class="val" id="dHv"></span></div>
+<div class="row"><span class="pill w">A facteur préexponentiel</span>
+  <input type="range" id="lgA" min="6" max="14" step="1" value="10" style="accent-color:#5f6b7a"><span class="val" id="lgAv"></span></div>
+<div class="row"><button class="btn" id="bCat">Ajouter un catalyseur</button></div>
+<div class="row"><span class="pill w" id="lCat" style="color:#0F6E56">Catalyseur : E<sub>a</sub> abaissée de</span>
+  <input type="range" id="dEa" min="5" max="60" step="1" value="20" style="accent-color:#1D9E75"><span class="val" id="dEav" style="color:#0F6E56"></span></div>
+<div class="stats" id="stArr"></div>
+<div id="nArr"></div>
+<p class="hint" style="margin-top:10px">k = A·e<sup>−E<sub>a</sub>/RT</sup> avec R = 8,314 J/(mol·K), E<sub>a</sub> en J/mol et T en kelvins (T = θ + 273,15). Réaction d'ordre 1 ici, donc k et A en s⁻¹. Modèle simplifié : A et E<sub>a</sub> supposés indépendants de T, et A supposé inchangé par le catalyseur. Profil énergétique dessiné à une seule étape.</p>
+</div>
+
+<!-- ===== Collisions ===== -->
+<div id="pCol" class="panel" hidden>
+<div class="g2"><canvas id="cBox" class="cv" aria-label="Particules en mouvement : en orange, celles dont l'énergie dépasse Ea"></canvas><canvas id="cMB" class="cv" aria-label="Distribution de Maxwell-Boltzmann des énergies"></canvas></div>
+<div class="legend" id="lgCol"></div>
+<div class="row"><span class="pill w" style="color:#a32d2d">T température</span>
+  <input type="range" id="Tc" min="200" max="1000" step="10" value="300" style="accent-color:#E24B4A"><span class="val" id="Tcv" style="color:#a32d2d"></span></div>
+<div class="row"><span class="pill w" style="color:#BA7517">E<sub>a</sub> énergie d'activation</span>
+  <input type="range" id="Eac" min="2" max="40" step="1" value="10" style="accent-color:#BA7517"><span class="val" id="Eacv" style="color:#BA7517"></span></div>
+<div class="stats" id="stCol"></div>
+<div id="nCol"></div>
+<p class="hint" style="margin-top:10px">Modèle simplifié : gaz parfait, énergie cinétique de translation (distribution de Maxwell-Boltzmann en énergie). Échantillon de 80 particules ; leur vitesse à l'écran est proportionnelle à √E. Les chocs entre particules ne sont pas dessinés. Une collision n'est efficace que si l'énergie suffit <b>et</b> si l'orientation est bonne.</p>
+</div>
+
+<!-- ===== Médicament / radioactivité ===== -->
+<div id="pMed" class="panel" hidden>
+<div class="row"><span class="pill">Application</span><div class="seg" id="sApp"><button class="btn on" data-k="drug">Élimination d'un médicament</button><button class="btn" data-k="rad">Radioactivité</button></div></div>
+<canvas id="cvMed" class="cv" aria-label="Décroissance en fonction du temps"></canvas>
+<div class="legend" id="lgMed"></div>
+<div id="pDrug">
+<div class="row"><span class="pill w" style="color:#185fa5">C<sub>0</sub> après une injection</span>
+  <input type="range" id="C0" min="2" max="40" step="1" value="16" style="accent-color:#378ADD"><span class="val" id="C0v" style="color:#185fa5"></span></div>
+<div class="row"><span class="pill w" style="color:#0F6E56">t<sub>½</sub> d'élimination</span>
+  <input type="range" id="th2" min="1" max="48" step="1" value="8" style="accent-color:#1D9E75"><span class="val" id="th2v" style="color:#0F6E56"></span></div>
+<div class="row"><span class="pill w" style="color:#a32d2d">Seuil d'efficacité</span>
+  <input type="range" id="Cs" min="1" max="40" step="1" value="4" style="accent-color:#E24B4A"><span class="val" id="Csv" style="color:#a32d2d"></span></div>
+<div class="row"><span class="pill w">Nombre d'injections</span>
+  <input type="range" id="nd" min="1" max="8" step="1" value="1" style="accent-color:#5f6b7a"><span class="val" id="ndv"></span></div>
+<div class="row"><span class="pill w">Intervalle entre injections τ</span>
+  <input type="range" id="tau" min="1" max="24" step="1" value="8" style="accent-color:#5f6b7a"><span class="val" id="tauv"></span></div>
+</div>
+<div id="pRad" hidden>
+<div class="row"><span class="pill">Noyau</span><div class="seg" id="sIso">
+  <button class="btn on" data-k="F18">¹⁸F</button><button class="btn" data-k="Tc99m">⁹⁹ᵐTc</button><button class="btn" data-k="I131">¹³¹I</button><button class="btn" data-k="C14">¹⁴C</button></div></div>
+</div>
+<div class="row"><span class="pill w">t instant lu sur le graphe</span>
+  <input type="range" id="tm" min="0" max="1000" step="1" value="300" style="accent-color:#7F77DD"><span class="val" id="tmv"></span></div>
+<div class="stats" id="stMed"></div>
+<div id="nMed"></div>
+</div>
+</section>
+
+<section class="sfa-card"><h2>Ce qu'il faut retenir</h2><ul>
+<li>L'ordre d'une réaction se détermine par l'expérience. Il n'est forcément égal aux coefficients de l'équation que pour un acte élémentaire (ordre = molécularité).</li>
+<li>Une seule des trois représentations donne une droite : [A] en fonction de t pour l'ordre 0 (pente −k), ln[A] pour l'ordre 1 (pente −k), 1/[A] pour l'ordre 2 (pente +k).</li>
+<li>Demi-vie : t<sub>½</sub> = [A]<sub>0</sub>/(2k) à l'ordre 0, ln 2/k à l'ordre 1, 1/(k[A]<sub>0</sub>) à l'ordre 2. Seule celle de l'ordre 1 ne dépend pas de [A]<sub>0</sub> : c'est le cas de la radioactivité et de l'élimination de la plupart des médicaments. Après n demi-vies, il reste (½)<sup>n</sup>.</li>
+<li>Arrhenius : k = A·e<sup>−E<sub>a</sub>/RT</sup>, donc ln k = ln A − (E<sub>a</sub>/R)·(1/T). La droite ln k en fonction de 1/T a pour pente −E<sub>a</sub>/R. Quand T monte, la fraction de molécules assez énergétiques augmente très vite.</li>
+<li>Un catalyseur ouvre un autre chemin, d'énergie d'activation plus basse. Il abaisse E<sub>a</sub> de la même quantité dans les deux sens, donc multiplie k(direct) et k(inverse) par le même facteur : il ne change ni ΔH, ni la constante d'équilibre K, seulement le temps pour atteindre l'équilibre.</li>
+</ul></section>
+
+<section class="sfa-card trap"><h2>Pièges classiques</h2><ul>
+<li>Unités : dans e<sup>−E<sub>a</sub>/RT</sup>, E<sub>a</sub> est en <b>J/mol</b> (pas en kJ/mol) avec R = 8,314 J/(mol·K), et T en <b>kelvins</b>. 50 kJ/mol = 50 000 J/mol.</li>
+<li>Les unités de k dépendent de l'ordre : mol·L⁻¹·s⁻¹ (ordre 0), s⁻¹ (ordre 1), L·mol⁻¹·s⁻¹ (ordre 2). Une unité de k te donne l'ordre.</li>
+<li>« +10 °C double la vitesse » n'est qu'un ordre de grandeur, valable pour E<sub>a</sub> d'environ 50 kJ/mol près de 25 °C. Vérifie-le avec d'autres E<sub>a</sub>.</li>
+<li>Pour 2 A → produits, certains énoncés écrivent v = −½·d[A]/dt : la constante change d'un facteur 2. Lis la convention de l'énoncé avant d'appliquer t<sub>½</sub> = 1/(k[A]<sub>0</sub>).</li>
+</ul></section>
+
+<section class="sfa-card"><h2>Défis</h2>
+<details><summary>1. Un médicament fictif a une demi-vie d'élimination de 6 h. Juste après l'injection, C<sub>0</sub> = 16 mg/L. Il agit tant que C reste au-dessus de 2 mg/L. Pendant combien de temps ?</summary>
+<p>16 → 8 → 4 → 2 mg/L : trois demi-vies, soit 18 h. Par le calcul : t = ln(C<sub>0</sub>/C)/k = t<sub>½</sub>·ln 8/ln 2 = 3·t<sub>½</sub>. Règle le mode « Médicament » sur ces valeurs pour le vérifier.</p></details>
+<details><summary>2. Réaction d'ordre 2, k = 0,50 L·mol⁻¹·s⁻¹ et [A]<sub>0</sub> = 0,40 mol/L. Combien de temps durent la première et la deuxième demi-vie ?</summary>
+<p>t<sub>½</sub> = 1/(k[A]<sub>0</sub>) = 1/(0,50 × 0,40) = 5,0 s. La deuxième part de 0,20 mol/L : 1/(0,50 × 0,20) = 10 s. À l'ordre 2, chaque demi-vie est le double de la précédente. Le tableau sous les graphes le montre.</p></details>
+<details><summary>3. E<sub>a</sub> = 75 kJ/mol. Par quel facteur k est-il multiplié entre 25 °C et 37 °C ?</summary>
+<p>ln(k₂/k₁) = (E<sub>a</sub>/R)(1/T₁ − 1/T₂) = (75 000/8,314)·(1/298,15 − 1/310,15) ≈ 1,17, donc k₂/k₁ ≈ 3,2. Douze degrés suffisent à tripler la vitesse. Si tu mets 75 au lieu de 75 000, tu trouves 1,001 : l'erreur d'unité la plus fréquente.</p></details>
+</section>
+
+</main>
+<aside class="sfa-side">
+  <div class="sfa-list"><h2>Équilibres et énergie<span>2 simulations</span></h2><ol><li><a class="on" aria-current="page" href="../cinetique/"><i>01</i>Cinétique chimique</a></li><li><a href="../thermochimie/"><i>02</i>Thermochimie : enthalpie, entropie, spontanéité</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside>
+</div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de chimie</footer>
+<script>
+(()=>{
+/* ---------- SFA chimie : outils communs (format, équilibres, dessin) ---------- */
+const $=id=>document.getElementById(id);
+const LN10=Math.LN10;
+const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+/* nombre à n décimales, virgule décimale, vrai signe moins */
+const fr=(v,n)=>{if(!isFinite(v))return '—';let s=v.toFixed(n);if(/^-0[,.]?0*$/.test(s))s=s.slice(1);return s.replace('.',',').replace(/^-/,'−');};
+/* notation scientifique « 1,0·10⁻⁸ » avec s chiffres significatifs */
+function sci(v,s){if(v===0)return '0';if(!isFinite(v))return '—';const e=Math.floor(Math.log10(Math.abs(v))+1e-12);let m=v/Math.pow(10,e);
+  let ms=m.toFixed((s||2)-1);if(Math.abs(+ms)>=10){m/=10;ms=m.toFixed((s||2)-1);return fmtE(ms,e+1);}return fmtE(ms,e);}
+function fmtE(ms,e){ms=ms.replace('.',',').replace(/^-/,'−');if(e===0)return ms;return ms+'·10'+String(e).split('').map(c=>SUP[c]).join('');}
+/* valeurs « jolies » 1-2-3-5 par décade pour les curseurs logarithmiques */
+function niceList(e0,e1){const L=[];for(let e=e0;e<e1;e++)for(const m of [1,2,3,5])L.push(+(m*Math.pow(10,e)).toPrecision(3));L.push(Math.pow(10,e1));return L;}
+
+/* ---------- canevas ---------- */
+function makeCanvas(cv){const ctx=cv.getContext('2d');const o={cv,ctx,W:0,H:0};
+  o.sync=()=>{const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;const w=Math.round(r.width)||600,h=Math.round(r.height)||400;
+    if(w!==o.W||h!==o.H||cv.width!==Math.round(w*d)){o.W=w;o.H=h;cv.width=Math.round(w*d);cv.height=Math.round(h*d);}ctx.setTransform(d,0,0,d,0,0);};
+  return o;}
+const FT='700 12.5px Mulish,system-ui,sans-serif',FN='600 11.5px Mulish,system-ui,sans-serif',FB='800 13px Mulish,system-ui,sans-serif';
+function halo(ctx,t,x,y,col,font,al,bl){ctx.save();ctx.font=font||FT;ctx.textAlign=al||'left';ctx.textBaseline=bl||'middle';ctx.lineJoin='round';
+  ctx.lineWidth=4;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.strokeText(t,x,y);ctx.fillStyle=col;ctx.fillText(t,x,y);ctx.restore();}
+/* étiquettes sans chevauchement : on propose des positions, la meilleure libre est retenue */
+function Labeler(ctx,W,H){const Q=[],R=[];return {
+  block(x0,y0,x1,y1){R.push({x0,y0,x1,y1});},
+  add(t,col,cands,font){Q.push({t,col,cands,font:font||FT});},
+  flush(){const P=[];for(const L of Q){ctx.font=L.font;const w=ctx.measureText(L.t).width,h=15;let best=null,bs=Infinity;
+    L.cands.forEach((c,i)=>{const [x,y,al]=c;const x0=al==='left'?x:al==='right'?x-w:x-w/2;const b={x0:x0-2,x1:x0+w+2,y0:y-h/2,y1:y+h/2};let s=i;
+      if(b.x0<1||b.x1>W-1||b.y0<1||b.y1>H-1)s+=1e6;
+      for(const p of P.concat(R)){const ox=Math.min(b.x1,p.x1)-Math.max(b.x0,p.x0),oy=Math.min(b.y1,p.y1)-Math.max(b.y0,p.y0);if(ox>0&&oy>0)s+=1e4+ox*oy;}
+      if(s<bs){bs=s;best={b,x0,y};}});
+    let x0=Math.max(2,Math.min(W-2-w,best.x0)),y=Math.max(8,Math.min(H-8,best.y));P.push({x0:x0-2,x1:x0+w+2,y0:y-h/2,y1:y+h/2});halo(ctx,L.t,x0,y,L.col,L.font,'left');}}};}
+/* repère cartésien : renvoie les fonctions de passage */
+function axes(ctx,b,xr,yr,o){o=o||{};const X=x=>b.x+(x-xr[0])/(xr[1]-xr[0])*b.w,Y=y=>b.y+b.h-(y-yr[0])/(yr[1]-yr[0])*b.h;
+  ctx.save();ctx.fillStyle='#fff';ctx.fillRect(b.x,b.y,b.w,b.h);ctx.font=FN;ctx.lineWidth=1;
+  const yt=o.yticks||[];ctx.textAlign='right';ctx.textBaseline='middle';
+  for(const v of yt){ctx.strokeStyle='#eef0f3';ctx.beginPath();ctx.moveTo(b.x,Y(v));ctx.lineTo(b.x+b.w,Y(v));ctx.stroke();ctx.fillStyle='#8a95a3';ctx.fillText(o.yfmt?o.yfmt(v):fr(v,0),b.x-6,Y(v));}
+  const xt=o.xticks||[];ctx.textAlign='center';ctx.textBaseline='top';
+  for(const v of xt){ctx.strokeStyle='#f1f3f6';ctx.beginPath();ctx.moveTo(X(v),b.y);ctx.lineTo(X(v),b.y+b.h);ctx.stroke();ctx.fillStyle='#8a95a3';ctx.fillText(o.xfmt?o.xfmt(v):fr(v,0),X(v),b.y+b.h+5);}
+  ctx.strokeStyle='#c8ccd0';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x,b.y+b.h);ctx.lineTo(b.x+b.w,b.y+b.h);ctx.stroke();
+  ctx.fillStyle='#5f6b7a';ctx.font='700 11.5px Mulish,system-ui,sans-serif';
+  if(o.xlabel){ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText(o.xlabel,b.x+b.w,b.y+b.h+19);}
+  if(o.ylabel){ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(o.ylabel,b.x-(o.ylabelDx||28),b.y-6);}
+  ctx.restore();return {X,Y};}
+function niceStep(range,px,minPx){const raw=range*minPx/px,p=Math.pow(10,Math.floor(Math.log10(raw)));for(const m of [1,2,5,10])if(m*p>=raw)return m*p;return 10*p;}
+function ticks(a,b,st){const t=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)t.push(+v.toFixed(10));return t;}
+function poly(ctx,pts,col,w,dash){ctx.save();ctx.strokeStyle=col;ctx.lineWidth=w||2;ctx.lineJoin='round';if(dash)ctx.setLineDash(dash);ctx.beginPath();let on=false;
+  for(const p of pts){if(!p||!isFinite(p[1])){on=false;continue;}on?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);on=true;}ctx.stroke();ctx.restore();}
+function setHTML(id,h){const e=$(id);if(e&&e._h!==h){e.innerHTML=h;e._h=h;}}
+function segBtns(id,cb){const box=$(id);box.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{box.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.k);}));}
+function selectSeg(id,k){$(id).querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.k===k));}
+/* ---------- ajouts cinétique / thermochimie ---------- */
+const stat=(a,b,c)=>'<div class="stat"><small>'+a+'</small><b>'+b+'</b><span>'+(c||'')+'</span></div>';
+const note=(c,t)=>'<div class="note '+c+'">'+t+'</div>';
+/* nombre avec s chiffres significatifs, notation scientifique hors de [0,01 ; 10 000[ */
+function num(v,s){s=s||3;if(v===0)return '0';if(!isFinite(v))return '—';const a=Math.abs(v);if(a<0.01||a>=1e4)return sci(v,s);
+  const d=Math.max(0,s-1-Math.floor(Math.log10(a)+1e-12));return fr(v,d);}
+/* signe explicite */
+const sg=(v,n)=>(v>0?'+':'')+fr(v,n);
+const decOf=st=>Math.max(0,-Math.floor(Math.log10(st)+1e-9));
+/* générateur pseudo-aléatoire reproductible */
+function rng(seed){let a=seed>>>0;return ()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};}
+function gauss(r){let u=0,v=0;while(u===0)u=r();v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+/* régression linéaire y = a + b x */
+function linfit(P){const n=P.length;let sx=0,sy=0,sxx=0,sxy=0,syy=0;for(const [x,y] of P){sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;syy+=y*y;}
+  const b=(n*sxy-sx*sy)/(n*sxx-sx*sx),a=(sy-b*sx)/n;const ss=syy-sy*sy/n;let sr=0;for(const [x,y] of P)sr+=(y-a-b*x)**2;return {a,b,r2:ss>0?1-sr/ss:1};}
+/* fonction erreur complémentaire (Numerical Recipes, erreur relative < 1,2·10⁻⁷) */
+function erfc(x){const z=Math.abs(x),t=1/(1+0.5*z);const r=t*Math.exp(-z*z-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));return x>=0?r:2-r;}
+/* flèche */
+function arrow(ctx,x0,y0,x1,y1,col,w,head){ctx.save();ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w||1.6;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+  const a=Math.atan2(y1-y0,x1-x0),h=head||7;if(Math.hypot(x1-x0,y1-y0)>h*1.2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-h*Math.cos(a-0.4),y1-h*Math.sin(a-0.4));ctx.lineTo(x1-h*Math.cos(a+0.4),y1-h*Math.sin(a+0.4));ctx.closePath();ctx.fill();}ctx.restore();}
+function dashLine(ctx,x0,y0,x1,y1,col,w,d){ctx.save();ctx.strokeStyle=col;ctx.lineWidth=w||1;ctx.setLineDash(d||[4,4]);ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();ctx.restore();}
+function dot(ctx,x,y,r,col,fill){ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fillStyle=fill||col;ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();ctx.restore();}
+function title(ctx,t,x,y,col){ctx.save();ctx.font='800 12.5px Mulish,system-ui,sans-serif';ctx.fillStyle=col||'#0f1b2d';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(t,x,y);ctx.restore();}
+
+
+const R=8.314;               /* VALEURS-REFERENCE : R = 8,314 J/(mol·K) */
+const LN2=Math.LN2;
+const BL='#378ADD',BLD='#185fa5',GR='#1D9E75',GRD='#0F6E56',RD='#E24B4A',RDD='#a32d2d',OR='#BA7517',INK='#3d3d3a',GY='#9aa0a6',VI='#7F77DD';
+const KU=['mol·L⁻¹·s⁻¹','s⁻¹','L·mol⁻¹·s⁻¹'];
+const LAW=['v = k','v = k[A]','v = k[A]²'];
+const INTEG=['[A] = [A]₀ − kt','ln[A] = ln[A]₀ − kt','1/[A] = 1/[A]₀ + kt'];
+const REP=[{f:A=>A,nm:'[A] en fonction de t',yl:'[A] (mol/L)',col:BL},{f:A=>Math.log(A),nm:'ln[A] en fonction de t',yl:'ln[A]',col:VI},{f:A=>1/A,nm:'1/[A] en fonction de t',yl:'1/[A] (L/mol)',col:OR}];
+const KL=niceList(-3,1);     /* 1·10⁻³ … 10 (unités selon l'ordre) */
+let mode='ord';
+
+/* ---------- lois intégrées (A → produits, v = k[A]^n) ---------- */
+function Ct(n,k,A0,t){if(n===0)return Math.max(0,A0-k*t);if(n===1)return A0*Math.exp(-k*t);return 1/(1/A0+k*t);}
+function th(n,k,A0){return n===0?A0/(2*k):n===1?LN2/k:1/(k*A0);}
+function tmaxOf(n,k,A0){return n===0?1.2*A0/k:n===1?4.5*LN2/k:7.5/(k*A0);}
+/* demi-vies successives : la i-ème part de A0/2^(i-1) */
+function halves(n,k,A0,m){const L=[];let t=0,A=A0;for(let i=0;i<m;i++){const d=th(n,k,A);t+=d;L.push({i:i+1,A0:A,d,t});A/=2;}return L;}
+
+/* ---------- un graphe de linéarisation ---------- */
+function drawRep(o,r,c){o.sync();const ctx=o.ctx,W=o.W,H=o.H;ctx.clearRect(0,0,W,H);
+  const thr=[0,0.02,0.04][r]*c.A0,ok=A=>A>0&&A>thr;
+  const tr=P=>P.filter(p=>ok(p[1])).map(p=>[p[0],REP[r].f(p[1])]);
+  const cv=c.curve?tr(c.curve):[],pv=c.pts?tr(c.pts):[];
+  let y0=Infinity,y1=-Infinity;for(const p of cv.concat(pv)){y0=Math.min(y0,p[1]);y1=Math.max(y1,p[1]);}
+  if(r===0){y0=0;y1=c.A0*1.04;}else{const pd=(y1-y0)*0.1||0.2;y0-=pd;y1+=pd;}
+  const b={x:52,y:46,w:W-68,h:H-46-40};
+  const xs=niceStep(c.tmax,b.w,52),ys=niceStep(y1-y0,b.h,30);
+  const {X,Y}=axes(ctx,b,[0,c.tmax],[y0,y1],{xticks:ticks(0,c.tmax,xs),yticks:ticks(y0,y1,ys),xfmt:v=>fr(v,decOf(xs)),yfmt:v=>fr(v,decOf(ys)),xlabel:'t (s)',ylabel:REP[r].yl,ylabelDx:46});
+  title(ctx,REP[r].nm,8,8,INK);
+  if(c.badge!=null){const t=c.badge?'droite : ordre '+r:'pas une droite';ctx.save();ctx.font='800 11px Mulish,system-ui,sans-serif';const w=ctx.measureText(t).width+14;
+    ctx.fillStyle=c.badge?'#dcefe6':'#f1f3f6';ctx.beginPath();ctx.roundRect?ctx.roundRect(W-w-8,6,w,19,9):ctx.rect(W-w-8,6,w,19);ctx.fill();
+    ctx.fillStyle=c.badge?'#1d4637':'#5f6b7a';ctx.textBaseline='middle';ctx.fillText(t,W-w-1,16);ctx.restore();}
+  ctx.save();ctx.beginPath();ctx.rect(b.x-6,b.y-6,b.w+12,b.h+12);ctx.clip();
+  if(r===0&&c.halfs){c.halfs.forEach((h,i)=>{const yy=Y(h.A0/2),xx=X(h.t);if(h.t>c.tmax)return;
+    dashLine(ctx,b.x,yy,xx,yy,'#c3c9d1',1);dashLine(ctx,xx,yy,xx,b.y+b.h,'#c3c9d1',1);});}
+  if(c.fit){const F=c.fit;poly(ctx,[[X(0),Y(F.a)],[X(c.tmax),Y(F.a+F.b*c.tmax)]],F.good?GR:'#b7bec8',1.6,[6,4]);}
+  if(cv.length)poly(ctx,cv.map(p=>[X(p[0]),Y(p[1])]),REP[r].col,2.4);
+  for(const p of pv)dot(ctx,X(p[0]),Y(p[1]),3.6,REP[r].col,'#fff');
+  if(c.cur&&ok(c.cur[1]))dot(ctx,X(c.cur[0]),Y(REP[r].f(c.cur[1])),5,INK,REP[r].col);
+  ctx.restore();
+  if(r===0&&c.halfs)c.halfs.forEach(h=>{if(h.t<=c.tmax)halo(ctx,'t½ n°'+h.i,X(h.t)+3,Y(h.A0/2)-9,'#5f6b7a',FN,'left');});
+  if(c.fit)halo(ctx,'R² = '+fr(c.fit.r2,4),b.x+b.w-4,b.y+10,c.fit.good?GRD:'#5f6b7a',FN,'right');
+  if(c.clipNote&&r>0)halo(ctx,'au-delà : [A] ≈ 0',b.x+b.w-4,b.y+b.h-10,'#8a95a3',FN,'right');}
+
+/* ---------- mode ordres ---------- */
+const cO=[0,1,2].map(i=>makeCanvas($('cO'+i)));
+let n=1,k=KL[8],A0=1.0,tf=0.25;
+function updOrd(){const tmax=tmaxOf(n,k,A0),t=tf*tmax,A=Ct(n,k,A0,t),N=400;
+  const curve=[];for(let i=0;i<=N;i++){const tt=tmax*i/N;curve.push([tt,Ct(n,k,A0,tt)]);}
+  if(n===0)curve.push([A0/k,0]);curve.sort((a,b)=>a[0]-b[0]);
+  const H=halves(n,k,A0,3);
+  for(let r=0;r<3;r++)drawRep(cO[r],r,{curve,tmax,A0,cur:[t,A],badge:r===n,halfs:H,clipNote:n===0});
+  $('kv').textContent=num(k,2)+' '+KU[n];$('A0v').textContent=fr(A0,2)+' mol/L';$('tfv').textContent=num(t,3)+' s';
+  const t12=th(n,k,A0);
+  const f12=n===0?'[A]₀/(2k) = '+fr(A0,2)+'/(2 × '+num(k,2)+')':n===1?'ln 2/k = 0,693/'+num(k,2):'1/(k[A]₀) = 1/('+num(k,2)+' × '+fr(A0,2)+')';
+  let s='';
+  s+=stat('Loi de vitesse',LAW[n],'loi intégrée : '+INTEG[n]);
+  s+=stat('Constante <span class="nt">k</span>',num(k,2)+' '+KU[n],'unités imposées par l\'ordre '+n);
+  s+=stat('Demi-vie <span class="nt">t½</span>',num(t12,3)+' s',f12);
+  s+=stat('[A] à <span class="nt">t = '+num(t,3)+' s</span>',A>0?num(A,3)+' mol/L':'0 mol/L',A>0?'ln[A] = '+fr(Math.log(A),3)+' ; 1/[A] = '+num(1/A,3)+' L/mol':'A est entièrement consommé');
+  s+=stat('Droite',['[A] = f(t)','ln[A] = f(t)','1/[A] = f(t)'][n],'pente '+(n===2?'+k = +':'−k = −')+num(k,2));
+  setHTML('stOrd',s);
+  let nt='';
+  if(n===0)nt+=note('info2','Ordre 0 : la vitesse ne dépend pas de [A]. [A] baisse en ligne droite et atteint 0 à t = [A]₀/k = '+num(A0/k,3)+' s ; ensuite il n\'y a plus de réaction. Chaque demi-vie dure la moitié de la précédente. Exemple : l\'élimination de l\'éthanol par le foie est à peu près d\'ordre 0 (enzymes saturées).');
+  if(n===1)nt+=note('ok','Ordre 1 : toutes les demi-vies sont égales ('+num(t12,3)+' s), quelle que soit [A]₀. Change [A]₀ : t½ ne bouge pas.');
+  if(n===2)nt+=note('info2','Ordre 2 : t½ = 1/(k[A]₀) dépend de [A]₀. Chaque demi-vie dure le double de la précédente, car elle part d\'une concentration deux fois plus petite.');
+  setHTML('nOrd',nt);
+  let tb='<table class="t"><tr><th>Demi-vie</th><th>De … à …</th><th>Durée</th><th>Fin à t =</th></tr>';
+  for(const h of H)tb+='<tr><td><b>n° '+h.i+'</b></td><td>'+num(h.A0,3)+' → '+num(h.A0/2,3)+' mol/L</td><td>'+num(h.d,3)+' s</td><td>'+num(h.t,3)+' s</td></tr>';
+  setHTML('tOrd',tb+'</table>');}
+segBtns('sN',v=>{n=+v;updOrd();});
+$('k').oninput=e=>{k=KL[+e.target.value];updOrd();};
+$('A0').oninput=e=>{A0=+e.target.value/100;updOrd();};
+$('tf').oninput=e=>{tf=+e.target.value/1000;updOrd();};
+
+/* ---------- mode « trouve l'ordre » ---------- */
+const cF=[0,1,2].map(i=>makeCanvas($('cF'+i)));
+let EX=null,seed=7,guess=null,showSol=false;
+function newExp(s){const r=rng(s);const n=Math.floor(r()*3)%3;
+  const A0=[0.20,0.40,0.50,0.80,1.00][Math.floor(r()*5)%5],tmax=[60,120,300,600,1200][Math.floor(r()*5)%5],conv=0.72+0.12*r();
+  const k=n===0?conv*A0/tmax:n===1?-Math.log(1-conv)/tmax:conv/((1-conv)*A0*tmax);
+  const pts=[];for(let i=0;i<=8;i++){const t=tmax*i/8,A=Ct(n,k,A0,t)*(1+0.015*gauss(r));pts.push([t,+A.toPrecision(3)]);}
+  EX={n,k,A0,tmax,pts};guess=null;showSol=false;selectSeg('sGuess','none');}
+function fits(){return [0,1,2].map(r=>{const f=linfit(EX.pts.map(p=>[p[0],REP[r].f(p[1])]));return f;});}
+function updFind(){const F=fits(),rev=guess!=null||showSol;
+  for(let r=0;r<3;r++){const f=rev?Object.assign({good:r===EX.n},F[r]):null;drawRep(cF[r],r,{pts:EX.pts,tmax:EX.tmax,A0:EX.A0,fit:f,badge:showSol||guess===EX.n?r===EX.n:null});}
+  let nt='';
+  if(guess!=null&&guess!==EX.n)nt+=note('warn','Non : le graphe '+REP[guess].nm.replace(' en fonction de t','')+' en fonction de t n\'est pas une droite. Les points s\'écartent de la droite de régression (pointillés) de façon systématique : en arc, pas au hasard. Regarde les deux autres graphes.');
+  if((guess!=null&&guess===EX.n)||showSol){const f=F[EX.n],kE=EX.n===2?f.b:-f.b;
+    nt+=note('ok',(showSol&&guess!==EX.n?'Solution : ':'Oui ! ')+'ordre '+EX.n+'. Seul le graphe '+REP[EX.n].nm.replace(' en fonction de t','')+' en fonction de t est une droite (R² = '+fr(f.r2,4)+'). Sa pente donne k ≈ '+num(kE,3)+' '+KU[EX.n]+' (valeur utilisée pour générer les mesures : '+num(EX.k,3)+' '+KU[EX.n]+'). Demi-vie : '+num(th(EX.n,kE,EX.A0),3)+' s.');}
+  if(!rev)nt+=note('info2','Astuce : pose une règle sur l\'écran. Le bon graphe est celui où les points restent alignés du premier au dernier. Une courbure régulière trahit le mauvais choix, même si R² est proche de 1.');
+  setHTML('nFind',nt);
+  let tb='<table class="t"><tr><th>t (s)</th>'+EX.pts.map(p=>'<td>'+num(p[0],3)+'</td>').join('')+'</tr><tr><th>[A] (mol/L)</th>'+EX.pts.map(p=>'<td>'+num(p[1],3)+'</td>').join('')+'</tr></table>';
+  setHTML('tFind',tb);}
+$('bNew').onclick=()=>{seed=(seed*7919+13)%100003;newExp(seed);updFind();};
+segBtns('sGuess',v=>{guess=+v;updFind();});
+$('bSol').onclick=()=>{showSol=true;updFind();};
+newExp(seed);
+
+/* ---------- mode Arrhenius ---------- */
+const cP=makeCanvas($('cP')),cL=makeCanvas($('cL'));
+let thC=25,Ea=50,dH=-40,lgA=10,cat=false,dEa=20;
+const TK=()=>thC+273.15;
+const kOf=(Eakj,T)=>Math.pow(10,lgA)*Math.exp(-Eakj*1000/(R*T));
+function eaMin(){return Math.max(0,dH);}          /* E_a ≥ ΔH pour une réaction endothermique */
+function clampArr(){if(Ea<eaMin()+5)Ea=eaMin()+5;const mx=Math.max(5,Ea-eaMin()-5);if(dEa>mx)dEa=mx;$('dEa').max=Math.max(5,Math.floor(mx));}
+function profile(x,E){/* une étape : montée cosinus jusqu'à E en x = 0,5 puis descente vers ΔH */
+  if(x<=0.15)return 0;if(x>=0.85)return dH;if(x<=0.5){const u=(x-0.15)/0.35;return E*(1-Math.cos(Math.PI*u))/2;}
+  const u=(x-0.5)/0.35;return dH+(E-dH)*(1+Math.cos(Math.PI*u))/2;}
+function drawProfile(){cP.sync();const ctx=cP.ctx,W=cP.W,H=cP.H;ctx.clearRect(0,0,W,H);
+  const y0=Math.min(0,dH)-15,y1=Ea+18,b={x:52,y:40,w:W-64,h:H-40-34};
+  const ys=niceStep(y1-y0,b.h,30);
+  const {X,Y}=axes(ctx,b,[0,1],[y0,y1],{yticks:ticks(y0,y1,ys),yfmt:v=>fr(v,0),xlabel:'avancement de la réaction →',ylabel:'H (kJ/mol)',ylabelDx:44});
+  title(ctx,'Profil énergétique',8,8,INK);
+  const P=E=>{const L=[];for(let i=0;i<=200;i++){const x=i/200;L.push([X(x),Y(profile(x,E))]);}return L;};
+  if(cat){poly(ctx,P(Ea-dEa),GR,2.2,[7,4]);}
+  poly(ctx,P(Ea),BL,2.6);
+  dashLine(ctx,X(0.02),Y(0),X(0.97),Y(0),'#c3c9d1',1);
+  dashLine(ctx,X(0.5),Y(Ea),X(0.97),Y(Ea),'#d6dbe2',1);
+  const L=Labeler(ctx,W,H),blk=(x,y0,y1)=>L.block(x-3,Math.min(y0,y1),x+3,Math.max(y0,y1));
+  const curveBlk=E=>{for(let i=0;i<=40;i++){const x=i/40;L.block(X(x)-2,Y(profile(x,E))-2,X(x)+2,Y(profile(x,E))+2);}};
+  curveBlk(Ea);if(cat)curveBlk(Ea-dEa);
+  arrow(ctx,X(0.5)-10,Y(0),X(0.5)-10,Y(Ea),BLD,1.6);blk(X(0.5)-10,Y(0),Y(Ea));
+  if(cat){const Ec=Ea-dEa;arrow(ctx,X(0.5)+10,Y(0),X(0.5)+10,Y(Ec),GRD,1.6);blk(X(0.5)+10,Y(0),Y(Ec));}
+  if(dH!==0){arrow(ctx,X(0.93),Y(0),X(0.93),Y(dH),'#5f6b7a',1.6);blk(X(0.93),Y(0),Y(dH));}
+  const ym=v=>Y(v/2);
+  L.add('Ea = '+fr(Ea,0),BLD,[[X(0.5)-16,ym(Ea),'right'],[X(0.5)-16,ym(Ea)+16,'right'],[X(0.5)-16,ym(Ea)-16,'right'],[X(0.5)-16,Y(Ea*0.85),'right']],FT);
+  if(cat){const Ec=Ea-dEa;L.add('Ea cat. = '+fr(Ec,0),GRD,[[X(0.5)+16,ym(Ec),'left'],[X(0.5)+16,ym(Ec)+16,'left'],[X(0.5)+16,ym(Ec)-16,'left'],[X(0.5)+16,Y(0)+14,'left'],[X(0.5)+16,Y(Ec)-12,'left']],FT);}
+  L.add('ΔH = '+sg(dH,0),'#5f6b7a',[[X(0.93)-6,ym(dH),'right'],[X(0.93)-6,Y(dH)+(dH>=0?-12:14),'right'],[X(0.93)-6,ym(dH)+16,'right'],[X(0.93)-6,ym(dH)-16,'right'],[X(0.93)-6,Y(0)+(dH>=0?14:-12),'right']],FT);
+  L.add('réactifs',INK,[[X(0.03),Y(0)-10,'left'],[X(0.03),Y(0)+12,'left']],FN);
+  L.add('produits',INK,[[X(0.86),Y(dH)+(dH>=0?-10:12),'left'],[X(0.86),Y(dH)+(dH>=0?12:-10),'left'],[X(0.99),Y(dH)+(dH>=0?-10:12),'right']],FN);
+  L.flush();}
+function drawLnk(){cL.sync();const ctx=cL.ctx,W=cL.W,H=cL.H;ctx.clearRect(0,0,W,H);
+  const Ta=253.15,Tb=423.15,xa=1000/Tb,xb=1000/Ta;
+  const lines=[{E:Ea,col:BL}];if(cat)lines.push({E:Ea-dEa,col:GR,dash:[7,4]});
+  let y0=Infinity,y1=-Infinity;for(const L of lines)for(const T of [Ta,Tb]){const v=Math.log(kOf(L.E,T));y0=Math.min(y0,v);y1=Math.max(y1,v);}
+  const pd=(y1-y0)*0.08+0.5;y0-=pd;y1+=pd;
+  const b={x:52,y:40,w:W-64,h:H-40-34},xs=niceStep(xb-xa,b.w,55),ys=niceStep(y1-y0,b.h,30);
+  const {X,Y}=axes(ctx,b,[xa,xb],[y0,y1],{xticks:ticks(xa,xb,xs),yticks:ticks(y0,y1,ys),xfmt:v=>fr(v,decOf(xs)),yfmt:v=>fr(v,decOf(ys)),xlabel:'1/T (10⁻³ K⁻¹)  ← T augmente',ylabel:'ln k (k en s⁻¹)',ylabelDx:44});
+  title(ctx,'Droite d\'Arrhenius',8,8,INK);
+  for(const L of lines)poly(ctx,[[X(xa),Y(Math.log(kOf(L.E,Tb)))],[X(xb),Y(Math.log(kOf(L.E,Ta)))]],L.col,2.4,L.dash);
+  const T=TK();for(const L of lines)dot(ctx,X(1000/T),Y(Math.log(kOf(L.E,T))),5,INK,L.col);
+  halo(ctx,'pente = −Ea/R = −'+num(Ea*1000/R,4)+' K',b.x+b.w-4,b.y+10,BLD,FN,'right');
+  if(cat)halo(ctx,'avec catalyseur : −'+num((Ea-dEa)*1000/R,4)+' K',b.x+b.w-4,b.y+26,GRD,FN,'right');}
+function updArr(){clampArr();const T=TK(),k1=kOf(Ea,T),k10=kOf(Ea,T+10),x=Ea*1000/(R*T);
+  $('th').value=thC;$('Ea').value=Ea;$('dH').value=dH;$('lgA').value=lgA;$('dEa').value=dEa;
+  $('thv').textContent=fr(thC,0)+' °C = '+fr(T,2)+' K';$('Eav').textContent=fr(Ea,0)+' kJ/mol';$('dHv').textContent=sg(dH,0)+' kJ/mol';
+  $('lgAv').textContent='1·10'+String(lgA).split('').map(c=>SUP[c]).join('')+' s⁻¹';$('dEav').textContent=fr(dEa,0)+' kJ/mol';
+  $('bCat').classList.toggle('on',cat);$('bCat').textContent=cat?'Retirer le catalyseur':'Ajouter un catalyseur';
+  $('dEa').disabled=!cat;$('lCat').style.opacity=$('dEa').style.opacity=$('dEav').style.opacity=cat?1:.45;
+  drawProfile();drawLnk();
+  let s='';
+  s+=stat('Température',fr(T,2)+' K','θ = '+fr(thC,0)+' °C ; RT = '+fr(R*T,0)+' J/mol');
+  s+=stat('<span class="nt">k</span> sans catalyseur',num(k1,3)+' s⁻¹','E<sub>a</sub>/RT = '+fr(Ea*1000,0)+'/('+'8,314 × '+fr(T,2)+') = '+fr(x,2));
+  s+=stat('Facteur exponentiel',sci(Math.exp(-x),3),'e<sup>−E<sub>a</sub>/RT</sup> : part des collisions assez énergétiques (modèle simple)');
+  s+=stat('Effet de +10 K','k × '+fr(k10/k1,2),'k('+fr(T+10,2)+' K)/k('+fr(T,2)+' K)');
+  if(cat){const kc=kOf(Ea-dEa,T);s+=stat('<span class="nt">k</span> avec catalyseur',num(kc,3)+' s⁻¹','× '+num(kc/k1,3)+' = e^(ΔE<sub>a</sub>/RT), A inchangé');}
+  s+=stat('<span class="nt">E<sub>a</sub></span> de la réaction inverse',fr(Ea-dH,0)+' kJ/mol'+(cat?' → '+fr(Ea-dEa-dH,0):''),'E<sub>a</sub>(inverse) = E<sub>a</sub> − ΔH'+(cat?' ; même baisse dans les deux sens':''));
+  s+=stat('ΔH',sg(dH,0)+' kJ/mol',(dH<0?'exothermique':dH>0?'endothermique':'athermique')+' ; le catalyseur ne le change pas');
+  setHTML('stArr',s);
+  const rr=k10/k1;let nt='';
+  nt+=note(rr>=1.8&&rr<=2.2?'ok':'warn','Ici +10 K multiplie k par '+fr(rr,2)+'. '+(rr>=1.8&&rr<=2.2?'La règle « +10 °C double la vitesse » marche à peu près pour cette E<sub>a</sub> et cette température.':'La règle « +10 °C double la vitesse » est fausse ici : ce n\'est qu\'un ordre de grandeur, vrai seulement pour certaines combinaisons de E<sub>a</sub> et de T (typiquement E<sub>a</sub> ≈ 50 kJ/mol près de 25 °C).'));
+  if(cat)nt+=note('info2','Le catalyseur abaisse E<sub>a</sub> de '+fr(dEa,0)+' kJ/mol dans les deux sens : ΔH reste '+sg(dH,0)+' kJ/mol, la constante d\'équilibre ne change pas. L\'équilibre est seulement atteint plus vite.');
+  if(dH>0)nt+=note('info2','Réaction endothermique : E<sub>a</sub> est forcément au moins égale à ΔH (le sommet est au-dessus des produits). Les curseurs le respectent.');
+  setHTML('nArr',nt);
+  setHTML('lgArr','<span><i style="background:'+BL+'"></i>sans catalyseur</span>'+(cat?'<span style="color:'+GRD+'"><i class="dash" style="background:'+GR+'"></i>avec catalyseur</span>':'')+'<span><i class="box" style="background:'+INK+';width:9px;height:9px;border-radius:50%"></i>température choisie</span>');}
+$('th').oninput=e=>{thC=+e.target.value;updArr();};
+$('Ea').oninput=e=>{Ea=+e.target.value;if(Ea<eaMin()+5){dH=Math.floor((Ea-5)/5)*5;}updArr();};
+$('dH').oninput=e=>{dH=+e.target.value;updArr();};
+$('lgA').oninput=e=>{lgA=+e.target.value;updArr();};
+$('dEa').oninput=e=>{dEa=+e.target.value;updArr();};
+$('bCat').onclick=()=>{cat=!cat;updArr();};
+
+/* ---------- mode collisions ---------- */
+const cB=makeCanvas($('cBox')),cM=makeCanvas($('cMB'));
+let Tc=300,Eac=10;
+/* fraction de molécules d'énergie > E (gaz parfait, 3D) : Q(3/2, x) = erfc(√x) + 2√(x/π)·e^(−x), x = E/RT */
+const fracAbove=x=>erfc(Math.sqrt(x))+2*Math.sqrt(x/Math.PI)*Math.exp(-x);
+/* densité de probabilité en énergie molaire (kJ/mol) */
+const fMB=(E,T)=>{const rt=R*T/1000;return 2/Math.sqrt(Math.PI)*Math.pow(rt,-1.5)*Math.sqrt(E)*Math.exp(-E/rt);};
+/* échantillon stratifié de 80 énergies réduites g = E/RT (quantiles de la loi gamma(3/2)) */
+const NP=80,PART=[];
+(function(){const r=rng(2026);const inv=p=>{let lo=0,hi=60;for(let i=0;i<70;i++){const m=(lo+hi)/2;if(1-fracAbove(m)<p)lo=m;else hi=m;}return (lo+hi)/2;};
+  for(let i=0;i<NP;i++){const a=r()*2*Math.PI;PART.push({g:inv((i+0.5)/NP),x:r(),y:r(),dx:Math.cos(a),dy:Math.sin(a)});}})();
+function hot(p){return p.g*R*Tc/1000>Eac;}
+let lastTs=0,raf=0;
+function drawBox(){cB.sync();const ctx=cB.ctx,W=cB.W,H=cB.H;ctx.clearRect(0,0,W,H);
+  const b={x:10,y:34,w:W-20,h:H-44};title(ctx,'Échantillon de 80 particules à '+fr(Tc,0)+' K',8,8,INK);
+  ctx.save();ctx.strokeStyle='#c8ccd0';ctx.lineWidth=1.5;ctx.strokeRect(b.x,b.y,b.w,b.h);
+  for(const p of PART){const h=hot(p);ctx.beginPath();ctx.arc(b.x+6+p.x*(b.w-12),b.y+6+p.y*(b.h-12),h?5.5:4.5,0,7);ctx.fillStyle=h?'#E8912D':'#9fb6cf';ctx.fill();if(h){ctx.strokeStyle=OR;ctx.lineWidth=1.5;ctx.stroke();}}
+  ctx.restore();}
+function stepBox(ts){const dt=Math.min(0.05,(ts-lastTs)/1000||0);lastTs=ts;
+  for(const p of PART){const v=0.09*Math.sqrt(p.g*Tc/300);p.x+=p.dx*v*dt;p.y+=p.dy*v*dt*1.5;
+    if(p.x<0){p.x=-p.x;p.dx=-p.dx;}if(p.x>1){p.x=2-p.x;p.dx=-p.dx;}if(p.y<0){p.y=-p.y;p.dy=-p.dy;}if(p.y>1){p.y=2-p.y;p.dy=-p.dy;}}
+  drawBox();if(mode==='col'&&!document.hidden)raf=requestAnimationFrame(stepBox);else raf=0;}
+function drawMB(){cM.sync();const ctx=cM.ctx,W=cM.W,H=cM.H;ctx.clearRect(0,0,W,H);
+  const Emax=Math.max(1.6*Eac,7*R*Tc/1000),b={x:52,y:40,w:W-64,h:H-40-34};
+  let ymax=0;const N=300;const pts=[],ref=[];
+  for(let i=0;i<=N;i++){const E=Emax*i/N;const f=fMB(E,Tc),g=fMB(E,300);pts.push([E,f]);ref.push([E,g]);ymax=Math.max(ymax,f,Tc!==300?g:0);}
+  ymax*=1.12;const xs=niceStep(Emax,b.w,50),ys=niceStep(ymax,b.h,30);
+  const {X,Y}=axes(ctx,b,[0,Emax],[0,ymax],{xticks:ticks(0,Emax,xs),yticks:ticks(0,ymax,ys),xfmt:v=>fr(v,decOf(xs)),yfmt:v=>fr(v,decOf(ys)),xlabel:'E (kJ/mol)',ylabel:'fraction par kJ/mol',ylabelDx:44});
+  title(ctx,'Distribution de Maxwell-Boltzmann',8,8,INK);
+  ctx.save();ctx.beginPath();ctx.moveTo(X(Eac),Y(0));for(const p of pts)if(p[0]>=Eac)ctx.lineTo(X(p[0]),Y(p[1]));ctx.lineTo(X(Emax),Y(0));ctx.closePath();ctx.fillStyle='rgba(232,145,45,.35)';ctx.fill();ctx.restore();
+  if(Tc!==300)poly(ctx,ref.map(p=>[X(p[0]),Y(p[1])]),GY,1.6,[5,4]);
+  poly(ctx,pts.map(p=>[X(p[0]),Y(p[1])]),RD,2.4);
+  dashLine(ctx,X(Eac),b.y,X(Eac),Y(0),OR,1.6,[5,3]);halo(ctx,'Ea = '+fr(Eac,0)+' kJ/mol',X(Eac)+5,b.y+10,OR,FT,'left');
+  const F=fracAbove(Eac*1000/(R*Tc));halo(ctx,'aire orange : '+(F>=0.001?fr(F*100,2)+' %':sci(F*100,2)+' %'),X(Eac)+5,b.y+28,OR,FN,'left');}
+function pctTxt(F){return F>=0.001?fr(F*100,2)+' %':sci(F*100,2)+' %';}
+function updCol(){$('Tcv').textContent=fr(Tc,0)+' K ('+fr(Tc-273.15,0)+' °C)';$('Eacv').textContent=fr(Eac,0)+' kJ/mol';
+  const x=Eac*1000/(R*Tc),F=fracAbove(x),F10=fracAbove(Eac*1000/(R*(Tc+10))),F300=fracAbove(Eac*1000/(R*300)),cnt=PART.filter(hot).length;
+  drawMB();drawBox();
+  let s='';
+  s+=stat('Fraction au-dessus de <span class="nt">Eₐ</span>',pctTxt(F),'aire orange sous la courbe (calcul exact)');
+  s+=stat('Dans l\'échantillon',cnt+' / '+NP,'particules orange');
+  s+=stat('À T + 10 K',pctTxt(F10),'× '+fr(F10/F,2)+' pour 10 K de plus');
+  s+=stat('Par rapport à 300 K','× '+num(F/F300,3),'fraction(T)/fraction(300 K)');
+  s+=stat('Facteur d\'Arrhenius',sci(Math.exp(-x),3),'e<sup>−E<sub>a</sub>/RT</sup> : même tendance');
+  s+=stat('RT',fr(R*Tc/1000,2)+' kJ/mol','énergie la plus probable RT/2, moyenne 3RT/2');
+  setHTML('stCol',s);
+  setHTML('nCol',note('info2','Quand T monte, la courbe s\'aplatit et s\'étale vers les hautes énergies (l\'aire totale reste 1). La part au-delà de E<sub>a</sub> augmente beaucoup plus vite que T : c\'est pour cela que k augmente si vite. Le facteur e<sup>−E<sub>a</sub>/RT</sup> d\'Arrhenius ne vaut pas exactement l\'aire orange (il vient d\'un modèle de collision plus simple), mais il varie de la même façon.'));
+  setHTML('lgCol','<span><i style="background:'+RD+'"></i>distribution à '+fr(Tc,0)+' K</span>'+(Tc!==300?'<span style="color:'+GY+'"><i class="dash" style="background:'+GY+'"></i>à 300 K (référence)</span>':'')+'<span><i class="box" style="background:rgba(232,145,45,.45)"></i>énergie supérieure à E<sub>a</sub></span>');
+  if(mode==='col'&&!raf){lastTs=performance.now();raf=requestAnimationFrame(stepBox);}}
+$('Tc').oninput=e=>{Tc=+e.target.value;updCol();};
+$('Eac').oninput=e=>{Eac=+e.target.value;updCol();};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&mode==='col'&&!raf){lastTs=performance.now();raf=requestAnimationFrame(stepBox);}});
+
+/* ---------- mode médicament / radioactivité ---------- */
+const cMd=makeCanvas($('cvMed'));
+let app='drug',C0=16,t2=8,Cs=4,nd=1,tau=8,tm=0.3,iso='F18';
+/* demi-vies tabulées usuelles (NNDC/ENSDF, arrondies) — vérifiées par le professeur, VALEURS-REFERENCE.md section finale */
+const ISO={
+  F18:{nm:'¹⁸F (fluor 18)',t:109.7,u:'min',sy:'min',us:60,use:'traceur de la TEP (tomographie par émission de positons)'},        /* vérifié */
+  Tc99m:{nm:'⁹⁹ᵐTc (technétium 99m)',t:6.01,u:'h',sy:'h',us:3600,use:'scintigraphie (imagerie médicale)'},                        /* vérifié */
+  I131:{nm:'¹³¹I (iode 131)',t:8.02,u:'jours',sy:'j',us:86400,use:'traitement de certaines maladies de la thyroïde'},             /* vérifié */
+  C14:{nm:'¹⁴C (carbone 14)',t:5730,u:'ans',sy:'an',us:365.25*86400,use:'datation des restes organiques'}};                        /* vérifié */
+function Cdrug(t){const kk=LN2/t2;let c=0;for(let j=0;j<nd;j++){const t0=j*tau;if(t>=t0-1e-9)c+=C0*Math.exp(-kk*(t-t0));}return c;}
+function tmaxDrug(){return (nd-1)*tau+5*t2;}
+function drawMed(){cMd.sync();const ctx=cMd.ctx,W=cMd.W,H=cMd.H;ctx.clearRect(0,0,W,H);const b={x:56,y:40,w:W-70,h:H-40-36};
+  if(app==='drug'){const tmax=tmaxDrug(),N=600;const pts=[];let ymax=C0;
+    for(let i=0;i<=N;i++){const t=tmax*i/N;const c=Cdrug(t);pts.push([t,c]);ymax=Math.max(ymax,c);}
+    for(let j=0;j<nd;j++){const t0=j*tau;ymax=Math.max(ymax,Cdrug(t0));}
+    ymax*=1.1;const xs=niceStep(tmax,b.w,50),ys=niceStep(ymax,b.h,30);
+    const {X,Y}=axes(ctx,b,[0,tmax],[0,ymax],{xticks:ticks(0,tmax,xs),yticks:ticks(0,ymax,ys),xfmt:v=>fr(v,decOf(xs)),yfmt:v=>fr(v,decOf(ys)),xlabel:'t (h)',ylabel:'C plasmatique (mg/L)',ylabelDx:48});
+    title(ctx,'Concentration d\'un médicament fictif',8,8,INK);
+    if(nd===1)for(let i=1;i<=4;i++){const t=i*t2;dashLine(ctx,X(t),Y(C0/Math.pow(2,i)),X(t),Y(0),'#c3c9d1',1);dashLine(ctx,X(0),Y(C0/Math.pow(2,i)),X(t),Y(C0/Math.pow(2,i)),'#c3c9d1',1);halo(ctx,i+' t½',X(t)+3,Y(C0/Math.pow(2,i))-9,'#5f6b7a',FN,'left');}
+    if(nd>1){const kk=LN2/t2,Mx=C0/(1-Math.exp(-kk*tau)),Mn=Mx*Math.exp(-kk*tau);
+      dashLine(ctx,X(0),Y(Mx),X(tmax),Y(Mx),GY,1.2,[6,4]);dashLine(ctx,X(0),Y(Mn),X(tmax),Y(Mn),GY,1.2,[6,4]);
+      halo(ctx,'plateau max',X(tmax)-4,Y(Mx)-9,'#5f6b7a',FN,'right');halo(ctx,'plateau min',X(tmax)-4,Y(Mn)+10,'#5f6b7a',FN,'right');
+      for(let j=0;j<nd;j++)arrow(ctx,X(j*tau),b.y+2,X(j*tau),b.y+16,GRD,1.6,6);}
+    dashLine(ctx,X(0),Y(Cs),X(tmax),Y(Cs),RD,1.4,[6,4]);halo(ctx,'seuil d\'efficacité',X(0)+4,Y(Cs)+10,RDD,FN,'left');
+    poly(ctx,pts.map(p=>[X(p[0]),Y(p[1])]),BL,2.4);
+    const t=tm*tmax;dot(ctx,X(t),Y(Cdrug(t)),5,INK,BL);
+    $('tmv').textContent=fr(t,1)+' h';}
+  else{const I=ISO[iso],tmax=7*I.t;const xs=niceStep(tmax,b.w,50);
+    const {X,Y}=axes(ctx,b,[0,tmax],[0,110],{xticks:ticks(0,tmax,xs),yticks:[0,25,50,75,100],xfmt:v=>fr(v,decOf(xs)),yfmt:v=>fr(v,0),xlabel:'t ('+I.u+')',ylabel:'A/A₀ = N/N₀ (%)',ylabelDx:48});
+    title(ctx,'Décroissance de '+I.nm,8,8,INK);
+    for(let i=1;i<=4;i++){const t=i*I.t,y=100/Math.pow(2,i);dashLine(ctx,X(t),Y(y),X(t),Y(0),'#c3c9d1',1);dashLine(ctx,X(0),Y(y),X(t),Y(y),'#c3c9d1',1);halo(ctx,i+' t½',X(t)+3,Y(y)-9,'#5f6b7a',FN,'left');}
+    const pts=[];for(let i=0;i<=400;i++){const t=tmax*i/400;pts.push([X(t),Y(100*Math.pow(2,-t/I.t))]);}
+    poly(ctx,pts,VI,2.4);const t=tm*tmax;dot(ctx,X(t),Y(100*Math.pow(2,-t/I.t)),5,INK,VI);
+    $('tmv').textContent=num(t,3)+' '+I.u;}}
+function updMed(){$('pDrug').hidden=app!=='drug';$('pRad').hidden=app!=='rad';
+  if(Cs>=C0)Cs=Math.max(1,C0-1);$('Cs').max=Math.max(1,C0-1);$('Cs').value=Cs;
+  $('C0v').textContent=fr(C0,0)+' mg/L';$('th2v').textContent=fr(t2,0)+' h';$('Csv').textContent=fr(Cs,0)+' mg/L';$('ndv').textContent=nd;$('tauv').textContent=fr(tau,0)+' h'+(nd===1?' (inutile : 1 injection)':'');
+  $('tau').disabled=nd===1;$('tau').style.opacity=nd===1?.45:1;
+  drawMed();let s='',nt='';
+  if(app==='drug'){const kk=LN2/t2,tmax=tmaxDrug(),t=tm*tmax,c=Cdrug(t);
+    s+=stat('Constante d\'élimination <span class="nt">k</span>',num(kk,3)+' h⁻¹','k = ln 2/t½ = 0,693/'+fr(t2,0));
+    s+=stat('C à <span class="nt">t = '+fr(t,1)+' h</span>',num(c,3)+' mg/L',nd===1?'C = C₀·e^(−kt) ; reste '+num(100*c/C0,3)+' % de C₀':'somme des '+nd+' injections');
+    if(nd===1){s+=stat('Demi-vies écoulées',fr(t/t2,2),'il reste (½)^'+fr(t/t2,2)+' = '+num(100*Math.pow(0.5,t/t2),3)+' %');
+      const te=Math.log(C0/Cs)/kk;s+=stat('Durée d\'action',fr(te,1)+' h','t = ln(C₀/seuil)/k = '+fr(te/t2,2)+' t½');}
+    else{const Mx=C0/(1-Math.exp(-kk*tau)),Mn=Mx*Math.exp(-kk*tau);
+      s+=stat('Plateau : C max',num(Mx,3)+' mg/L','plateau théorique (injections sans fin) : C₀/(1 − e^(−kτ))');
+      s+=stat('Plateau : C min',num(Mn,3)+' mg/L',Mn>=Cs?'reste au-dessus du seuil':'passe sous le seuil entre deux injections');}
+    s+=stat('Après 5 demi-vies','3,1 %','(½)⁵ = 1/32 : médicament presque éliminé');
+    nt+=note('info2','Modèle simplifié : injection intraveineuse rapide, un seul compartiment, élimination d\'ordre 1 (vitesse proportionnelle à C). Médicament fictif : demi-vie et seuil sont des réglages, pas des données réelles.');
+    if(nd>1)nt+=note('ok','Doses répétées : chaque injection ajoute C₀ à ce qui reste. La concentration monte jusqu\'à un plateau, atteint en 4 à 5 demi-vies, quel que soit τ. Plus τ est court devant t½, plus le plateau est haut.');}
+  else{const I=ISO[iso],tmax=7*I.t,t=tm*tmax,lam=LN2/I.t,f=Math.pow(2,-t/I.t);
+    s+=stat('Demi-vie',String(I.t).replace('.',',')+' '+I.u,iso==='C14'?'valeur usuelle (5730 ± 40 ans) ; tables récentes : 5700 ± 30 ans':'valeur tabulée usuelle');
+    s+=stat('Constante <span class="nt">λ</span>',num(lam,3)+' '+I.sy+'⁻¹','λ = ln 2/t½ = '+sci(lam/I.us,3)+' s⁻¹');
+    s+=stat('A/A₀ à <span class="nt">t = '+num(t,3)+' '+I.u+'</span>',num(100*f,3)+' %','N = N₀·e^(−λt) et A = λN');
+    s+=stat('Demi-vies écoulées',fr(t/I.t,2),'');
+    s+=stat('Temps pour tomber à 1 %',num(Math.log2(100)*I.t,3)+' '+I.u,'log₂ 100 = 6,64 demi-vies');
+    nt+=note('info2','Usage : '+I.use+'. La désintégration radioactive est d\'ordre 1 : t½ ne dépend ni de la quantité de départ, ni de la température, ni de la molécule qui porte le noyau.');}
+  setHTML('stMed',s);setHTML('nMed',nt);
+  setHTML('lgMed',app==='drug'?'<span><i style="background:'+BL+'"></i>concentration</span><span style="color:'+RDD+'"><i class="dash" style="background:'+RD+'"></i>seuil d\'efficacité</span>'+(nd>1?'<span style="color:#5f6b7a"><i class="dash" style="background:'+GY+'"></i>plateau</span><span style="color:'+GRD+'">↓ injection</span>':''):'<span><i style="background:'+VI+'"></i>activité restante</span>');}
+segBtns('sApp',v=>{app=v;updMed();});
+segBtns('sIso',v=>{iso=v;updMed();});
+$('C0').oninput=e=>{C0=+e.target.value;updMed();};
+$('th2').oninput=e=>{t2=+e.target.value;updMed();};
+$('Cs').oninput=e=>{Cs=+e.target.value;updMed();};
+$('nd').oninput=e=>{nd=+e.target.value;updMed();};
+$('tau').oninput=e=>{tau=+e.target.value;updMed();};
+$('tm').oninput=e=>{tm=+e.target.value/1000;updMed();};
+
+/* ---------- modes ---------- */
+const PAN={ord:'pOrd',find:'pFind',arr:'pArr',col:'pCol',med:'pMed'};
+function update(){for(const m in PAN)$(PAN[m]).hidden=m!==mode;
+  if(mode==='ord')updOrd();else if(mode==='find')updFind();else if(mode==='arr')updArr();else if(mode==='col')updCol();else updMed();}
+segBtns('sMode',v=>{mode=v;update();});
+addEventListener('resize',()=>update());
+update();
+/* accès pour les tests automatiques */
+window.__sim={set(o){if(o.mode){mode=o.mode;selectSeg('sMode',mode);}
+  if(o.n!=null){n=o.n;selectSeg('sN',String(n));}if(o.k!=null){k=o.k;const i=KL.findIndex(v=>Math.abs(v/k-1)<1e-9);if(i>=0)$('k').value=i;}
+  if(o.A0!=null){A0=o.A0;$('A0').value=Math.round(A0*100);}if(o.tf!=null){tf=o.tf;$('tf').value=Math.round(tf*1000);}
+  if(o.seed!=null){seed=o.seed;newExp(seed);}if(o.guess!=null){guess=o.guess;selectSeg('sGuess',String(guess));}if(o.sol)showSol=true;
+  if(o.thC!=null)thC=o.thC;if(o.Ea!=null)Ea=o.Ea;if(o.dH!=null)dH=o.dH;if(o.lgA!=null)lgA=o.lgA;if(o.cat!=null)cat=o.cat;if(o.dEa!=null)dEa=o.dEa;
+  if(o.Tc!=null){Tc=o.Tc;$('Tc').value=Tc;}if(o.Eac!=null){Eac=o.Eac;$('Eac').value=Eac;}
+  if(o.app){app=o.app;selectSeg('sApp',app);}if(o.iso){iso=o.iso;selectSeg('sIso',iso);}
+  if(o.C0!=null){C0=o.C0;$('C0').value=C0;}if(o.t2!=null){t2=o.t2;$('th2').value=t2;}if(o.Cs!=null)Cs=o.Cs;if(o.nd!=null){nd=o.nd;$('nd').value=nd;}if(o.tau!=null){tau=o.tau;$('tau').value=tau;}
+  if(o.tm!=null){tm=o.tm;$('tm').value=Math.round(tm*1000);}
+  update();},
+  get:()=>({mode,n,k,A0,tf,EX,guess,thC,Ea,dH,lgA,cat,dEa,Tc,Eac,app,C0,t2,Cs,nd,tau,tm,iso,cnt:PART.filter(hot).length})};
+
+})();
+</script>
+<script src="../../kit/sfa-nav.js"></script></body>
+</html>

@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagramme de phases · SFA</title>
+<meta name="description" content="Déplace un point sur le diagramme P(T) de l'eau ou du CO₂, suis chauffages et compressions, la courbe de chauffage et l'ébullition en altitude ou en autocuiseur.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+canvas.cv{display:block;width:100%;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.row{display:flex;align-items:center;flex-wrap:wrap}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.hint{font:500 .84rem var(--f-ui);color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font:600 .82rem var(--f-ui);color:var(--muted);margin:10px 0 2px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.legend i.dash{background:repeating-linear-gradient(90deg,currentColor 0 5px,transparent 5px 9px)!important;height:2px}
+.legend i.box{height:10px;width:14px;border-radius:3px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:12px 0}
+.stat{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:0}
+.stat small{display:block;font:800 10.5px var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat b{display:block;font:800 1.2rem/1.3 var(--f-ui);font-variant-numeric:tabular-nums;color:var(--ink)}
+.stat span{display:block;font:600 .78rem/1.35 var(--f-ui);color:var(--muted)}
+.note{border-radius:10px;padding:10px 14px;margin:10px 0;font:600 .88rem/1.5 var(--f-ui)}
+.note.warn{background:#fff6e6;border-left:4px solid #BA7517;color:#5a3d00}
+.note.ok{background:#ecf6f1;border-left:4px solid #2e6b55;color:#1d4637}
+.note.info2{background:var(--sel);border-left:4px solid var(--navy);color:var(--ink2)}
+.chipok,.chipno{display:inline-block;font:800 11px var(--f-ui);padding:2px 8px;border-radius:999px;margin-right:6px}
+.chipok{background:#dcefe6;color:#1d4637}.chipno{background:#fbe1dc;color:#8a2a1a}
+table.t{border-collapse:collapse;width:100%;font:600 .84rem var(--f-ui);font-variant-numeric:tabular-nums}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top}
+table.t th{font:800 .72rem var(--f-ui);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.tw{overflow-x:auto}
+.sfa-card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-top:14px}
+.sfa-card h2{font:800 1.05rem var(--f-ui);margin:0 0 8px}
+.sfa-card ul{margin:0;padding-left:20px}.sfa-card li{margin:5px 0}
+.sfa-card.trap{border-left:4px solid #BA7517}
+.sfa-card details{border-top:1px solid var(--line);padding:10px 0}
+.sfa-card details:first-of-type{border-top:0}
+.sfa-card summary{cursor:pointer;font-weight:700;color:var(--ink)}
+.sfa-card details p{margin:8px 0 0;color:var(--ink2)}
+.sfa-card sub,.sfa-card sup,.stat sub,.stat sup,.note sub,.note sup,table.t sub,table.t sup,.btn sub{font-size:.72em}
+.panel[hidden]{display:none!important}
+
+.stat b{font-size:1.05rem}
+#cd{height:430px;touch-action:none;cursor:crosshair}
+#cbx{height:150px}
+#ch{height:360px}
+#cv2{height:380px}
+.dwrap{display:grid;grid-template-columns:minmax(0,1fr) 170px;gap:12px;align-items:start}
+@media (max-width:640px){#cd{height:400px}.dwrap{grid-template-columns:minmax(0,1fr)}#cbx{height:130px}#ch{height:340px}#cv2{height:360px}}
+.boxcap{font:700 .8rem/1.35 var(--f-ui);color:var(--muted);margin-top:6px}
+.phase-chip{display:inline-block;font:800 .8rem var(--f-ui);padding:3px 10px;border-radius:999px;background:var(--sel);color:var(--chip-ink)}
+.valid{font:600 .8rem/1.5 var(--f-ui);color:#5a3d00;background:#fff6e6;border-radius:8px;padding:8px 12px;margin-top:10px}
+ol.cross{margin:6px 0 0 20px;font:600 .9rem/1.6 var(--f-ui)}
+h3.sub{font:800 .95rem var(--f-ui);margin:16px 0 4px}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a class="on" href="../">Simulations de chimie</a><a href="../exercices/">Exercices de chimie</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations de physique</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="../">Simulations de chimie</a>›<a href="../#equilibres-energie">Équilibres et énergie</a>›<b>Diagramme de phases</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Chimie · Changements d'état</span><span class="sfa-chip free">Gratuit</span></div><h1>Diagramme de phases</h1><p>Promène un point dans le diagramme pression-température de l'eau et du CO₂ : fusion, ébullition, sublimation, point triple et fluide supercritique.</p></div>
+
+<section class="sfa-sim">
+<div class="row"><span class="pill">Vue</span><div class="seg" id="sTab"><button class="btn on" data-k="diag">Diagramme P(T)</button><button class="btn" data-k="heat">Courbe de chauffage de l'eau</button><button class="btn" data-k="vap">Pression de vapeur et ébullition</button></div></div>
+
+<!-- ============ DIAGRAMME ============ -->
+<div id="pDiag" class="panel">
+<div class="row"><span class="pill">Corps pur</span><div class="seg" id="sSub"><button class="btn on" data-k="h2o">Eau H₂O</button><button class="btn" data-k="co2">Dioxyde de carbone CO₂</button></div></div>
+<div class="dwrap">
+  <canvas id="cd" class="cv" aria-label="Diagramme de phases pression en fonction de la température, avec un point déplaçable"></canvas>
+  <div><canvas id="cbx" class="cv" aria-label="Vue des molécules dans la phase du point"></canvas><div class="boxcap" id="boxcap"></div></div>
+</div>
+<p class="hint" style="margin-top:6px">Fais glisser le point (doigt ou souris). P en échelle logarithmique. <span id="scaleNote"></span></p>
+<div class="row"><span class="pill">Départ</span><div class="seg" id="sPre"></div></div>
+<div class="row"><span class="pill">Transformation</span><div class="seg" id="sTr"><button class="btn" data-k="heat">Chauffage isobare →</button><button class="btn" data-k="cool">← Refroidissement isobare</button><button class="btn" data-k="comp">Compression isotherme ↑</button><button class="btn" data-k="exp">Détente isotherme ↓</button></div></div>
+<div class="stats" id="stD"></div>
+<div id="crossBox"></div>
+<div id="notesD"></div>
+</div>
+
+<!-- ============ CHAUFFAGE ============ -->
+<div id="pHeat" class="panel" hidden>
+<canvas id="ch" class="cv" aria-label="Courbe de chauffage de l'eau : température en fonction de l'énergie apportée, avec deux paliers"></canvas>
+<div class="row"><span class="pill" style="min-width:170px;color:#185fa5">m masse d'eau</span>
+  <input type="range" id="hm" min="10" max="500" step="10" value="100" style="accent-color:#378ADD"><span class="val" id="hmv" style="color:#185fa5"></span></div>
+<div class="row"><span class="pill" style="min-width:170px;color:#a32d2d">Énergie apportée</span>
+  <input type="range" id="hq" min="0" max="1000" step="1" value="0" style="accent-color:#E24B4A"><span class="val" id="hqv" style="color:#a32d2d"></span></div>
+<div class="row"><button class="btn" id="bHeat">Chauffer à puissance constante</button><button class="btn" id="bHeat0">Revenir à −20 °C</button></div>
+<div class="stats" id="stH"></div>
+<div id="notesH"></div>
+<div class="tw" id="tabH"></div>
+</div>
+
+<!-- ============ PRESSION DE VAPEUR ============ -->
+<div id="pVap" class="panel" hidden>
+<canvas id="cv2" class="cv" aria-label="Pression de vapeur de l'eau en fonction de la température et pression extérieure"></canvas>
+<div class="row"><span class="pill">Situation</span><div class="seg" id="sSit">
+  <button class="btn on" data-k="1">Niveau de la mer (1 atm)</button><button class="btn" data-k="0.5">Haute montagne (≈ 0,5 atm)</button>
+  <button class="btn" data-k="2">Autocuiseur (≈ 2 atm)</button><button class="btn" data-k="0.061842">47 mmHg</button></div></div>
+<div class="row"><span class="pill" style="min-width:170px;color:#5a3fa0">P extérieure</span>
+  <input type="range" id="pe" min="0" max="1000" step="1" value="500" style="accent-color:#7F77DD"><span class="val" id="pev" style="color:#5a3fa0"></span></div>
+<div class="row"><span class="pill" style="min-width:170px;color:#a32d2d">T de l'eau chauffée</span>
+  <input type="range" id="tw" min="0" max="150" step="1" value="25" style="accent-color:#E24B4A"><span class="val" id="twv" style="color:#a32d2d"></span></div>
+<div class="stats" id="stV"></div>
+<div id="notesV"></div>
+</div>
+<div class="valid" id="valid"></div>
+</section>
+
+<section class="sfa-card"><h2>Ce qu'il faut retenir</h2><ul>
+<li>Chaque région du diagramme P(T) est une phase ; sur une courbe, deux phases coexistent ; au point triple, les trois coexistent.</li>
+<li>Pour l'eau, la courbe solide-liquide penche vers la gauche : la glace est moins dense que l'eau liquide, donc une hausse de pression favorise le liquide et abaisse la température de fusion. Pour le CO₂ (et la plupart des corps purs), elle penche vers la droite.</li>
+<li>Pendant un changement d'état sous pression fixe, la température reste constante (palier) : l'énergie apportée sert à rompre les interactions entre molécules. Vaporiser l'eau coûte beaucoup plus que la fondre.</li>
+<li>Un liquide bout quand sa pression de vapeur égale la pression extérieure : moins de 100 °C en montagne, plus de 100 °C dans un autocuiseur.</li>
+<li>Au-delà du point critique (T &gt; T<sub>c</sub> et P &gt; P<sub>c</sub>), liquide et gaz ne se distinguent plus : c'est un fluide supercritique. Au-dessus de T<sub>c</sub>, aucune compression ne liquéfie le gaz.</li>
+</ul></section>
+
+<section class="sfa-card trap"><h2>Pièges classiques</h2><ul>
+<li>« Le CO₂ solide fond à pression atmosphérique » : non. Son point triple est au-dessus de 1 atm, donc sous 1 atm la neige carbonique se sublime directement en gaz. Le CO₂ liquide n'existe qu'au-dessus de son point triple (environ 5 atm).</li>
+<li>Évaporation ≠ ébullition. L'eau s'évapore à toute température (en surface) ; elle bout seulement quand P<sub>vap</sub> = P<sub>ext</sub>, avec des bulles de vapeur qui naissent dans tout le liquide.</li>
+<li>« Plus on chauffe, plus la température monte » : faux pendant un palier. Et dans une casserole ouverte, l'eau liquide ne dépasse pas sa température d'ébullition, même avec un feu plus fort : elle bout plus vite, c'est tout.</li>
+<li>Les diagrammes de cours ne sont presque jamais à l'échelle : les pentes y sont exagérées pour être visibles. Lis les valeurs, pas les distances.</li>
+</ul></section>
+
+<section class="sfa-card"><h2>Défis</h2>
+<details><summary>1. De la glace à −2 °C est sous très basse pression (0,001 atm). Tu la comprimes à température constante. Que se passe-t-il ?</summary>
+<p>Sous 0,001 atm, à −2 °C, l'eau est gazeuse : on est sous la courbe de sublimation. En comprimant, la vapeur se condense d'abord en glace (vers 0,005 atm), puis, beaucoup plus haut (plus de 200 atm), la glace fond : c'est la pente négative de la courbe solide-liquide. Choisis le départ « −2 °C, 0,001 atm » et lance la compression.</p></details>
+<details><summary>2. Tu sors un bloc de CO₂ solide à −90 °C dans une pièce (1 atm) et tu le laisses se réchauffer. Verras-tu du liquide ?</summary>
+<p>Non. Sous 1 atm, la droite de chauffage ne croise que la courbe solide-gaz, vers −78,5 °C : le CO₂ se sublime. Pour voir du CO₂ liquide, il faut une pression supérieure à celle du point triple (environ 5 atm). Lance un chauffage isobare depuis « Neige carbonique ».</p></details>
+<details><summary>3. À quelle pression extérieure l'eau bout-elle à 37 °C ? Pourquoi cela compte-t-il pour un corps humain en très haute altitude ?</summary>
+<p>À 47 mmHg (environ 0,062 atm), la pression de vapeur de l'eau à 37 °C. Si la pression ambiante tombe en dessous (vers 19 km d'altitude, ordre de grandeur), les liquides du corps non pressurisés (salive, larmes) se mettent à bouillir à la température du corps. Choisis « 47 mmHg » dans la vue « Pression de vapeur ».</p></details>
+</section>
+
+</main>
+<aside class="sfa-side">
+  <div class="sfa-list"><h2>Équilibres et énergie<span><a href="../#equilibres-energie" style="white-space:nowrap">voir tout</a></span></h2><ol><li><a href="../piles-electrolyse/"><i>·</i>Piles et électrolyse</a></li><li><a class="on" aria-current="page" href="../diagramme-phases/"><i>·</i>Diagramme de phases</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside>
+</div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de chimie</footer>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+const fr=(v,n)=>{if(!isFinite(v))return '—';let s=v.toFixed(n);if(/^-0[,.]?0*$/.test(s))s=s.slice(1);return s.replace('.',',').replace(/^-/,'−');};
+function fmtE(ms,e){ms=ms.replace('.',',').replace(/^-/,'−');if(e===0)return ms;return ms+'·10'+String(e).split('').map(c=>SUP[c]).join('');}
+function sci(v,s){if(v===0)return '0';if(!isFinite(v))return '—';const e=Math.floor(Math.log10(Math.abs(v))+1e-12);let m=v/Math.pow(10,e);
+  let ms=m.toFixed((s||2)-1);if(Math.abs(+ms)>=10){m/=10;ms=m.toFixed((s||2)-1);return fmtE(ms,e+1);}return fmtE(ms,e);}
+/* pression lisible en atm, 3 chiffres significatifs */
+function patm(P){if(P>=0.01&&P<1e4)return fr(P,P>=100?0:P>=10?1:P>=1?2:P>=0.1?3:4);return sci(P,3);}
+function setHTML(id,h){const e=$(id);if(e&&e._h!==h){e.innerHTML=h;e._h=h;}}
+function segBtns(id,cb){const box=$(id);box.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{if(!b.dataset.nosel)box.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.k);}));}
+function selectSeg(id,k){$(id).querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.k===String(k)));}
+function makeCanvas(cv){const ctx=cv.getContext('2d');const o={cv,ctx,W:0,H:0};
+  o.sync=()=>{const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;const w=Math.round(r.width)||600,h=Math.round(r.height)||400;
+    if(w!==o.W||h!==o.H||cv.width!==Math.round(w*d)){o.W=w;o.H=h;cv.width=Math.round(w*d);cv.height=Math.round(h*d);o.changed=true;}ctx.setTransform(d,0,0,d,0,0);};return o;}
+const FT='700 12.5px Mulish,system-ui,sans-serif',FN='600 11.5px Mulish,system-ui,sans-serif',FB='800 13px Mulish,system-ui,sans-serif',FS='600 10.5px Mulish,system-ui,sans-serif';
+function halo(ctx,t,x,y,col,font,al,bl){ctx.save();ctx.font=font||FT;ctx.textAlign=al||'left';ctx.textBaseline=bl||'middle';ctx.lineJoin='round';
+  ctx.lineWidth=4;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.strokeText(t,x,y);ctx.fillStyle=col;ctx.fillText(t,x,y);ctx.restore();}
+function poly(ctx,pts,col,w,dash){ctx.save();ctx.strokeStyle=col;ctx.lineWidth=w||2;ctx.lineJoin='round';if(dash)ctx.setLineDash(dash);ctx.beginPath();let on=false;
+  for(const p of pts){if(!p||!isFinite(p[0])||!isFinite(p[1])){on=false;continue;}on?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);on=true;}ctx.stroke();ctx.restore();}
+function niceStep(range,px,minPx){const raw=range*minPx/px,p=Math.pow(10,Math.floor(Math.log10(raw)));for(const m of [1,2,5,10])if(m*p>=raw)return m*p;return 10*p;}
+const INK='#0f1b2d',MU='#5f6b7a',RD='#a32d2d',BLD='#1e3f8f',GRD='#0F6E56',VI='#5a3fa0',OR='#BA7517';
+
+/* ---------- constantes ----------
+   VALEURS-REFERENCE : R = 8,314 J/(mol·K) ; 1 atm = 760 mmHg = 101 325 Pa ; P_vap(H₂O) = 23,8 mmHg (25 °C), 47 mmHg (37 °C) ;
+   M(H₂O) = 2 × 1,008 + 16,00. Le reste : section « Valeurs des simulations piles et phases (vérifiées par le professeur) » de VALEURS-REFERENCE.md. */
+const R=8.314,ATM=101325,MMHG=760,K0=273.15;
+const M_H2O=2*1.008+16.00;
+/* Eau */
+const W_TT=273.16, W_PT=611.657/ATM;      /* point triple de l'eau (IAPWS) : 273,16 K (0,01 °C), 611,657 Pa = 0,00604 atm = 4,59 mmHg */
+const W_TC=647.096, W_PC=22.064e6/ATM;    /* point critique de l'eau (IAPWS) : 647,096 K (373,9 °C), 22,064 MPa = 217,8 atm */
+const W_DPDT=-133;                         /* pente de la courbe de fusion de l'eau ≈ −133 atm/K (Clapeyron, ≈ −0,0075 K/atm), linéarisée jusqu'à 1000 atm (écart < 1,5 K à 1000 atm) */
+const W_HSUB=51.0e3;                       /* ΔH de sublimation de la glace ≈ 51 kJ/mol (= 6,01 + 45,0 à 0 °C), supposée constante (Clausius-Clapeyron) */
+/* équation de Wagner et Pruss (IAPWS-95, 2002) pour la pression de vapeur saturante de l'eau, du point triple au point critique.
+   Elle redonne 23,8 mmHg à 25 °C et 47 mmHg à 37 °C (VALEURS-REFERENCE) et 1 atm à 99,97 °C. */
+const WA=[-7.85951783,1.84408259,-11.7866497,22.6807411,-15.9618719,1.80122502];
+function wPvap(T){const t=1-T/W_TC;return W_PC*Math.exp(W_TC/T*(WA[0]*t+WA[1]*Math.pow(t,1.5)+WA[2]*t*t*t+WA[3]*Math.pow(t,3.5)+WA[4]*t*t*t*t+WA[5]*Math.pow(t,7.5)));}
+function wPsub(T){return W_PT*Math.exp(-W_HSUB/R*(1/T-1/W_TT));}
+function wTfus(P){return W_TT+(P-W_PT)/W_DPDT;}
+/* CO₂ */
+const C_TT=216.59, C_PT=5.11;              /* point triple du CO₂ (NIST, Span et Wagner) : 216,59 K (−56,6 °C), 0,518 MPa = 5,11 atm */
+const C_TC=304.13, C_PC=72.8;              /* point critique du CO₂ (NIST) : 304,13 K (31,0 °C), 7,377 MPa = 72,8 atm */
+const C_TSUB=194.686;                        /* sublimation du CO₂ sous 1 atm : 194,69 K (−78,5 °C) */
+const C_FUS=1955.5;                        /* pente de la courbe de fusion du CO₂, P = P_t·[1 + 1955,5·(T/T_t − 1)] (terme linéaire de Span et Wagner) ; non affichée */
+/* courbes solide-gaz et liquide-gaz du CO₂ : droites en (1/T, ln P) entre les points ci-dessus (Clausius-Clapeyron, modèle approché) */
+const C_BSUB=Math.log(C_PT/1)/(1/C_TSUB-1/C_TT);      /* = ΔH_sub/R */
+const C_BVAP=Math.log(C_PC/C_PT)/(1/C_TT-1/C_TC);
+function cPsub(T){return C_PT*Math.exp(-C_BSUB*(1/T-1/C_TT));}
+function cPvap(T){return C_PT*Math.exp(-C_BVAP*(1/T-1/C_TT));}
+function cPfus(T){return C_PT*(1+C_FUS*(T/C_TT-1));}
+
+const SUBS={
+ h2o:{nom:'eau',Tt:W_TT,Pt:W_PT,Tc:W_TC,Pc:W_PC,
+   /* axe T déformé : nœuds (°C → fraction de largeur) */
+   tk:[[-40,0],[-10,0.08],[0.01,0.30],[100,0.53],[373.946,0.86],[450,1]],lp:[-4,3],
+   ticksT:[-40,-10,0,100,374,450],
+   phase(T,P){if(T>=W_TC)return P>=W_PC?'SC':'G';
+     if(T>=W_TT)return P>wPvap(T)?'L':'G';
+     if(P<=wPsub(T))return 'G';return T<wTfus(P)?'S':'L';},
+   curves(){const fus=[],sub=[],vap=[];
+     for(let k=0;k<=200;k++){const lp=Math.log10(W_PT)+(3-Math.log10(W_PT))*k/200;const P=Math.pow(10,lp);fus.push([wTfus(P),P]);}
+     for(let k=0;k<=200;k++){const T=K0-40+(W_TT-(K0-40))*k/200;sub.push([T,wPsub(T)]);}
+     for(let k=0;k<=400;k++){const T=W_TT+(W_TC-W_TT)*k/400;vap.push([T,k===400?W_PC:wPvap(T)]);}
+     return {fus,sub,vap};},
+   presets:[['Glace −20 °C, 1 atm',-20,1],['Eau 25 °C, 1 atm',25,1],['−2 °C, 0,001 atm',-2,0.001],['Vapeur 150 °C, 1 atm',150,1],['400 °C, 300 atm',400,300]],
+   marks:[['fusion 0 °C',0,1],['ébullition 100 °C',99.97,1]]},
+ co2:{nom:'CO₂',Tt:C_TT,Pt:C_PT,Tc:C_TC,Pc:C_PC,
+   tk:[[-120,0],[60,1]],lp:[-1,3],ticksT:[-120,-100,-78.5,-56.6,-40,-20,0,31,60],
+   phase(T,P){if(T>=C_TT&&P>=cPfus(T))return 'S';if(T>=C_TC)return P>=C_PC?'SC':'G';
+     if(T>=C_TT)return P>cPvap(T)?'L':'G';return P>cPsub(T)?'S':'G';},
+   curves(){const fus=[],sub=[],vap=[];
+     for(let k=0;k<=200;k++){const T=C_TT+(K0-30-C_TT)*k/200;fus.push([T,cPfus(T)]);}
+     for(let k=0;k<=200;k++){const T=K0-125+(C_TT-(K0-125))*k/200;sub.push([T,cPsub(T)]);}
+     for(let k=0;k<=200;k++){const T=C_TT+(C_TC-C_TT)*k/200;vap.push([T,cPvap(T)]);}
+     return {fus,sub,vap};},
+   presets:[['Neige carbonique −90 °C, 1 atm',-90,1],['CO₂ 20 °C, 1 atm',20,1],['CO₂ 40 °C, 1 atm',40,1],['−50 °C, 10 atm',-50,10]],
+   marks:[['sublimation −78,5 °C',-78.5,1]]}};
+const PH={S:{nom:'solide',col:[205,219,235]},L:{nom:'liquide',col:[176,212,242]},G:{nom:'gaz (vapeur)',col:[253,243,222]},SC:{nom:'fluide supercritique',col:[226,217,246]}};
+
+/* ---------- état ---------- */
+let trKind='T',tab='diag',sub='h2o',pt={T:K0-20,P:1},anim=null,crossList=[],trLabel='';
+const cdo=makeCanvas($('cd')),cx=cdo.ctx;let G=null,img=null,imgKey='';
+function layoutD(){const W=cdo.W,H=cdo.H;const g={x:58,y:16,w:W-74,h:H-58};return g;}
+/* axe T : interpolation monotone lisse (Fritsch-Carlson) entre les nœuds, pour éviter des cassures dans les courbes */
+const PCH={};
+function pch(){if(PCH[sub])return PCH[sub];const k=SUBS[sub].tk,n=k.length,d=[],m=[];for(let i=0;i<n-1;i++)d.push((k[i+1][1]-k[i][1])/(k[i+1][0]-k[i][0]));
+  m[0]=d[0];m[n-1]=d[n-2];for(let i=1;i<n-1;i++)m[i]=d[i-1]*d[i]<=0?0:3*(d[i-1]+d[i])/((2*d[i]+d[i-1])/d[i-1]+(d[i]+2*d[i-1])/d[i]);
+  return PCH[sub]={k,m,d};}
+function tx(Tc){const {k,m,d}=pch(),n=k.length;if(Tc<=k[0][0])return k[0][1]+(Tc-k[0][0])*d[0];if(Tc>=k[n-1][0])return k[n-1][1]+(Tc-k[n-1][0])*d[n-2];
+  let i=0;while(Tc>k[i+1][0])i++;const h=k[i+1][0]-k[i][0],t=(Tc-k[i][0])/h,t2=t*t,t3=t2*t;
+  return (2*t3-3*t2+1)*k[i][1]+(t3-2*t2+t)*h*m[i]+(-2*t3+3*t2)*k[i+1][1]+(t3-t2)*h*m[i+1];}
+function xt(f){const k=SUBS[sub].tk;let lo=k[0][0]-200,hi=k[k.length-1][0]+200;for(let j=0;j<60;j++){const c=(lo+hi)/2;if(tx(c)<f)lo=c;else hi=c;}return (lo+hi)/2;}
+const X=T=>G.x+tx(T-K0)*G.w;
+const Y=P=>{const L=SUBS[sub].lp;return G.y+G.h-(Math.log10(P)-L[0])/(L[1]-L[0])*G.h;};
+const iX=x=>xt((x-G.x)/G.w)+K0;
+const iY=y=>{const L=SUBS[sub].lp;return Math.pow(10,L[0]+(G.y+G.h-y)/G.h*(L[1]-L[0]));};
+const Tmin=()=>SUBS[sub].tk[0][0]+K0,Tmax=()=>SUBS[sub].tk[SUBS[sub].tk.length-1][0]+K0,Pmin=()=>Math.pow(10,SUBS[sub].lp[0]),Pmax=()=>Math.pow(10,SUBS[sub].lp[1]);
+function clampPt(){pt.T=Math.max(Tmin(),Math.min(Tmax(),pt.T));pt.P=Math.max(Pmin(),Math.min(Pmax(),pt.P));}
+
+/* coexistence : le point est-il à moins de 5 px d'une courbe ? */
+function onCurve(){const S=SUBS[sub],T=pt.T,P=pt.P,y=Y(P),x=X(T);const r=[];
+  const nearV=(Pc)=>isFinite(Pc)&&Math.abs(Y(Pc)-y)<5;
+  if(sub==='h2o'){
+    if(T>=W_TT&&T<=W_TC&&nearV(wPvap(T)))r.push(['L','G']);
+    if(T<=W_TT&&nearV(wPsub(T)))r.push(['S','G']);
+    if(P>=W_PT&&Math.abs(X(wTfus(P))-x)<5)r.push(['S','L']);}
+  else{if(T>=C_TT&&T<=C_TC&&nearV(cPvap(T)))r.push(['L','G']);if(T<=C_TT&&nearV(cPsub(T)))r.push(['S','G']);
+    if(T>=C_TT&&(nearV(cPfus(T))))r.push(['S','L']);}
+  const dT=Math.hypot(X(S.Tt)-x,Y(S.Pt)-y),dC=Math.hypot(X(S.Tc)-x,Y(S.Pc)-y);
+  if(dT<7)return {pair:['S','L','G'],pt:'triple'};if(dC<7)return {pair:['L','G'],pt:'critique'};
+  return r.length?{pair:r[0]}:null;}
+const TRN={'S>L':'fusion','L>S':'solidification','L>G':'vaporisation (ébullition)','G>L':'liquéfaction (condensation en liquide)','S>G':'sublimation','G>S':'condensation en solide',
+  'L>SC':'passage continu au fluide supercritique (aucun palier)','G>SC':'passage continu au fluide supercritique (aucun palier)','SC>L':'passage continu vers le liquide (aucun palier)','SC>G':'passage continu vers le gaz (aucun palier)'};
+/* points de franchissement le long d'un chemin (T ou P varie) */
+function crossings(kind,a,b){const S=SUBS[sub];const N=3000;const out=[];
+  const at=u=>kind==='T'?S.phase(u,pt.P):S.phase(pt.T,u);const val=k=>kind==='T'?a+(b-a)*k/N:Math.pow(10,Math.log10(a)+(Math.log10(b)-Math.log10(a))*k/N);
+  let prev=at(val(0));for(let k=1;k<=N;k++){const v=val(k),ph=at(v);if(ph!==prev){let lo=val(k-1),hi=v;for(let j=0;j<60;j++){const m=kind==='T'?(lo+hi)/2:Math.sqrt(lo*hi);if(at(m)===prev)lo=m;else hi=m;}
+      out.push({from:prev,to:ph,v:(lo+hi)/2});prev=ph;}}
+  return out;}
+function startTr(k){const S=SUBS[sub];anim=null;let kind,a,b;
+  if(k==='heat'){kind='T';a=pt.T;b=Tmax();}if(k==='cool'){kind='T';a=pt.T;b=Tmin();}if(k==='comp'){kind='P';a=pt.P;b=Pmax();}if(k==='exp'){kind='P';a=pt.P;b=Pmin();}
+  crossList=crossings(kind,a,b);trLabel={heat:'Chauffage isobare sous '+patm(pt.P)+' atm',cool:'Refroidissement isobare sous '+patm(pt.P)+' atm',comp:'Compression isotherme à '+fr(pt.T-K0,1)+' °C',exp:'Détente isotherme à '+fr(pt.T-K0,1)+' °C'}[k];
+  anim={kind,a,b,u:0,P0:pt.P,T0:pt.T};lastPath=anim;trKind=kind;updD();}
+function crossHTML(){if(!trLabel)return '';const it=crossList.map(c=>{const v=c.v;const where=trKind==='P'?'P ≈ '+patm(v)+' atm':'T ≈ '+fr(v-K0,1)+' °C';
+    return `<li><b>${TRN[c.from+'>'+c.to]||c.from+' → '+c.to}</b> : ${PH[c.from].nom} → ${PH[c.to].nom}, ${where}</li>`;}).join('');
+  return `<div class="note info2"><b>${trLabel}</b>${crossList.length?'<ol class="cross">'+it+'</ol>':' : aucun changement d’état sur ce trajet.'}</div>`;}
+
+function updD(){const S=SUBS[sub];clampPt();const ph=S.phase(pt.T,pt.P);const oc=G?onCurve():null;
+  let phTxt=PH[ph].nom;if(oc){phTxt=oc.pt==='triple'?'point triple : solide + liquide + gaz':oc.pt==='critique'?'point critique':'équilibre '+PH[oc.pair[0]].nom+' ⇌ '+PH[oc.pair[1]].nom.replace(' (vapeur)','');}
+  const st=[['Température',fr(pt.T-K0,1)+' °C','id="dT"',fr(pt.T,1)+' K'],['Pression',patm(pt.P)+' atm','id="dP"',(pt.P*MMHG>=1e5?sci(pt.P*MMHG,3):fr(pt.P*MMHG,pt.P*MMHG<10?2:0))+' mmHg'],
+    ['Phase','<span class="phase-chip">'+phTxt+'</span>','id="dPh"','région du diagramme']];
+  if(sub==='h2o'){st.push(['Point triple (eau)','0,01 °C','id="dTt"','0,00604 atm = 4,59 mmHg']);st.push(['Point critique (eau)','373,9 °C','id="dTc"','217,8 atm']);}
+  else{st.push(['Point triple (CO₂)','−56,6 °C','id="dTt"','5,11 atm']);st.push(['Point critique (CO₂)','31,0 °C','id="dTc"','72,8 atm']);}
+  setHTML('stD',st.map(s=>`<div class="stat"><small>${s[0]}</small><b ${s[2]}>${s[1]}</b><span>${s[3]}</span></div>`).join(''));
+  setHTML('crossBox',crossHTML());
+  const N=[];
+  if(sub==='h2o')N.push(['info2','<b>Pente négative de la courbe solide-liquide.</b> La glace (réseau ouvert de liaisons hydrogène) est moins dense que l’eau liquide. Comprimer favorise la phase la plus dense, le liquide : la température de fusion baisse quand la pression monte (Clapeyron : dP/dT = ΔH<sub>fus</sub> / (T·ΔV) avec ΔV &lt; 0). L’effet est faible : il faut environ 130 atm pour l’abaisser de 1 °C. L’axe des températures est déformé pour le rendre visible.']);
+  else N.push(['info2','<b>Point triple au-dessus de 1 atm.</b> Sous 1 atm, le CO₂ solide (neige carbonique, « glace sèche ») passe directement à l’état gazeux à −78,5 °C : sublimation. Le CO₂ liquide n’existe qu’au-dessus de 5,11 atm, par exemple dans les bouteilles et les extincteurs sous pression. Ici, la pente solide-liquide est positive : le solide est plus dense que le liquide.']);
+  if(ph==='SC')N.push(['info2','Fluide supercritique : ni liquide ni gaz, ses propriétés varient continûment. On y passe sans palier ni interface. Le CO₂ supercritique sert de solvant (par exemple pour décaféiner le café).']);
+  if(ph==='G'&&pt.T>S.Tc)N.push(['warn','Au-dessus de la température critique, aucune compression ne liquéfie le gaz : essaie la compression isotherme.']);
+  setHTML('notesD',N.map(n=>`<div class="note ${n[0]}">${n[1]}</div>`).join(''));
+  $('scaleNote').textContent=sub==='h2o'?'Axe des températures non à l’échelle (déformé pour montrer la pente de la courbe de fusion).':'Axe des températures à l’échelle (linéaire).';
+  window.__phase={ph,oc};}
+
+function drawD(){cdo.sync();const W=cdo.W,H=cdo.H;G=layoutD();cx.clearRect(0,0,W,H);cx.fillStyle='#fff';cx.fillRect(0,0,W,H);const S=SUBS[sub];
+  /* régions colorées (calcul de phase par cellule de 2 px) */
+  const key=sub+'|'+W+'|'+H;if(key!==imgKey){imgKey=key;const c=2,nw=Math.ceil(G.w/c),nh=Math.ceil(G.h/c);const oc=document.createElement('canvas');oc.width=nw;oc.height=nh;const o=oc.getContext('2d');const id=o.createImageData(nw,nh);
+    for(let j=0;j<nh;j++){const P=iY(G.y+(j+0.5)*c);for(let i=0;i<nw;i++){const T=iX(G.x+(i+0.5)*c);const col=PH[S.phase(T,P)].col;const p=(j*nw+i)*4;id.data[p]=col[0];id.data[p+1]=col[1];id.data[p+2]=col[2];id.data[p+3]=255;}}
+    o.putImageData(id,0,0);img=oc;}
+  cx.save();cx.imageSmoothingEnabled=false;cx.drawImage(img,G.x,G.y,G.w,G.h);cx.restore();
+  /* grille */
+  cx.save();cx.font=FN;cx.fillStyle='#5f6b7a';cx.textAlign='right';cx.textBaseline='middle';
+  for(let e=S.lp[0];e<=S.lp[1];e++){const P=Math.pow(10,e);cx.strokeStyle='rgba(255,255,255,.7)';cx.beginPath();cx.moveTo(G.x,Y(P));cx.lineTo(G.x+G.w,Y(P));cx.stroke();cx.fillText(e>=0?String(Math.round(P)).replace(/\B(?=(\d{3})+$)/g,'\u202f'):'0,'+'0'.repeat(-e-1)+'1',G.x-6,Y(P));}
+  cx.textAlign='center';cx.textBaseline='top';let lastx=-99;for(const t of S.ticksT){const x=X(t+K0);if(x-lastx<30)continue;lastx=x;cx.strokeStyle='rgba(255,255,255,.7)';cx.beginPath();cx.moveTo(x,G.y);cx.lineTo(x,G.y+G.h);cx.stroke();cx.fillText(fr(t,Number.isInteger(t)?0:1),x,G.y+G.h+5);}
+  cx.strokeStyle='#c8ccd0';cx.lineWidth=1.3;cx.beginPath();cx.moveTo(G.x,G.y);cx.lineTo(G.x,G.y+G.h);cx.lineTo(G.x+G.w,G.y+G.h);cx.stroke();
+  cx.fillStyle=MU;cx.font='700 11.5px Mulish,system-ui,sans-serif';cx.textAlign='right';cx.fillText('T (°C) →',G.x+G.w,G.y+G.h+22);
+  cx.save();cx.translate(14,G.y+G.h/2);cx.rotate(-Math.PI/2);cx.textAlign='center';cx.textBaseline='middle';cx.fillText('P (atm), échelle log',0,0);cx.restore();cx.restore();
+  /* 1 atm */
+  cx.save();cx.setLineDash([5,5]);cx.strokeStyle='rgba(15,27,45,.35)';cx.beginPath();cx.moveTo(G.x,Y(1));cx.lineTo(G.x+G.w,Y(1));cx.stroke();cx.restore();
+  /* courbes */
+  cx.save();cx.beginPath();cx.rect(G.x,G.y,G.w,G.h);cx.clip();const C=S.curves();const m=p=>[X(p[0]),Y(p[1])];
+  poly(cx,C.sub.map(m),'#3d4654',2.4);poly(cx,C.vap.map(m),'#3d4654',2.4);poly(cx,C.fus.map(m),'#3d4654',2.4);
+  cx.setLineDash([3,4]);cx.strokeStyle='rgba(90,63,160,.6)';cx.lineWidth=1.2;cx.beginPath();cx.moveTo(X(S.Tc),Y(S.Pc));cx.lineTo(X(S.Tc),G.y);cx.moveTo(X(S.Tc),Y(S.Pc));cx.lineTo(G.x+G.w,Y(S.Pc));cx.stroke();cx.setLineDash([]);
+  /* trajet en cours */
+  if(anim||trLabel){const a=anim||lastPath;if(a){const pts=[];for(let k=0;k<=60;k++){const u=k/60;if(a.kind==='T')pts.push([X(a.a+(a.b-a.a)*u),Y(a.P0)]);else pts.push([X(a.T0),Y(Math.pow(10,Math.log10(a.a)+(Math.log10(a.b)-Math.log10(a.a))*u))]);}poly(cx,pts,'rgba(163,45,45,.55)',2,[6,4]);
+    for(const c of crossList){const x=a.kind==='T'?X(c.v):X(a.T0),y=a.kind==='T'?Y(a.P0):Y(c.v);cx.fillStyle=RD;cx.beginPath();cx.arc(x,y,4,0,7);cx.fill();}}}
+  cx.restore();
+  /* points remarquables */
+  const dot=(T,P,col)=>{cx.fillStyle=col;cx.strokeStyle='#fff';cx.lineWidth=2;cx.beginPath();cx.arc(X(T),Y(P),5,0,7);cx.fill();cx.stroke();};
+  dot(S.Tt,S.Pt,INK);dot(S.Tc,S.Pc,VI);
+  const nar=W<520;
+  halo(cx,'point triple',X(S.Tt)+8,Y(S.Pt)+12,INK,FB,'left');
+  halo(cx,'point critique',X(S.Tc)-8,Y(S.Pc)+14,VI,FB,'right');
+  for(const [lab,t,P] of S.marks){cx.fillStyle='#3d4654';cx.beginPath();cx.arc(X(t+K0),Y(P),3.5,0,7);cx.fill();if(!nar)halo(cx,lab,X(t+K0)+6,Y(P)-10,INK,FS,'left');}
+  halo(cx,'1 atm',G.x+G.w-4,Y(1)-9,MU,FS,'right');
+  /* étiquettes de régions */
+  const lab=(t,T,P,col)=>halo(cx,t,X(T),Y(P),col,FB,'center');
+  if(sub==='h2o'){lab('SOLIDE',K0-28,0.5,'#3d5a80');lab('LIQUIDE',K0+60,20,'#1e4f8f');lab('GAZ',K0+200,0.01,'#8a5a00');halo(cx,'SUPERCRITIQUE',G.x+G.w-4,Y(600),VI,nar?FS:FB,'right');}
+  else{lab('SOLIDE',K0-95,100,'#3d5a80');lab('LIQUIDE',K0+0,200,'#1e4f8f');lab('GAZ',K0+10,1,'#8a5a00');lab('SUPERCRITIQUE',K0+47,nar?600:300,VI);}
+  if(sub==='h2o'){{const Pl=nar?500:150;halo(cx,'← pente négative',X(wTfus(Pl))+6,Y(Pl),RD,FS,'left');}}
+  /* point mobile */
+  const px=X(pt.T),py=Y(pt.P);cx.strokeStyle='rgba(163,45,45,.35)';cx.lineWidth=1;cx.setLineDash([2,3]);cx.beginPath();cx.moveTo(px,G.y+G.h);cx.lineTo(px,py);cx.lineTo(G.x,py);cx.stroke();cx.setLineDash([]);
+  cx.fillStyle=RD;cx.strokeStyle='#fff';cx.lineWidth=3;cx.beginPath();cx.arc(px,py,8,0,7);cx.fill();cx.stroke();}
+let lastPath=null;
+
+/* ---------- boîte de molécules ---------- */
+const cbo=makeCanvas($('cbx')),bx=cbo.ctx;const NPART=36;const parts=[];for(let i=0;i<NPART;i++)parts.push({x:Math.random(),y:Math.random(),vx:Math.random()-0.5,vy:Math.random()-0.5,ph:Math.random()*6});
+let tA=0;
+function drawBox(dt){cbo.sync();const W=cbo.W,H=cbo.H;bx.clearRect(0,0,W,H);bx.fillStyle='#fff';bx.fillRect(0,0,W,H);
+  const S=SUBS[sub];const ph=S.phase(pt.T,pt.P);const oc=window.__phase&&window.__phase.oc;
+  const bw=Math.min(W-10,150),bh=H-12,x0=(W-bw)/2,y0=6;bx.strokeStyle='#7d8794';bx.lineWidth=2;bx.strokeRect(x0,y0,bw,bh);
+  const r=4.2;const draw=(x,y,col)=>{bx.fillStyle=col;bx.beginPath();bx.arc(x0+x*bw,y0+y*bh,r,0,7);bx.fill();};
+  let mode=ph;if(oc)mode=oc.pt==='triple'?'SLG':oc.pair.join('');
+  const sp=Math.max(0.3,Math.min(2.5,pt.T/300));
+  /* solide : réseau (plus ouvert pour la glace que pour le liquide) */
+  const lattice=(n,ymin,ymax,open)=>{const cols=6,rows=Math.ceil(n/cols);for(let i=0;i<n;i++){const c=i%cols,rw=Math.floor(i/cols);const x=(c+0.5)/cols,y=ymax-(rw+0.5)/rows*(ymax-ymin)*open;
+      draw(x+0.012*Math.sin(tA*9+i),y+0.012*Math.cos(tA*11+i*1.7),'#3d5a80');}};
+  const move=(list,ymin,ymax,speed,col)=>{for(const p of list){p.x+=p.vx*speed*dt*0.6;p.y+=p.vy*speed*dt*0.6;
+      if(p.x<0.04){p.x=0.04;p.vx=Math.abs(p.vx);}if(p.x>0.96){p.x=0.96;p.vx=-Math.abs(p.vx);}if(p.y<ymin){p.y=ymin;p.vy=Math.abs(p.vy);}if(p.y>ymax){p.y=ymax;p.vy=-Math.abs(p.vy);}
+      if(Math.random()<0.02*speed){p.vx+=Math.random()-0.5;p.vy+=Math.random()-0.5;const n=Math.hypot(p.vx,p.vy)||1;p.vx/=n;p.vy/=n;}draw(p.x,p.y,col);}};
+  const iceOpen=sub==='h2o'?1:0.8,liqTop=sub==='h2o'?0.45:0.42;
+  if(mode==='S')lattice(NPART,sub==='h2o'?0.35:0.45,0.96,iceOpen);
+  else if(mode==='L')move(parts,liqTop,0.96,0.5*sp,'#1e4f8f');
+  else if(mode==='G')move(parts.slice(0,12),0.04,0.96,2.4*sp,'#8a5a00');
+  else if(mode==='SC')move(parts,0.04,0.96,1.2*sp,VI);
+  else if(mode==='LG'){move(parts.slice(0,24),0.55,0.96,0.5*sp,'#1e4f8f');move(parts.slice(24,30),0.04,0.4,2*sp,'#8a5a00');bx.strokeStyle='rgba(30,79,143,.4)';bx.beginPath();bx.moveTo(x0,y0+0.5*bh);bx.lineTo(x0+bw,y0+0.5*bh);bx.stroke();}
+  else if(mode==='SG'){lattice(18,0.6,0.96,1);move(parts.slice(18,24),0.04,0.45,2*sp,'#8a5a00');}
+  else if(mode==='SL'){for(let i=0;i<9;i++)draw(0.3+0.15*(i%3)+0.01*Math.sin(tA*9+i),(sub==='h2o'?0.48:0.72)+0.12*Math.floor(i/3)*(sub==='h2o'?0.4:1)+0.01*Math.cos(tA*7+i),'#3d5a80');move(parts.slice(9,30),0.45,0.96,0.5*sp,'#1e4f8f');}
+  else {lattice(9,0.75,0.96,1);move(parts.slice(9,24),0.5,0.96,0.5*sp,'#1e4f8f');move(parts.slice(24,29),0.04,0.4,2*sp,'#8a5a00');}
+  const capt={S:'Solide : molécules ordonnées, qui vibrent sur place.'+(sub==='h2o'?' Réseau de la glace plus ouvert que le liquide.':''),L:'Liquide : molécules au contact, qui glissent les unes sur les autres.',G:'Gaz : molécules éloignées, rapides, qui occupent tout le volume.',SC:'Fluide supercritique : souvent presque aussi dense qu’un liquide, il occupe tout le volume comme un gaz.',
+    LG:'Liquide et vapeur en équilibre.',SG:'Solide et vapeur en équilibre.',SL:'Solide et liquide en équilibre'+(sub==='h2o'?' : la glace flotte.':'.'),SLG:'Point triple : trois phases en équilibre.'}[mode]||'';
+  setHTML('boxcap',capt+' Schéma qualitatif.');}
+
+/* ---------- glisser le point ---------- */
+let drag=false;
+function ptFromEv(e){const r=$('cd').getBoundingClientRect();const x=Math.max(G.x,Math.min(G.x+G.w,e.clientX-r.left)),y=Math.max(G.y,Math.min(G.y+G.h,e.clientY-r.top));pt.T=iX(x);pt.P=iY(y);anim=null;trLabel='';crossList=[];updD();}
+$('cd').addEventListener('pointerdown',e=>{drag=true;$('cd').setPointerCapture(e.pointerId);ptFromEv(e);});
+$('cd').addEventListener('pointermove',e=>{if(drag)ptFromEv(e);});
+$('cd').addEventListener('pointerup',()=>drag=false);$('cd').addEventListener('pointercancel',()=>drag=false);
+function buildPresets(){$('sPre').innerHTML=SUBS[sub].presets.map((p,i)=>`<button class="btn" data-k="${i}">${p[0]}</button>`).join('');
+  $('sPre').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{const p=SUBS[sub].presets[+b.dataset.k];pt.T=p[1]+K0;pt.P=p[2];anim=null;trLabel='';crossList=[];updD();}));}
+segBtns('sSub',k=>{sub=k;const p=SUBS[sub].presets[0];pt.T=p[1]+K0;pt.P=p[2];anim=null;trLabel='';crossList=[];buildPresets();updD();});
+$('sTr').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>startTr(b.dataset.k)));
+
+/* ================= COURBE DE CHAUFFAGE ================= */
+const C_GLACE=2.09,C_EAU=4.18,C_VAP=2.01;  /* capacités thermiques massiques usuelles (J/(g·K)) : glace, eau liquide (VALEURS-REFERENCE), vapeur ; supposées constantes */
+const H_FUS=6.01,H_VAP=40.7;               /* enthalpies molaires de fusion (0 °C) et de vaporisation (100 °C) de l'eau, kJ/mol (44,0 à 25 °C : autre température) */
+const T0=-20,T1=120;
+let hm=100,hfrac=0,hrun=false;
+function heatSteps(m){const n=m/M_H2O;return [
+  {nom:'Glace −20 → 0 °C',q:m*C_GLACE*(0-T0)/1000,f:'m·c<sub>glace</sub>·ΔT',T:[T0,0]},
+  {nom:'Fusion à 0 °C',q:n*H_FUS,f:'n·ΔH<sub>fus</sub>',T:[0,0]},
+  {nom:'Eau 0 → 100 °C',q:m*C_EAU*100/1000,f:'m·c<sub>eau</sub>·ΔT',T:[0,100]},
+  {nom:'Vaporisation à 100 °C',q:n*H_VAP,f:'n·ΔH<sub>vap</sub>',T:[100,100]},
+  {nom:'Vapeur 100 → 120 °C',q:m*C_VAP*(T1-100)/1000,f:'m·c<sub>vapeur</sub>·ΔT',T:[100,T1]}];}
+function heatState(m,Q){const S=heatSteps(m);let acc=0;for(let i=0;i<S.length;i++){const s=S[i];if(Q<=acc+s.q+1e-12){const u=s.q>0?(Q-acc)/s.q:0;return {i,u,T:s.T[0]+(s.T[1]-s.T[0])*u,steps:S};}acc+=s.q;}return {i:4,u:1,T:T1,steps:S};}
+const cho=makeCanvas($('ch')),hx=cho.ctx;
+function updH(){const S=heatSteps(hm),Qt=S.reduce((a,s)=>a+s.q,0),Q=hfrac*Qt,z=heatState(hm,Q);
+  $('hmv').textContent=hm+' g';$('hqv').textContent=fr(Q,1)+' kJ';
+  let phase;if(z.i===0)phase='glace';else if(z.i===1)phase=`glace + eau liquide (${Math.round(z.u*100)} % fondu)`;else if(z.i===2)phase='eau liquide';else if(z.i===3)phase=`eau + vapeur (${Math.round(z.u*100)} % vaporisé)`;else phase='vapeur';
+  const st=[['Température',fr(z.T,1)+' °C','id="hT"','sous 1 atm'],['État',phase,'id="hS"',z.i===1||z.i===3?'palier : T constante':'T monte'],['Énergie apportée',fr(Q,1)+' kJ','id="hQ"','sur '+fr(Qt,1)+' kJ au total'],
+    ['Vaporisation / fusion',fr(S[3].q/S[1].q,1)+' ×','id="hR"','40,7 / 6,01 kJ/mol']];
+  setHTML('stH',st.map(s=>`<div class="stat"><small>${s[0]}</small><b ${s[2]}>${s[1]}</b><span>${s[3]}</span></div>`).join(''));
+  setHTML('tabH','<table class="t"><thead><tr><th>Étape</th><th>Calcul</th><th>Énergie</th></tr></thead><tbody>'+S.map((s,i)=>`<tr${i===z.i?' style="background:var(--sel)"':''}><td>${s.nom}</td><td>${s.f}</td><td id="hq${i}">${fr(s.q,2)} kJ</td></tr>`).join('')+
+    `</tbody></table><p class="hint" style="margin-top:6px">n = m / M(H₂O), M = ${fr(M_H2O,2)} g/mol. c<sub>glace</sub> = 2,09 ; c<sub>eau</sub> = 4,18 ; c<sub>vapeur</sub> = 2,01 J/(g·K) ; ΔH<sub>fus</sub> = 6,01 kJ/mol ; ΔH<sub>vap</sub> = 40,7 kJ/mol à 100 °C (44,0 kJ/mol à 25 °C) : valeurs tabulées usuelles. Modèle simplifié : c constantes, sous 1 atm, aucune perte de chaleur.</p>`);
+  const N=[];if(z.i===1||z.i===3)N.push(['info2','Palier : l’énergie sert à séparer les molécules (rompre des liaisons hydrogène), pas à les agiter davantage. La température ne bouge pas tant que les deux phases coexistent.']);
+  N.push(['info2','Le palier de vaporisation est environ '+fr(S[3].q/S[1].q,1)+' fois plus long que celui de fusion : pour passer en gaz, il faut séparer complètement les molécules, alors que la fusion n’en rompt qu’une partie. C’est pourquoi, à masse égale, une brûlure par la vapeur à 100 °C est plus grave qu’une brûlure par l’eau à 100 °C : la vapeur qui se condense sur la peau lui cède en plus son enthalpie de vaporisation.']);
+  setHTML('notesH',N.map(n=>`<div class="note ${n[0]}">${n[1]}</div>`).join(''));
+  window.__heat={z,Q,Qt};}
+function drawH(){cho.sync();const W=cho.W,H=cho.H;hx.clearRect(0,0,W,H);hx.fillStyle='#fff';hx.fillRect(0,0,W,H);
+  const S=heatSteps(hm),Qt=S.reduce((a,s)=>a+s.q,0),Q=hfrac*Qt,z=heatState(hm,Q);const g={x:52,y:18,w:W-70,h:H-60};
+  const XQ=q=>g.x+q/Qt*g.w,YT=t=>g.y+g.h-(t-(-30))/(130-(-30))*g.h;
+  hx.font=FN;hx.textAlign='right';hx.textBaseline='middle';for(let t=-20;t<=120;t+=20){hx.strokeStyle='#eef0f3';hx.beginPath();hx.moveTo(g.x,YT(t));hx.lineTo(g.x+g.w,YT(t));hx.stroke();hx.fillStyle='#8a95a3';hx.fillText(fr(t,0),g.x-6,YT(t));}
+  const xs=niceStep(Qt,g.w,70);hx.textAlign='center';hx.textBaseline='top';for(let v=0;v<=Qt+1e-9;v+=xs){hx.fillStyle='#8a95a3';hx.fillText(fr(v,0),XQ(v),g.y+g.h+5);}
+  hx.strokeStyle='#c8ccd0';hx.lineWidth=1.3;hx.beginPath();hx.moveTo(g.x,g.y);hx.lineTo(g.x,g.y+g.h);hx.lineTo(g.x+g.w,g.y+g.h);hx.stroke();
+  hx.fillStyle=MU;hx.font='700 11.5px Mulish,system-ui,sans-serif';hx.textAlign='right';hx.fillText('énergie apportée Q (kJ) →',g.x+g.w,g.y+g.h+22);hx.textAlign='left';hx.textBaseline='bottom';hx.fillText('T (°C)',g.x-40,g.y-4);
+  const pts=[[0,T0]];let acc=0;for(const s of S){acc+=s.q;pts.push([acc,s.T[1]]);}
+  const cols=['#3d5a80','#7a8fb0','#1e4f8f','#7a8fb0','#8a5a00'];
+  for(let i=0;i<5;i++){poly(hx,[[XQ(pts[i][0]),YT(pts[i][1])],[XQ(pts[i+1][0]),YT(pts[i+1][1])]],i===1||i===3?'rgba(163,45,45,.35)':'rgba(30,63,143,.3)',3);}
+  const done=pts.filter(p=>p[0]<=Q).map(p=>[XQ(p[0]),YT(p[1])]);done.push([XQ(Q),YT(z.T)]);poly(hx,done,BLD,3);
+  const labs=[['glace',0],['fusion (palier)',1],['eau liquide',2],['vaporisation (palier)',3],['vapeur',4]];
+  for(const [t,i] of labs){const xm=(XQ(pts[i][0])+XQ(pts[i+1][0]))/2,ym=(YT(pts[i][1])+YT(pts[i+1][1]))/2;
+    const narrow=XQ(pts[i+1][0])-XQ(pts[i][0])<60;if(i===1||i===3)halo(hx,t,narrow?XQ(pts[i][0])+4:xm,ym-12,RD,FS,narrow?'left':'center');else if(!narrow||i===0)halo(hx,t,xm+(i===0?14:0),ym+(i===4?-12:14),INK,FS,i===0?'left':'center');}
+  hx.fillStyle=GRD;hx.strokeStyle='#fff';hx.lineWidth=2;hx.beginPath();hx.arc(XQ(Q),YT(z.T),6,0,7);hx.fill();hx.stroke();}
+
+/* ================= PRESSION DE VAPEUR ================= */
+/* T d'ébullition sous P (atm) : inversion de wPvap par dichotomie */
+function Teb(P){let lo=W_TT,hi=W_TC;if(P<=W_PT)return NaN;for(let k=0;k<80;k++){const m=(lo+hi)/2;if(wPvap(m)<P)lo=m;else hi=m;}return (lo+hi)/2;}   /* wPvap en atm */
+const PEL=[];for(let i=0;i<=1000;i++)PEL.push(Math.pow(10,Math.log10(0.02)+(Math.log10(4)-Math.log10(0.02))*i/1000));
+let pe=1,tw=25;
+const cvo2=makeCanvas($('cv2')),vx2=cvo2.ctx;
+function updV(){const Te=Teb(pe)-K0;const Pv=wPvap(tw+K0);const boil=tw>=Te-1e-9;const twEff=Math.min(tw,Te);
+  $('pev').textContent=patm(pe)+' atm';$('twv').textContent=tw+' °C';
+  const st=[['T d’ébullition sous P ext',fr(Te,1)+' °C','id="vTe"','là où P_vap = P_ext'],['P extérieure',fr(pe*MMHG,0)+' mmHg','id="vPe"',patm(pe)+' atm'],
+    ['P_vap à '+tw+' °C',fr(Pv*MMHG,Pv*MMHG<100?1:0)+' mmHg','id="vPv"',patm(Pv)+' atm'],['État de l’eau chauffée',boil?'elle bout':'pas d’ébullition','id="vB"',boil?'bulles dans tout le liquide':'évaporation en surface seulement']];
+  setHTML('stV',st.map(s=>`<div class="stat"><small>${s[0]}</small><b ${s[2]}>${s[1]}</b><span>${s[3]}</span></div>`).join(''));
+  const N=[];if(boil&&tw>Te+0.5)N.push(['warn','Dans un récipient ouvert sous '+patm(pe)+' atm, l’eau liquide ne dépasse pas '+fr(Te,1)+' °C : l’énergie supplémentaire vaporise l’eau au lieu de la chauffer.']);
+  N.push(['info2','Valeurs de référence : P<sub>vap</sub>(H₂O) = 23,8 mmHg à 25 °C et 47 mmHg à 37 °C. Courbe complète : équation de Wagner et Pruss (référence internationale IAPWS pour l’eau).']);
+  N.push(['info2','En montagne, la pression baisse (≈ 0,5 atm vers 5 500 m d’altitude, ordre de grandeur) : l’eau bout vers 82 °C et les pâtes cuisent mal. Dans un autocuiseur, la vapeur piégée fait monter la pression (≈ 2 atm en pression absolue, ordre de grandeur) : l’eau bout vers 120 °C et la cuisson est plus rapide.']);
+  setHTML('notesV',N.map(n=>`<div class="note ${n[0]}">${n[1]}</div>`).join(''));window.__vap={Te,Pv,boil,twEff};}
+function drawV(){cvo2.sync();const W=cvo2.W,H=cvo2.H;vx2.clearRect(0,0,W,H);vx2.fillStyle='#fff';vx2.fillRect(0,0,W,H);const nar=W<520;
+  const potW=nar?0:150;const g={x:52,y:18,w:W-74-potW,h:H-60-(nar?0:0)};const Pm=4;
+  const XT=t=>g.x+t/150*g.w,YP=p=>g.y+g.h-p/Pm*g.h;
+  vx2.font=FN;vx2.textAlign='right';vx2.textBaseline='middle';for(let p=0;p<=Pm;p+=0.5){vx2.strokeStyle='#eef0f3';vx2.beginPath();vx2.moveTo(g.x,YP(p));vx2.lineTo(g.x+g.w,YP(p));vx2.stroke();vx2.fillStyle='#8a95a3';vx2.fillText(fr(p,1),g.x-6,YP(p));}
+  vx2.textAlign='center';vx2.textBaseline='top';for(let t=0;t<=150;t+=25){vx2.fillStyle='#8a95a3';vx2.fillText(fr(t,0),XT(t),g.y+g.h+5);}
+  vx2.strokeStyle='#c8ccd0';vx2.lineWidth=1.3;vx2.beginPath();vx2.moveTo(g.x,g.y);vx2.lineTo(g.x,g.y+g.h);vx2.lineTo(g.x+g.w,g.y+g.h);vx2.stroke();
+  vx2.fillStyle=MU;vx2.font='700 11.5px Mulish,system-ui,sans-serif';vx2.textAlign='right';vx2.fillText('T (°C) →',g.x+g.w,g.y+g.h+22);vx2.textAlign='left';vx2.textBaseline='bottom';vx2.fillText('P (atm)',g.x-40,g.y-4);
+  const pts=[];for(let t=0.01;t<=150;t+=0.5)pts.push([XT(t),YP(wPvap(t+K0))]);poly(vx2,pts,BLD,2.6);
+  halo(vx2,'P_vap(eau)',XT(140),YP(wPvap(140+K0))-12,BLD,FB,'right');
+  vx2.save();vx2.strokeStyle=VI;vx2.lineWidth=2;vx2.setLineDash([7,5]);vx2.beginPath();vx2.moveTo(g.x,YP(pe));vx2.lineTo(g.x+g.w,YP(pe));vx2.stroke();vx2.restore();
+  halo(vx2,'P ext = '+patm(pe)+' atm',g.x+6,YP(pe)-(pe<0.35?30:10),VI,FB,'left');
+  const Te=window.__vap.Te;vx2.save();vx2.strokeStyle='rgba(163,45,45,.6)';vx2.setLineDash([3,4]);vx2.beginPath();vx2.moveTo(XT(Te),YP(pe));vx2.lineTo(XT(Te),g.y+g.h);vx2.stroke();vx2.restore();
+  vx2.fillStyle=RD;vx2.beginPath();vx2.arc(XT(Te),YP(pe),6,0,7);vx2.fill();halo(vx2,'ébullition '+fr(Te,1)+' °C',XT(Te)+8,YP(pe)+14,RD,FB,'left');
+  for(const [t,mm] of [[25,23.8],[37,47]]){vx2.fillStyle=GRD;vx2.beginPath();vx2.arc(XT(t),YP(mm/MMHG),4,0,7);vx2.fill();}
+  halo(vx2,'25 °C : 23,8 mmHg · 37 °C : 47 mmHg',XT(4),YP(0)-12,GRD,FS,'left');
+  /* point de l'eau chauffée */
+  const tE=Math.min(tw,Te);vx2.fillStyle='#fff';vx2.strokeStyle=OR;vx2.lineWidth=2.5;vx2.beginPath();vx2.arc(XT(tE),YP(wPvap(tE+K0)),5,0,7);vx2.fill();vx2.stroke();
+  /* casserole */
+  const px=nar?g.x+g.w-92:W-potW+6,py=nar?g.y+10:g.y+g.h-150,pw=nar?84:130,ph=nar?70:110;
+  vx2.fillStyle=nar?'rgba(255,255,255,.9)':'#fff';vx2.fillRect(px-4,py-20,pw+8,ph+30);
+  vx2.fillStyle='rgba(176,212,242,.9)';vx2.fillRect(px,py+ph*0.3,pw,ph*0.7);vx2.strokeStyle='#5f6b7a';vx2.lineWidth=2.5;vx2.beginPath();vx2.moveTo(px,py);vx2.lineTo(px,py+ph);vx2.lineTo(px+pw,py+ph);vx2.lineTo(px+pw,py);vx2.stroke();
+  const boil=window.__vap.boil;
+  for(let k=0;k<(boil?14:4);k++){const ph2=(tA*(boil?0.9:0.3)+k/(boil?14:4))%1;if(boil){const xx=px+8+((k*37)%(pw-16)),yy=py+ph-6-ph2*ph*0.65;vx2.strokeStyle='rgba(255,255,255,.95)';vx2.lineWidth=1.5;vx2.beginPath();vx2.arc(xx,yy,2+ph2*3,0,7);vx2.stroke();}
+    const xs=px+10+((k*29)%(pw-20)),ys=py+ph*0.3-ph2*28;vx2.fillStyle=`rgba(150,160,175,${0.5*(1-ph2)})`;vx2.beginPath();vx2.arc(xs,ys,2.5,0,7);vx2.fill();}
+  halo(vx2,boil?'ébullition':'évaporation',px+pw/2,py+ph+12,boil?RD:MU,FN,'center');
+  halo(vx2,fr(tE,0)+' °C',px+pw/2,py+ph*0.6,INK,FB,'center');}
+
+/* ---------- valeurs tabulées affichées (vérifiées, VALEURS-REFERENCE.md) ---------- */
+$('valid').innerHTML='<b>Valeurs tabulées usuelles</b> (tables NIST et IAPWS, arrondies) : points triples (eau 0,01 °C et 0,00604 atm ; CO₂ −56,6 °C et 5,11 atm), points critiques (eau 373,9 °C et 217,8 atm ; CO₂ 31,0 °C et 72,8 atm), sublimation du CO₂ à −78,5 °C sous 1 atm, enthalpies et capacités thermiques de l’eau, équation de pression de vapeur de Wagner et Pruss. Les courbes du CO₂ et la courbe solide-gaz de l’eau sont des modèles approchés (Clausius-Clapeyron) ; la courbe de fusion de l’eau est une droite de pente −133 atm/K.';
+
+/* ---------- boucle ---------- */
+let last=0;
+function frame(ts){const dt=Math.min(0.05,(ts-(last||ts))/1000);last=ts;tA+=dt;
+  if(tab==='diag'){if(anim){anim.u=Math.min(1,anim.u+dt/6);const a=anim;if(a.kind==='T'){a.P0=a.P0??pt.P;pt.T=a.a+(a.b-a.a)*a.u;}else{a.T0=a.T0??pt.T;pt.P=Math.pow(10,Math.log10(a.a)+(Math.log10(a.b)-Math.log10(a.a))*a.u);}
+      lastPath=a;if(a.u>=1)anim=null;updD();}drawD();drawBox(dt);}
+  else if(tab==='heat'){if(hrun){hfrac=Math.min(1,hfrac+dt/10);$('hq').value=Math.round(hfrac*1000);updH();if(hfrac>=1){hrun=false;$('bHeat').textContent='Chauffer à puissance constante';}}drawH();}
+  else drawV();
+  if(!window.__freeze)requestAnimationFrame(frame);else window.__frozen=true;}
+segBtns('sTab',k=>{tab=k;$('pDiag').hidden=k!=='diag';$('pHeat').hidden=k!=='heat';$('pVap').hidden=k!=='vap';});
+$('hm').addEventListener('input',()=>{hm=+$('hm').value;updH();});
+$('hq').addEventListener('input',()=>{hfrac=+$('hq').value/1000;hrun=false;$('bHeat').textContent='Chauffer à puissance constante';updH();});
+$('bHeat').addEventListener('click',()=>{if(hfrac>=1)hfrac=0;hrun=!hrun;$('bHeat').textContent=hrun?'Pause':'Chauffer à puissance constante';});
+$('bHeat0').addEventListener('click',()=>{hfrac=0;hrun=false;$('hq').value=0;$('bHeat').textContent='Chauffer à puissance constante';updH();});
+const peIdx=p=>{let b=0;for(let i=0;i<PEL.length;i++)if(Math.abs(Math.log(PEL[i]/p))<Math.abs(Math.log(PEL[b]/p)))b=i;return b;};
+$('pe').addEventListener('input',()=>{pe=PEL[+$('pe').value];selectSeg('sSit','');updV();});
+$('tw').addEventListener('input',()=>{tw=+$('tw').value;updV();});
+segBtns('sSit',k=>{pe=+k;$('pe').value=peIdx(pe);updV();});
+$('pe').value=peIdx(1);buildPresets();
+/* initialisation */
+pt.T=K0-20;pt.P=1;cdo.sync();G=layoutD();updD();updH();updV();requestAnimationFrame(frame);
+/* accès pour les tests */
+window.__sim={set(o){if(o.tab){tab=o.tab;selectSeg('sTab',tab);$('pDiag').hidden=tab!=='diag';$('pHeat').hidden=tab!=='heat';$('pVap').hidden=tab!=='vap';}
+    if(o.sub&&o.sub!==sub){sub=o.sub;selectSeg('sSub',sub);buildPresets();}
+    if(o.T!=null)pt.T=o.T+K0;if(o.P!=null)pt.P=o.P;if(o.T!=null||o.P!=null||o.sub){anim=null;trLabel='';crossList=[];}
+    if(o.tr){startTr(o.tr);anim=null;}
+    cdo.sync();G=layoutD();updD();
+    if(o.m!=null){hm=o.m;$('hm').value=hm;}if(o.hf!=null){hfrac=o.hf;$('hq').value=Math.round(hfrac*1000);}hrun=false;updH();
+    if(o.pe!=null){pe=o.pe;$('pe').value=peIdx(pe);selectSeg('sSit',String(pe));}if(o.tw!=null){tw=o.tw;$('tw').value=tw;}updV();},
+  get:()=>({phase:window.__phase,cross:crossList.map(c=>({from:c.from,to:c.to,v:c.v})),heat:window.__heat,vap:window.__vap,pt:{T:pt.T,P:pt.P}}),
+  phase:(s,T,P)=>SUBS[s].phase(T+K0,P),Teb:P=>Teb(P)-K0,Pvap:T=>wPvap(T+K0),_frame:frame};
+})();
+
+</script>
+<script src="../../kit/sfa-nav.js"></script></body>
+</html>

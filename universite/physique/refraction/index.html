@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Réfraction et réflexion totale · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+.val{white-space:nowrap}
+.presets{display:flex;flex-wrap:wrap;gap:6px}
+.presets .btn{padding:5px 10px!important}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font:600 .82rem var(--f-ui);color:var(--muted);margin:10px 0 2px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.hint{font:500 .84rem var(--f-ui);color:var(--muted)}
+[hidden]{display:none!important}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH6">Réflexion et réfraction</a>›<b>Réfraction et réflexion totale</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Réflexion et réfraction</span><span class="sfa-chip free">Gratuit</span></div><h1>Réfraction et réflexion totale</h1><p>Snell-Descartes, l&#x27;angle limite et la fibre optique</p></div>
+<section class="sfa-sim">
+
+
+
+<canvas id="cv" style="width:100%;height:62vh;min-height:400px;" aria-label="Réfraction : fais glisser le laser pour changer l'angle d'incidence"></canvas>
+
+<div class="legend">
+  <span><i style="background:#E24B4A"></i>Rayon laser (incident, réfracté)</span>
+  <span><i style="background:#E24B4A;opacity:.35"></i>Rayon réfléchi (pâle = peu d'énergie)</span>
+  <span><i style="background:#9aa0a6"></i>Normale</span>
+</div>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill" id="p1" style="min-width:150px;color:#185fa5">n₁ &nbsp;milieu du haut</span>
+  <input type="range" id="n1" min="1" max="2.5" value="1.5" step="0.01" style="accent-color:#378ADD;">
+  <span class="val" id="n1v" style="color:#185fa5">1,50</span>
+</div>
+<div class="row presets" id="pr1"></div>
+<div class="row">
+  <span class="pill" id="p2" style="min-width:150px;color:#0F6E56">n₂ &nbsp;milieu du bas</span>
+  <input type="range" id="n2" min="1" max="2.5" value="1" step="0.01" style="accent-color:#1D9E75;">
+  <span class="val" id="n2v" style="color:#0F6E56">1,00</span>
+</div>
+<div class="row presets" id="pr2"></div>
+<div class="row" id="rowI">
+  <span class="pill" style="min-width:150px;color:#185fa5">i₁ &nbsp;angle d'incidence</span>
+  <input type="range" id="ai" min="0" max="89" value="30" step="0.5" style="accent-color:#378ADD;">
+  <span class="val" id="aiv" style="color:#185fa5">30,0°</span>
+</div>
+<div class="row" id="rowA" hidden>
+  <span class="pill" style="min-width:150px;color:#BA7517">α &nbsp;angle d'injection</span>
+  <input type="range" id="aa" min="0" max="60" value="25" step="0.5" style="accent-color:#BA7517;">
+  <span class="val" id="aav" style="color:#BA7517">25,0°</span>
+</div>
+<div class="row" id="rowC" hidden>
+  <span class="pill" style="min-width:150px;color:#7F77DD">courbure de la fibre</span>
+  <input type="range" id="cc" min="0" max="100" value="45" step="1" style="accent-color:#7F77DD;">
+  <span class="val" id="ccv" style="color:#7F77DD">45 %</span>
+</div>
+<div class="row">
+  <button class="btn on" id="bSweep">Balayage auto</button>
+  <button class="btn" id="bSwap">Inverser les milieux</button>
+  <button class="btn" id="bFib">Mode fibre optique</button>
+  <button class="btn" id="bPause">Pause</button>
+</div>
+<div class="row"><span class="hint" id="hint">Astuce : attrape le laser et fais-le tourner autour du point d'incidence.</span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const cv=$('cv'),ctx=cv.getContext('2d');
+const BL='#378ADD',BLD='#185fa5',GR='#1D9E75',GRD='#0F6E56',RD='#E24B4A',RDD='#a32d2d',OR='#BA7517',VI='#7F77DD',INK='#3d3d3a',GY='#9aa0a6',AX='#c8ccd0',MUT='#5b6b7b';
+const FT='600 13px Mulish,system-ui,sans-serif',FN='600 12px Mulish,system-ui,sans-serif';
+const fr=(v,n)=>v.toFixed(n).replace('.',',');
+const D2R=Math.PI/180;
+let W=0,H=0,dpr=1;
+function syncSize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;
+  const nW=Math.round(r.width)||600,nH=Math.round(r.height)||400;
+  if(nW!==W||nH!==H||cv.width!==Math.round(nW*dpr)){W=nW;H=nH;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
+  ctx.setTransform(dpr,0,0,dpr,0,0);}
+/* ---------- étiquettes : placement sans chevauchement, halo blanc, dessinées en dernier ---------- */
+let LQ=[],OB=[],RC=[];
+const obSeg=(x1,y1,x2,y2,w)=>OB.push([x1,y1,x2,y2,w||1]);
+const obRect=(x,y,w,h)=>RC.push({x0:x,y0:y,x1:x+w,y1:y+h});
+const lab=(t,col,cands,font)=>LQ.push({t,col,cands,font:font||FT});
+function around(x,y,r,n){const c=[];for(const rr of [r,r+14,r+30,r+50])for(let k=0;k<(n||12);k++){const a=k/(n||12)*2*Math.PI,cx=Math.cos(a);
+  c.push([x+cx*rr,y+Math.sin(a)*rr,cx>0.3?'left':cx<-0.3?'right':'center']);}return c;}
+function segBox(s,b){let [x1,y1,x2,y2]=s,t0=0,t1=1;const dx=x2-x1,dy=y2-y1,p=[-dx,dx,-dy,dy],q=[x1-b.x0,b.x1-x1,y1-b.y0,b.y1-y1];
+  for(let i=0;i<4;i++){if(p[i]===0){if(q[i]<0)return false;}else{const r=q[i]/p[i];if(p[i]<0){if(r>t1)return false;if(r>t0)t0=r;}else{if(r<t0)return false;if(r<t1)t1=r;}}}return true;}
+const ovl=(a,b)=>{const ox=Math.min(a.x1,b.x1)-Math.max(a.x0,b.x0),oy=Math.min(a.y1,b.y1)-Math.max(a.y0,b.y0);return ox>0&&oy>0?ox*oy:0;};
+function halo(t,x,y,col,font,al){ctx.font=font||FT;ctx.textAlign=al||'left';ctx.textBaseline='middle';ctx.lineJoin='round';
+  ctx.lineWidth=4.5;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.strokeText(t,x,y);ctx.fillStyle=col;ctx.fillText(t,x,y);ctx.textBaseline='alphabetic';}
+function flush(){const placed=[];
+  for(const L of LQ){ctx.font=L.font;const w=ctx.measureText(L.t).width,h=15;let best=null,bs=Infinity;
+    const c0=L.cands[0],cx0=c0[2]==='left'?c0[0]+w/2:c0[2]==='right'?c0[0]-w/2:c0[0];   // repli : anneau autour de la 1re position
+    for(const rr of [18,34,52,74,100,130])for(let q=0;q<16;q++){const a=q/16*2*Math.PI;L.cands.push([cx0+Math.cos(a)*(rr+w/2),c0[1]+Math.sin(a)*rr,'center']);}
+    L.cands.forEach((c,i)=>{const [x,y,al]=c;const x0=al==='left'?x:al==='right'?x-w:x-w/2;
+      const b={x0:x0-3,x1:x0+w+3,y0:y-h/2-1,y1:y+h/2+1};let s=i*0.5;
+      if(b.x0<2||b.x1>W-2||b.y0<2||b.y1>H-2)s+=1e7;
+      for(const p of placed){const o=ovl(b,p);if(o)s+=1e5+o;}
+      for(const r of RC){const o=ovl(b,r);if(o)s+=2e4+o;}
+      for(const sg of OB)if(segBox(sg,b))s+=80*sg[4];
+      if(s<bs){bs=s;best={b,x0,y,w};}});
+    let {x0,y}=best;x0=Math.max(4,Math.min(W-4-w,x0));y=Math.max(10,Math.min(H-10,y));
+    const b={x0:x0-3,x1:x0+w+3,y0:y-h/2-1,y1:y+h/2+1};placed.push(b);halo(L.t,x0,y,L.col,L.font,'left');}
+  LQ=[];OB=[];RC=[];}
+
+
+/* ---------- physique ---------- */
+const PRE=[['air',1.00],['eau',1.33],['verre',1.50],['diamant',2.42]];
+const nom=n=>{const p=PRE.find(q=>Math.abs(q[1]-n)<0.004);return p?p[0]:'milieu';};
+function fresnel(n1,n2,ci){ // fraction réfléchie, lumière non polarisée ; ci = cos(incidence)
+  const si=Math.sqrt(Math.max(0,1-ci*ci)),st=n1/n2*si;if(st>=1)return 1;
+  const ct=Math.sqrt(1-st*st),rs=(n1*ci-n2*ct)/(n1*ci+n2*ct),rp=(n2*ci-n1*ct)/(n2*ci+n1*ct);return (rs*rs+rp*rp)/2;}
+
+let n1=1.50,n2=1.00,ang=30,side=1,alpha=25,curv=45;
+let fibre=false,sweep=true,paused=false,tS=0,tP=0,last=0,drag=false,hover=false;
+
+function setN(which,v,fromSlider){v=Math.round(Math.max(1,Math.min(2.5,v))*100)/100;
+  if(which===1)n1=v;else n2=v;
+  if(!fromSlider)$('n'+which).value=v;$('n'+which+'v').textContent=fr(v,2);
+  document.querySelectorAll('#pr'+which+' .btn').forEach(b=>b.classList.toggle('on',Math.abs(+b.dataset.n-v)<0.004));}
+for(const w of [1,2]){const box=$('pr'+w);
+  PRE.forEach(([nm,n])=>{const b=document.createElement('button');b.className='btn';b.dataset.n=n;b.textContent=nm[0].toUpperCase()+nm.slice(1)+' '+fr(n,2);
+    b.onclick=()=>setN(w,n);box.appendChild(b);});
+  $('n'+w).addEventListener('input',e=>setN(w,+e.target.value,true));}
+setN(1,1.5);setN(2,1.0);
+function setAng(v,fromSlider){ang=Math.max(0,Math.min(89,v));if(!fromSlider)$('ai').value=ang;$('aiv').textContent=fr(ang,1)+'°';}
+$('ai').addEventListener('input',e=>{sweepOff();setAng(+e.target.value,true);});
+$('aa').addEventListener('input',e=>{alpha=+e.target.value;$('aav').textContent=fr(alpha,1)+'°';});
+$('cc').addEventListener('input',e=>{curv=+e.target.value;$('ccv').textContent=curv+' %';});
+function sweepOff(){sweep=false;$('bSweep').classList.remove('on');}
+$('bSweep').onclick=e=>{sweep=!sweep;e.target.classList.toggle('on',sweep);};
+$('bSwap').onclick=()=>{const a=n1,b=n2;setN(1,b);setN(2,a);};
+$('bPause').onclick=e=>{paused=!paused;e.target.classList.toggle('on',paused);e.target.textContent=paused?'Reprendre':'Pause';};
+$('bFib').onclick=e=>{fibre=!fibre;e.target.classList.toggle('on',fibre);
+  $('rowI').hidden=fibre;$('rowA').hidden=!fibre;$('rowC').hidden=!fibre;$('bSwap').hidden=fibre;
+  $('p1').innerHTML=fibre?'n₁ &nbsp;cœur de la fibre':'n₁ &nbsp;milieu du haut';$('p2').innerHTML=fibre?'n₂ &nbsp;gaine':'n₂ &nbsp;milieu du bas';
+  $('hint').textContent=fibre?'Astuce : avec n₁ > n₂ la lumière reste piégée dans le cœur. Augmente α ou la courbure, ou prends n₂ ≥ n₁ : la lumière fuit.':
+    'Astuce : attrape le laser et fais-le tourner autour du point d\'incidence.';
+  $('bSweep').hidden=fibre;
+  if(fibre){setN(1,1.5);setN(2,1.0);}};
+
+/* ---------- outils de dessin ---------- */
+function line(a,b,col,w,dash,al){ctx.save();ctx.globalAlpha=al==null?1:al;ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineCap='round';ctx.setLineDash(dash||[]);
+  ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();ctx.restore();}
+function headAt(p,dir,col,al){ctx.save();ctx.globalAlpha=al==null?1:al;ctx.translate(p[0],p[1]);ctx.rotate(Math.atan2(dir[1],dir[0]));ctx.fillStyle=col;
+  ctx.beginPath();ctx.moveTo(7,0);ctx.lineTo(-6,-5);ctx.lineTo(-6,5);ctx.closePath();ctx.fill();ctx.restore();}
+function arcB(c,a0,a1,r,col){let da=a1-a0;while(da>Math.PI)da-=2*Math.PI;while(da<-Math.PI)da+=2*Math.PI;
+  ctx.save();ctx.strokeStyle=col;ctx.lineWidth=2;ctx.beginPath();ctx.arc(c[0],c[1],r,a0,a0+da,da<0);ctx.stroke();ctx.restore();return a0+da/2;}
+function toEdge(p,d){let t=1e9;if(d[0]>1e-9)t=Math.min(t,(W-p[0])/d[0]);if(d[0]<-1e-9)t=Math.min(t,-p[0]/d[0]);
+  if(d[1]>1e-9)t=Math.min(t,(H-p[1])/d[1]);if(d[1]<-1e-9)t=Math.min(t,-p[1]/d[1]);return [p[0]+d[0]*t,p[1]+d[1]*t];}
+function tint(n){const a=Math.min(1,(n-1)/1.5);return 'rgba(55,138,221,'+(0.04+0.22*a).toFixed(3)+')';}
+function laser(S,dir){ctx.save();ctx.translate(S[0],S[1]);ctx.rotate(Math.atan2(dir[1],dir[0]));
+  ctx.shadowColor='rgba(12,31,46,.25)';ctx.shadowBlur=drag||hover?12:5;
+  ctx.fillStyle='#4a5560';ctx.beginPath();ctx.roundRect(-46,-8,46,16,3);ctx.fill();ctx.shadowColor='transparent';
+  ctx.fillStyle='#2b3238';ctx.fillRect(-46,-8,8,16);ctx.fillStyle=RD;ctx.fillRect(-3,-4,4,8);
+  ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-34,-4);ctx.lineTo(-10,-4);ctx.stroke();ctx.restore();}
+function pulses(pts,speed,col){ // impulsions qui avancent le long d'une ligne brisée
+  const seg=[];let Lt=0;for(let i=1;i<pts.length;i++){const l=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);seg.push(l);Lt+=l;}
+  if(Lt<1)return;const gap=90,n=Math.ceil(Lt/gap);
+  for(let q=0;q<n;q++){let s=(tP*speed+q*gap)%(n*gap);if(s>Lt)continue;let i=0;while(i<seg.length-1&&s>seg[i]){s-=seg[i];i++;}
+    const f=seg[i]?s/seg[i]:0,x=pts[i][0]+(pts[i+1][0]-pts[i][0])*f,y=pts[i][1]+(pts[i+1][1]-pts[i][1])*f;
+    const g=ctx.createRadialGradient(x,y,0,x,y,7);g.addColorStop(0,'rgba(255,235,235,1)');g.addColorStop(1,'rgba(255,200,200,0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,7,0,7);ctx.fill();}}
+
+/* ---------- mode réfraction ---------- */
+let geo=null;
+function drawStd(){
+  const O=[W/2,Math.round(H*0.5)],R=Math.min(W*0.42,W/2-54,H*0.4);
+  // milieux
+  ctx.fillStyle=tint(n1);ctx.fillRect(0,0,W,O[1]);ctx.fillStyle=tint(n2);ctx.fillRect(0,O[1],W,H-O[1]);
+  ctx.fillStyle='rgba(29,158,117,.05)';ctx.fillRect(0,O[1],W,H-O[1]);
+  line([0,O[1]],[W,O[1]],'#8fa3b5',1.5);obSeg(0,O[1],W,O[1],0.4);
+  // normale
+  line([O[0],O[1]-R*1.05],[O[0],O[1]+R*1.05],GY,1.4,[6,5]);obSeg(O[0],O[1]-R*1.05,O[0],O[1]+R*1.05,1);
+  const i1=ang*D2R,sg=side,s2=n1*Math.sin(i1)/n2,tir=s2>1;
+  const S=[O[0]-sg*R*Math.sin(i1),O[1]-R*Math.cos(i1)],din=[sg*Math.sin(i1),Math.cos(i1)];
+  geo={O,S,R};
+  const Rf=fresnel(n1,n2,Math.cos(i1)),T=1-Rf;
+  // angle limite
+  const thc=n1>n2?Math.asin(n2/n1):null;
+  if(thc){const dC=[-sg*Math.sin(thc),-Math.cos(thc)],C=[O[0]+dC[0]*R*0.98,O[1]+dC[1]*R*0.98];line(O,C,VI,1.3,[3,4],0.8);obSeg(O[0],O[1],C[0],C[1],0.6);
+    lab('angle limite '+fr(thc/D2R,1)+'°',VI,[[C[0]-sg*6,C[1]-10,sg>0?'right':'left'],[C[0]+sg*8,C[1],sg>0?'left':'right'],[C[0],C[1]-14,'center'],[C[0]-sg*8,C[1]+12,sg>0?'right':'left']]);}
+  // réfléchi
+  const dr=[sg*Math.sin(i1),-Math.cos(i1)],Er=toEdge(O,dr),aR=tir?1:0.18+0.82*Math.sqrt(Rf);
+  line(O,Er,RD,tir?3:2.4,null,aR);headAt([O[0]+dr[0]*R*0.55,O[1]+dr[1]*R*0.55],dr,RD,aR);obSeg(O[0],O[1],Er[0],Er[1],1);
+  // réfracté
+  let i2=null,Et=null,dt=null;
+  if(!tir){i2=Math.asin(s2);dt=[sg*Math.sin(i2),Math.cos(i2)];Et=toEdge(O,dt);const aT=0.35+0.65*T;
+    line(O,Et,RD,3,null,aT);headAt([O[0]+dt[0]*R*0.55,O[1]+dt[1]*R*0.55],dt,RD,aT);obSeg(O[0],O[1],Et[0],Et[1],1.5);}
+  // incident
+  line(S,O,RD,3);headAt([(S[0]+O[0])/2,(S[1]+O[1])/2],din,RD);obSeg(S[0],S[1],O[0],O[1],1.5);
+  if(!paused){pulses([S,O,Et||Er],170);}
+  const g=ctx.createRadialGradient(O[0],O[1],0,O[0],O[1],9);g.addColorStop(0,'rgba(255,120,110,.9)');g.addColorStop(1,'rgba(255,120,110,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(O[0],O[1],9,0,7);ctx.fill();
+  laser(S,din);obRect(S[0]-30,S[1]-30,60,60);
+  // arcs d'angle
+  const r0=Math.min(56,R*0.32);
+  const cands=(b,rad)=>{const c=[];for(const rr of [rad+18,rad+32,rad+50,rad+72])for(const off of [0,0.2,-0.2,0.4,-0.4]){const a=b+off,cx=Math.cos(a);c.push([O[0]+cx*rr,O[1]+Math.sin(a)*rr,cx>0.3?'left':cx<-0.3?'right':'center']);}return c;};
+  const aI=Math.atan2(S[1]-O[1],S[0]-O[0]);
+  if(ang>0.3){const b1=arcB(O,-Math.PI/2,aI,r0,BL);lab('i₁ = '+fr(ang,1)+'°',BLD,cands(b1,r0));}
+  else lab('i₁ = 0°',BLD,[[O[0]+8,O[1]-r0,'left'],[O[0]-8,O[1]-r0,'right']]);
+  if(!tir){if(ang>0.3){const b2=arcB(O,Math.PI/2,Math.atan2(dt[1],dt[0]),r0,GR);lab('i₂ = '+fr(i2/D2R,1)+'°',GRD,cands(b2,r0));}
+    else lab('i₂ = 0°',GRD,[[O[0]+8,O[1]+r0,'left'],[O[0]-8,O[1]+r0,'right']]);}
+  if(ang>0.3){const b3=arcB(O,-Math.PI/2,Math.atan2(dr[1],dr[0]),r0*0.72,GY);lab('r = '+fr(ang,1)+'°',MUT,cands(b3,r0*0.72));}
+  // textes : milieux, état
+  lab(nom(n1)+' · n₁ = '+fr(n1,2),BLD,[[10,16,'left'],[10,O[1]-14,'left'],[W-10,16,'right'],[W-10,O[1]-14,'right']]);
+  lab(nom(n2)+' · n₂ = '+fr(n2,2),GRD,[[10,H-16,'left'],[10,O[1]+14,'left'],[W-10,H-16,'right'],[W-10,O[1]+14,'right']]);
+  if(tir){const P=[O[0]+sg*Math.min(W*0.22,R*0.7),O[1]+Math.min(H*0.22,R*0.6)];
+    lab('Réflexion totale : aucun rayon ne passe',RDD,[[P[0],P[1],'center'],[O[0],O[1]+R*0.5,'center'],[O[0],H-40,'center'],[O[0]-sg*W*0.2,O[1]+R*0.5,'center']]);}
+  else{const P=[O[0]+dt[0]*R*0.85,O[1]+dt[1]*R*0.85];lab('transmis '+fr(T*100,0)+' %',RD,around(P[0],P[1],14,12));}
+  const Pr=[O[0]+dr[0]*R*0.85,O[1]+dr[1]*R*0.85];lab('réfléchi '+fr(Rf*100,0)+' %',RDD,around(Pr[0],Pr[1],14,12));
+  flush();
+  // formule et lecture
+  const sinT=n1*Math.sin(i1);
+  let f='<b style="color:'+BLD+'">n₁</b>·sin <b style="color:'+BLD+'">i₁</b> = <b style="color:'+GRD+'">n₂</b>·sin <b style="color:'+GRD+'">i₂</b> &nbsp;→&nbsp; '+
+    fr(n1,2)+' × sin '+fr(ang,1)+'° = <b>'+fr(sinT,3)+'</b>';
+  f+=tir?' &nbsp;&gt; n₂ = '+fr(n2,2)+' : impossible, sin i₂ dépasserait 1 → <b style="color:'+RDD+'">réflexion totale</b>':
+      ' = '+fr(n2,2)+' × sin '+fr(i2/D2R,1)+'°';
+  f+='<br>'+(thc?'Angle limite = arcsin(<b style="color:'+GRD+'">n₂</b>/<b style="color:'+BLD+'">n₁</b>) = arcsin('+fr(n2,2)+'/'+fr(n1,2)+') = <b style="color:'+VI+'">'+fr(thc/D2R,1)+'°</b> : au-delà, toute la lumière est réfléchie.':
+      'Ici n₁ ≤ n₂ : pas d\'angle limite, le rayon réfracté existe toujours et se rapproche de la normale.');
+  setHTML('fml',f);
+  setHTML('info','i₁ = '+fr(ang,1)+'° &nbsp;|&nbsp; '+(tir?'<b style="color:'+RDD+'">pas de rayon réfracté</b>':'<b style="color:'+GRD+'">i₂ = '+fr(i2/D2R,1)+'°</b> ('+(n2>n1?'se rapproche de':n2<n1?'s\'écarte de':'même direction que')+' la normale)')+
+    ' &nbsp;|&nbsp; r = i₁ = '+fr(ang,1)+'° &nbsp;|&nbsp; énergie : réfléchie '+fr(Rf*100,1)+' %, transmise '+fr(T*100,1)+' %'+
+    ' &nbsp;|&nbsp; vitesse dans le milieu 1 : c/n₁ = '+fr(3e5/n1/1000,0)+' 000 km/s, milieu 2 : '+fr(3e5/n2/1000,0)+' 000 km/s');
+}
+
+/* ---------- mode fibre optique ---------- */
+let fibCache=null;
+function fibreGeom(){
+  const x0=Math.max(70,W*0.1),x1=W-26,yc=H*0.52,Lx=x1-x0,w=Math.max(12,Math.min(26,H*0.05));
+  const per=Lx<520?0.5:1,kk=2*Math.PI*per/Lx,Amax=Math.min(H*0.3,1/(2.6*w*kk*kk)),A=curv/100*Amax,N=700,P=[],T=[];
+  for(let k=0;k<=N;k++){const t=k/N,x=x0+Lx*t,u=Math.min(1,t/0.15),y=yc+(per<1?A*0.5:0)-A*Math.sin(2*Math.PI*per*t)*u*u*(3-2*u);P.push([x,y]);}
+  for(let k=0;k<=N;k++){const a=P[Math.max(0,k-1)],b=P[Math.min(N,k+1)],l=Math.hypot(b[0]-a[0],b[1]-a[1]);T.push([(b[0]-a[0])/l,(b[1]-a[1])/l]);}
+  return {P,T,w,N,x0,x1};}
+function traceFibre(G){
+  const {P,T,w,N}=G;let idx=0,pos=[P[0][0],P[0][1]];const a=alpha*D2R;
+  let dir=[Math.cos(a)*T[0][0]+Math.sin(a)*T[0][1],Math.cos(a)*T[0][1]-Math.sin(a)*T[0][0]];
+  let I=1;const path=[{p:pos.slice(),I}],leaks=[];let bounces=0,minInc=90,steps=0;
+  while(steps++<20000&&I>0.02){
+    pos=[pos[0]+dir[0]*1.2,pos[1]+dir[1]*1.2];
+    let best=idx,bd=1e18;for(let k=Math.max(0,idx-25);k<=Math.min(N,idx+25);k++){const d=(pos[0]-P[k][0])**2+(pos[1]-P[k][1])**2;if(d<bd){bd=d;best=k;}}
+    idx=best;if(idx>=N){path.push({p:pos.slice(),I});break;}
+    if(pos[0]<P[0][0]-2){path.push({p:pos.slice(),I});break;}
+    const nrm=[-T[idx][1],T[idx][0]],dist=(pos[0]-P[idx][0])*nrm[0]+(pos[1]-P[idx][1])*nrm[1];
+    if(Math.abs(dist)>=w){const nw=dist>0?nrm:[-nrm[0],-nrm[1]];const ci=dir[0]*nw[0]+dir[1]*nw[1];if(ci<=0)continue;
+      const inc=Math.acos(Math.min(1,ci))/D2R;minInc=Math.min(minInc,inc);bounces++;
+      const Rf=fresnel(n1,n2,ci);
+      if(Rf<1){const si=Math.sqrt(1-ci*ci),st=n1/n2*si,ct=Math.sqrt(1-st*st);
+        const tg=[dir[0]-ci*nw[0],dir[1]-ci*nw[1]],tl=Math.hypot(tg[0],tg[1])||1;
+        const out=[nw[0]*ct+tg[0]/tl*st,nw[1]*ct+tg[1]/tl*st];leaks.push({p:pos.slice(),d:out,I:I*(1-Rf)});}
+      path.push({p:pos.slice(),I});I*=Rf;
+      dir=[dir[0]-2*ci*nw[0],dir[1]-2*ci*nw[1]];
+      pos=[0,1].map(j=>P[idx][j]+nw[j]*(w-0.01)+(pos[j]-P[idx][j]-nrm[j]*dist)); // recale sur la paroi
+      path[path.length-1].I2=I;}
+  }
+  if(path[path.length-1].p!==pos)path.push({p:pos.slice(),I});
+  return {path,leaks,bounces,minInc,Iend:I,arrived:idx>=N};}
+function drawFibre(){
+  const G=fibreGeom(),key=[W,H,n1,n2,alpha,curv].join('|');
+  if(!fibCache||fibCache.key!==key)fibCache={key,G,R:traceFibre(G)};
+  const {P,w}=G,R=fibCache.R;
+  const stroke=(wd,col)=>{ctx.save();ctx.strokeStyle=col;ctx.lineWidth=wd;ctx.lineCap='butt';ctx.lineJoin='round';ctx.beginPath();P.forEach((p,k)=>k?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();ctx.restore();};
+  stroke(2*w+18,'#cfe3d9');stroke(2*w+18-2,'#e4f2eb');stroke(2*w+1.5,'#7fa8c9');stroke(2*w-1,'#dcebf8');
+  for(let k=0;k<P.length;k+=12)obSeg(P[k][0],P[k][1]-w-9,P[k][0],P[k][1]+w+9,0.2);
+  // fuites
+  for(const L of R.leaks){const E=[L.p[0]+L.d[0]*70,L.p[1]+L.d[1]*70];line(L.p,E,RD,2,null,Math.max(0.15,Math.min(1,L.I*1.2)));headAt([L.p[0]+L.d[0]*50,L.p[1]+L.d[1]*50],L.d,RD,Math.max(0.15,Math.min(1,L.I*1.2)));}
+  // rayon guidé
+  const pts=R.path.map(q=>q.p);
+  for(let k=1;k<R.path.length;k++){const a=R.path[k-1],I=a.I2!=null?a.I2:a.I;line(a.p,R.path[k].p,RD,2.4,null,Math.max(0.12,I));}
+  if(!paused)pulses(pts,220);
+  // laser à l'entrée
+  const d0=[pts[1][0]-pts[0][0],pts[1][1]-pts[0][1]],l0=Math.hypot(d0[0],d0[1])||1;
+  ctx.save();ctx.globalAlpha=1;laser([P[0][0]-2,P[0][1]],[d0[0]/l0,d0[1]/l0]);ctx.restore();
+  obRect(P[0][0]-56,P[0][1]-14,56,28);
+  const mid=P[Math.round(P.length*0.5)];
+  const thc=n1>n2?Math.asin(n2/n1)/D2R:null;
+  lab('cœur n₁ = '+fr(n1,2),BLD,[[P[0][0]+4,P[0][1]-w-22,'left'],[P[0][0]+4,P[0][1]+w+22,'left'],[10,16,'left']]);
+  const Pe=P[P.length-1];lab('gaine n₂ = '+fr(n2,2),GRD,[[P[0][0]+4,P[0][1]+w+22,'left'],[P[0][0]+4,P[0][1]-w-22,'left'],[Pe[0]-4,Pe[1]+w+24,'right'],[Pe[0]-4,Pe[1]-w-24,'right'],[10,H-16,'left']]);
+  const ok=R.arrived&&R.Iend>0.98;
+  const st=ok?(R.bounces?'guidée : '+R.bounces+' réflexion'+(R.bounces>1?'s':'')+' totale'+(R.bounces>1?'s':''):'guidée : le rayon file tout droit'):R.arrived?'arrivée : '+fr(R.Iend*100,0)+' % (fuites)':'la lumière fuit hors de la fibre';
+  lab(st,ok?GRD:RDD,[[W/2,18,'center'],[W/2,H-18,'center'],[10,18,'left'],[W-10,H-18,'right']]);
+  flush();
+  setHTML('fml','Dans le cœur, chaque rebond est une <b style="color:'+RDD+'">réflexion totale</b> si l\'angle d\'incidence sur la paroi dépasse l\'angle limite : '+
+    (thc?'θ<sub>c</sub> = arcsin(<b style="color:'+GRD+'">n₂</b>/<b style="color:'+BLD+'">n₁</b>) = arcsin('+fr(n2,2)+'/'+fr(n1,2)+') = <b style="color:'+VI+'">'+fr(thc,1)+'°</b>':
+      'ici <b style="color:'+BLD+'">n₁</b> ≤ <b style="color:'+GRD+'">n₂</b> : pas d\'angle limite, la lumière s\'échappe à chaque rebond.'));
+  setHTML('info','α = '+fr(alpha,1)+'° (angle avec l\'axe de la fibre) &nbsp;|&nbsp; rebonds : '+R.bounces+
+    (R.bounces?' &nbsp;|&nbsp; plus petit angle d\'incidence sur la paroi : '+fr(R.minInc,1)+'°'+(thc?(R.minInc>thc?' &gt; θc → réflexion totale partout':' &lt; θc → fuite'):''):'')+
+    ' &nbsp;|&nbsp; <b style="color:'+(ok?GRD:RDD)+'">énergie arrivée au bout : '+fr(R.arrived?R.Iend*100:0,0)+' %</b>');
+}
+const cache={};function setHTML(id,h){if(cache[id]!==h){$(id).innerHTML=h;cache[id]=h;}}
+
+function frame(ts){const dt=Math.min(0.05,(ts-(last||ts))/1000);last=ts;
+  if(!paused){tP+=dt;if(sweep&&!fibre){tS+=dt;setAng(Math.round((44+32*Math.sin(tS*0.45-0.5))*2)/2);side=1;}}
+  syncSize();ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  if(fibre)drawFibre();else drawStd();
+  requestAnimationFrame(frame);}
+
+/* ---------- glisser le laser ---------- */
+function pt(e){const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];}
+const onLaser=p=>!fibre&&geo&&Math.hypot(p[0]-geo.S[0],p[1]-geo.S[1])<34;
+function aim(p){const {O}=geo;let dx=O[0]-p[0],dy=O[1]-p[1];if(dy<2)dy=2;let a=Math.atan2(Math.abs(dx),dy)/D2R;side=dx>=0?1:-1;setAng(Math.round(Math.min(89,a)*2)/2);}
+cv.addEventListener('pointerdown',e=>{const p=pt(e);if(!onLaser(p))return;drag=true;sweepOff();cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing';e.preventDefault();});
+cv.addEventListener('pointermove',e=>{const p=pt(e);if(drag)aim(p);else{hover=onLaser(p);cv.style.cursor=hover?'grab':'default';}});
+const rel=()=>{if(drag){drag=false;cv.style.cursor='grab';}};cv.addEventListener('pointerup',rel);cv.addEventListener('pointercancel',rel);
+window.__r={set(o){if(o.n1!=null)setN(1,o.n1);if(o.n2!=null)setN(2,o.n2);if(o.ang!=null){sweepOff();setAng(o.ang);}if(o.side)side=o.side;if(o.alpha!=null)alpha=o.alpha;if(o.curv!=null)curv=o.curv;},get fib(){return fibCache&&fibCache.R}};
+requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Réflexion et réfraction de la lumière<span>2 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/reflexion-miroir/"><i>01</i>Miroir plan et réflexion</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/refraction/"><i>02</i>Réfraction et réflexion totale</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

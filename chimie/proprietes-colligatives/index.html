@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Osmose, cryoscopie et loi de Henry · SFA</title>
+<meta name="description" content="Simulation SFA : osmolarité, pression osmotique, tonicité et globule rouge, cryoscopie, ébullioscopie, loi de Henry et plongée.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../../kit/sfa-nav.css"></head>
+<body>
+<style id="sfa-chim">
+*{box-sizing:border-box;margin:0;padding:0}
+canvas.cv{display:block;width:100%;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.row{display:flex;align-items:center;flex-wrap:wrap}
+.row .pill{min-width:170px}
+.hint{font:500 .84rem/1.45 var(--f-ui);color:var(--muted)}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.tabs .btn{flex:1 1 auto}
+.panel[hidden]{display:none!important}
+.sub{font:800 13px var(--f-ui);color:var(--ink2);margin:14px 0 4px;letter-spacing:.01em}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font:600 .82rem var(--f-ui);color:var(--muted);margin:8px 0 2px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:-1px;margin-right:6px;border:1px solid rgba(0,0,0,.25)}
+.warn{background:#fff3f1;border:1px solid #f1c7bf;border-radius:10px;color:#8a2a1f;font:600 .86rem/1.5 var(--f-ui);padding:9px 13px;margin:10px 0}
+.note{background:#fff8e1;border:1px solid #f1d98c;border-radius:10px;color:#5a4300;font:600 .86rem/1.5 var(--f-ui);padding:9px 13px;margin:10px 0}
+.ok{background:#eef7f2;border:1px solid #bfe0cf;border-radius:10px;color:#1f5a44;font:600 .86rem/1.5 var(--f-ui);padding:9px 13px;margin:10px 0}
+.warn:empty,.note:empty,.ok:empty{display:none}
+.tw{max-width:100%;overflow:hidden}
+table.t{width:100%;border-collapse:collapse;font:600 12.5px/1.35 var(--f-ui);font-variant-numeric:tabular-nums;margin:8px 0;table-layout:fixed}
+table.t th,table.t td{padding:6px 5px;border-bottom:1px solid var(--line);text-align:right;overflow-wrap:anywhere}
+table.t th{font-weight:800;color:var(--ink2);background:var(--bg)}
+table.t td:first-child,table.t th:first-child{text-align:left}
+table.t tr.lim td{background:#fff3f1;color:#8a2a1f}
+@media (max-width:520px){table.t{font-size:11.5px}table.t th,table.t td{padding:5px 3px}}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-top:14px}
+.card h2{font:800 15px/1.3 var(--f-ui);margin:0 0 8px}
+.card ul{padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.card.keep{border-left:4px solid var(--green)}
+.card.trap{border-left:4px solid #E24B4A}
+.card.defis details{border-top:1px solid var(--line);padding:9px 0}
+.card.defis details:first-of-type{border-top:0}
+.card.defis summary{cursor:pointer;font-weight:700;color:var(--ink)}
+.card.defis details p{margin:8px 0 2px;color:var(--ink2)}
+.fml{overflow-wrap:anywhere}
+.info{overflow-wrap:anywhere}
+.big{font:800 1.05rem var(--f-ui);color:var(--ink)}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a class="on" href="../">Simulations de chimie</a><a href="../exercices/">Exercices de chimie</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations de physique</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="../">Simulations de chimie</a>›<a href="../">Chimie générale</a>›<b>Osmose, cryoscopie et loi de Henry</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Chimie · Solutions</span><span class="sfa-chip free">Gratuit</span></div><h1>Osmose, cryoscopie et loi de Henry</h1><p>Les propriétés qui ne dépendent que du nombre de particules dissoutes : pression osmotique, abaissement du point de congélation, gaz dissous.</p></div>
+<section class="sfa-sim">
+
+<div class="tabs" data-tabs="main" role="tablist">
+  <button class="btn" data-tab="pO" role="tab">Osmose et globule rouge</button>
+  <button class="btn" data-tab="pT" role="tab">Cryoscopie et ébullioscopie</button>
+  <button class="btn" data-tab="pH" role="tab">Loi de Henry</button>
+</div>
+
+<!-- ============ osmose ============ -->
+<div class="panel" id="pO">
+  <canvas class="cv" id="cvO" style="height:320px" aria-label="Globule rouge plongé dans la solution choisie"></canvas>
+  <div class="legend" id="oLeg"></div>
+  <div class="row">
+    <span class="pill">Soluté</span>
+    <select id="oSol" aria-label="Soluté">
+      <option value="glucose">glucose (C₆H₁₂O₆)</option><option value="uree">urée (CH₄N₂O)</option>
+      <option value="NaCl" selected>NaCl</option><option value="CaCl2">CaCl₂</option><option value="KBr">KBr</option>
+    </select>
+    <button class="btn" id="oAgain">Replonger un globule</button>
+  </div>
+  <div class="row">
+    <span class="pill" style="color:#185fa5">C &nbsp;concentration</span>
+    <input type="range" id="oC" min="0" max="1" step="0.005" value="0.15" style="accent-color:#378ADD">
+    <span class="val" id="oCv" style="color:#185fa5"></span>
+  </div>
+  <div class="row">
+    <span class="pill" style="color:#BA7517">T &nbsp;température</span>
+    <input type="range" id="oT" min="0" max="40" step="1" value="37" style="accent-color:#BA7517">
+    <span class="val" id="oTv" style="color:#BA7517"></span>
+  </div>
+  <div class="fml" id="oFml"></div>
+  <div class="note">Électrolytes forts : on prend i = ν, le nombre d'ions par formule (dissociation totale), comme dans les énoncés d'examen. En réalité, i est un peu plus petit que ν (les ions interagissent entre eux).</div>
+  <div class="ok" id="oTon"></div>
+  <p class="hint">Modèle simplifié. Valeur usuelle approchée : le milieu intérieur du globule rouge vaut environ 0,3 osmol/L (particules qui ne traversent pas sa membrane). La bande « isotonique » de ± 0,02 osmol/L est un choix d'affichage de la simulation, pas une valeur physiologique. Comme dans les exercices, le glucose est traité comme ne traversant pas la membrane (en réalité il entre lentement par des transporteurs et il est consommé dans l'organisme). Le dessin du globule (gonflement, seuil d'éclatement, ratatinement) est qualitatif.</p>
+</div>
+
+<!-- ============ cryoscopie ============ -->
+<div class="panel" id="pT">
+  <canvas class="cv" id="cvT" style="height:320px" aria-label="Thermomètres : point de congélation et point d'ébullition"></canvas>
+  <div class="row">
+    <span class="pill">Soluté</span>
+    <select id="tSol" aria-label="Soluté">
+      <option value="glucose">glucose (C₆H₁₂O₆)</option><option value="uree">urée (CH₄N₂O)</option>
+      <option value="NaCl" selected>NaCl</option><option value="CaCl2">CaCl₂</option><option value="KBr">KBr</option>
+    </select>
+  </div>
+  <div class="row">
+    <span class="pill" style="color:#185fa5">b &nbsp;molalité</span>
+    <input type="range" id="tM" min="0" max="2" step="0.01" value="0.5" style="accent-color:#378ADD">
+    <span class="val" id="tMv" style="color:#185fa5"></span>
+  </div>
+  <div class="fml" id="tFml"></div>
+  <div class="warn" id="tWarn"></div>
+  <div class="info" id="tInfo"></div>
+</div>
+
+<!-- ============ Henry ============ -->
+<div class="panel" id="pH">
+  <div class="tabs" data-tabs="henry">
+    <button class="btn" data-tab="hD">Plongeur : N₂ et O₂</button>
+    <button class="btn" data-tab="hC">CO₂ : pression et température</button>
+  </div>
+  <div class="panel" id="hD">
+    <canvas class="cv" id="cvD" style="height:330px" aria-label="Plongeur en profondeur et gaz dissous dans ses tissus"></canvas>
+    <div class="row">
+      <span class="pill" style="color:#185fa5">profondeur</span>
+      <input type="range" id="dZ" min="0" max="40" step="1" value="20" style="accent-color:#378ADD">
+      <span class="val" id="dZv" style="color:#185fa5"></span>
+    </div>
+    <div class="fml" id="dFml"></div>
+    <div class="note">Valeurs usuelles approchées, dans l'eau à 37 °C : K<sub>H</sub>(N₂) ≈ 5,4·10⁻⁴ et K<sub>H</sub>(O₂) ≈ 1,1·10⁻³ mol/(L·atm). Les tissus ne sont pas de l'eau pure (le N₂ est bien plus soluble dans les graisses). En examen, prends les valeurs de l'énoncé.</div>
+    <p class="hint">Modèle simplifié : environ 1 atm de plus par 10 m d'eau, air comprimé à 78 % de N₂ et 21 % d'O₂ respiré à la pression ambiante, équilibre atteint, vapeur d'eau négligée.</p>
+  </div>
+  <div class="panel" id="hC">
+    <canvas class="cv" id="cvH" style="height:300px" aria-label="Bouteille fermée : CO₂ gazeux et CO₂ dissous"></canvas>
+    <div class="row">
+      <span class="pill" style="color:#185fa5">P(CO₂) &nbsp;au-dessus du liquide</span>
+      <input type="range" id="hP" min="0" max="5" step="0.05" value="1" style="accent-color:#378ADD">
+      <span class="val" id="hPv" style="color:#185fa5"></span>
+    </div>
+    <div class="row">
+      <span class="pill" style="color:#BA7517">T &nbsp;température</span>
+      <input type="range" id="hT" min="0" max="40" step="1" value="25" style="accent-color:#BA7517">
+      <span class="val" id="hTv" style="color:#BA7517"></span>
+    </div>
+    <div class="fml" id="hFml"></div>
+    <p class="hint">À 25 °C, K<sub>H</sub>(CO₂) = 3,4·10⁻² mol/(L·atm) (valeur de référence). Aux autres températures : modèle simplifié de van 't Hoff, K<sub>H</sub>(T) = K<sub>H</sub>(298,15 K) · exp[2400 K · (1/T − 1/298,15 K)], T en kelvins. 2400 K est une valeur usuelle approchée : le résultat est juste à quelques % près entre 0 et 40 °C (environ 2,5·10⁻² à 37 °C). Le CO₂ dissous ne compte ici que la forme CO₂(aq).</p>
+  </div>
+</div>
+
+<script>
+(()=>{
+/* ---------- outils communs SFA chimie ---------- */
+const $=id=>document.getElementById(id);
+const INK='#3d3d3a',BLUE='#378ADD',BLUE_D='#185fa5',GREEN='#1D9E75',GREEN_D='#0F6E56',RED='#E24B4A',RED_D='#a32d2d',
+      ORANGE='#BA7517',VIOLET='#7F77DD',GREY='#9aa0a6',AX='#c8ccd0',MUT='#5f6b7a',WATER='#d8eaf9';
+const F={t:'600 13px Mulish,system-ui,sans-serif',b:'800 13px Mulish,system-ui,sans-serif',s:'600 11.5px Mulish,system-ui,sans-serif',
+         l:'800 15px Mulish,system-ui,sans-serif'};
+const SUPD={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+/* nombre à d décimales, virgule décimale, vrai signe moins */
+const fr=(v,d)=>{const s=Math.abs(v).toFixed(d);const neg=v<0&&/[1-9]/.test(s);let [a,b]=s.split('.');
+  if(a.length>4)a=a.replace(/\B(?=(\d{3})+(?!\d))/g,' ');return (neg?'−':'')+a+(b!==undefined?','+b:'');};
+/* nombre à sig chiffres significatifs (notation scientifique hors de [10⁻³ ; 10⁶[) */
+function fs(v,sig){sig=sig||3;if(!isFinite(v))return '—';if(v===0)return '0';const a=Math.abs(v);
+  if(a>=1e-3&&a<1e6){const d=Math.max(0,sig-1-Math.floor(Math.log10(a)+1e-12));return fr(v,d);}
+  let e=Math.floor(Math.log10(a)),m=v/Math.pow(10,e);m=+m.toFixed(sig-1);if(Math.abs(m)>=10){m/=10;e++;}
+  return fr(m,sig-1)+'·10'+String(e).split('').map(c=>SUPD[c]).join('');}
+/* notation scientifique forcée */
+function fsci(v,sig){sig=sig||2;let e=Math.floor(Math.log10(Math.abs(v))),m=v/Math.pow(10,e);m=+m.toFixed(sig-1);if(Math.abs(m)>=10){m/=10;e++;}
+  return fr(m,sig-1)+'·10'+String(e).split('').map(c=>SUPD[c]).join('');}
+function mkCanvas(cv){const ctx=cv.getContext('2d');const o={cv,ctx,W:0,H:0};
+  o.sync=()=>{const r=cv.getBoundingClientRect();if(!r.width)return false;const dpr=window.devicePixelRatio||1;
+    const w=Math.round(r.width),h=Math.round(r.height);
+    if(w!==o.W||h!==o.H||cv.width!==Math.round(w*dpr)){o.W=w;o.H=h;cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}
+    ctx.setTransform(dpr,0,0,dpr,0,0);return true;};
+  return o;}
+/* texte avec halo blanc, recadré dans le canevas */
+function txt(o,t,x,y,col,font,al){const c=o.ctx;c.font=font||F.t;c.textAlign=al||'center';c.textBaseline='middle';
+  const w=c.measureText(t).width;let x0=al==='right'?x-w:al==='left'?x:x-w/2;const dx=Math.max(0,3-x0)-Math.max(0,x0+w-(o.W-3));
+  x+=dx;c.lineJoin='round';c.lineWidth=4;c.strokeStyle='rgba(255,255,255,.95)';c.strokeText(t,x,y);c.fillStyle=col;c.fillText(t,x,y);
+  c.textBaseline='alphabetic';return w;}
+function rrect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function arrow(c,x1,y1,x2,y2,col,w){c.strokeStyle=col;c.fillStyle=col;c.lineWidth=w||2;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();
+  const a=Math.atan2(y2-y1,x2-x1),s=6+(w||2);c.beginPath();c.moveTo(x2,y2);c.lineTo(x2-s*Math.cos(a-0.45),y2-s*Math.sin(a-0.45));
+  c.lineTo(x2-s*Math.cos(a+0.45),y2-s*Math.sin(a+0.45));c.closePath();c.fill();}
+/* générateur pseudo-aléatoire reproductible */
+function rng(seed){let s=seed>>>0||1;return ()=>{s^=s<<13;s>>>=0;s^=s>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
+/* curseur : met à jour l'affichage <id>v et appelle cb */
+function bind(id,fmt,cb){const el=$(id),o=$(id+'v');const go=()=>{const v=parseFloat(el.value);if(o)o.textContent=fmt(v);cb(v);};
+  el.addEventListener('input',go);go();return go;}
+function setRange(id,v){const el=$(id);el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));}
+/* onglets : boutons data-tab="idPanneau" */
+function tabs(group,cb){const bs=[...document.querySelectorAll('[data-tabs="'+group+'"] [data-tab]')];
+  const show=id=>{bs.forEach(b=>{const on=b.dataset.tab===id;b.classList.toggle('on',on);b.setAttribute('aria-selected',on);
+    $(b.dataset.tab).hidden=!on;});if(cb)cb(id);};
+  bs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));show(bs[0].dataset.tab);return show;}
+const visible=el=>!!(el&&el.offsetParent!==null);
+
+/* ---- constantes : VALEURS-REFERENCE.md ---- */
+const R_ATM=0.0821;          /* L·atm/(mol·K) */
+const T0=273.15;             /* 0 °C en K */
+const KF=1.86, KEB=0.512;    /* K·kg/mol (eau) */
+const KH_CO2_25=3.4e-2;      /* mol/(L·atm) à 25 °C */
+const AM={H:1.008,C:12.01,N:14.01,O:16.00,Na:22.99,Cl:35.45,K:39.10,Ca:40.08,Br:79.90};
+const mm=f=>Object.entries(f).reduce((s,[k,v])=>s+AM[k]*v,0);
+/* ---- valeurs usuelles des simulations (VALEURS-REFERENCE.md, dernière section) ---- */
+const OSM_CELL=0.3;          /* valeur usuelle approchée, validée par le professeur (VALEURS-REFERENCE.md, section simulations) */
+const ISO_TOL=0.02;          /* choix d'affichage (pas une donnée physiologique), dit à l'écran ; validé */
+const LYSIS=1.65;            /* seuil de dessin qualitatif (≈ 0,18 osmol/L effectif) ; dit qualitatif à l'écran */
+const KH_N2_37=5.4e-4;       /* valeur usuelle approchée, validée (eau, 37 °C, mol/(L·atm)) */
+const KH_O2_37=1.1e-3;       /* valeur usuelle approchée, validée (eau, 37 °C, mol/(L·atm)) */
+const VH_CO2=2400;           /* valeur usuelle approchée, validée : −d ln K_H / d(1/T) du CO₂, en K */
+
+const SOL={
+  glucose:{n:'glucose',f:{C:6,H:12,O:6},i:1,perm:false,ions:[[GREEN,'glucose']]},
+  uree:{n:'urée',f:{C:1,H:4,N:2,O:1},i:1,perm:true,ions:[['#7a5b00','urée']]},
+  NaCl:{n:'NaCl',f:{Na:1,Cl:1},i:2,perm:false,ions:[[VIOLET,'Na⁺'],[GREEN,'Cl⁻']]},
+  CaCl2:{n:'CaCl₂',f:{Ca:1,Cl:2},i:3,perm:false,ions:[[BLUE,'Ca²⁺'],[GREEN,'Cl⁻'],[GREEN,'Cl⁻']]},
+  KBr:{n:'KBr',f:{K:1,Br:1},i:2,perm:false,ions:[[VIOLET,'K⁺'],[ORANGE,'Br⁻']]}};
+const iTxt=s=>s.i===1?'i = 1 (ne se dissocie pas)':'i = '+s.i+' ('+s.n+' → '+s.ions.map(x=>x[1]).join(' + ')+')';
+
+/* =================== osmose =================== */
+const O={sol:'NaCl',C:0.15,Tc:37,p:0};const oO=mkCanvas($('cvO'));
+function calcO(){const s=SOL[O.sol],T=O.Tc+T0,osm=s.i*O.C,Pi=s.i*O.C*R_ATM*T,eff=s.perm?0:osm;
+  let ton=eff<OSM_CELL-ISO_TOL?'hypo':eff>OSM_CELL+ISO_TOL?'hyper':'iso';
+  const vr=eff>0?OSM_CELL/eff:Infinity;return {s,T,osm,Pi,eff,ton,vr,lysis:vr>LYSIS};}
+function updO(){const r=calcO(),s=r.s;
+  $('oFml').innerHTML='Osmolarité = i · C = '+s.i+' × '+fs(O.C,3)+' mol/L = <b><span id="oOsm">'+fs(r.osm,3)+'</span> osmol/L</b> &nbsp;('+iTxt(s)+')<br>'+
+   'Π = i · C · R · T = '+s.i+' × '+fs(O.C,3)+' × 0,0821 × '+fr(r.T,2)+' K = <b style="color:#a32d2d"><span id="oPi">'+fs(r.Pi,3)+'</span> atm</b> = '+fs(r.Pi*760,3)+' mmHg'+
+   '<br><span style="font-size:.88em;color:#5f6b7a">R = 0,0821 L·atm/(mol·K), C en mol/L, T en kelvins ('+O.Tc+' °C = '+fr(r.T,2)+' K). Concentration massique : '+fs(O.C*mm(s.f),3)+' g/L.</span>';
+  const osmTxt=Math.abs(r.osm-OSM_CELL)<=ISO_TOL?'iso-osmolaire au globule (≈ 0,3 osmol/L)':r.osm<OSM_CELL?'hypo-osmolaire':'hyper-osmolaire';
+  let t='<b>Osmolarité :</b> '+osmTxt+'. <b>Tonicité pour le globule rouge : <span id="oTonW">'+
+    {hypo:'hypotonique',iso:'isotonique',hyper:'hypertonique'}[r.ton]+'</span></b>. ';
+  if(s.perm)t+='L\'urée traverse la membrane du globule : elle entre jusqu\'à égaliser sa concentration de part et d\'autre, elle ne retient donc pas l\'eau dehors. '+
+    'Pour le globule, une solution d\'urée se comporte comme de l\'eau pure : l\'eau entre, il gonfle et éclate, même si la solution est iso-osmolaire. Osmolarité ≠ tonicité.';
+  else if(r.ton==='hypo')t+='L\'eau entre dans le globule (vers le milieu le plus concentré) : il gonfle'+(r.lysis?' jusqu\'à éclater (hémolyse).':'.');
+  else if(r.ton==='hyper')t+='L\'eau sort du globule : il se ratatine (aspect crénelé).';
+  else t+='Pas de flux net d\'eau : le globule garde sa forme.';
+  const el=$('oTon');el.innerHTML=t;el.className=r.ton==='iso'?'ok':'warn';
+  $('oLeg').innerHTML=[...new Map(s.ions.map(x=>[x[1],x[0]])).entries()].map(([n,c])=>'<span><i style="background:'+c+'"></i>'+n+'</span>').join('')+
+    '<span><i style="background:#9c6b7a"></i>particules internes du globule</span><span>1 point ≈ 0,02 osmol/L (dessin)</span>';
+  O.p=0;}
+function drawO(dt){const o=oO;if(!o.sync())return;const c=o.ctx,W=o.W,H=o.H,r=calcO(),s=r.s;
+  O.p=Math.min(1,O.p+dt/3);const p=O.p,e=p*p*(3-2*p);c.clearRect(0,0,W,H);
+  c.fillStyle='#eef5fc';rrect(c,6,6,W-12,H-12,10);c.fill();
+  const cx=W/2,cy=H/2+6,R0=Math.min(W,H)*0.2;
+  /* volume relatif affiché */
+  let ph2=e;if(s.perm)ph2=Math.max(0,(p-0.35)/0.65);const e2=ph2*ph2*(3-2*ph2);
+  const vt=Math.min(isFinite(r.vr)?r.vr:9,LYSIS+0.4),vnow=1+(vt-1)*e2,burst=r.lysis&&vnow>=LYSIS;
+  const rad=R0*Math.cbrt(Math.min(vnow,LYSIS));
+  /* particules de la solution : 1 point ≈ 0,02 osmol/L */
+  const R=rng(5),nUnits=Math.round(r.osm/0.02/s.i);
+  for(let k=0;k<nUnits;k++){let x,y,tries=0;do{x=14+R()*(W-28);y=14+R()*(H-28);tries++;}while(Math.hypot(x-cx,y-cy)<R0*1.25&&tries<20);
+    const inside=s.perm&&k%2===0;              /* l'urée passe dans le globule */
+    let X=x,Y=y;if(inside){const a=R()*6.28,d=R()*0.7*rad,f=Math.min(1,p/0.35);X=x+(cx+Math.cos(a)*d-x)*f;Y=y+(cy+Math.sin(a)*d-y)*f;}
+    s.ions.forEach((io,j)=>{c.fillStyle=io[0];c.beginPath();c.arc(X+(j?Math.cos(j*2.1)*6:0),Y+(j?Math.sin(j*2.1)*6:0),s.i>1?2.6:3,0,7);c.fill();});}
+  /* globule */
+  if(burst){c.setLineDash([4,5]);c.strokeStyle='rgba(163,45,45,.5)';c.lineWidth=2;c.beginPath();c.arc(cx,cy,rad*1.02,0.3,5.9);c.stroke();c.setLineDash([]);
+    const g=c.createRadialGradient(cx,cy,rad*0.2,cx,cy,rad*2.2);g.addColorStop(0,'rgba(200,60,60,.25)');g.addColorStop(1,'rgba(200,60,60,0)');c.fillStyle=g;c.beginPath();c.arc(cx,cy,rad*2.2,0,7);c.fill();
+    txt(o,'hémolyse : le globule a éclaté',cx,cy+rad+22,RED_D,F.b);}
+  else{const cren=vnow<0.97?Math.min(1,(1-vnow)/0.4):0,swell=vnow>1?Math.min(1,(vnow-1)/(LYSIS-1)):0;
+    c.beginPath();const nb=14;for(let k=0;k<=120;k++){const a=k/120*Math.PI*2;const rr=rad*(1+cren*0.12*Math.max(0,Math.cos(a*nb))**3);
+      const x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr;k?c.lineTo(x,y):c.moveTo(x,y);}c.closePath();
+    const g=c.createRadialGradient(cx,cy,0,cx,cy,rad);const pale=0.55*(1-swell);
+    g.addColorStop(0,'rgba(215,80,80,'+(0.95-pale).toFixed(2)+')');g.addColorStop(0.55,'rgba(205,60,60,'+(0.95-pale*0.6).toFixed(2)+')');g.addColorStop(1,'rgba(185,45,45,.95)');
+    c.fillStyle=g;c.fill();c.strokeStyle='#8e2a2a';c.lineWidth=2;c.stroke();
+    const Ri=rng(9);for(let k=0;k<15;k++){const a=Ri()*6.28,d=Math.sqrt(Ri())*rad*0.75;c.fillStyle='#9c6b7a';c.beginPath();c.arc(cx+Math.cos(a)*d,cy+Math.sin(a)*d,2.4,0,7);c.fill();}
+    /* flux d'eau */
+    const t=performance.now()/1000,dir=r.ton==='hypo'?-1:r.ton==='hyper'?1:0;
+    if(p<1&&dir!==0){for(let k=0;k<8;k++){const a=k/8*Math.PI*2+0.2,ph=((t*0.8+k*0.13)%1);
+        const r1=rad+(dir<0?34*(1-ph):8+26*ph),r2=r1+dir*10;arrow(c,cx+Math.cos(a)*r1,cy+Math.sin(a)*r1,cx+Math.cos(a)*r2,cy+Math.sin(a)*r2,BLUE_D,1.6);}}
+    const lab=p<1&&dir!==0?(dir<0?'l\'eau entre':'l\'eau sort'):{hypo:'globule gonflé',iso:'isotonique : pas de flux net d\'eau',hyper:'globule ratatiné (crénelé)'}[r.ton];
+    txt(o,s.perm&&p<0.35?'l\'urée entre dans le globule':lab,cx,Math.min(H-14,cy+rad*1.12+22),dir<0?BLUE_D:dir>0?ORANGE:GREEN_D,F.b);}
+  txt(o,'solution : '+fs(r.osm,3)+' osmol/L',14,22,INK,F.b,'left');
+  txt(o,'globule : ≈ 0,3 osmol/L',W-14,W<560?42:22,'#8e2a2a',F.b,'right');
+}
+$('oSol').addEventListener('change',()=>{O.sol=$('oSol').value;updO();});
+bind('oC',v=>fs(v,3)+' mol/L',v=>{O.C=v;updO();});
+bind('oT',v=>v+' °C = '+fr(v+T0,2)+' K',v=>{O.Tc=v;updO();});
+$('oAgain').addEventListener('click',()=>{O.p=0;});
+
+/* =================== cryoscopie / ébullioscopie =================== */
+const TQ={sol:'NaCl',m:0.5};const oT=mkCanvas($('cvT'));
+function calcT(){const s=SOL[TQ.sol];const dF=s.i*KF*TQ.m,dE=s.i*KEB*TQ.m;return {s,dF,dE,Tf:-dF,Te:100+dE};}
+function updT(){const r=calcT(),s=r.s;
+  $('tFml').innerHTML='ΔT<sub>cong</sub> = i · K<sub>f</sub> · b = '+s.i+' × 1,86 × '+fs(TQ.m,3)+' = <b><span id="tDF">'+fs(r.dF,3)+'</span> K</b> &nbsp;→&nbsp; la solution gèle à <b style="color:#185fa5">'+fr(r.Tf,2)+' °C</b> ('+fr(273.15-r.dF,2)+' K)<br>'+
+   'ΔT<sub>éb</sub> = i · K<sub>éb</sub> · b = '+s.i+' × 0,512 × '+fs(TQ.m,3)+' = <b><span id="tDE">'+fs(r.dE,3)+'</span> K</b> &nbsp;→&nbsp; elle bout à <b style="color:#a32d2d">'+fr(r.Te,2)+' °C</b> (sous 1 atm)'+
+   '<br><span style="font-size:.88em;color:#5f6b7a">'+iTxt(s)+'. K en K·kg/mol, b (molalité) en mol de soluté par kg de solvant. Un écart de 1 K vaut un écart de 1 °C.</span>';
+  $('tWarn').innerHTML=TQ.m>1?'Au-delà d\'environ 1 mol/kg, la loi ΔT = i·K·b (valable pour les solutions diluées) devient approximative : valeur indicative.':'';
+  $('tInfo').innerHTML='Pour 1 kg d\'eau : '+fs(TQ.m,3)+' mol de '+s.n+', soit '+fs(TQ.m*mm(s.f),3)+' g (M = '+fr(mm(s.f),2)+' g/mol). '+
+   'Molalité : par kg de <b>solvant</b>, pas par litre de solution.';}
+function drawT(){const o=oT;if(!o.sync())return;const c=o.ctx,W=o.W,H=o.H,r=calcT();c.clearRect(0,0,W,H);
+  const th=(x,lo,hi,pure,sol,col,title,lab)=>{const top=40,bot=H-50,tw=16;
+    const y=v=>bot-(v-lo)/(hi-lo)*(bot-top);
+    c.fillStyle='#fff';c.strokeStyle=INK;c.lineWidth=2;rrect(c,x-tw/2,top-10,tw,bot-top+20,8);c.fill();c.stroke();
+    c.beginPath();c.arc(x,bot+22,15,0,7);c.fillStyle=col;c.fill();c.stroke();
+    c.fillStyle=col;c.fillRect(x-4,y(sol),8,bot+10-y(sol));
+    c.strokeStyle=AX;c.lineWidth=1;c.font=F.s;
+    for(let v=Math.ceil(lo);v<=hi+1e-9;v+=(hi-lo>6?2:1)){c.beginPath();c.moveTo(x+tw/2,y(v));c.lineTo(x+tw/2+6,y(v));c.stroke();txt(o,fr(v,0)+' °C',x+tw/2+9,y(v),MUT,F.s,'left');}
+    c.setLineDash([5,4]);c.strokeStyle=INK;c.lineWidth=1.4;c.beginPath();c.moveTo(x-tw/2-40,y(pure));c.lineTo(x+tw/2,y(pure));c.stroke();c.setLineDash([]);
+    c.strokeStyle=col;c.lineWidth=2.4;c.beginPath();c.moveTo(x-tw/2-40,y(sol));c.lineTo(x+tw/2,y(sol));c.stroke();
+    txt(o,'eau pure',x-tw/2-44,y(pure)+(sol<pure?-9:9),INK,F.s,'right');
+    txt(o,'solution '+fr(sol,2),x-tw/2-44,y(sol)+(sol<pure?9:-9),col,F.s,'right');
+    if(Math.abs(y(sol)-y(pure))>14)arrow(c,x-tw/2-20,y(pure),x-tw/2-20,y(sol)+(sol<pure?-3:3),col,1.6);
+    txt(o,title,x,14,INK,F.b);txt(o,lab,x,H-10,col,F.b);};
+  th(W*0.3,-12,1,0,r.Tf,BLUE_D,'Congélation','ΔT = −'+fs(r.dF,3)+' K');
+  th(W*0.78,99,104,100,r.Te,RED_D,'Ébullition','ΔT = +'+fs(r.dE,3)+' K');
+}
+$('tSol').addEventListener('change',()=>{TQ.sol=$('tSol').value;updT();});
+bind('tM',v=>fs(v,3)+' mol/kg',v=>{TQ.m=v;updT();});
+
+/* =================== Henry : plongeur =================== */
+const DV={z:20};const oD=mkCanvas($('cvD'));
+function calcD(){const P=1+DV.z/10,pN=0.78*P,pO=0.21*P;return {P,pN,pO,cN:KH_N2_37*pN,cO:KH_O2_37*pO,cN0:KH_N2_37*0.78,cO0:KH_O2_37*0.21};}
+function updD(){const r=calcD();
+  $('dFml').innerHTML='P totale ≈ 1 atm + '+fr(DV.z/10,1)+' atm (≈ 1 atm par 10 m d\'eau) = <b><span id="dP">'+fr(r.P,1)+'</span> atm</b><br>'+
+   'P(N₂) = 0,78 × P = '+fs(r.pN,3)+' atm &nbsp;|&nbsp; P(O₂) = 0,21 × P = '+fs(r.pO,3)+' atm<br>'+
+   'Loi de Henry C = K<sub>H</sub> · P : <b style="color:#185fa5">C(N₂) = '+fsci(KH_N2_37,2)+' × '+fs(r.pN,3)+' = <span id="dCN">'+fs(r.cN*1000,3)+'</span> mmol/L</b> &nbsp;|&nbsp; '+
+   '<b style="color:#a32d2d">C(O₂) = '+fsci(KH_O2_37,2)+' × '+fs(r.pO,3)+' = <span id="dCO">'+fs(r.cO*1000,3)+'</span> mmol/L</b><br>'+
+   '<span style="font-size:.88em;color:#5f6b7a">Soit '+fr(r.P,1)+' fois plus de gaz dissous qu\'en surface. À la remontée, P baisse : si elle est trop rapide, le N₂ en excès forme des bulles (accident de décompression).</span>';}
+function drawD(time){const o=oD;if(!o.sync())return;const c=o.ctx,W=o.W,H=o.H,r=calcD();c.clearRect(0,0,W,H);
+  const sw=W<560?W*0.5:W*0.56,top=24,bot=H-14,y=z=>top+z/40*(bot-top);
+  const g=c.createLinearGradient(0,top,0,bot);g.addColorStop(0,'#cfe6f8');g.addColorStop(1,'#4d7fb3');c.fillStyle=g;c.fillRect(0,top,sw,bot-top);
+  c.fillStyle='#eef5fc';c.fillRect(0,0,sw,top);txt(o,'surface : 1 atm',8,12,INK,F.s,'left');
+  for(let z=10;z<=40;z+=10){c.strokeStyle='rgba(255,255,255,.6)';c.setLineDash([3,4]);c.beginPath();c.moveTo(0,y(z));c.lineTo(sw,y(z));c.stroke();c.setLineDash([]);
+    txt(o,z+' m : '+(1+z/10)+' atm',sw-6,y(z)-9,INK,F.s,'right');}
+  /* plongeur */
+  const dx=sw*0.38,dy=Math.min(bot-14,Math.max(top+14,y(DV.z))),bob=Math.sin(time/600)*2;
+  c.save();c.translate(dx,dy+bob);c.fillStyle='#13233a';rrect(c,-22,-7,40,14,7);c.fill();c.fillStyle='#BA7517';rrect(c,-16,-14,26,7,3);c.fill();
+  c.beginPath();c.arc(24,-2,8,0,7);c.fillStyle='#13233a';c.fill();c.fillStyle='#9fd3ff';c.fillRect(25,-6,6,5);
+  c.strokeStyle='#13233a';c.lineWidth=4;c.beginPath();c.moveTo(-22,-2);c.lineTo(-36,-8);c.moveTo(-22,3);c.lineTo(-36,8);c.stroke();c.restore();
+  for(let k=0;k<4;k++){const ph=((time/1400+k/4)%1);c.strokeStyle='rgba(255,255,255,.8)';c.lineWidth=1.2;c.beginPath();c.arc(dx+30+Math.sin(ph*9)*3,dy-10-ph*60,2+ph*2,0,7);c.stroke();}
+  /* tissus : gaz dissous */
+  const tx=sw+12,tw=W-tx-8,th=bot-top-56,ty=top+26;
+  c.fillStyle='#fdf1ef';c.strokeStyle='#d9a7a0';c.lineWidth=1.2;rrect(c,tx,ty,tw,th,10);c.fill();c.stroke();
+  txt(o,'gaz dissous (modèle : eau à 37 °C)',tx+tw/2,top+12,INK,F.b);
+  const R=rng(3),nN=Math.round(r.cN*1000*14),nO=Math.round(r.cO*1000*14);
+  for(let k=0;k<nN+nO;k++){const x=tx+8+R()*(tw-16),yy=ty+8+R()*(th-16);c.fillStyle=k<nN?BLUE:RED;c.beginPath();c.arc(x+Math.sin(time/500+k)*1.2,yy,2.6,0,7);c.fill();}
+  txt(o,'N₂ '+fs(r.cN*1000,3)+' mmol/L',tx+tw/2,ty+th+12,BLUE_D,F.s);
+  txt(o,'O₂ '+fs(r.cO*1000,3)+' mmol/L',tx+tw/2,ty+th+27,RED_D,F.s);
+}
+bind('dZ',v=>v+' m',v=>{DV.z=v;updD();});
+
+/* =================== Henry : CO₂ =================== */
+const HC={P:1,Tc:25};const oH=mkCanvas($('cvH'));
+const KH=Tc=>KH_CO2_25*Math.exp(VH_CO2*(1/(Tc+T0)-1/298.15));
+function updH(){const k=KH(HC.Tc),C=k*HC.P;
+  $('hFml').innerHTML='C = K<sub>H</sub> · P = '+fsci(k,3)+' mol/(L·atm) × '+fs(HC.P,3)+' atm = <b style="color:#a32d2d"><span id="hCv">'+fs(C,3)+'</span> mol/L</b> ('+fs(C*1000,3)+' mmol/L)<br>'+
+   'Quand T monte, K<sub>H</sub> baisse : <b>un gaz est moins soluble à chaud</b>. À '+HC.Tc+' °C ('+fr(HC.Tc+T0,2)+' K), K<sub>H</sub> = '+fsci(k,3)+' mol/(L·atm)'+
+   (HC.Tc===25?' (valeur de référence).':' (modèle de tendance).');}
+function drawH(){const o=oH;if(!o.sync())return;const c=o.ctx,W=o.W,H=o.H,k=KH(HC.Tc),C=k*HC.P;c.clearRect(0,0,W,H);
+  const narrow=W<560,bx=narrow?W*0.25:W*0.2,bw=Math.min(110,W*0.3),top=30,bot=H-26,liq=top+(bot-top)*0.35;
+  c.fillStyle='#fff';c.strokeStyle=INK;c.lineWidth=2;rrect(c,bx-bw/2,top,bw,bot-top,12);c.fill();
+  c.fillStyle='#d8eaf9';c.fillRect(bx-bw/2+2,liq,bw-4,bot-liq-2);c.stroke();
+  c.fillStyle=INK;c.fillRect(bx-bw*0.2,top-12,bw*0.4,14);
+  const R=rng(17),ng=Math.round(HC.P*8),nd=Math.round(C*1000*0.45);
+  for(let i=0;i<ng;i++){c.fillStyle=GREY;c.beginPath();c.arc(bx-bw/2+8+R()*(bw-16),top+8+R()*(liq-top-14),3,0,7);c.fill();}
+  for(let i=0;i<nd;i++){c.fillStyle=INK;c.beginPath();c.arc(bx-bw/2+8+R()*(bw-16),liq+8+R()*(bot-liq-16),2.6,0,7);c.fill();}
+  txt(o,'CO₂ gaz : '+fs(HC.P,3)+' atm',bx,top+(liq-top)/2,MUT,F.s);
+  txt(o,'CO₂ dissous',bx,bot+14,INK,F.s);
+  /* graphe K_H(T) */
+  const gx=narrow?W*0.52:W*0.42,gw=W-gx-16,gy=top+6,gh=bot-top-30;
+  const kmin=KH(40),kmax=KH(0),X=t=>gx+t/40*gw,Y=v=>gy+gh-(v-0.015)/(0.08-0.015)*gh;
+  c.strokeStyle=AX;c.lineWidth=1;c.beginPath();c.moveTo(gx,gy);c.lineTo(gx,gy+gh);c.lineTo(gx+gw,gy+gh);c.stroke();
+  for(let t=0;t<=40;t+=(narrow?20:10))txt(o,t+' °C',X(t),gy+gh+12,MUT,F.s);
+  [0.02,0.04,0.06,0.08].forEach(v=>txt(o,fr(v,2),gx-4,Y(v),MUT,F.s,'right'));
+  c.strokeStyle=BLUE_D;c.lineWidth=2.4;c.beginPath();for(let t=0;t<=40;t+=0.5){const yy=Y(KH(t));t?c.lineTo(X(t),yy):c.moveTo(X(t),yy);}c.stroke();
+  c.fillStyle=RED;c.beginPath();c.arc(X(HC.Tc),Y(k),5,0,7);c.fill();
+  c.fillStyle=INK;c.beginPath();c.arc(X(25),Y(KH_CO2_25),3,0,7);c.fill();
+  txt(o,'constante de Henry du CO₂, mol/(L·atm)',gx+6,gy-8,INK,F.s,'left');
+  txt(o,'3,4·10⁻² à 25 °C',X(25)+6,Y(KH_CO2_25)-12,INK,F.s,'left');
+}
+bind('hP',v=>fs(v,3)+' atm',v=>{HC.P=v;updH();});
+bind('hT',v=>v+' °C',v=>{HC.Tc=v;updH();});
+
+tabs('main');tabs('henry');
+let last=performance.now();
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(visible($('pO')))drawO(dt);if(visible($('pT')))drawT();if(visible($('hD')))drawD(now);if(visible($('hC')))drawH();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+window.__sim={O,TQ,DV,HC,calcO,calcT,calcD,KH,setRange,consts:{OSM_CELL,KH_N2_37,KH_O2_37}};
+})();
+</script>
+
+</section>
+<section class="card keep"><h2>Ce qu'il faut retenir</h2><ul><li>Osmolarité = i · C (osmol/L) : on compte toutes les particules dissoutes. NaCl 0,15 mol/L donne 0,30 osmol/L.</li><li>Pression osmotique : Π = i · C · R · T, avec R = 0,0821 L·atm/(mol·K) et T en kelvins.</li><li>Tonicité = effet réel sur la cellule : seules comptent les particules qui ne traversent pas la membrane. L'urée la traverse : une solution d'urée est hypotonique pour le globule rouge.</li><li>Cryoscopie et ébullioscopie : ΔT = i · K · b, avec b la molalité (mol par kg de solvant). Pour l'eau : K<sub>f</sub> = 1,86 et K<sub>éb</sub> = 0,512 K·kg/mol.</li><li>Loi de Henry : C = K<sub>H</sub> · P(gaz). Plus de pression, plus de gaz dissous ; plus chaud, moins de gaz dissous.</li></ul></section>
+<section class="card trap"><h2>Pièges classiques</h2><ul><li>Oublier i : CaCl₂ 0,1 mol/L vaut 0,3 osmol/L, pas 0,1. Les énoncés prennent i = ν (nombre d'ions), alors qu'en réalité i est un peu plus petit que ν.</li><li>Croire qu'iso-osmolaire veut dire isotonique : l'urée 0,3 mol/L est iso-osmolaire mais hypotonique, elle fait éclater le globule.</li><li>Mettre T en °C dans Π = iCRT, ou confondre molarité (par litre de solution) et molalité (par kg de solvant).</li><li>Utiliser la pression totale dans la loi de Henry : il faut la pression partielle du gaz (0,78·P pour N₂).</li></ul></section>
+<section class="card defis"><h2>Défis</h2><details><summary>Quelle concentration de glucose est isotonique au globule rouge ? Et de CaCl₂ ?</summary><p>Il faut 0,3 osmol/L. Glucose (i = 1) : 0,3 mol/L. CaCl₂ (i = 3) : 0,1 mol/L. Vérifie que le globule garde sa forme.</p></details><details><summary>Mets l'urée à 0,3 mol/L. La solution est-elle iso-osmolaire ? Que devient le globule, et pourquoi ?</summary><p>Elle est iso-osmolaire (0,3 osmol/L), mais l'urée traverse la membrane : elle ne retient pas l'eau dehors. L'eau entre, le globule gonfle et éclate. Elle est hypotonique.</p></details><details><summary>Plongeur à 30 m : combien de fois plus d'azote dissous qu'en surface ? Une solution de NaCl à 1 mol/kg gèle à quelle température ?</summary><p>P = 4 atm, donc 4 fois plus (C est proportionnelle à P). Pour NaCl : ΔT = 2 × 1,86 × 1 = 3,72 K, elle gèle vers −3,72 °C (valeur indicative : à cette concentration i réel < 2, la vraie valeur est un peu moins basse).</p></details></section>
+</main>
+<aside class="sfa-side">
+  <div class="sfa-list"><h2>Chimie générale : quantités, solutions, gaz<span>3 simulations</span></h2><ol><li><a href="../stoechiometrie-labo/"><i>01</i>Calculs de quantités au labo</a></li><li><a class="on" aria-current="page" href="../proprietes-colligatives/"><i>02</i>Osmose, cryoscopie et loi de Henry</a></li><li><a href="../gaz-pressions-partielles/"><i>03</i>Gaz parfaits et pressions partielles</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de chimie</footer>
+<script src="../../kit/sfa-nav.js"></script></body>
+</html>

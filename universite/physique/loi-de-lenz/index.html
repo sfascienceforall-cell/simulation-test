@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loi de Lenz : induction · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+/* Loi de Lenz 3D : scène plein cadre, phrase-bilan en haut à gauche, graphe Φ(t) / e(t) en bas à droite. */
+.t-stage{position:relative;width:100%;height:68vh;min-height:470px;background:#fff;border:1px solid var(--rule);border-radius:4px;overflow:hidden;
+  box-shadow:0 1px 2px rgba(12,31,46,.05),0 8px 24px -16px rgba(12,31,46,.18);touch-action:none;user-select:none;-webkit-user-select:none}
+.t-stage canvas.gl{display:block;width:100%!important;height:100%!important;border:0!important;box-shadow:none!important;border-radius:0!important}
+.t-lab{position:absolute;left:0;top:0;font:700 13px Mulish,system-ui,sans-serif;white-space:nowrap;pointer-events:none;padding:1px 6px;border-radius:3px;
+  background:rgba(255,255,255,.92);opacity:0;font-variant-numeric:tabular-nums}
+.t-hud{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.95);border:1px solid var(--rule);border-radius:4px;padding:9px 13px;
+  font:500 13px/1.5 Mulish,system-ui,sans-serif;color:#13233a;pointer-events:none;max-width:min(430px,calc(100% - 24px))}
+.t-hud .big{font:700 14.5px/1.45 Mulish,system-ui,sans-serif}
+.t-hud .sub{color:#5f6b7a;font-size:12.5px;margin-top:3px;font-variant-numeric:tabular-nums}
+.t-hud .sub b{font-weight:800}
+.t-graph{position:absolute;right:12px;bottom:12px;width:300px;background:rgba(255,255,255,.96);border:1px solid var(--rule);border-radius:4px;padding:6px 8px 4px;pointer-events:none}
+.t-graph canvas{display:block;width:100%!important;height:168px!important;border:0!important;box-shadow:none!important;border-radius:0!important}
+.t-graph.out{position:static;width:100%;margin-top:8px;padding:8px 10px 6px}
+.t-hint{position:absolute;left:12px;bottom:10px;font:500 12px Mulish,system-ui,sans-serif;color:#8a95a3;pointer-events:none;background:rgba(255,255,255,.92);padding:2px 6px;border-radius:3px;max-width:calc(100% - 340px)}
+.t-err{position:absolute;inset:0;display:grid;place-items:center;color:#a32d2d;font:600 14px Mulish,system-ui,sans-serif;padding:20px;text-align:center}
+.val{white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font:600 .82rem Mulish,system-ui,sans-serif;color:#5f6b7a;margin:10px 0 2px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.legend i.dot{width:9px;height:9px;border-radius:50%}
+@media (max-width:640px){.t-stage{height:58vh;min-height:430px}.t-hint{display:none}
+  .t-hud{font-size:12px;padding:7px 9px;left:8px;top:8px;max-width:calc(100% - 16px)}
+  .t-hud .big{font-size:12.5px}.t-hud .sub{font-size:11px}.t-lab{font-size:11px;padding:1px 4px}}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH11">Magnétisme</a>›<b>Loi de Lenz : induction</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Magnétisme</span><span class="sfa-chip free">Gratuit</span></div><h1>Loi de Lenz : induction</h1><p>Approche un aimant d&#x27;une spire : le courant induit allume l&#x27;ampoule et s&#x27;oppose au mouvement</p></div>
+<section class="sfa-sim">
+
+
+
+<div id="stage" class="t-stage" aria-label="Scène 3D : attrape l'aimant pour le déplacer, glisse le fond pour tourner la vue, molette pour zoomer">
+  <div class="t-hud" id="hud"></div>
+  <div class="t-graph" id="graph"><canvas id="gcv"></canvas></div>
+  <div class="t-hint" id="hint">Attrape l'aimant et fais-le glisser · glisse le fond pour tourner la vue · molette : zoom</div>
+  <div class="t-lab" id="lI" style="color:#8a5a12"></div>
+  <div class="t-lab" id="lB" style="color:#185fa5"></div>
+  <div class="t-lab" id="lBi" style="color:#0F6E56"></div>
+  <div class="t-lab" id="lFN" style="color:#a32d2d"></div>
+  <div class="t-lab" id="lFS" style="color:#185fa5"></div>
+  <div class="t-lab" id="lV" style="color:#5f6b7a"></div>
+  <div class="t-lab" id="lF" style="color:#13233a"></div>
+</div>
+<div id="graphOut"></div>
+
+<div class="legend">
+  <span><i style="background:#378ADD"></i>Champ B de l'aimant (lignes de champ)</span>
+  <span><i style="background:#1D9E75"></i>Champ induit B<sub>ind</sub> de la spire</span>
+  <span><i class="dot" style="background:#BA7517"></i>Sens (conventionnel) du courant induit I</span>
+  <span><i style="background:#13233a"></i>Force exercée par la spire sur l'aimant</span>
+  <span><i style="background:#8a95a3"></i>Vitesse v de l'aimant</span>
+</div>
+
+<div class="fml" id="fml"><b style="color:#7F77DD">Φ = B·S·cos θ</b> (flux à travers une spire) &nbsp;→&nbsp; <b style="color:#BA7517">e = −N·dΦ/dt</b> (Faraday) &nbsp;→&nbsp; <b style="color:#BA7517">I = e/R</b>.
+Le signe « − », c'est la <b>loi de Lenz</b> : le courant induit crée un <b style="color:#0F6E56">champ B<sub>ind</sub></b> qui <b>s'oppose à la variation du flux</b> qui lui donne naissance. Un aimant qui approche est repoussé, un aimant qui s'éloigne est retenu : il faut toujours fournir un travail, qui devient la lumière de l'ampoule.</div>
+
+<div class="row">
+  <button class="btn on" id="bAuto">Approcher / éloigner automatiquement</button>
+  <button class="btn" id="bFlip">Inverser l'aimant</button>
+  <button class="btn" id="bPause">Pause</button>
+  <button class="btn" id="bReset">Remettre l'aimant</button>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:170px">N &nbsp;nombre de spires</span>
+  <input type="range" id="nS" min="1" max="12" value="8" step="1" style="accent-color:#b06a2c;">
+  <span class="val" id="nSv">8 spires</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:170px;color:#185fa5">B₀ &nbsp;force de l'aimant</span>
+  <input type="range" id="b0" min="100" max="600" value="400" step="10" style="accent-color:#378ADD;">
+  <span class="val" id="b0v" style="color:#185fa5">400 mT au pôle</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:170px;color:#8a5a12">R &nbsp;résistance du circuit</span>
+  <input type="range" id="rr" min="0.5" max="10" value="1" step="0.5" style="accent-color:#BA7517;">
+  <span class="val" id="rrv" style="color:#8a5a12">1,0 Ω</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:170px;color:#5b52b8">θ &nbsp;inclinaison de la spire</span>
+  <input type="range" id="th" min="0" max="90" value="0" step="5" style="accent-color:#7F77DD;">
+  <span class="val" id="thv" style="color:#5b52b8">0°</span>
+</div>
+<div class="row">
+  <button class="btn" id="v3d">Vue 3D</button>
+  <button class="btn" id="vFace">Vue de face</button>
+  <button class="btn" id="vTop">Vue du dessus</button>
+</div>
+
+<div class="info" id="info"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const box=$('stage');
+if(!window.THREE){box.insertAdjacentHTML('beforeend','<div class="t-err">Impossible de charger la 3D (three.js). Vérifie la connexion internet.</div>');return;}
+const fx=(v,n=2)=>(Math.abs(v)<0.5*Math.pow(10,-n)?0:v).toFixed(n).replace('.',',').replace(/^-/,'−');
+const V3=(x,y,z)=>new THREE.Vector3(x,y,z);
+
+// ================= PHYSIQUE (unités : cm pour la géométrie, SI pour les calculs) =================
+// Aimant droit de section carrée 1,5 cm × 1,5 cm, longueur 6 cm ; on le modélise comme un cylindre aimanté
+// uniformément (rayon équivalent de même section) : champ exact sur l'axe à la distance z de la face :
+// B(z) = (Bᵣ/2)·[ (z+L)/√((z+L)²+a²) − z/√(z²+a²) ]  ( = dipôle m/(2π r³)·μ₀ loin de l'aimant )
+const LM=6, AM=1.5, REQ=Math.sqrt(AM*AM/Math.PI);
+const RC=3;                        // rayon de la spire (cm)
+const S=Math.PI*(RC/100)**2;       // surface (m²)
+const YC=4;                        // hauteur de l'axe au-dessus de la table (cm)
+let N=8, B0=0.4, B0T=0.4, Rres=1, thT=0, th=0;       // spires, champ au contact du pôle (T), résistance (Ω), inclinaison (rad)
+let pol=1;                         // +1 : le pôle N fait face à la spire
+let psi=0, flipping=false;         // rotation en cours de l'aimant (retournement)
+const Br=()=>2*B0*Math.sqrt(LM*LM+REQ*REQ)/LM;
+function Baxis(z){return Br()/2*((z+LM)/Math.hypot(z+LM,REQ)-z/Math.hypot(z,REQ));}   // T, z en cm
+// composante x du champ de l'aimant au centre de la spire (le pôle N envoie B vers −x, loin de lui)
+const Bx=(z,ps)=>-pol*Baxis(z)*Math.cos(ps);
+// flux à travers UNE spire, normale n̂ = (−cos θ, 0, sin θ) (de l'aimant vers la spire) : Φ = B·S·cos θ
+// avec ce choix, Φ > 0 quand le pôle N fait face à la spire. I > 0 = sens positif autour de n̂ (main droite).
+const Phi=(z,t,ps)=>-Bx(z,ps)*S*Math.cos(t);
+const I_FULL=0.003;                // l'ampoule (type LED, très sensible) brille au maximum vers 3 mA
+
+const halfLen=()=>Math.max(0.12,(N-1)*0.3/2+0.13);
+const zMin=()=>halfLen()*Math.cos(th)+RC*Math.sin(th)+0.9;
+const Z_MAX=15;
+
+let z=13, zT=13, zPrev=13, v=0;                 // distance centre spire → face avant de l'aimant (cm), vitesse (cm/s)
+let e=0, I=0, F=0, dPhidz=0, phi=Phi(13,0,0), phiPrev=phi, bright=0;
+let auto=true, autoT=0, paused=false, dragging=false, simT=0;
+
+// ================= SCÈNE =================
+const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.domElement.className='gl';
+box.prepend(renderer.domElement);
+const scene=new THREE.Scene(); scene.background=new THREE.Color('#ffffff');
+const cam=new THREE.PerspectiveCamera(38,1,0.5,400);
+scene.add(new THREE.HemisphereLight('#ffffff','#a4afbb',0.62));
+const sun=new THREE.DirectionalLight('#ffffff',0.55); sun.position.set(8,30,16); sun.castShadow=true;
+sun.shadow.mapSize.set(4096,4096); /* l'ombre couvre toute la table : pas de zone hors cadre d'ombre */ Object.assign(sun.shadow.camera,{left:-75,right:75,top:60,bottom:-60,near:1,far:140}); sun.shadow.bias=-0.0006; scene.add(sun);
+const fill=new THREE.DirectionalLight('#ffffff',0.22); fill.position.set(-10,8,-6); scene.add(fill);
+const mat=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.6,metalness:0},o));
+
+// table
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(140,100),mat('#f3f5f8',{roughness:.9})); ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
+const grid=new THREE.GridHelper(60,30,'#d3d9e2','#e5e9ee'); grid.position.set(5,0.01,0); scene.add(grid);
+
+// ---------- support de la spire ----------
+const baseC=new THREE.Mesh(new THREE.BoxGeometry(3.4,0.5,3),mat('#5d6b7a',{roughness:.5})); baseC.position.set(0,0.25,0); baseC.castShadow=baseC.receiveShadow=true; scene.add(baseC);
+const post=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.22,YC-RC-0.5+0.05,16),mat('#9aa6b2',{metalness:.3,roughness:.4})); post.position.set(0,0.5+(YC-RC-0.5)/2,0); post.castShadow=true; scene.add(post);
+
+// ---------- spire / bobine ----------
+const coil=new THREE.Group(); coil.position.set(0,YC,0); scene.add(coil);
+const copper=mat('#c87a3c',{metalness:.55,roughness:.32});
+let coilMesh=null, coilFace=null;
+class Helix extends THREE.Curve{constructor(){super();}
+  getPoint(t,o=new THREE.Vector3()){const hl=halfLen(), ang=Math.PI+t*2*Math.PI*N;   // départ en bas ; t croissant = sens positif autour de +x
+    return o.set(-hl+2*hl*t,RC*Math.cos(ang),RC*Math.sin(ang));}}
+// disque translucide = surface S traversée par le flux
+coilFace=new THREE.Mesh(new THREE.CircleGeometry(RC-0.1,64),new THREE.MeshBasicMaterial({color:'#7F77DD',transparent:true,opacity:.10,side:THREE.DoubleSide,depthWrite:false}));
+coilFace.rotation.y=Math.PI/2; coil.add(coilFace);
+const faceRing=new THREE.Mesh(new THREE.RingGeometry(RC-0.12,RC-0.06,64),new THREE.MeshBasicMaterial({color:'#7F77DD',transparent:true,opacity:.35,side:THREE.DoubleSide,depthWrite:false}));
+faceRing.rotation.y=Math.PI/2; coil.add(faceRing);
+
+// ---------- ampoule ----------
+const LAMP=V3(-8.5,0,0.5), LS=1.35;
+const lamp=new THREE.Group(); lamp.position.copy(LAMP); lamp.scale.setScalar(LS); scene.add(lamp);
+const lb=new THREE.Mesh(new THREE.BoxGeometry(3.2,0.6,2.2),mat('#2f3b48',{roughness:.45})); lb.position.y=0.3; lb.castShadow=lb.receiveShadow=true; lamp.add(lb);
+const sock=new THREE.Mesh(new THREE.CylinderGeometry(0.62,0.7,1.0,24),mat('#1f2a36',{roughness:.4})); sock.position.y=1.1; sock.castShadow=true; lamp.add(sock);
+const screwM=mat('#c9ced6',{metalness:.85,roughness:.28});
+const screw=new THREE.Mesh(new THREE.CylinderGeometry(0.5,0.5,0.75,24),screwM); screw.position.y=1.95; lamp.add(screw);
+for(let i=0;i<3;i++){const r=new THREE.Mesh(new THREE.TorusGeometry(0.51,0.05,8,24),screwM);r.rotation.x=Math.PI/2;r.position.y=1.7+i*0.22;lamp.add(r);}
+const glassM=new THREE.MeshStandardMaterial({color:'#ffffff',transparent:true,opacity:.28,roughness:.08,metalness:0,emissive:'#ffcf5a',emissiveIntensity:0,depthWrite:false});
+const glass=new THREE.Mesh(new THREE.SphereGeometry(1.25,40,28),glassM); glass.position.y=3.35; glass.scale.set(1,1.08,1); lamp.add(glass);
+const neck=new THREE.Mesh(new THREE.CylinderGeometry(0.52,0.78,0.6,28,1,true),glassM); neck.position.y=2.5; lamp.add(neck);
+const wireM=new THREE.MeshStandardMaterial({color:'#6b7480',metalness:.6,roughness:.4});
+[-1,1].forEach(s=>{const w=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,1.2,6),wireM); w.position.set(s*0.32,2.85,0); w.rotation.z=-s*0.12; lamp.add(w);});
+class Fil extends THREE.Curve{getPoint(t,o=new THREE.Vector3()){const a=t*Math.PI*2*7;return o.set(-0.42+0.84*t,3.42+0.09*Math.sin(a),0.09*Math.cos(a));}}
+const filM=new THREE.MeshBasicMaterial({color:'#6a5a48'});
+const filament=new THREE.Mesh(new THREE.TubeGeometry(new Fil(),140,0.028,6,false),filM); lamp.add(filament);
+// halo : sprite à dégradé radial (mélange normal pour rester visible sur fond blanc)
+const gcan=document.createElement('canvas'); gcan.width=gcan.height=256; { const c=gcan.getContext('2d'), g=c.createRadialGradient(128,128,0,128,128,128);
+  g.addColorStop(0,'rgba(255,236,160,1)'); g.addColorStop(.18,'rgba(255,214,110,.85)'); g.addColorStop(.45,'rgba(255,190,80,.32)'); g.addColorStop(1,'rgba(255,180,70,0)');
+  c.fillStyle=g; c.fillRect(0,0,256,256); }
+const halo=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(gcan),transparent:true,depthWrite:false,opacity:0}));
+halo.position.y=3.4; lamp.add(halo);
+const bulbLight=new THREE.PointLight('#ffc46b',0,22,1.6); bulbLight.position.y=3.4; lamp.add(bulbLight);
+const termA=V3(LAMP.x+0.95*LS,0.68*LS,LAMP.z+0.55*LS), termB=V3(LAMP.x+0.95*LS,0.68*LS,LAMP.z-0.55*LS);
+[termA,termB].forEach(p=>{const t=new THREE.Mesh(new THREE.CylinderGeometry(0.2,0.2,0.18,16),screwM); t.position.copy(p).add(V3(0,-0.04,0)); scene.add(t);});
+
+// ---------- fils + trajet des charges ----------
+const insul=[mat('#c23b3a',{roughness:.45}),mat('#2b3440',{roughness:.45})];
+let wires=[], path=[], pathLen=0, coilLenEnd=0;
+const markerGeo=new THREE.ConeGeometry(0.19,0.5,12); markerGeo.rotateX(Math.PI/2);   // pointe vers +z local
+const markerMat=new THREE.MeshStandardMaterial({color:'#e8a33a',emissive:'#BA7517',emissiveIntensity:.55,roughness:.4,transparent:true,opacity:1});
+const MAXM=400; const markers=new THREE.InstancedMesh(markerGeo,markerMat,MAXM); markers.frustumCulled=false; scene.add(markers);
+let nMark=0, sPhase=0;
+
+function buildCoil(){
+  if(coilMesh){coil.remove(coilMesh);coilMesh.geometry.dispose();}
+  coilMesh=new THREE.Mesh(new THREE.TubeGeometry(new Helix(),Math.max(64,90*N),0.13,8,false),copper);
+  coilMesh.castShadow=true; coil.add(coilMesh);
+  buildWires();
+}
+let thBuilt=0;
+function buildWires(){
+  thBuilt=th; coil.rotation.y=th; coil.updateMatrixWorld(true);
+  wires.forEach(w=>{scene.remove(w);w.geometry.dispose();}); wires=[];
+  const h=new Helix(), p0=coil.localToWorld(h.getPoint(0)), p1=coil.localToWorld(h.getPoint(1));
+  // deux fils : bout final de la bobine → borne B de l'ampoule, borne A → début de la bobine
+  const route=(p,q,side)=>new THREE.CatmullRomCurve3([p.clone(),p.clone().add(V3(0,-0.55,0)),V3(p.x,0.6,p.z-1.0),
+    V3(-1.2,0.12,-2.2+side*0.5),V3(-4,0.12,-1.6+side*0.5),V3(q.x+1.3,0.12,q.z),q.clone()],false,'catmullrom',0.4);
+  const cOut=route(p1,termB,1), cIn=route(p0,termA,-1);
+  [cOut,cIn].forEach((c,i)=>{const m=new THREE.Mesh(new THREE.TubeGeometry(c,120,0.1,8,false),insul[i]); m.castShadow=true; scene.add(m); wires.push(m);});
+  // trajet orienté dans le sens POSITIF du courant (sens + autour de n̂) : bobine → fil de sortie → ampoule → fil de retour
+  path=[];
+  for(let i=0;i<=Math.max(64,60*N);i++) path.push({p:coil.localToWorld(h.getPoint(i/Math.max(64,60*N))),show:1});
+  coilLenEnd=path.length;
+  cOut.getSpacedPoints(80).forEach(p=>path.push({p,show:1}));
+  [V3(LAMP.x,2.4*LS,LAMP.z-0.3),V3(LAMP.x,3.42*LS,LAMP.z),V3(LAMP.x,2.4*LS,LAMP.z+0.3)].forEach(p=>path.push({p,show:0}));
+  cIn.getSpacedPoints(80).reverse().forEach(p=>path.push({p,show:1}));
+  pathLen=0; path[0].s=0; for(let i=1;i<path.length;i++){pathLen+=path[i].p.distanceTo(path[i-1].p); path[i].s=pathLen;}
+  pathLen+=path[path.length-1].p.distanceTo(path[0].p);
+  nMark=Math.min(MAXM,Math.floor(pathLen/2.3));
+}
+const _m=new THREE.Matrix4(), _q=new THREE.Quaternion(), _sc=new THREE.Vector3(), _zf=V3(0,0,1);
+function pointAt(s){ s=((s%pathLen)+pathLen)%pathLen; let lo=0,hi=path.length-1;
+  while(hi-lo>1){const mid=(lo+hi)>>1; if(path[mid].s<=s)lo=mid; else hi=mid;}
+  const a=path[lo], b=lo+1<path.length?path[lo+1]:path[0], sb=lo+1<path.length?b.s:pathLen, k=(s-a.s)/Math.max(1e-6,sb-a.s);
+  return {p:a.p.clone().lerp(b.p,k),d:b.p.clone().sub(a.p).normalize(),show:a.show&&b.show};}
+function drawMarkers(alpha,sign){
+  markerMat.opacity=alpha; markers.visible=alpha>0.02;
+  if(!markers.visible)return;
+  for(let i=0;i<MAXM;i++){
+    if(i>=nMark){_m.makeScale(0,0,0);markers.setMatrixAt(i,_m);continue;}
+    const q=pointAt(i*pathLen/nMark+sPhase);
+    const d=q.d.multiplyScalar(sign); _q.setFromUnitVectors(_zf,d); _sc.setScalar(q.show?1:0);
+    _m.compose(q.p,_q,_sc); markers.setMatrixAt(i,_m);}
+  markers.instanceMatrix.needsUpdate=true;}
+
+// ---------- aimant droit ----------
+function poleTex(letter,bg){const c=document.createElement('canvas');c.width=256;c.height=128;const g=c.getContext('2d');
+  const gr=g.createLinearGradient(0,0,0,128); gr.addColorStop(0,bg[0]); gr.addColorStop(1,bg[1]); g.fillStyle=gr; g.fillRect(0,0,256,128);
+  g.fillStyle='rgba(255,255,255,.95)'; g.font='800 86px Mulish,system-ui,sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(letter,128,70);
+  const t=new THREE.CanvasTexture(c); t.anisotropy=8; return t;}
+const magnet=new THREE.Group(); scene.add(magnet);
+const inner=new THREE.Group(); magnet.add(inner);          // pivote lors du retournement
+const halves=[];
+function makeHalf(letter,cols,x){
+  const tex=poleTex(letter,cols), side=new THREE.MeshStandardMaterial({map:tex,roughness:.38,metalness:.05}), end=mat(cols[1],{roughness:.38});
+  const m=new THREE.Mesh(new THREE.BoxGeometry(LM/2,AM,AM),[end,end,side,side,side,side]);
+  m.position.x=x; m.castShadow=true; inner.add(m); halves.push({m,tex,letter,cols,side}); return m;}
+makeHalf('N',['#ef6a69','#cf3e3d'],-LM/4);   // pôle N vers −x (vers la spire) quand pol = +1
+makeHalf('S',['#5aa2e8','#2f78c4'],LM/4);
+const hit=new THREE.Mesh(new THREE.BoxGeometry(LM+1.2,AM+2.2,AM+2.2),new THREE.MeshBasicMaterial({visible:false})); magnet.add(hit);
+document.fonts&&document.fonts.ready.then(()=>{halves.forEach(h=>{const t=poleTex(h.letter,h.cols);h.side.map=t;h.side.needsUpdate=true;});drawRuler();});
+
+// lignes de champ de l'aimant (dans son propre repère) : modèle à deux nappes de « charges magnétiques » sur les faces
+const poleQ=[]; {const k=[-3,-2,-1,0,1,2,3].map(i=>i/6);for(const a of k)for(const b of k)poleQ.push([a*AM*0.9,b*AM*0.9]);}
+function Hloc(p){let hx=0,hy=0,hz=0;
+  for(const s of [1,-1]){const px=s>0?-LM/2:LM/2;   // N (source) en −x, S (puits) en +x
+    for(const [qy,qz] of poleQ){const dx=p.x-px,dy=p.y-qy,dz=p.z-qz,r2=dx*dx+dy*dy+dz*dz+0.02,r3=r2*Math.sqrt(r2);
+      hx+=s*dx/r3;hy+=s*dy/r3;hz+=s*dz/r3;}}
+  return V3(hx,hy,hz);}
+const lines=new THREE.Group(); inner.add(lines);
+const lineM=new THREE.MeshBasicMaterial({color:'#378ADD',transparent:true,opacity:.55,depthWrite:false});
+const lineHM=new THREE.MeshBasicMaterial({color:'#2a72c0',transparent:true,opacity:.9});
+(function buildLines(){
+  const inBox=p=>p.x>-LM/2+0.1&&p.x<LM/2+0.08&&Math.abs(p.y)<AM/2+0.08&&Math.abs(p.z)<AM/2+0.08;
+  for(const pa of [0,Math.PI/2]){
+    for(const h of [0.12,0.3,0.48,0.62,0.71]){
+      for(const sg of [1,-1]){
+        let p=V3(-LM/2-0.03,sg*h*Math.cos(pa),sg*h*Math.sin(pa)); const pts=[p.clone()];
+        for(let i=0;i<2400;i++){
+          const h1=Hloc(p).normalize(), mid=p.clone().add(h1.clone().multiplyScalar(0.04)), h2=Hloc(mid).normalize();
+          p=p.clone().add(h2.multiplyScalar(0.08));
+          if(i%3===0)pts.push(p.clone());
+          if(inBox(p)||p.length()>19)break;}
+        pts.push(p.clone());
+        if(pts.length<4)continue;
+        const curve=new THREE.CatmullRomCurve3(pts);
+        const tube=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.min(300,pts.length*2),0.045,6,false),lineM); lines.add(tube);
+        for(const f of [0.18,0.55]){const t=curve.getPointAt(f), d=curve.getTangentAt(f);
+          if(t.length()>15)continue;
+          const c=new THREE.Mesh(new THREE.ConeGeometry(0.2,0.55,12),lineHM); c.position.copy(t); c.quaternion.setFromUnitVectors(V3(0,1,0),d); lines.add(c);}
+      }
+    }
+  }
+})();
+
+// ---------- règle graduée + repère ----------
+const rcan=document.createElement('canvas'); rcan.width=2560; rcan.height=250;
+const rtex=new THREE.CanvasTexture(rcan); rtex.anisotropy=8;
+const RUL0=-0.5, RUL1=Z_MAX+6.5, RW=RUL1-RUL0, RZ=2.4;
+function drawRuler(){const c=rcan.getContext('2d'),W=rcan.width,H=rcan.height,px=W/RW;
+  c.fillStyle='#fdfcf8'; c.fillRect(0,0,W,H); c.strokeStyle='#c8ccd0'; c.lineWidth=4; c.strokeRect(2,2,W-4,H-4);
+  c.fillStyle='#13233a'; c.textAlign='center'; c.textBaseline='bottom';
+  for(let cm=0;cm<=Math.floor(RUL1);cm++){const x=(cm-RUL0)*px, big=cm%5===0;
+    c.fillRect(x-(big?3:2),0,big?6:4,big?80:52);
+    for(let k=1;k<10&&cm+k/10<RUL1;k++){if(k===5)c.fillRect(x+k*px/10-1.25,0,2.5,32);else c.fillRect(x+k*px/10-1,0,2,20);}
+    if(cm%2===0){c.font=(big?'800 ':'700 ')+(big?84:62)+'px Mulish,system-ui,sans-serif';c.fillStyle=big?'#13233a':'#5f6b7a';c.fillText(String(cm),x,H-18);c.fillStyle='#13233a';}}
+  c.font='700 54px Mulish,system-ui,sans-serif'; c.fillStyle='#5f6b7a'; c.textAlign='right'; c.fillText('cm',W-16,H-22);
+  rtex.needsUpdate=true;}
+drawRuler();
+const ruler=new THREE.Mesh(new THREE.PlaneGeometry(RW,RW*rcan.height/rcan.width),new THREE.MeshStandardMaterial({map:rtex,roughness:.8}));
+ruler.rotation.x=-Math.PI/2; ruler.position.set((RUL0+RUL1)/2,0.04,RZ+RW*rcan.height/rcan.width/2); ruler.receiveShadow=true; scene.add(ruler);
+// axe de la spire (pointillés) et repère vertical sous la face avant de l'aimant
+const axisL=new THREE.Line(new THREE.BufferGeometry().setFromPoints([V3(-4,YC,0),V3(Z_MAX+LM+3,YC,0)]),new THREE.LineDashedMaterial({color:'#9aa4b0',dashSize:0.5,gapSize:0.35}));
+axisL.computeLineDistances(); scene.add(axisL);
+const markG=new THREE.Group(); scene.add(markG);
+const mLine=new THREE.Line(new THREE.BufferGeometry().setFromPoints([V3(0,YC-AM/2,0),V3(0,0.06,0),V3(0,0.06,RZ)]),new THREE.LineDashedMaterial({color:'#13233a',dashSize:0.3,gapSize:0.25,transparent:true,opacity:.55}));
+mLine.computeLineDistances(); markG.add(mLine);
+const tri=new THREE.Mesh(new THREE.ConeGeometry(0.32,0.7,3),new THREE.MeshBasicMaterial({color:'#13233a'})); tri.rotation.x=Math.PI/2; tri.position.set(0,0.08,RZ-0.25); markG.add(tri);
+
+// ---------- flèches 3D ----------
+function arrow(col,r=0.09){const g=new THREE.Group();
+  const m=new THREE.MeshBasicMaterial({color:col,depthTest:false,transparent:true});
+  const sh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,1,12),m), hd=new THREE.Mesh(new THREE.ConeGeometry(r*2.8,r*7,18),m);
+  sh.renderOrder=hd.renderOrder=20; g.add(sh,hd); g.userData={sh,hd,hl:r*7}; scene.add(g); return g;}
+const Y=V3(0,1,0);
+function setArrow(a,o,vec){const L=vec.length(); a.visible=L>0.15; if(!a.visible)return;
+  const hl=Math.min(a.userData.hl,L*0.5); a.position.copy(o); a.quaternion.setFromUnitVectors(Y,vec.clone().normalize());
+  a.userData.sh.scale.set(1,L-hl,1); a.userData.sh.position.y=(L-hl)/2; a.userData.hd.position.y=L-hl/2;}
+const aB=arrow('#378ADD',0.11), aBi=arrow('#1D9E75',0.11), aV=arrow('#8a95a3',0.08), aF=arrow('#13233a',0.09);
+
+// ================= CAMÉRA (orbite) =================
+const tgt=V3(5.5,2.6,-1);
+let orb={th:-0.32,ph:1.08,r:40}, goal=null;
+const views={v3d:{th:-0.32,ph:1.08,r:40},vFace:{th:0,ph:1.5,r:38},vTop:{th:0,ph:0.04,r:40}};
+const viewsM={v3d:{th:-0.85,ph:0.8,r:31},vFace:{th:0,ph:1.5,r:30},vTop:{th:Math.PI/2,ph:0.04,r:27}};
+const tgtD=[5.5,2.6,-1], tgtM=[4,3.2,0], tgtMTop=[1.5,3.2,0];
+let mobV=null;
+function setMobile(m){if(m===mobV)return; mobV=m; orb={...(m?viewsM:views).v3d}; goal=null; tgt.set(...(m?tgtM:tgtD));}
+['v3d','vFace','vTop'].forEach(k=>$(k).onclick=()=>{goal={...(mobV?viewsM:views)[k]}; tgtGoal=mobV?(k==='vTop'?tgtMTop:tgtM):tgtD;});
+let tgtGoal=null;
+function placeCam(){const k=Math.max(1,(cam.aspect<0.9?1.12:1.45)/cam.aspect), r=orb.r*k;
+  cam.position.set(tgt.x+r*Math.sin(orb.ph)*Math.sin(orb.th),tgt.y+r*Math.cos(orb.ph),tgt.z+r*Math.sin(orb.ph)*Math.cos(orb.th));
+  cam.up.set(0,1,0); if(orb.ph<0.06)cam.up.set(-Math.sin(orb.th),0,-Math.cos(orb.th)); cam.lookAt(tgt);}
+
+// ================= INTERACTION =================
+const ray=new THREE.Raycaster(), ndc=new THREE.Vector2();
+function setNdc(e){const r=box.getBoundingClientRect(); ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1); ray.setFromCamera(ndc,cam);}
+function axisX(){ // intersection du rayon avec le plan qui contient l'axe et fait face à la caméra
+  const d=ray.ray.direction; let n=V3(0,d.y,d.z); if(n.length()<0.08)n=V3(0,1,0); n.normalize();
+  const pl=new THREE.Plane().setFromNormalAndCoplanarPoint(n,V3(0,YC,0)); const p=new THREE.Vector3();
+  return ray.ray.intersectPlane(pl,p)?p.x:null;}
+let orbDrag=null, grabOff=0;
+box.addEventListener('pointerdown',e=>{
+  if(e.target.closest&&e.target.closest('.t-graph'))return;
+  box.setPointerCapture(e.pointerId); setNdc(e);
+  if(!paused&&ray.intersectObject(hit,false).length){const x=axisX(); if(x!==null){dragging=true; auto=false; syncAuto(); grabOff=x-(z); box.style.cursor='grabbing'; return;}}
+  orbDrag={x:e.clientX,y:e.clientY}; goal=null;});
+box.addEventListener('pointermove',e=>{
+  setNdc(e);
+  if(dragging){const x=axisX(); if(x!==null)zT=Math.max(zMin(),Math.min(Z_MAX,x-grabOff)); return;}
+  if(orbDrag){orb.th-=(e.clientX-orbDrag.x)*0.008; orb.ph=Math.max(0.04,Math.min(1.52,orb.ph-(e.clientY-orbDrag.y)*0.008)); orbDrag={x:e.clientX,y:e.clientY}; return;}
+  box.style.cursor=(!paused&&ray.intersectObject(hit,false).length)?'grab':'';});
+const endDrag=()=>{dragging=false; orbDrag=null; box.style.cursor='';};
+box.addEventListener('pointerup',endDrag); box.addEventListener('pointercancel',endDrag);
+box.addEventListener('wheel',e=>{e.preventDefault();orb.r=Math.max(18,Math.min(80,orb.r*Math.exp(e.deltaY*0.0012)));},{passive:false});
+
+// ================= RÉGLAGES =================
+function bind(id,set,fmt){const s=$(id),o=$(id+'v');const f=()=>{set(+s.value);o.textContent=fmt(+s.value);};s.addEventListener('input',f);f();}
+bind('nS',x=>{N=x;buildCoil();},x=>x+(x>1?' spires':' spire'));
+bind('b0',x=>B0T=x/1000,x=>x+' mT au pôle');
+bind('rr',x=>Rres=x,x=>fx(x,1)+' Ω');
+bind('th',x=>thT=x*Math.PI/180,x=>x+'°');
+function syncAuto(){$('bAuto').classList.toggle('on',auto);}
+$('bAuto').onclick=()=>{auto=!auto; if(auto){autoT=phaseFor(z);} syncAuto();};
+$('bPause').onclick=()=>{paused=!paused;$('bPause').textContent=paused?'Reprendre':'Pause';$('bPause').classList.toggle('on',paused);};
+$('bFlip').onclick=()=>{if(!flipping){flipping=true;psi=0;}};
+$('bReset').onclick=()=>{auto=false;syncAuto();zT=13;};
+
+// mouvement automatique : approche (accélère jusqu'au bout), arrêt près de la spire, recul, arrêt loin
+const T_IN=1.3,T_H1=1.6,T_OUT=1.3,T_H2=1.2,T_CYC=T_IN+T_H1+T_OUT+T_H2, Z_FAR=13;
+function autoZ(t){const zn=zMin()+0.25; t=((t%T_CYC)+T_CYC)%T_CYC;
+  if(t<T_IN){const u=t/T_IN; return Z_FAR+(zn-Z_FAR)*(1-Math.cos(Math.PI*u/2));}
+  if(t<T_IN+T_H1)return zn;
+  if(t<T_IN+T_H1+T_OUT){const u=(t-T_IN-T_H1)/T_OUT; return zn+(Z_FAR-zn)*Math.sin(Math.PI*u/2);}
+  return Z_FAR;}
+function phaseFor(zc){return zc>Z_FAR-0.5?T_CYC-0.3:T_IN*0.5;}
+
+// ================= GRAPHE Φ(t), e(t) =================
+const gcv=$('gcv'), gctx=gcv.getContext('2d'); const hist=[]; const WIN=8;
+let scP=10, scE=2;
+function nice(v){const p=Math.pow(10,Math.floor(Math.log10(v))), m=v/p; return (m<=1?1:m<=2?2:m<=5?5:10)*p;}
+function drawGraph(){
+  const dpr=Math.min(devicePixelRatio||1,2), W=gcv.clientWidth, H=168;
+  if(gcv.width!==Math.round(W*dpr)||gcv.height!==Math.round(H*dpr)){gcv.width=Math.round(W*dpr);gcv.height=Math.round(H*dpr);}
+  const c=gctx; c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0,0,W,H);
+  const L=46, Rr=W-6, rows=[{key:'p',col:'#7F77DD',ink:'#5b52b8',name:'Φ (µWb)',y0:4,h:62},{key:'e',col:'#BA7517',ink:'#8a5a12',name:'e (mV)',y0:84,h:62}];
+  let mP=0,mE=0; for(const h of hist){mP=Math.max(mP,Math.abs(h.p));mE=Math.max(mE,Math.abs(h.e));}
+  const tP=nice(Math.max(1,mP*1.08)), tE=nice(Math.max(0.5,mE*1.08));
+  scP=tP>scP?tP:scP+(tP-scP)*0.02; scE=tE>scE?tE:scE+(tE-scE)*0.02; if(Math.abs(scP-tP)<tP*0.01)scP=tP; if(Math.abs(scE-tE)<tE*0.01)scE=tE;
+  const tNow=hist.length?hist[hist.length-1].t:0;
+  for(const r of rows){const sc=r.key==='p'?scP:scE, yz=r.y0+r.h/2, k=(r.h/2-3)/sc;
+    c.strokeStyle='#eef1f4'; c.lineWidth=1; c.strokeRect(L+0.5,r.y0+0.5,Rr-L,r.h);
+    c.strokeStyle='#d3d9e2'; c.beginPath(); c.moveTo(L,yz+0.5); c.lineTo(Rr,yz+0.5); c.stroke();
+    c.font='700 10.5px Mulish,system-ui,sans-serif'; c.fillStyle='#8a95a3'; c.textAlign='right'; c.textBaseline='middle';
+    const lab=v=>{const s=Math.abs(v)>=10?v.toFixed(0):Math.abs(v)>=1?v.toFixed(1):v.toFixed(2);return s.replace('.',',').replace(/^-/,'−');};
+    c.fillText(lab(sc),L-4,r.y0+5); c.fillText('0',L-4,yz); c.fillText(lab(-sc),L-4,r.y0+r.h-5);
+    c.save(); c.translate(11,yz); c.rotate(-Math.PI/2); c.textAlign='center'; c.fillStyle=r.ink; c.font='800 11px Mulish,system-ui,sans-serif'; c.fillText(r.name,0,0); c.restore();
+    c.save(); c.beginPath(); c.rect(L,r.y0,Rr-L,r.h); c.clip();
+    c.strokeStyle=r.col; c.lineWidth=2; c.lineJoin='round'; c.beginPath(); let first=true;
+    for(const h of hist){const x=Rr-(tNow-h.t)/WIN*(Rr-L); if(x<L-2)continue; const y=yz-h[r.key]*k; first?c.moveTo(x,y):c.lineTo(x,y); first=false;}
+    c.stroke(); c.restore();}
+  c.font='600 10.5px Mulish,system-ui,sans-serif'; c.fillStyle='#8a95a3'; c.textAlign='left'; c.textBaseline='alphabetic';
+  c.fillText('il y a 8 s',L,H-4); c.textAlign='right'; c.fillText('maintenant',Rr,H-4);
+}
+
+// ================= ÉTIQUETTES (projection + anti-chevauchement) =================
+const labs={I:$('lI'),B:$('lB'),Bi:$('lBi'),FN:$('lFN'),FS:$('lFS'),V:$('lV'),F:$('lF')};
+const toScr=p=>{const q=p.clone().project(cam);return {x:(q.x+1)/2*box.clientWidth,y:(1-q.y)/2*box.clientHeight,ok:q.z<1};};
+function layout(items){
+  const W=box.clientWidth,H=box.clientHeight, br=box.getBoundingClientRect();
+  const obs=[]; for(const id of ['hud','graph','hint']){const el=$(id); if(!el||el.offsetParent===null||el.classList.contains('out'))continue;
+    const r=el.getBoundingClientRect(); if(r.width)obs.push({x0:r.left-br.left-4,y0:r.top-br.top-4,x1:r.right-br.left+4,y1:r.bottom-br.top+4});}
+  for(const it of items){it.w=it.el.offsetWidth;it.h=it.el.offsetHeight;
+    if(it.dir){it.x+=it.dir.x*(it.w/2+7);it.y+=it.dir.y*(it.h/2+5);} }
+  for(let iter=0;iter<60;iter++){let moved=false;
+    for(let i=0;i<items.length;i++){const a=items[i];
+      for(let j=i+1;j<items.length;j++){const b=items[j];
+        const ox=(a.w+b.w)/2+4-Math.abs(a.x-b.x), oy=(a.h+b.h)/2+3-Math.abs(a.y-b.y);
+        if(ox>0&&oy>0){moved=true; if(oy<ox*1.6){const s=(a.y<b.y?-1:1)*oy/2; a.y+=s; b.y-=s;} else {const s=(a.x<b.x?-1:1)*ox/2; a.x+=s; b.x-=s;}}}
+      for(const o of obs){const ox0=a.x+a.w/2-o.x0, ox1=o.x1-(a.x-a.w/2), oy0=a.y+a.h/2-o.y0, oy1=o.y1-(a.y-a.h/2);
+        if(ox0>0&&ox1>0&&oy0>0&&oy1>0){moved=true;
+          // on choisit la plus petite poussée qui garde l'étiquette dans le cadre
+          const c=[[0,oy1],[0,-oy0],[-ox0,0],[ox1,0]].filter(([dx,dy])=>{const nx=a.x+dx,ny=a.y+dy;
+            return nx-a.w/2>=2&&nx+a.w/2<=W-2&&ny-a.h/2>=2&&ny+a.h/2<=H-2;}).sort((u,v)=>Math.abs(u[0]+u[1])-Math.abs(v[0]+v[1]));
+          const [dx,dy]=c[0]||[0,oy1]; a.x+=dx; a.y+=dy;}}
+      a.x=Math.max(a.w/2+4,Math.min(W-a.w/2-4,a.x)); a.y=Math.max(a.h/2+4,Math.min(H-a.h/2-4,a.y));}
+    if(!moved)break;}
+  for(const it of items){it.el.style.opacity=1; it.el.style.transform=`translate(${it.x-it.w/2}px,${it.y-it.h/2}px)`;}
+}
+
+function size(){const w=box.clientWidth,h=box.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();
+  const g=$('graph'), mob=window.innerWidth<=640;
+  if(mob&&!g.classList.contains('out')){g.classList.add('out');$('graphOut').appendChild(g);}
+  if(!mob&&g.classList.contains('out')){g.classList.remove('out');box.appendChild(g);}
+  setMobile(cam.aspect<0.9);
+  $('hint').style.maxWidth=mob?'':'calc(100% - '+(g.offsetWidth+40)+'px)';}
+new ResizeObserver(size).observe(box); size();
+buildCoil();
+
+// ================= BOUCLE =================
+let fpsM=30, tPrev=performance.now(), stateTxt='still', stateHold=0;
+function step(dt){
+  simT+=dt;
+  if(auto&&!dragging){autoT+=dt; zT=autoZ(autoT);}
+  zT=Math.max(zMin(),Math.min(Z_MAX,zT));
+  const zOld=z, phiOld=phi;
+  z+=(zT-z)*(1-Math.exp(-dt/0.05));            // la main suit le pointeur avec un léger lissage
+  const thN=th+(thT-th)*(1-Math.exp(-dt/0.12));
+  th=thN; coil.rotation.y=th;
+  B0+=(B0T-B0)*(1-Math.exp(-dt/0.15));
+  if(flipping){psi+=dt*Math.PI/0.8; if(psi>=Math.PI){flipping=false; psi=0; pol=-pol;}}
+  z=Math.max(z,zMin());
+  v=(z-zOld)/dt;                                 // cm/s
+  phi=Phi(z,th,psi);
+  e=-N*(phi-phiOld)/dt;                          // Faraday : e = −N·dΦ/dt
+  I=e/Rres;
+  dPhidz=(Phi(z+0.01,th,psi)-Phi(z-0.01,th,psi))/0.0002;      // Wb/m
+  F=N*I*dPhidz;                                  // N, > 0 : l'aimant est poussé vers +x (repoussé)
+  sPhase-=Math.max(-30,Math.min(30,16*I/I_FULL))*dt;
+  hist.push({t:simT,p:phi*1e6,e:e*1e3}); while(hist.length&&simT-hist[0].t>WIN+0.3)hist.shift();
+}
+function loop(t){
+  const dtr=Math.max(0.001,(t-tPrev)/1000), dt=Math.min(0.05,dtr); tPrev=t; fpsM+=(1/dtr-fpsM)*0.1;
+  if(!paused){const n=3;for(let i=0;i<n;i++)step(dt/n);}
+  if(goal){['th','ph','r'].forEach(k=>orb[k]+=(goal[k]-orb[k])*0.12);if(Math.abs(goal.ph-orb.ph)<1e-3&&Math.abs(goal.th-orb.th)<1e-3&&Math.abs(goal.r-orb.r)<0.05)goal=null;}
+  if(tgtGoal){tgt.lerp(V3(...tgtGoal),0.12); if(tgt.distanceTo(V3(...tgtGoal))<0.01)tgtGoal=null;}
+  placeCam();
+  if(Math.abs(th-thBuilt)>0.003||(Math.abs(th-thT)<1e-3&&th!==thBuilt))buildWires();
+
+  // aimant
+  magnet.position.set(z+LM/2,YC,0);
+  inner.rotation.y=pol>0?psi:Math.PI+psi;
+  halves.forEach(h=>h.m.material.forEach(m=>{m.emissive&&m.emissive.set(dragging?'#2a2a2a':'#000000');}));
+  markG.position.x=z;
+
+  // ampoule
+  const aI=Math.abs(I); bright+=((Math.min(1,aI/I_FULL))-bright)*Math.min(1,dt*25);
+  const b=bright;
+  glassM.emissiveIntensity=0.9*b; glassM.opacity=0.28+0.3*b;
+  filM.color.setRGB(0.42+0.58*b,0.35+0.5*b,0.28+0.2*b);
+  halo.material.opacity=Math.min(1,1.15*b); halo.scale.setScalar(3.2+5.5*b);
+  bulbLight.intensity=3.2*b;
+
+  // charges en mouvement
+  drawMarkers(Math.min(1,Math.max(aI/(0.06*I_FULL),Math.abs(e)/2e-4)),I>=0?-1:1);   // le trajet est orienté autour de +x, n̂ autour de −x
+
+  // flèches
+  const C=V3(0,YC,0), nh=V3(-Math.cos(th),0,Math.sin(th));
+  const bx=Bx(z,psi), bmT=Math.abs(bx)*1e3;
+  setArrow(aB,C.clone().add(V3(0,0.75,0)),V3(Math.sign(bx)*Math.min(6,0.9*Math.sqrt(bmT)),0,0));
+  const Bind=4e-7*Math.PI*N*aI/(2*RC/100);   // champ au centre d'une bobine plate : μ₀NI/(2r)
+  const bLen=Math.min(4.6,1.4+3.2*aI/I_FULL);
+  setArrow(aBi,C.clone().add(V3(0,-0.75,0)),nh.clone().multiplyScalar((I>=0?1:-1)*bLen));
+  const top=V3(z+LM/2,YC+AM/2+1.0,0);
+  setArrow(aV,top,V3(Math.max(-7,Math.min(7,v*0.12)),0,0));
+  const Fmu=F*1e6, fLen=Math.sign(Fmu)*Math.min(7,1.1*Math.sqrt(Math.abs(Fmu)));
+  setArrow(aF,top,V3(Math.abs(Fmu)>0.3?fLen:0,0,0));
+
+  // étiquettes
+  const items=[], vis=new Set();
+  const add=(key,txt,p,o,dirFrom)=>{const s=toScr(p); if(!s.ok)return; labs[key].textContent=txt; let dir=null;
+    if(dirFrom){const s0=toScr(dirFrom), dx=s.x-s0.x, dy=s.y-s0.y, l=Math.hypot(dx,dy); if(l>2)dir={x:dx/l,y:dy/l};}
+    items.push({el:labs[key],x:s.x+(o?o[0]:0),y:s.y+(o?o[1]:0),dir}); vis.add(key);};
+  add('I','I = '+fx(aI*1e3,aI<0.001?2:1)+' mA',V3(LAMP.x,5.2*LS,LAMP.z),[0,-14]);
+  if(aB.visible){const o=C.clone().add(V3(0,0.75,0)), tip=o.clone().add(V3(Math.sign(bx)*Math.min(6,0.9*Math.sqrt(bmT)),0,0));
+    add('B','B aimant = '+(bmT>=10?fx(bmT,0):fx(bmT,1))+' mT',tip,null,o);}
+  const cur=aI>0.05*I_FULL||Math.abs(e)>5e-5;
+  if(cur&&aBi.visible){const o=C.clone().add(V3(0,-0.75,0)), tip=o.clone().add(nh.clone().multiplyScalar((I>=0?1:-1)*bLen));
+    add('Bi','B induit ≈ '+(Bind*1e6>=1?fx(Bind*1e6,1)+' µT':Bind*1e6>=0.05?fx(Bind*1e6,2)+' µT':fx(Bind*1e9,1)+' nT'),tip,null,o);
+    const sgn=I>=0?1:-1, up=V3(0,RC+1.1,0);
+    add('FN','face N',C.clone().add(nh.clone().multiplyScalar(sgn*1.6)).add(up));
+    add('FS','face S',C.clone().add(nh.clone().multiplyScalar(-sgn*1.6)).add(up));}
+  if(aV.visible)add('V','v = '+fx(Math.abs(v),0)+' cm/s',top.clone().add(V3(Math.max(-7,Math.min(7,v*0.12)),0,0)),null,top);
+  if(aF.visible)add('F','F = '+(Math.abs(Fmu)>=10?fx(Math.abs(Fmu),0):fx(Math.abs(Fmu),1))+' µN',top.clone().add(V3(fLen,0,0)),null,top);
+  for(const k in labs)if(!vis.has(k))labs[k].style.opacity=0;
+  layout(items);
+
+  // état et phrase-bilan (avec un peu d'hystérésis pour ne pas clignoter)
+  const dAbs=Math.sign(phi)*(e===0?0:-e/N);      // d|Φ|/dt
+  let st=(aI<0.03*I_FULL&&Math.abs(e)<5e-5)?'still':(dAbs>0?'up':'down');
+  if(st!==stateTxt){stateHold+=dt; if(stateHold>0.08){stateTxt=st;stateHold=0;}} else stateHold=0;
+  const moving=Math.abs(v)>0.5, rot=!moving&&Math.abs(thT-th)>0.01;
+  const near=z<6;
+  let big;
+  const weak=bright<0.12?' <span style="color:#8a95a3">(courant trop faible pour allumer l’ampoule : I = e/R, augmente N ou diminue R)</span>':'';
+  if(stateTxt==='still')big=(Math.abs(v)<0.3&&!rot&&!flipping)
+      ?(near?'Aimant immobile, même tout près : <b style="color:#5b52b8">Φ ne varie pas</b> → <b style="color:#8a5a12">pas de courant induit</b> → l’ampoule reste éteinte.'
+            :'Aimant loin et immobile : <b style="color:#5b52b8">Φ ne varie pas</b> → <b style="color:#8a5a12">pas de courant</b>. Approche-le de la spire !')
+      :'Le flux varie à peine (aimant loin) → courant induit trop faible pour allumer l’ampoule.';
+  else if(stateTxt==='up')big='<b style="color:#5b52b8">Flux qui augmente</b> → <b style="color:#8a5a12">courant induit</b> dont le <b style="color:#0F6E56">B<sub>ind</sub></b> s’y oppose (sens contraire à B) → '+(rot||flipping?'la variation est freinée.':'face '+(pol>0?'N':'S')+' contre pôle '+(pol>0?'N':'S')+' : <b>l’aimant est repoussé, freiné</b>.')+weak;
+  else big='<b style="color:#5b52b8">Flux qui diminue</b> → <b style="color:#8a5a12">courant induit</b> dont le <b style="color:#0F6E56">B<sub>ind</sub></b> le maintient (même sens que B) → '+(rot||flipping?'la variation est freinée.':'face '+(pol>0?'S':'N')+' contre pôle '+(pol>0?'N':'S')+' : <b>l’aimant est attiré, retenu</b>.')+weak;
+  $('hud').innerHTML=`<div class="big">${big}</div><div class="sub"><b style="color:#5b52b8">Φ</b> = B·S·cos θ = ${fx(phi*1e6,1)} µWb &nbsp;·&nbsp; <b style="color:#8a5a12">e</b> = −N·dΦ/dt = ${fx(e*1e3,2)} mV &nbsp;·&nbsp; <b style="color:#8a5a12">I</b> = e/R = ${fx(I*1e3,2)} mA</div>`;
+  $('info').innerHTML=`distance aimant–spire z = ${fx(z,1)} cm &nbsp;|&nbsp; v = ${fx(v,0)} cm/s &nbsp;|&nbsp; <b style="color:#185fa5">B au centre = ${fx(Math.abs(bx)*1e3,1)} mT</b> &nbsp;|&nbsp; S = π·(3 cm)² = 28,3 cm² &nbsp;|&nbsp; θ = ${Math.round(th*180/Math.PI)}° &nbsp;|&nbsp; <b style="color:#5b52b8">Φ = ${fx(phi*1e6,1)} µWb</b> &nbsp;|&nbsp; <b style="color:#8a5a12">e = ${fx(e*1e3,2)} mV &nbsp;|&nbsp; I = ${fx(I*1e3,2)} mA</b> &nbsp;|&nbsp; P = e·I = ${fx(e*I*1e6,1)} µW &nbsp;|&nbsp; force sur l’aimant ${F>0.2e-6?'(répulsion)':F<-0.2e-6?'(attraction)':''} = ${fx(Math.abs(F)*1e6,1)} µN`;
+
+  drawGraph();
+  renderer.render(scene,cam);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+window.__t={get z(){return z},set zT(x){zT=x},get e(){return e},get I(){return I},get F(){return F},get v(){return v},get phi(){return phi},get pol(){return pol},get bright(){return bright},
+  set auto(x){auto=x;syncAuto();},sim(n,dt,vz){auto=false;syncAuto();for(let i=0;i<n;i++){zT+=vz*dt;step(dt);}},
+  get fps(){return fpsM},set orb(o){Object.assign(orb,o);goal=null;},set tgt(a){tgt.set(...a);},set paused(x){paused=x;},get auto(){return auto},get state(){return stateTxt},cam,box,magnet,tick:()=>{}};
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Magnétisme et forces électromagnétiques<span>5 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/regle-main-droite/"><i>01</i>Règle de la main droite</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/aimants-laplace/"><i>02</i>Aimants, courants et force de Laplace</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/forces-magn-tique-sur-fils-/"><i>03</i>Forces entre fils parallèles</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Cyclotron/"><i>04</i>Cyclotron</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/loi-de-lenz/"><i>05</i>Loi de Lenz : induction</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

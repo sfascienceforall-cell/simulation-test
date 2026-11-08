@@ -1,0 +1,529 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Équilibre et stabilité · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;background:#fff;touch-action:none;user-select:none;-webkit-user-select:none}
+.val{white-space:nowrap}
+.st-note{margin:10px 0 4px;padding:9px 14px;border:1px solid var(--rule,#dfe4ea);border-left:3px solid #1D9E75;border-radius:4px;background:#fff;
+  font:500 .9rem/1.5 var(--f-ui,system-ui);color:var(--ink,#0c1f2e)}
+.st-note b{font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH3">Statique et gravitation</a>›<b>Équilibre et stabilité</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Statique et gravitation</span><span class="sfa-chip free">Gratuit</span></div><h1>Équilibre et stabilité</h1><p>Centre de gravité, base d&#x27;appui et équilibre stable ou instable</p></div>
+<section class="sfa-sim">
+
+
+
+<canvas id="cv" style="width:100%;height:62vh;min-height:400px;"></canvas>
+
+<div class="st-note" id="note"></div>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill">Onglet</span>
+  <button class="btn on" id="tP">La personne</button>
+  <button class="btn" id="tE">Stable, instable, indifférent</button>
+</div>
+
+<div class="row" data-s="P">
+  <span class="pill" style="min-width:170px;color:#185fa5">φ &nbsp;inclinaison du buste</span>
+  <input type="range" id="phi" min="-40" max="75" value="20" step="1" style="accent-color:#378ADD;">
+  <span class="val" id="phiv" style="color:#185fa5">20°</span>
+</div>
+<div class="row" data-s="P">
+  <span class="pill" style="min-width:170px;color:#7F77DD">d &nbsp;écartement des pieds</span>
+  <input type="range" id="d" min="0" max="80" value="0" step="1" style="accent-color:#7F77DD;">
+  <span class="val" id="dv" style="color:#7F77DD">0 cm</span>
+</div>
+<div class="row" data-s="P">
+  <span class="pill" style="min-width:170px;color:#BA7517">m<sub>v</sub> &nbsp;masse de la valise</span>
+  <input type="range" id="mv" min="0" max="25" value="12" step="1" style="accent-color:#BA7517;">
+  <span class="val" id="mvv" style="color:#BA7517">12 kg</span>
+</div>
+<div class="row" data-s="P">
+  <span class="pill" style="min-width:170px;color:#BA7517">ψ &nbsp;angle du bras</span>
+  <input type="range" id="psi" min="-45" max="90" value="0" step="1" style="accent-color:#BA7517;">
+  <span class="val" id="psiv" style="color:#BA7517">0°</span>
+</div>
+<div class="row" data-s="P">
+  <button class="btn" id="bUp">Relever la personne</button>
+</div>
+
+<div class="row" data-s="E">
+  <button class="btn" id="bKick">Pichenette aux trois billes</button>
+  <button class="btn" id="bDrop">Lâcher la boîte</button>
+  <button class="btn" id="bPause">Pause</button>
+</div>
+<div class="row" data-s="E">
+  <span class="pill" style="min-width:170px;color:#185fa5">b &nbsp;largeur de la boîte</span>
+  <input type="range" id="bb" min="20" max="100" value="40" step="1" style="accent-color:#378ADD;">
+  <span class="val" id="bbv" style="color:#185fa5">40 cm</span>
+</div>
+<div class="row" data-s="E">
+  <span class="pill" style="min-width:170px;color:#7F77DD">h &nbsp;hauteur de la boîte</span>
+  <input type="range" id="hh" min="30" max="160" value="100" step="1" style="accent-color:#7F77DD;">
+  <span class="val" id="hhv" style="color:#7F77DD">100 cm</span>
+</div>
+<div class="row" data-s="E">
+  <span class="pill" style="min-width:170px;color:#BA7517">θ &nbsp;inclinaison (tenue)</span>
+  <input type="range" id="th" min="0" max="90" value="15" step="1" style="accent-color:#BA7517;">
+  <span class="val" id="thv" style="color:#BA7517">15°</span>
+</div>
+
+<div class="info" id="info"></div>
+
+<script>
+// ---------- outils de dessin partagés : flèches + étiquettes sans chevauchement ----------
+const FT='600 13px Mulish,system-ui,sans-serif', FB='700 13px Mulish,system-ui,sans-serif', FS='600 12px Mulish,system-ui,sans-serif', FN='600 12px Mulish,system-ui,sans-serif';
+const fr=(v,d)=>(Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d).replace('.',',').replace('-','−');
+let LQ=[],LB=[],OB=[];
+function resetLab(){LQ=[];LB=[];OB=[];}
+function obSeg(x1,y1,x2,y2,p){OB.push({s:1,x1,y1,x2,y2,p:p==null?3:p});}
+function obRect(x,y,w,h){OB.push({s:0,x,y,w,h});}
+function segHits(x1,y1,x2,y2,r){let t0=0,t1=1;const dx=x2-x1,dy=y2-y1;
+  const P=[-dx,dx,-dy,dy],Q=[x1-r.x,r.x+r.w-x1,y1-r.y,r.y+r.h-y1];
+  for(let i=0;i<4;i++){if(P[i]===0){if(Q[i]<0)return false;}else{const t=Q[i]/P[i];
+    if(P[i]<0){if(t>t1)return false;if(t>t0)t0=t;}else{if(t<t0)return false;if(t<t1)t1=t;}}}return true;}
+function ovl(a,b){return a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h;}
+// file d'étiquettes : posées APRÈS les dessins, à la première place libre autour de l'ancre
+function lab(t,ax,ay,col,o){LQ.push({t,ax,ay,col,o:o||{}});}
+const DIRS8=[[0,-1],[1,0],[-1,0],[0,1],[.71,-.71],[-.71,-.71],[.71,.71],[-.71,.71]];
+function flushLab(){
+  for(const L of LQ){const o=L.o;ctx.font=o.font||FB;
+    const w=ctx.measureText(L.t).width+6,h=17;const bx=o.box||{x:0,y:0,w:W,h:H};
+    const r0=o.r==null?8:o.r,dirs=o.dirs||DIRS8;let best=null,bs=1e18,idx=0;
+    for(const k of (o.ks||[1,2,3.4,5])){for(const d of dirs){idx++;
+      const cx=L.ax+d[0]*(r0*k+Math.abs(d[0])*w/2),cy=L.ay+d[1]*(r0*k+Math.abs(d[1])*h/2);
+      const R={x:cx-w/2,y:cy-h/2,w,h};let sc=idx*0.01;
+      const ox=Math.max(0,bx.x-R.x)+Math.max(0,R.x+w-(bx.x+bx.w)),oy=Math.max(0,bx.y-R.y)+Math.max(0,R.y+h-(bx.y+bx.h));
+      sc+=(ox+oy)*1000;
+      for(const b of LB)if(ovl(R,b))sc+=5000;
+      for(const b of OB){if(b.s){const E={x:R.x-b.p,y:R.y-b.p,w:w+2*b.p,h:h+2*b.p};if(segHits(b.x1,b.y1,b.x2,b.y2,E))sc+=300;}
+        else if(ovl(R,b))sc+=300;}
+      if(sc<bs){bs=sc;best=R;}}if(bs<1)break;}
+    // reste dans le cadre quoi qu'il arrive
+    best.x=Math.max(bx.x,Math.min(bx.x+bx.w-best.w,best.x));best.y=Math.max(bx.y,Math.min(bx.y+bx.h-best.h,best.y));
+    LB.push(best);halo(L.t,best.x+best.w/2,best.y+best.h/2,L.col,o.font||FB);}
+  LQ=[];}
+function halo(t,x,y,col,f,al){ctx.font=f||FB;ctx.textAlign=al||'center';ctx.textBaseline='middle';ctx.lineJoin='round';
+  ctx.lineWidth=4.5;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.strokeText(t,x,y);ctx.fillStyle=col;ctx.fillText(t,x,y);ctx.textBaseline='alphabetic';}
+// texte fixe (titres) : réserve sa place pour les étiquettes mobiles
+function fixText(t,x,y,col,f,al){ctx.font=f||FS;const w=ctx.measureText(t).width;const x0=al==='right'?x-w:al==='center'?x-w/2:x;
+  LB.push({x:x0-3,y:y-9,w:w+6,h:18});halo(t,x,y,col,f||FS,al||'left');}
+function arrow(x,y,vx,vy,col,w,dash,noOb){const len=Math.hypot(vx,vy);if(len<2)return;w=w||3;
+  const hs=Math.min(w*3.4,len*0.45),ux=vx/len,uy=vy/len,ex=x+vx,ey=y+vy,bx=ex-ux*hs*0.8,by=ey-uy*hs*0.8;
+  ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineCap='round';if(dash)ctx.setLineDash(dash);
+  ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(bx,by);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(ex-ux*hs-uy*hs*0.55,ey-uy*hs+ux*hs*0.55);
+  ctx.lineTo(ex-ux*hs+uy*hs*0.55,ey-uy*hs-ux*hs*0.55);ctx.closePath();ctx.fill();
+  if(!noOb)obSeg(x,y,ex,ey,2);}
+
+// ================= Équilibre et stabilité =================
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),$=id=>document.getElementById(id);
+const INK='#3d3d3a',BLUE='#378ADD',BLUE_D='#185fa5',GREEN='#1D9E75',GREEN_D='#0F6E56',RED='#E24B4A',RED_D='#a32d2d',ORANGE='#BA7517',VIOLET='#7F77DD',GREY='#9aa0a6',AX='#c8ccd0',MUTED='#5f6b7a';
+const g=9.81;
+let demo=true,demoT=0;
+let W=0,H=0,dpr=1,T='P',paused=false,last=0,drag=null,G={};
+// ---- personne ----
+const Q={phi:20,d:0,mv:12,psi:0};
+const M_TR=40,M_ARM=7,M_LEG=12.5,LEG=0.86,TR=0.52,ARM=0.62,HEAD=0.11;
+let fall={on:false,b:0,w:0,piv:0,dir:0,done:false};
+// ---- équilibres ----
+const balls=[{kind:'cuvette',x:0,v:0,drag:false,t:0},{kind:'bosse',x:0,v:0,drag:false,t:0},{kind:'plan',x:0,v:0,drag:false,t:0}];
+const BX={b:0.4,h:1.0,th:15,w:0,held:true,state:'held'};
+
+function syncSize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;
+  const nW=Math.round(r.width)||700,nH=Math.round(r.height)||420;
+  if(nW!==W||nH!==H||cv.width!==Math.round(nW*dpr)){W=nW;H=nH;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
+  ctx.setTransform(dpr,0,0,dpr,0,0);}
+
+// ================= la personne =================
+function pose(){const d=Q.d/100,ph=Q.phi*Math.PI/180,ps=Q.psi*Math.PI/180;
+  const aR=[-d/2,0.08],aF=[d/2,0.08];
+  const hip=[0,0.08+Math.sqrt(LEG*LEG-(d/2)*(d/2))];
+  const sh=[hip[0]+TR*Math.sin(ph),hip[1]+TR*Math.cos(ph)];
+  const hd=[hip[0]+(TR+0.14+HEAD)*Math.sin(ph),hip[1]+(TR+0.14+HEAD)*Math.cos(ph)];
+  const hand=[sh[0]+ARM*Math.sin(ps),sh[1]-ARM*Math.cos(ps)];
+  const vs=[hand[0],hand[1]-0.04-0.14];   // centre de la valise (28 cm de haut)
+  const gTr=[hip[0]+0.36*Math.sin(ph),hip[1]+0.36*Math.cos(ph)],gArm=[(sh[0]+hand[0])/2,(sh[1]+hand[1])/2];
+  const mb=M_TR+M_ARM,gB=[(M_TR*gTr[0]+M_ARM*gArm[0])/mb,(M_TR*gTr[1]+M_ARM*gArm[1])/mb];
+  const mj=2*M_LEG,gJ=[(aR[0]+aF[0]+2*hip[0])/4,(aR[1]+aF[1]+2*hip[1])/4];
+  const mv=Q.mv,mt=mb+mj+mv,gG=[(mb*gB[0]+mj*gJ[0]+mv*vs[0])/mt,(mb*gB[1]+mj*gJ[1]+mv*vs[1])/mt];
+  const base=[aR[0]-0.05,aF[0]+0.20];
+  return {aR,aF,hip,sh,hd,hand,vs,gB,gJ,gG,mb,mj,mv,mt,base};}
+function rotP(p,piv,b,dir){ // rotation rigide autour du point d'appui (piv sur le sol), b>0 = chute dans le sens dir
+  const dx=p[0]-piv,dy=p[1],a=-dir*b,c=Math.cos(a),s=Math.sin(a);return [piv+dx*c-dy*s,dx*s+dy*c];}
+function stepFall(dt){const P=pose();if(!fall.on||fall.done)return;
+  const r2=(P.gG[0]-fall.piv)**2+P.gG[1]**2;
+  for(let i=0;i<4;i++){const h=dt/4,Gp=rotP(P.gG,fall.piv,fall.b,fall.dir);
+    const tq=fall.dir*(Gp[0]-fall.piv);fall.w+=g*tq/(r2+0.09)*h;fall.b+=fall.w*h;
+    if(fall.b<0){fall.b=0;fall.w=0;}}
+  // arrêt quand la tête (ou la valise) touche le sol
+  const vw=0.21*Math.min(1.15,0.7+0.3*Math.sqrt(Q.mv/12));
+  const pts=[P.hd,P.sh,P.hand].concat(Q.mv>0?[[P.vs[0]-vw,P.vs[1]-0.14],[P.vs[0]+vw,P.vs[1]-0.14]]:[]);
+  for(const p of pts){const q=rotP(p,fall.piv,fall.b,fall.dir);if(q[1]<(p===P.hd?HEAD:0.02)){fall.done=true;break;}}
+  if(fall.b>1.55)fall.done=true;}
+function checkFall(){if(fall.on||drag)return;const P=pose();const x=P.gG[0];
+  if(x>P.base[1]){fall={on:true,b:0.001,w:0,piv:P.base[1],dir:1,done:false};}
+  else if(x<P.base[0]){fall={on:true,b:0.001,w:0,piv:P.base[0],dir:-1,done:false};}}
+function standUp(){fall={on:false,b:0,w:0,piv:0,dir:0,done:false};}
+function drawPerson(){const P=pose(),k=Math.min((H-74)/1.95,W/3.3),gy=Math.min(H-40,H/2+1.05*k),ox=W*0.45-0.1*k;
+  const B={x:4,y:28,w:W-8,h:H-32};
+  let ox2=ox;const raw=p=>{const q=fall.on?rotP(p,fall.piv,fall.b,fall.dir):p;return ox+q[0]*k;};
+  if(fall.on){const xs=[P.hd,P.hand,P.vs,P.aR,P.aF,P.sh].map(raw);const mn=Math.min(...xs)-HEAD*k-30,mx=Math.max(...xs)+HEAD*k+30;
+    ox2+=Math.max(0,8-mn)-Math.max(0,mx-(W-8));}
+  const tf=p=>{const q=fall.on?rotP(p,fall.piv,fall.b,fall.dir):p;return [ox2+q[0]*k,gy-q[1]*k];};
+  G.k=k;G.ox=ox;G.gy=gy;
+  // sol
+  ctx.strokeStyle=AX;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(8,gy);ctx.lineTo(W-8,gy);ctx.stroke();
+  ctx.strokeStyle='#dfe3e7';ctx.lineWidth=1;for(let x=16;x<W-8;x+=14){ctx.beginPath();ctx.moveTo(x,gy+1);ctx.lineTo(x-8,gy+9);ctx.stroke();}
+  // base d'appui (avant chute)
+  const xG=P.gG[0],inB=xG>=P.base[0]&&xG<=P.base[1],bc=inB&&!fall.on?GREEN:RED;
+  const b0=ox2+P.base[0]*k,b1=ox2+P.base[1]*k;
+  ctx.fillStyle=inB&&!fall.on?'rgba(29,158,117,.16)':'rgba(226,75,74,.14)';ctx.fillRect(b0,gy-3,b1-b0,9);
+  ctx.strokeStyle=bc;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(b0,gy+1);ctx.lineTo(b1,gy+1);ctx.stroke();
+  ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(b0,gy-8);ctx.lineTo(b0,gy+10);ctx.moveTo(b1,gy-8);ctx.lineTo(b1,gy+10);ctx.stroke();
+  obRect(b0,gy-8,b1-b0,18);
+  lab("base d'appui",(b0+b1)/2,gy+12,bc===GREEN?GREEN_D:RED_D,{font:FS,r:4,box:{x:4,y:gy+4,w:W-8,h:H-gy-4},dirs:[[0,1],[.6,1],[-.6,1]]});
+  // corps
+  const L=(a,b,col,w)=>{const p=tf(a),q=tf(b);ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();};
+  const lw=Math.max(5,0.1*k);
+  // jambes + pieds
+  [P.aR,P.aF].forEach(a=>{L(P.hip,a,'#8e89e6',lw);L([a[0]-0.05,0.02],[a[0]+0.2,0.02],'#6a64c9',Math.max(4,0.05*k));L(a,[a[0],0.02],'#6a64c9',Math.max(4,0.05*k));});
+  // valise (derrière le bras)
+  if(Q.mv>0){const c=tf(P.vs),s=Math.sqrt(Q.mv/12),vw=0.42*k*Math.min(1.15,0.7+0.3*s),vh=0.28*k;
+    const ang=fall.on?-fall.dir*fall.b:0;ctx.save();ctx.translate(c[0],c[1]);ctx.rotate(-ang);
+    ctx.fillStyle='#f3e3c8';ctx.strokeStyle=ORANGE;ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(-vw/2,-vh/2,vw,vh,4);ctx.fill();ctx.stroke();ctx.restore();
+    obRect(c[0]-vw/2,c[1]-vh/2,vw,vh);G.val=c;}
+  L(P.hip,P.sh,'#7fb3ea',lw*1.35);L(P.sh,[P.sh[0]+(P.hd[0]-P.sh[0])*0.6,P.sh[1]+(P.hd[1]-P.sh[1])*0.6],'#7fb3ea',lw*0.8);
+  const hp=tf(P.hd);ctx.fillStyle='#fff';ctx.strokeStyle='#5a95d6';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(hp[0],hp[1],HEAD*k,0,7);ctx.fill();ctx.stroke();
+  obRect(hp[0]-HEAD*k,hp[1]-HEAD*k,2*HEAD*k,2*HEAD*k);G.head=hp;
+  L(P.sh,P.hand,'#5a95d6',lw*0.8);G.hand=tf(P.hand);
+  G.foot=tf([P.aF[0]+0.08,0.03]);
+  // centres de gravité partiels
+  const dot=(p,col,t,dirs)=>{const q=tf(p);ctx.fillStyle='#fff';ctx.strokeStyle=col;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(q[0],q[1],5,0,7);ctx.fill();ctx.stroke();
+    lab(t,q[0],q[1],col,{font:FS,r:7,box:B,dirs:dirs});};
+  // verticale de G
+  const gp=tf(P.gG);const vcol=fall.on||!inB?RED:GREEN;
+  ctx.strokeStyle=vcol;ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(gp[0],gp[1]);ctx.lineTo(gp[0],gy);ctx.stroke();ctx.setLineDash([]);
+  obSeg(gp[0],gp[1],gp[0],gy,2);
+  ctx.fillStyle=vcol;ctx.beginPath();ctx.moveTo(gp[0],gy-1);ctx.lineTo(gp[0]-6,gy-11);ctx.lineTo(gp[0]+6,gy-11);ctx.closePath();ctx.fill();
+  dot(P.gB,BLUE_D,'G buste',[[-1,0],[-1,-.5],[-1,.5],[1,0]]);
+  dot(P.gJ,VIOLET,'G jambes',[[-1,0],[-1,.5],[1,0]]);
+  if(Q.mv>0)dot(P.vs,ORANGE,'G valise',[[0,1],[1,.5],[-1,.5],[0,-1]]);
+  // G global
+  ctx.fillStyle='#fff';ctx.strokeStyle=INK;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(gp[0],gp[1],9,0,7);ctx.fill();ctx.stroke();
+  ctx.fillStyle=INK;ctx.beginPath();ctx.moveTo(gp[0],gp[1]);ctx.arc(gp[0],gp[1],9,-Math.PI/2,0);ctx.lineTo(gp[0],gp[1]);ctx.arc(gp[0],gp[1],9,Math.PI/2,Math.PI);ctx.closePath();ctx.fill();
+  obRect(gp[0]-10,gp[1]-10,20,20);
+  lab('G',gp[0],gp[1],INK,{r:12,box:B,dirs:[[1,-.4],[-1,-.4],[1,.4],[-1,.4]]});
+  // poignées
+  if(!fall.on){[[G.head,BLUE],[G.foot,VIOLET]].concat(Q.mv>0?[[G.val,ORANGE]]:[]).forEach(([p,c])=>{ctx.strokeStyle=c;ctx.lineWidth=1.5;ctx.setLineDash([3,3]);ctx.beginPath();ctx.arc(p[0],p[1],15,0,7);ctx.stroke();ctx.setLineDash([]);});}
+  // statut
+  let st,sc;
+  if(fall.on){st=fall.done?'Il est tombé : la verticale de G est sortie de la base':'Il bascule : pivot = '+(fall.dir>0?'pointe du pied avant':'talon arrière');sc=RED_D;}
+  else if(drag&&!inB){st='Lâche… et il bascule : G sort de la base';sc=RED_D;}
+  else {const m=Math.min(xG-P.base[0],P.base[1]-xG);st='Il tient : marge de '+fr(m*100,0)+' cm';sc=GREEN_D;}
+  if(W<520&&st.length>34){const i=st.indexOf(':');fixText(st.slice(0,i).trim(),12,16,sc,FB,'left');fixText(st.slice(i+1).trim(),12,35,sc,FS,'left');}
+  else fixText(st,12,16,sc,FB,'left');
+  if(W>=640&&!fall.on)fixText('Glisse la tête, le pied avant ou la valise',W-12,16,GREY,FS,'right');
+  return P;}
+
+// ================= stable / instable / indifférent =================
+const CURV={cuvette:0.45,bosse:-0.45,plan:0};
+function yC(kind,x){return CURV[kind]*x*x;}
+function stepBalls(dt){balls.forEach(b=>{if(b.drag)return;const c=CURV[b.kind];
+  if(b.kind==='bosse'&&Math.abs(b.x)>1.02){b.t+=dt;b.x+=b.v*dt;if(b.t>1.3){b.x=0;b.v=0;b.t=0;}return;}
+  for(let i=0;i<4;i++){const h=dt/4,yp=2*c*b.x,acc=-(5/7)*g*yp/(1+yp*yp)-(b.kind==='plan'?1.6:0.25)*b.v;b.v+=acc*h;b.x+=b.v*h;}
+  if(b.kind==='plan'){if(Math.abs(b.v)<0.01)b.v=0;if(Math.abs(b.x)>0.95){b.x=Math.sign(b.x)*0.95;b.v=0;}}
+  if(b.kind==='cuvette'&&Math.abs(b.x)>1){b.x=Math.sign(b.x);b.v=0;}});}
+function stepBox(dt){const b=BX.b,h=BX.h,tc=Math.atan(b/h),r=Math.hypot(b,h)/2,I=(b*b+h*h)/3;
+  if(BX.held||BX.state==='down')return;
+  let th=BX.th*Math.PI/180;
+  for(let i=0;i<4;i++){const s=dt/4;BX.w+=-g*r*Math.sin(tc-th)/I*s;th+=BX.w*s;
+    if(th<=0){th=0;BX.w=-BX.w*0.25;if(Math.abs(BX.w)<0.15){BX.w=0;BX.state='rest';}}
+    if(th>=Math.PI/2){th=Math.PI/2;BX.w=0;BX.state='down';}}
+  BX.th=th*180/Math.PI;}
+function drawEq(){const top=Math.round(H*0.44),cw=W/3;
+  ctx.strokeStyle='#e3e7ed';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,top+.5);ctx.lineTo(W,top+.5);
+  ctx.moveTo(cw+.5,8);ctx.lineTo(cw+.5,top-8);ctx.moveTo(2*cw+.5,8);ctx.lineTo(2*cw+.5,top-8);ctx.stroke();
+  const narrow=cw<170;
+  const T=narrow?{cuvette:['Stable','G monte','→ revient',GREEN_D],bosse:['Instable','G descend','→ s\'éloigne',RED_D],plan:['Indifférent','G ne bouge pas','→ reste là',ORANGE]}:{cuvette:['Stable','écartée : G monte','→ elle revient',GREEN_D],bosse:['Instable','écartée : G descend','→ elle s\'éloigne',RED_D],plan:['Indifférent','G garde sa hauteur','→ elle reste là',ORANGE]};
+  G.balls=[];
+  balls.forEach((b,i)=>{const x0=i*cw,k=Math.min(cw*0.42,(top-110)/0.9),cx=x0+cw/2,base=i===1?top-58:top-58-0.45*k*0.9;
+    const yy=x=>base-yC(b.kind,x)*k;const t=T[b.kind];
+    fixText(t[0],x0+10,16,t[3],FB,'left');
+    // profil
+    ctx.fillStyle='#f1f3f5';ctx.strokeStyle='#9aa0a6';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(cx-1.05*k,top-8);
+    for(let x=-1.05;x<=1.05001;x+=0.03)ctx.lineTo(cx+x*k,yy(x));ctx.lineTo(cx+1.05*k,top-8);ctx.closePath();ctx.fill();
+    ctx.beginPath();for(let x=-1.05;x<=1.05001;x+=0.03){const X=cx+x*k,Y=yy(x);x<-1.04?ctx.moveTo(X,Y):ctx.lineTo(X,Y);}ctx.stroke();
+    // bille (posée sur la courbe)
+    const R=Math.max(7,0.09*k);let bx,by;
+    if(b.kind==='bosse'&&Math.abs(b.x)>1.02){const ex=Math.sign(b.x)*1.05;bx=cx+b.x*k;by=yy(ex)-R+(b.t*b.t*4.9*k);}
+    else {const yp=2*CURV[b.kind]*b.x,n=Math.hypot(1,yp);bx=cx+b.x*k+(-yp/n)*0*R;by=yy(b.x)-R/ n;bx+=(yp/n)*R*0;}
+    // hauteur d'équilibre de G
+    const ye=yy(0)-R;ctx.strokeStyle=AX;ctx.lineWidth=1;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(cx-0.9*k,ye);ctx.lineTo(cx+0.9*k,ye);ctx.stroke();ctx.setLineDash([]);
+    ctx.save();ctx.beginPath();ctx.rect(x0+1,0,cw-2,top);ctx.clip();
+    ctx.fillStyle='#dcebfa';ctx.strokeStyle=BLUE_D;ctx.lineWidth=2;ctx.beginPath();ctx.arc(bx,by,R,0,7);ctx.fill();ctx.stroke();
+    ctx.fillStyle=BLUE_D;ctx.beginPath();ctx.arc(bx,by,2.5,0,7);ctx.fill();ctx.restore();
+    G.balls.push({bx,by,R,cx,k,x0});
+    fixText(t[1],x0+10,top-34,MUTED,narrow?'600 11px Mulish,system-ui,sans-serif':FS,'left');
+    fixText(t[2],x0+10,top-16,t[3],narrow?'700 11px Mulish,system-ui,sans-serif':FB,'left');});
+  // ---- la boîte ----
+  const PB={x:0,y:top,w:W,h:H-top},b=BX.b,h=BX.h,tc=Math.atan(b/h),th=BX.th*Math.PI/180;
+  const k=Math.min((PB.h-64)/1.7,PB.w/3.6),gy=PB.y+PB.h-30,px=PB.x+PB.w*(W<520?0.5:0.42);
+  const B={x:4,y:PB.y+26,w:W-8,h:PB.h-30};
+  fixText('Une boîte qu\'on incline',12,PB.y+16,INK,FB,'left');
+  ctx.strokeStyle=AX;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(8,gy);ctx.lineTo(W-8,gy);ctx.stroke();
+  ctx.strokeStyle='#dfe3e7';ctx.lineWidth=1;for(let x=16;x<W-8;x+=14){ctx.beginPath();ctx.moveTo(x,gy+1);ctx.lineTo(x-8,gy+9);ctx.stroke();}
+  const R=(u,v)=>{const c=Math.cos(th),s=Math.sin(th);return [px+(u*c+v*s)*k,gy-(-u*s+v*c)*k];}; // u vers la gauche négatif, v vers le haut
+  // trajectoire de G (arc autour du coin)
+  const rG=Math.hypot(b,h)/2;ctx.strokeStyle=AX;ctx.lineWidth=1.2;ctx.setLineDash([3,4]);ctx.beginPath();
+  for(let a=0;a<=Math.PI/2+1e-6;a+=0.03){const c=Math.cos(a),s=Math.sin(a),u=-b/2,v=h/2,X=px+(u*c+v*s)*k,Y=gy-(-u*s+v*c)*k;a===0?ctx.moveTo(X,Y):ctx.lineTo(X,Y);}ctx.stroke();ctx.setLineDash([]);
+  // position critique : G à la verticale du coin
+  ctx.strokeStyle=RED;ctx.lineWidth=1.2;ctx.setLineDash([6,4]);ctx.beginPath();ctx.moveTo(px,gy);ctx.lineTo(px,gy-rG*k-14);ctx.stroke();ctx.setLineDash([]);
+  obSeg(px,gy,px,gy-rG*k-14,2);
+  const c=[R(-b,0),R(0,0),R(0,h),R(-b,h)];
+  const cols=BX.state==='down'?RED_D:th>tc?RED_D:BLUE_D;
+  ctx.fillStyle=th>tc||BX.state==='down'?'#fbeaea':'#e6f1fb';ctx.strokeStyle=cols;ctx.lineWidth=2.5;ctx.beginPath();c.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill();ctx.stroke();
+  let x0=1e9,x1=-1e9,y0=1e9;c.forEach(p=>{x0=Math.min(x0,p[0]);x1=Math.max(x1,p[0]);y0=Math.min(y0,p[1]);});obRect(x0,y0,x1-x0,gy-y0);
+  G.box={px,gy,k,c};
+  // angle θ
+  if(BX.th>0.5){ctx.strokeStyle=ORANGE;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(px,gy);ctx.lineTo(px,gy-0.5*k);ctx.stroke();ctx.beginPath();ctx.arc(px,gy,0.38*k,-Math.PI/2,-Math.PI/2+th);ctx.stroke();}
+  // pivot
+  ctx.fillStyle=INK;ctx.beginPath();ctx.arc(px,gy,4,0,7);ctx.fill();
+  // G + verticale
+  const gp=R(-b/2,h/2),out=gp[0]>px;
+  ctx.strokeStyle=out?RED:GREEN;ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.beginPath();ctx.moveTo(gp[0],gp[1]);ctx.lineTo(gp[0],gy);ctx.stroke();ctx.setLineDash([]);obSeg(gp[0],gp[1],gp[0],gy,2);
+  ctx.fillStyle='#fff';ctx.strokeStyle=INK;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(gp[0],gp[1],8,0,7);ctx.fill();ctx.stroke();
+  ctx.fillStyle=INK;ctx.beginPath();ctx.moveTo(gp[0],gp[1]);ctx.arc(gp[0],gp[1],8,-Math.PI/2,0);ctx.lineTo(gp[0],gp[1]);ctx.arc(gp[0],gp[1],8,Math.PI/2,Math.PI);ctx.closePath();ctx.fill();
+  lab('G',gp[0],gp[1],INK,{r:11,box:B,dirs:[[-1,-.4],[-1,.4],[1,-.4]]});
+  // repère : base de la boîte (largeur b) au sol si debout
+  const tcd=tc*180/Math.PI;
+  lab('θ = '+fr(BX.th,0)+'°',px+0.42*k*Math.sin(th/2),gy-0.42*k*Math.cos(th/2),ORANGE,{font:FB,r:6,box:B,dirs:[[1,-.3],[1,0],[0,-1]]});
+  // panneau chiffré
+  const st=BX.held?(th>tc?'Tenue au-delà de θc : lâche-la, elle tombe':'Tenue sous θc : lâche-la, elle revient'):BX.state==='down'?'Elle a basculé : θ a dépassé θc':BX.state==='rest'?'Revenue debout : θ < θc':(th>tc?'Elle bascule…':'Elle revient…');
+  const sc=(BX.held?th>tc:BX.state==='down'||th>tc)?RED_D:GREEN_D;
+  const lx=W<520?12:12;
+  fixText('θc = arctan(b/h) = '+fr(tcd,1)+'°',lx,PB.y+38,RED_D,FB,'left');
+  if(W<520&&st.indexOf(':')>0){const i=st.indexOf(':');fixText(st.slice(0,i).trim(),lx,PB.y+58,sc,FS,'left');fixText(st.slice(i+1).trim(),lx,PB.y+76,sc,FS,'left');}
+  else fixText(st,lx,PB.y+58,sc,FS,'left');
+  if(W>=520)fixText('Attrape la boîte pour l\'incliner',W-12,PB.y+16,GREY,FS,'right');
+  return {tcd};}
+
+// ================= textes =================
+function texts(P,E){const c=(col,t)=>'<b style="color:'+col+'">'+t+'</b>';let n,f,i;
+  if(T==='P'){n='Le centre de gravité <b>G</b> de la personne est le barycentre de ses parties ('+c(BLUE_D,'buste')+', '+c(VIOLET,'jambes')+', '+c(ORANGE,'valise')+'). Elle tient debout tant que la <b>verticale de G</b> tombe dans la <b>base d\'appui</b> (du talon arrière à la pointe du pied avant). Écarte les pieds : la base s\'agrandit. Porte la valise devant : G avance.';
+    f='x<sub>G</sub> = ('+c(BLUE_D,'m<sub>b</sub>·x<sub>b</sub>')+' + '+c(VIOLET,'m<sub>j</sub>·x<sub>j</sub>')+' + '+c(ORANGE,'m<sub>v</sub>·x<sub>v</sub>')+') / (m<sub>b</sub> + m<sub>j</sub> + m<sub>v</sub>) &nbsp;; elle tient si '+c(GREEN_D,'x<sub>talon</sub> ≤ x<sub>G</sub> ≤ x<sub>pointe</sub>');
+    const cm=v=>fr(v*100,1)+' cm';
+    i=c(BLUE_D,'buste : '+P.mb+' kg à x = '+cm(P.gB[0]))+' | '+c(VIOLET,'jambes : '+P.mj+' kg à x = '+cm(P.gJ[0]))+' | '+c(ORANGE,'valise : '+P.mv+' kg à x = '+cm(P.vs[0]))+' | <b>x<sub>G</sub> = '+cm(P.gG[0])+'</b> | base : de '+cm(P.base[0])+' à '+cm(P.base[1])+' | hauteur de G : '+fr(P.gG[1]*100,0)+' cm';}
+  else {n='<b>Stable</b> : si on écarte l\'objet, son centre de gravité monte et il revient. <b>Instable</b> : G descend dès qu\'on l\'écarte, il s\'éloigne. <b>Indifférent</b> : G garde la même hauteur, il reste où on le pose. La boîte est stable tant que la verticale de G reste du bon côté du coin : au-delà de l\'angle critique, elle bascule. Plus elle est large et basse, plus θc est grand.';
+    f=c(RED_D,'θ<sub>c</sub> = arctan(b / h)')+' &nbsp;: à θ = θ<sub>c</sub>, G est juste à la verticale du coin (et au plus haut). θ < θ<sub>c</sub> → elle revient ; θ > θ<sub>c</sub> → elle bascule.';
+    i=c(BLUE_D,'b = '+fr(BX.b*100,0)+' cm')+' | '+c(VIOLET,'h = '+fr(BX.h*100,0)+' cm')+' | '+c(RED_D,'θc = '+fr(E.tcd,1)+'°')+' | '+c(ORANGE,'θ = '+fr(BX.th,1)+'°')+' | hauteur de G : '+fr(Math.hypot(BX.b,BX.h)/2*Math.cos(Math.atan(BX.b/BX.h)-BX.th*Math.PI/180)*100,1)+' cm (debout : '+fr(BX.h*50,0)+' cm)';}
+  if($('note')._t!==n){$('note').innerHTML=n;$('note')._t=n;}if($('fml')._t!==f){$('fml').innerHTML=f;$('fml')._t=f;}$('info').innerHTML=i;}
+
+// ================= boucle =================
+function frame(ts){const dt=Math.min(0.04,last?(ts-last)/1000:0.016);last=ts;
+  syncSize();resetLab();G={};ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  let P=null,E=null;
+  if(T==='P'&&demo&&!fall.on){demoT+=dt;const v=Math.round(18+20*Math.sin(demoT*0.8));if(v!==Q.phi){Q.phi=v;syncUI();}}
+  if(T==='P'){checkFall();stepFall(dt);P=drawPerson();}
+  else {if(!paused){stepBalls(dt);stepBox(dt);}E=drawEq();syncTh();}
+  flushLab();texts(P,E);requestAnimationFrame(frame);}
+
+// ================= contrôles =================
+function syncTh(){const s=$('th');if(Math.abs(parseFloat(s.value)-BX.th)>0.5){s.value=Math.round(BX.th);$('thv').textContent=Math.round(BX.th)+'°';}}
+function syncUI(){document.querySelectorAll('[data-s]').forEach(r=>r.style.display=r.dataset.s===T?'':'none');
+  $('tP').classList.toggle('on',T==='P');$('tE').classList.toggle('on',T==='E');
+  $('phi').value=Q.phi;$('phiv').textContent=Q.phi+'°';$('d').value=Q.d;$('dv').textContent=Q.d+' cm';
+  $('mv').value=Q.mv;$('mvv').textContent=Q.mv+' kg';$('psi').value=Q.psi;$('psiv').textContent=(Q.psi>0?'+':'')+Q.psi+'°'+(Q.psi>3?' (devant)':Q.psi<-3?' (derrière)':' (le long du corps)');
+  $('bbv').textContent=Math.round(BX.b*100)+' cm';$('hhv').textContent=Math.round(BX.h*100)+' cm';$('thv').textContent=Math.round(BX.th)+'°';
+  $('bPause').classList.toggle('on',paused);$('bPause').textContent=paused?'Reprendre':'Pause';
+  $('bDrop').disabled=!BX.held;}
+const on=(id,f)=>$(id).addEventListener('input',e=>{demo=false;f(parseFloat(e.target.value));syncUI();});
+on('phi',v=>{Q.phi=v;standUp();});on('d',v=>{Q.d=v;standUp();});on('mv',v=>{Q.mv=v;standUp();});on('psi',v=>{Q.psi=v;standUp();});
+on('bb',v=>{BX.b=v/100;if(BX.state==='down'){BX.th=0;BX.state='rest';}});on('hh',v=>{BX.h=v/100;if(BX.state==='down'){BX.th=0;BX.state='rest';}});
+on('th',v=>{BX.th=v;BX.held=true;BX.state='held';BX.w=0;});
+$('tP').onclick=()=>{T='P';syncUI();};$('tE').onclick=()=>{T='E';syncUI();};
+$('bUp').onclick=()=>{demo=false;Q.phi=0;Q.psi=0;standUp();syncUI();};
+$('bKick').onclick=()=>{balls.forEach(b=>{b.x=0;b.v=0.9;b.t=0;});paused=false;syncUI();};
+$('bDrop').onclick=()=>{BX.held=false;BX.state='free';BX.w=0;syncUI();};
+$('bPause').onclick=()=>{paused=!paused;syncUI();};
+function pt(e){const r=cv.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};}
+function hit(p){const d=(q,r)=>q&&Math.hypot(p.x-q[0],p.y-q[1])<r;
+  if(T==='P'){if(fall.on)return null;if(d(G.head,26))return 'head';if(Q.mv>0&&d(G.val,26))return 'val';if(d(G.foot,24))return 'foot';return null;}
+  if(G.balls)for(let i=0;i<3;i++){const b=G.balls[i];if(Math.hypot(p.x-b.bx,p.y-b.by)<b.R+16)return 'ball'+i;}
+  if(G.box){const c=G.box.c;let x0=1e9,x1=-1e9,y0=1e9;c.forEach(q=>{x0=Math.min(x0,q[0]);x1=Math.max(x1,q[0]);y0=Math.min(y0,q[1]);});
+    if(p.x>x0-10&&p.x<x1+10&&p.y>y0-10&&p.y<G.box.gy+4)return 'box';}
+  return null;}
+function move(p){
+  if(drag==='head'){const k=G.k,hipY=G.gy-(0.08+Math.sqrt(LEG*LEG-(Q.d/200)**2))*k,hx=G.ox;
+    Q.phi=Math.round(Math.max(-40,Math.min(75,Math.atan2(p.x-hx,hipY-p.y)*180/Math.PI)));}
+  if(drag==='foot'){Q.d=Math.round(Math.max(0,Math.min(80,2*((p.x-G.ox)/G.k-0.08)*100)));}
+  if(drag==='val'){const P=pose(),sx=G.ox+P.sh[0]*G.k,sy=G.gy-P.sh[1]*G.k;
+    Q.psi=Math.round(Math.max(-45,Math.min(90,Math.atan2(p.x-sx,(p.y+0.18*G.k)-sy)*180/Math.PI)));}
+  if(drag&&drag.startsWith('ball')){const i=+drag[4],b=balls[i],gb=G.balls&&G.balls[i]||b._g;b._g=gb;b.drag=true;b.v=0;b.t=0;
+    b.x=Math.max(-0.95,Math.min(0.95,(p.x-gb.cx)/gb.k));}
+  if(drag==='box'){const B=G.box||BX._g;BX._g=B;const a=Math.atan2(p.x-B.px,B.gy-p.y);
+    const a0=BX._a0==null?(BX._a0=a-BX.th*Math.PI/180):BX._a0;BX.th=Math.max(0,Math.min(90,(a-a0)*180/Math.PI));BX.held=true;BX.state='held';BX.w=0;}
+  syncUI();}
+cv.addEventListener('pointerdown',e=>{const p=pt(e);drag=hit(p);if(!drag)return;demo=false;BX._a0=null;
+  if(drag==='box'){const B=G.box;BX._a0=Math.atan2(p.x-B.px,B.gy-p.y)-BX.th*Math.PI/180;BX._g=B;}
+  if(drag.startsWith('ball'))balls[+drag[4]]._g=G.balls[+drag[4]];
+  cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing';e.preventDefault();if(drag!=='box')move(p);});
+cv.addEventListener('pointermove',e=>{const p=pt(e);if(drag)move(p);else cv.style.cursor=hit(p)?'grab':'default';});
+const rel=()=>{if(!drag)return;if(drag.startsWith('ball'))balls[+drag[4]].drag=false;
+  if(drag==='box'){BX.held=false;BX.state='free';BX.w=0;}
+  drag=null;cv.style.cursor='default';syncUI();};
+cv.addEventListener('pointerup',rel);cv.addEventListener('pointercancel',rel);
+syncUI();requestAnimationFrame(frame);
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Statique, équilibre et gravitation<span>4 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/moment_de_force/"><i>01</i>Moment de force</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/centre-de-masse-/"><i>02</i>Centre de masse</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/stabilite-equilibre/"><i>03</i>Équilibre et stabilité</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/gravitation-satellite/"><i>04</i>Gravitation et satellite</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

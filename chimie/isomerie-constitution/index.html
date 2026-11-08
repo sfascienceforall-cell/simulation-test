@@ -1,0 +1,1045 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Isomères de constitution · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style id="sfa-chim">
+/* Compléments communs aux simulations de chimie SFA (mêmes cartes et même typo que le kit) */
+*{box-sizing:border-box}
+.sfa-card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-top:14px}
+.sfa-card h2{font:800 15px var(--f-ui);margin:0 0 8px;color:var(--ink)}
+.sfa-card ul{margin:0;padding-left:20px}.sfa-card li{margin:4px 0}
+.sfa-card.trap{border-left:4px solid #BA7517}
+.sfa-card.keep{border-left:4px solid var(--green)}
+.defi{border-top:1px solid var(--line);padding:10px 0}.defi:first-of-type{border-top:0}
+.defi p{margin:0 0 6px;font-weight:600}
+.defi details summary{cursor:pointer;font:800 13px var(--f-ui);color:var(--green);list-style:none}
+.defi details summary::-webkit-details-marker{display:none}
+.defi details summary::before{content:"+ ";}.defi details[open] summary::before{content:"− ";}
+.defi details div{margin-top:6px;color:var(--ink2);background:var(--bg);border-radius:8px;padding:8px 12px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.ctl .lab{font:700 .86rem var(--f-ui);color:var(--ink2);margin-right:2px}
+.hint{font:500 .84rem var(--f-ui);color:var(--muted)}
+.btn{background:var(--paper);border:1px solid var(--line2);border-radius:8px;color:var(--ink);font:800 .82rem var(--f-ui);padding:8px 12px;cursor:pointer;touch-action:manipulation}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.chem{font-family:var(--f-ui)}
+.big{font:800 1.6rem/1.1 var(--f-ui);color:var(--ink)}
+.ok{color:var(--green);font-weight:800}.warn{color:#a32d2d;font-weight:800}
+sub,sup{font-size:.72em;line-height:0}
+</style>
+<script>
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche (repris du kit SFA). */
+addEventListener('DOMContentLoaded',()=>{
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+});
+</script>
+<style>
+.nm-wrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:900px){.nm-wrap{grid-template-columns:minmax(0,1fr)}}
+.stage{border:1px solid var(--line);border-radius:10px;background:#fff;min-height:200px;display:flex;align-items:center;justify-content:center;padding:6px;overflow:hidden;touch-action:manipulation}
+.stage svg{display:block;max-width:100%;height:auto}
+.pane{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14px;min-width:0}
+.pane h3{font:800 14px var(--f-ui);margin:0 0 6px}
+.pal{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
+.pal .btn{padding:7px 10px!important;font-size:.8rem!important}
+.lab2{font:800 11px var(--f-ui);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin:10px 0 2px}
+.chips2{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.chip2{display:inline-flex;align-items:center;gap:6px;background:var(--chip);color:var(--chip-ink);border-radius:999px;padding:3px 4px 3px 10px;font:700 12px var(--f-ui)}
+.chip2 button{border:0;background:#fff;color:var(--chip-ink);border-radius:50%;width:22px;height:22px;font:800 13px var(--f-ui);cursor:pointer;line-height:1}
+.namebox{background:var(--sel);border-left:4px solid var(--navy);border-radius:10px;padding:10px 14px;margin:10px 0}
+.namebox .nm{font:800 1.35rem/1.25 var(--f-ui);color:var(--ink);word-break:break-word}
+.namebox .sub{font:600 .86rem var(--f-ui);color:var(--muted);margin-top:4px}
+.np{color:#1e3f8f}.ns{color:var(--green)}
+.steps{margin:0;padding-left:0;list-style:none;counter-reset:st}
+.steps li{position:relative;padding:6px 0 8px 30px;border-bottom:1px solid var(--line)}
+.steps li:last-child{border-bottom:0}
+.steps li::before{counter-increment:st;content:counter(st);position:absolute;left:0;top:6px;width:21px;height:21px;border-radius:50%;background:var(--navy);color:#fff;font:800 11px/21px var(--f-ui);text-align:center}
+.steps b.t{display:block;font:800 13.5px var(--f-ui);margin-bottom:2px}
+.prio{display:flex;flex-wrap:wrap;gap:3px;margin:4px 0}
+.prio span{font:700 11px var(--f-ui);padding:2px 7px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--faint)}
+.prio span.p{background:var(--green);border-color:var(--green);color:#fff}
+.prio span.q{background:#e8f3ee;border-color:#bfe3d3;color:var(--green)}
+.warnbox{margin-top:8px;padding:8px 10px;border-radius:8px;background:#fff8e1;border:1px solid #f1d98c;color:#5a4300;font-weight:600;font-size:13px}
+.vals{display:flex;flex-wrap:wrap;gap:6px 18px;font:600 .86rem var(--f-ui);color:var(--muted)}
+.vals b{color:var(--ink);font-weight:800}
+.dom{font:500 .8rem/1.45 var(--f-ui);color:var(--muted);margin-top:8px}
+</style>
+<style>
+.fchips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.fchips .btn{padding:6px 10px!important}
+.di{font:600 .92rem/1.6 var(--f-ui)}
+.fam{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-top:12px;background:#fff}
+.fam>h3{font:800 14px var(--f-ui);margin:0 0 4px;display:flex;justify-content:space-between;gap:8px}
+.fam>h3 span{font-weight:600;color:var(--muted);font-size:12px}
+.skel{border-top:1px dashed var(--line2);padding-top:6px;margin-top:6px}
+.skel:first-of-type{border-top:0;margin-top:0}
+.skel>small{display:block;font:700 11px var(--f-ui);color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:8px}
+.card{min-width:0}.card svg{max-width:100%;height:auto;max-height:130px}
+.card{border:2px solid var(--line);border-radius:10px;padding:6px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;background:#fff;font:inherit;color:inherit;min-height:120px;justify-content:center}
+.card.pick{border-color:#1e3f8f;background:var(--sel)}
+.card.hid{cursor:default;background:var(--bg);border-style:dashed}
+.card.hid .q{font:800 28px var(--f-ui);color:var(--faint)}
+.card .nm{font:800 12.5px/1.3 var(--f-ui);text-align:center;word-break:break-word}
+.card .od{font:600 11px/1.3 var(--f-ui);color:var(--muted);text-align:center}
+.badge{font:800 10px var(--f-ui);background:#f1eef9;color:#5a3fa0;border-radius:999px;padding:1px 6px}
+.between{font:800 11px var(--f-ui);color:#BA7517;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 0;text-align:center}
+.findrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.findrow input{flex:1 1 200px;min-width:0;font:600 .95rem var(--f-ui);border:1px solid var(--line2);border-radius:8px;padding:8px 10px}
+.rel{margin-top:10px}
+</style>
+<link rel="stylesheet" href="../../kit/sfa-nav.css"></head>
+<body>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a class="on" href="../">Simulations de chimie</a><a href="../exercices/">Exercices de chimie</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations de physique</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="../">Simulations de chimie</a>›<a href="../#organique">Chimie organique</a>›<b>Isomères de constitution</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Chimie · Isomérie</span><span class="sfa-chip free">Gratuit</span></div><h1>Isomères de constitution</h1><p>Une formule brute, plusieurs molécules : calcule le degré d'insaturation, cherche les isomères toi-même, puis compare-les.</p></div>
+<section class="sfa-sim">
+  <div class="lab2" style="margin-top:0">Formule brute</div>
+  <div class="fchips" id="fchips"></div>
+  <div class="nm-wrap">
+    <div class="info di" id="di"></div>
+    <div class="pane" id="dom"></div>
+  </div>
+  <div class="ctl"><span class="lab">Mode</span><button class="btn on" data-m="find">Je cherche d'abord</button><button class="btn" data-m="all">Tout afficher</button>
+    <span class="lab">Formule</span><button class="btn on" data-dm="topo">Topologique</button><button class="btn" data-dm="semi">Semi-développée</button></div>
+  <div id="findBox">
+    <div class="findrow"><input id="guess" type="text" autocomplete="off" spellcheck="false" placeholder="Écris le nom d'un isomère (ex. : butan-2-ol)" aria-label="Nom d'un isomère"><button class="btn" id="try">Vérifier</button><button class="btn" id="hint">Indice</button><button class="btn" id="reveal">Tout révéler</button></div>
+    <div class="hint" style="margin-top:4px">Accents, tirets et espaces facultatifs ; l'ancien nom et le nom usuel sont acceptés.</div>
+    <div class="qfb" id="fb" aria-live="polite" style="margin-top:6px;font-weight:600"></div>
+  </div>
+  <div class="vals" style="margin-top:8px"><span>Trouvés <b id="found"></b></span><span id="relHint">Touche deux isomères pour savoir quel type d'isomérie les relie.</span></div>
+  <div class="namebox rel" id="rel" hidden></div>
+  <div id="grid"></div>
+  <div class="dom">Les badges Z/E, C* et cis/trans signalent une molécule qui existe sous plusieurs stéréoisomères : ici on ne les compte pas, on compte uniquement la constitution. Totaux obtenus par dénombrement informatique de toutes les structures qui respectent les valences (C 4, O 2, H et halogènes 1), molécules neutres. Alcène / cycloalcane : on parle ici d'isomérie de fonction (familles différentes) ; beaucoup de manuels disent isomérie de chaîne. Éthers et esters : l'oxygène compte dans le squelette. Noms : nom systématique, puis nom retenu IUPAC 2013 entre parenthèses (acide éthanoïque (acide acétique)) ; sous la carte, l'ancien nom et le nom usuel.</div>
+</section>
+
+<div class="sfa-card keep"><h2>Ce qu'il faut retenir</h2><ul>
+  <li>Des isomères de constitution ont la même formule brute mais des atomes reliés différemment.</li>
+  <li>Degré d'insaturation : DI = (2C + 2 + N − H − X) / 2. Chaque cycle et chaque liaison π (C=C, C=O) compte pour 1 ; une triple liaison compte pour 2.</li>
+  <li>Isomères de chaîne : même fonction, squelette différent. Isomères de position : même squelette, groupe ou liaison multiple à un autre endroit. Isomères de fonction : familles différentes.</li>
+  <li>Méthode : pars de la chaîne la plus longue, raccourcis-la d'un carbone à la fois, puis déplace le groupe sur chaque position non équivalente.</li>
+</ul></div>
+
+<div class="sfa-card trap"><h2>Pièges classiques</h2><ul>
+  <li>Ne compte pas deux fois la même molécule : butan-1-ol dessiné « à l'envers » ou plié reste butan-1-ol. Vérifie toujours par le nom.</li>
+  <li>Un DI de 1 ne veut pas dire « double liaison » : ce peut être un cycle (cyclobutane pour C₄H₈) ou un C=O.</li>
+  <li>Les stéréoisomères ne sont pas des isomères de constitution : le but-2-ène (Z et E) compte ici pour une seule molécule.</li>
+  <li>Le décompte dépend du domaine choisi : avec les cycles, les énols et les peroxydes, C₄H₈O₂ a bien plus de 6 isomères. Lis toujours ce que l'énoncé demande.</li>
+</ul></div>
+
+<div class="sfa-card"><h2>Défis</h2>
+  <div class="defi"><p>1. Choisis C₄H₁₀O. Combien d'alcools et combien d'éthers trouves-tu ?</p>
+    <details><summary>Voir la réponse</summary><div>4 alcools (butan-1-ol, butan-2-ol, 2-méthylpropan-1-ol, 2-méthylpropan-2-ol) et 3 éthers (1-méthoxypropane, 2-méthoxypropane, éthoxyéthane), soit 7 isomères.</div></details></div>
+  <div class="defi"><p>2. Choisis C₄H₈. Son DI vaut 1, pourtant le cyclobutane n'a aucune double liaison. Pourquoi est-ce cohérent ?</p>
+    <details><summary>Voir la réponse</summary><div>Le DI compte les cycles et les liaisons π ensemble. Fermer un cycle retire 2 H, comme créer une double liaison.</div></details></div>
+  <div class="defi"><p>3. Choisis C₅H₁₀O₂. Touche le méthanoate de butyle (formiate de butyle) puis l'éthanoate de propyle (acétate de propyle) : quel type d'isomérie ? Et entre le méthanoate de butyle et le méthanoate de 2-méthylpropyle ?</p>
+    <details><summary>Voir la réponse</summary><div>Position : même squelette de 6 atomes (5 C et l'O de l'ester) en ligne, seul l'oxygène change de place. Certains manuels appellent ce cas métamérie. Puis chaîne : le groupe lié à l'oxygène est ramifié.</div></details></div>
+</div>
+</main>
+<aside class="sfa-side">
+  <div class="sfa-list"><h2>Chimie organique<span>5 simulations</span></h2><ol><li><a href="../stereochimie-3d/"><i>01</i>R/S, Fischer et E/Z</a></li><li><a href="../conformations/"><i>02</i>Newman et chaise</a></li><li><a href="../effets-electroniques/"><i>03</i>Effets électroniques en organique</a></li><li><a href="../nomenclature-organique/"><i>04</i>Nommer une molécule organique</a></li><li><a class="on" aria-current="page" href="../isomerie-constitution/"><i>05</i>Isomères de constitution</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside>
+</div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de chimie</footer>
+<script>
+/* SFAChem : moteur de nomenclature organique (IUPAC 2013, français) partagé par les simulations
+   « nomenclature-organique » et « isomerie-constitution ».
+   Domaine : molécules acycliques (C, H, O, N, F, Cl, Br) ; un seul cycle carboné saturé pour les
+   hydrocarbures et dérivés halogénés. Fonctions : acide carboxylique > ester > amide > nitrile >
+   aldéhyde > cétone > alcool > amine (primaire) ; éthers, halogènes, liaisons multiples. */
+const SFAChem = (() => {
+'use strict';
+const VAL = {C: 4, N: 3, O: 2, F: 1, Cl: 1, Br: 1};
+/* masses molaires : VALEURS-REFERENCE.md */
+const MASS = {H: 1.008, C: 12.01, N: 14.01, O: 16.00, F: 19.00, Cl: 35.45, Br: 79.90};
+const STEM = ['', 'méth', 'éth', 'prop', 'but', 'pent', 'hex', 'hept', 'oct', 'non', 'déc', 'undéc', 'dodéc'];
+const MULT = ['', '', 'di', 'tri', 'tétra', 'penta', 'hexa', 'hepta', 'octa'];
+const MULTC = ['', '', 'bis', 'tris', 'tétrakis', 'pentakis', 'hexakis'];
+const HALO = {F: 'fluoro', Cl: 'chloro', Br: 'bromo'};
+const RANK = {acid: 1, ester: 2, amide: 3, nitrile: 4, aldehyde: 5, ketone: 6, alcohol: 7, amine: 8};
+const ORDER = ['acid', 'ester', 'amide', 'nitrile', 'aldehyde', 'ketone', 'alcohol', 'amine'];
+const CLS = {acid: 'acide carboxylique', ester: 'ester', amide: 'amide', nitrile: 'nitrile', aldehyde: 'aldéhyde',
+  ketone: 'cétone', alcohol: 'alcool', amine: 'amine'};
+const SUFFIX = {acid: 'oïque', ester: 'oate', amide: 'amide', nitrile: 'nitrile', aldehyde: 'al', ketone: 'one', alcohol: 'ol', amine: 'amine'};
+const PREFIX = {acid: 'carboxy', amide: 'carbamoyl', nitrile: 'cyano', aldehyde: 'oxo (ou formyl)', ketone: 'oxo', alcohol: 'hydroxy', amine: 'amino'};
+const TERMINAL = {acid: 1, ester: 1, amide: 1, nitrile: 1, aldehyde: 1};
+/* anciens noms des groupes alkyle et noms usuels */
+const OLDSUB = {'propan-2-yl': 'isopropyl', 'butan-2-yl': 'sec-butyl', '2-méthylpropyl': 'isobutyl', 'éthényl': 'vinyl',
+  'prop-2-én-1-yl': 'allyl', 'méthylidène': 'méthylène', 'propan-2-ylidène': 'isopropylidène', 'prop-1-én-2-yl': 'isopropényl',
+  '(propan-2-yl)oxy': 'isopropoxy', 'éthényloxy': 'vinyloxy', '(prop-2-én-1-yl)oxy': 'allyloxy', 'butan-2-yloxy': 'sec-butoxy', '3-méthylbutyl': 'isopentyl', '2,2-diméthylpropyl': 'néopentyl'};
+const USUAL = {
+  'éthène': 'éthylène', 'éthyne': 'acétylène', 'propène': 'propylène', '2-méthylprop-1-ène': 'isobutène',
+  '2-méthylpropane': 'isobutane', '2-méthylbutane': 'isopentane', '2,2-diméthylpropane': 'néopentane', 'propyne': 'méthylacétylène',
+  'méthanol': 'alcool méthylique', 'éthanol': 'alcool éthylique', 'propan-2-ol': 'isopropanol, alcool isopropylique',
+  'propan-1-ol': 'alcool propylique', '2-méthylpropan-2-ol': 'alcool tert-butylique', '2-méthylpropan-1-ol': 'alcool isobutylique',
+  'prop-2-én-1-ol': 'alcool allylique', 'éthane-1,2-diol': 'éthylène glycol', 'propane-1,2,3-triol': 'glycérol',
+  'propanal': 'propionaldéhyde', 'butanal': 'butyraldéhyde',
+  'prop-2-énal': 'acroléine', 'propan-2-one': 'acétone', 'butan-2-one': 'méthyléthylcétone',
+  'acide propanoïque': 'acide propionique', 'acide butanoïque': 'acide butyrique', 'acide 2-méthylpropanoïque': 'acide isobutyrique',
+  'acide 3-méthylbutanoïque': 'acide isovalérique', 'acide pentanoïque': 'acide valérique', 'acide 2,2-diméthylpropanoïque': 'acide pivalique',
+  'acide éthanedioïque': 'acide oxalique', 'acide butanedioïque': 'acide succinique', 'acide prop-2-énoïque': 'acide acrylique',
+  'acide 2-hydroxypropanoïque': 'acide lactique', 'acide 2-oxopropanoïque': 'acide pyruvique',
+  'propanoate de méthyle': 'propionate de méthyle',
+  "propanoate d'éthyle": "propionate d'éthyle", 'butanoate de méthyle': 'butyrate de méthyle', '2-méthylpropanoate de méthyle': 'isobutyrate de méthyle',
+  'méthoxyméthane': 'éther diméthylique', 'éthoxyéthane': 'éther diéthylique', 'méthoxyéthane': 'éther éthylméthylique',
+  'éthoxyéthène': 'éther éthylvinylique', 'trichlorométhane': 'chloroforme', 'dichlorométhane': 'chlorure de méthylène',
+  'chloroéthène': 'chlorure de vinyle', 'méthanamine': 'méthylamine', 'éthanamine': 'éthylamine',
+  '2-chloro-2-méthylpropane': 'chlorure de tert-butyle', 'hydroxyéthanal': 'glycolaldéhyde', 'buta-1,3-diène': 'butadiène'
+};
+
+/* Noms retenus par l'IUPAC 2013 comme noms préférés (PIN) : acide formique, acide acétique, formiate, acétate
+   (acide acétique substituable par halogènes, hydroxy, oxo, cyano, alcoxy), formaldéhyde, acétaldéhyde, formamide,
+   acétamide, acétonitrile. Convention SFA : nom systématique, puis nom retenu entre parenthèses. */
+const RETAINED_EXACT = {'méthanal': 'formaldéhyde', 'éthanal': 'acétaldéhyde', 'méthanamide': 'formamide', 'éthanamide': 'acétamide', 'éthanenitrile': 'acétonitrile'};
+function retained(r) {
+  if (!r || !r.ok || r.ring) return null;
+  if (RETAINED_EXACT[r.name]) return RETAINED_EXACT[r.name];
+  if (r.pclass !== 'acid' && r.pclass !== 'ester') return null;
+  const n = r.best.P.length; if (n > 2 || r.best.pgL.length !== 1) return null;
+  if (r.best.pre.some(p => !/^(fluoro|chloro|bromo|hydroxy|oxo|cyano|méthoxy|éthoxy|propoxy|butoxy)$/.test(p.name))) return null;
+  const m = {acid: [['méthanoïque', 'formique'], ['éthanoïque', 'acétique']], ester: [['méthanoate', 'formiate'], ['éthanoate', 'acétate']]}[r.pclass];
+  for (const [a, b] of m) if (r.name.includes(a)) return r.name.replace(a, b);
+  return null;
+}
+class NomError extends Error {}
+const fail = m => { throw new NomError(m); };
+const isVowel = ch => /[aeiouyéèêëïîôâ]/i.test(ch || '');
+const strip = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+const alphaKey = s => strip(s).toLowerCase().replace(/tert-/g, '').replace(/sec-/g, '').replace(/[^a-z]/g, '');
+const cmpv = (a, b) => {
+  if (Array.isArray(a)) { for (let i = 0; i < Math.min(a.length, b.length); i++) { const c = cmpv(a[i], b[i]); if (c) return c; } return a.length - b.length; }
+  if (typeof a === 'string') return a < b ? -1 : a > b ? 1 : 0;
+  return a - b;
+};
+
+/* ---------- SMILES simplifié (sous-ensemble organique, sans crochets ni aromatiques) ---------- */
+function parseSmiles(s) {
+  const atoms = [], bonds = [], stack = [], rings = {}; let prev = -1, bo = 1, i = 0;
+  while (i < s.length) {
+    const ch = s[i];
+    if (ch === '(') { stack.push(prev); i++; continue; }
+    if (ch === ')') { prev = stack.pop(); i++; continue; }
+    if (ch === '=') { bo = 2; i++; continue; }
+    if (ch === '#') { bo = 3; i++; continue; }
+    if (ch === '-') { bo = 1; i++; continue; }
+    if (/[0-9]/.test(ch)) {
+      if (rings[ch] !== undefined) { const r = rings[ch]; bonds.push({a: r.a, b: prev, o: Math.max(bo, r.o)}); delete rings[ch]; }
+      else rings[ch] = {a: prev, o: bo};
+      bo = 1; i++; continue;
+    }
+    let el;
+    if (s.startsWith('Cl', i)) { el = 'Cl'; i += 2; } else if (s.startsWith('Br', i)) { el = 'Br'; i += 2; }
+    else if ('CNOF'.includes(ch)) { el = ch; i++; } else throw new Error('SMILES non lu : ' + s);
+    atoms.push({el}); const k = atoms.length - 1;
+    if (prev >= 0) bonds.push({a: prev, b: k, o: bo});
+    bo = 1; prev = k;
+  }
+  return {atoms, bonds};
+}
+
+function build(g) {
+  const A = g.atoms.map((a, i) => ({i, el: a.el, nb: []}));
+  for (const b of g.bonds) { A[b.a].nb.push({j: b.b, o: b.o}); A[b.b].nb.push({j: b.a, o: b.o}); }
+  for (const a of A) {
+    if (!(a.el in VAL)) fail('élément non pris en charge : ' + a.el);
+    a.h = VAL[a.el] - a.nb.reduce((s, x) => s + x.o, 0);
+    if (a.h < 0) fail('valence dépassée sur un atome ' + a.el);
+  }
+  return A;
+}
+const bo = (A, i, j) => { const x = A[i].nb.find(n => n.j === j); return x ? x.o : 0; };
+
+function formula(g) {
+  const A = build(g); const c = {};
+  let H = 0; for (const a of A) { c[a.el] = (c[a.el] || 0) + 1; H += a.h; }
+  c.H = H;
+  const order = ['C', 'H', ...Object.keys(c).filter(k => k !== 'C' && k !== 'H').sort()];
+  const parts = order.filter(k => c[k]).map(k => [k, c[k]]);
+  const txt = parts.map(([k, n]) => k + (n > 1 ? n : '')).join('');
+  let M = 0; for (const [k, n] of parts) M += MASS[k] * n;
+  return {counts: c, txt, parts, M};
+}
+function components(A, skip) {
+  const seen = new Set(), comps = [];
+  for (const a of A) {
+    if (seen.has(a.i) || (skip && skip.has(a.i))) continue;
+    const comp = [], st = [a.i]; seen.add(a.i);
+    while (st.length) { const x = st.pop(); comp.push(x); for (const n of A[x].nb) if (!seen.has(n.j) && !(skip && skip.has(n.j))) { seen.add(n.j); st.push(n.j); } }
+    comps.push(comp);
+  }
+  return comps;
+}
+/* degré d'insaturation à partir de la formule brute */
+function unsaturation(counts) {
+  const C = counts.C || 0, H = counts.H || 0, N = counts.N || 0, X = (counts.F || 0) + (counts.Cl || 0) + (counts.Br || 0);
+  return {C, H, N, X, value: (2 * C + 2 + N - H - X) / 2};
+}
+
+/* ---------- repérage des groupes caractéristiques ---------- */
+function analyze(A) {
+  const role = new Array(A.length).fill(null); const groups = [];
+  for (const a of A) {
+    if (a.el === 'O' || a.el === 'N') { if (a.nb.some(x => A[x.j].el !== 'C')) fail('liaison entre deux hétéroatomes (peroxyde…) : hors domaine'); }
+    if (HALO[a.el] && (a.nb.length !== 1 || A[a.nb[0].j].el !== 'C')) fail('halogène mal lié');
+    if (a.el === 'N' && a.nb.some(x => x.o === 2)) fail('imine : hors domaine');
+  }
+  for (const c of A) {
+    if (c.el !== 'C') continue;
+    const dO = c.nb.filter(x => A[x.j].el === 'O' && x.o === 2), sO = c.nb.filter(x => A[x.j].el === 'O' && x.o === 1);
+    const N1 = c.nb.filter(x => A[x.j].el === 'N' && x.o === 1), N3 = c.nb.filter(x => A[x.j].el === 'N' && x.o === 3);
+    const cC = c.nb.filter(x => A[x.j].el === 'C'), X = c.nb.filter(x => HALO[A[x.j].el]);
+    if (N3.length) {
+      if (dO.length || sO.length || N1.length || X.length) fail('nitrile substitué sur le même carbone : hors domaine');
+      role[c.i] = 'nitrile'; groups.push({cls: 'nitrile', c: c.i, atoms: [N3[0].j]}); continue;
+    }
+    if (dO.length > 1) fail('deux C=O sur un même carbone : hors domaine');
+    if (dO.length === 1) {
+      if (cC.some(x => x.o >= 2)) fail('cétène : hors domaine');
+      if (X.length) fail("halogénure d'acyle : hors domaine");
+      if (sO.length + N1.length > 1) fail('hors domaine');
+      const oD = dO[0].j, oh = sO.filter(x => A[x.j].h === 1), oc = sO.filter(x => A[x.j].h === 0);
+      if (oh.length) { role[c.i] = 'acid'; groups.push({cls: 'acid', c: c.i, atoms: [oD, oh[0].j]}); }
+      else if (oc.length) { const o = oc[0].j, r = A[o].nb.find(x => x.j !== c.i).j; role[c.i] = 'ester'; groups.push({cls: 'ester', c: c.i, atoms: [oD, o], r}); }
+      else if (N1.length) { const n = N1[0].j; if (A[n].h !== 2) fail('amide substitué sur N : hors domaine'); role[c.i] = 'amide'; groups.push({cls: 'amide', c: c.i, atoms: [oD, n]}); }
+      else if (cC.length <= 1) { role[c.i] = 'aldehyde'; groups.push({cls: 'aldehyde', c: c.i, atoms: [oD]}); }
+      else { role[c.i] = 'ketone'; groups.push({cls: 'ketone', c: c.i, atoms: [oD]}); }
+    }
+  }
+  let ether = 0;
+  for (const o of A) {
+    if (o.el !== 'O') continue;
+    if (o.nb.length === 1 && o.nb[0].o === 1) { if (!role[o.nb[0].j]) groups.push({cls: 'alcohol', c: o.nb[0].j, atoms: [o.i]}); }
+    else if (o.nb.length === 2) {
+      const [x, y] = o.nb.map(z => z.j);
+      if (role[x] && role[y]) fail('anhydride ou ester particulier : hors domaine');
+      if (!role[x] && !role[y]) { o.ether = true; ether++; }
+      else { const ac = role[x] ? x : y, other = role[x] ? y : x; if (role[ac] === 'ester' && role[other]) fail('hors domaine'); }
+    }
+  }
+  for (const n of A) {
+    if (n.el !== 'N') continue;
+    if (n.nb.length === 1 && n.nb[0].o === 1) { if (!role[n.nb[0].j]) groups.push({cls: 'amine', c: n.nb[0].j, atoms: [n.i]}); }
+    else if (n.nb.length > 1) fail('amine secondaire ou tertiaire : hors domaine de cette simulation');
+  }
+  return {role, groups, ether};
+}
+
+/* ---------- moteur de choix de chaîne et de numérotation ---------- */
+function makeCtx(A, an, old) { return {A, an, old: old === true, oldChain: !!old, role: an.role}; }
+
+function paths(A, elig) {
+  const out = [];
+  for (const s of elig) {
+    const st = [[s]];
+    while (st.length) {
+      const p = st.pop(); out.push(p); const last = p[p.length - 1];
+      for (const n of A[last].nb) if (elig.has(n.j) && !p.includes(n.j)) st.push(p.concat(n.j));
+    }
+  }
+  return out;
+}
+
+/* explication pour l'affichage pas à pas : critères qui ont départagé les chaînes, puis les deux sens */
+function explain(r) {
+  if (!r.ok || r.ring) return null;
+  const b = r.best; const rev = evalPath(r.ctx, r.job, b.P.slice().reverse());
+  const chainWhy = [];
+  for (const x of r.choice.red) {
+    const lost = x.before.filter(c => !x.after.includes(c) && c.setKey !== b.setKey);
+    if (lost.length && !chainWhy.includes(x.crit)) chainWhy.push(x.crit);
+  }
+  let numWhy = null;
+  if (b.P.length > 1) for (const t of ['pgL', 'mult', 'dbl', 'preL', 'alpha']) if (cmpv(b.k[t], rev.k[t]) !== 0) { numWhy = t; break; }
+  const sets = new Set(r.choice.cands.map(c => c.setKey));
+  const multOut = r.A.length && (() => { let m = 0; for (const a of r.A) for (const x of a.nb) if (x.j > a.i && x.o > 1 && r.A[a.i].el === 'C' && r.A[x.j].el === 'C') m++; return m; })();
+  return {chainWhy, numWhy, rev, nSets: sets.size, multAll: multOut, multIn: b.mult.length};
+}
+const CRIT_NEW = ['nPG', 'len', 'nMult', 'nDbl', 'fv', 'pgL', 'mult', 'dbl', 'nPre', 'preL', 'alpha', 'sig'];
+const CRIT_OLD = ['nPG', 'nMult', 'len', 'nDbl', 'fv', 'pgL', 'mult', 'dbl', 'nPre', 'preL', 'alpha', 'sig'];
+
+/* job : {elig:Set, pg:[groupes principaux], fv:atome|null, scope:Set (atomes autorisés), pgAtoms:Map c->Set} */
+function chooseChain(ctx, job) {
+  const {A} = ctx; let cands = [];
+  for (const P of paths(A, job.elig)) {
+    if (job.fv != null && !P.includes(job.fv)) continue;
+    cands.push(evalStruct(ctx, job, P));
+  }
+  if (!cands.length) fail('aucune chaîne carbonée');
+  const crit = ctx.oldChain ? CRIT_OLD : CRIT_NEW;
+  let rem = cands; const red = [];
+  for (const t of crit) {
+    if (t === 'fv') rem.forEach(c => evalPrefixes(ctx, job, c));   // préfixes calculés seulement pour les chaînes encore en lice
+    let best = rem[0].k[t]; for (const c of rem) if (cmpv(c.k[t], best) < 0) best = c.k[t];
+    const nx = rem.filter(c => cmpv(c.k[t], best) === 0);
+    if (nx.length < rem.length) red.push({crit: t, before: rem, after: nx});
+    rem = nx;
+  }
+  return {best: rem[0], cands, red};
+}
+
+function evalStruct(ctx, job, P) {
+  const {A} = ctx; const pos = new Map(P.map((a, k) => [a, k + 1]));
+  const pgL = []; for (const g of job.pg) if (pos.has(g.c)) pgL.push(pos.get(g.c)); pgL.sort((a, b) => a - b);
+  const fvL = job.fv != null ? [pos.get(job.fv)] : [];
+  const mult = [], dbl = [], tri = [];
+  for (let k = 0; k + 1 < P.length; k++) { const o = bo(A, P[k], P[k + 1]); if (o === 2) { mult.push(k + 1); dbl.push(k + 1); } else if (o === 3) { mult.push(k + 1); tri.push(k + 1); } }
+  const k = {nPG: -pgL.length, len: -P.length, nMult: -mult.length, nDbl: -dbl.length, fv: fvL, pgL, mult, dbl};
+  return {P, pos, pgL, fvL, mult, dbl, tri, pre: null, k, setKey: P.slice().sort((a, b) => a - b).join(',')};
+}
+function evalPrefixes(ctx, job, c) {
+  if (c.pre) return c;
+  const pre = prefixesFor(ctx, job, c.P, c.pos); c.pre = pre;
+  c.k.nPre = -pre.length;
+  c.k.preL = pre.map(p => p.loc).sort((a, b) => a - b);
+  c.k.alpha = pre.slice().sort((a, b) => cmpv(a.key, b.key) || a.loc - b.loc).map(p => p.loc);
+  c.k.sig = pre.map(p => p.loc + p.name).sort().join('|');
+  return c;
+}
+function evalPath(ctx, job, P) { return evalPrefixes(ctx, job, evalStruct(ctx, job, P)); }
+
+function prefixesFor(ctx, job, P, pos) {
+  const {A} = ctx; const out = [];
+  for (const a of P) {
+    const skip = job.pgAtoms.get(a);
+    for (const x of A[a].nb) {
+      if (pos.has(x.j) || !job.scope.has(x.j)) continue;
+      if (skip && skip.has(x.j)) continue;
+      const it = substItem(ctx, job, a, x.j, x.o);
+      it.loc = pos.get(a); it.attach = a; it.atom = x.j; out.push(it);
+    }
+  }
+  return out;
+}
+
+function enclose(s) { return s.includes('[') ? '{' + s + '}' : s.includes('(') ? '[' + s + ']' : '(' + s + ')'; }
+function simpleItem(name) { return {name, simple: true, key: alphaKey(name)}; }
+
+function substItem(ctx, job, a, x, o) {
+  const {A, role, old} = ctx; const X = A[x];
+  if (HALO[X.el]) return simpleItem(HALO[X.el]);
+  if (X.el === 'O') {
+    if (o === 2) return simpleItem('oxo');
+    if (X.h === 1) return simpleItem('hydroxy');
+    const y = X.nb.find(n => n.j !== a).j;
+    const R = nameSubst(ctx, job.scope, y, x, 1);
+    let nm, simple;
+    if (R.contract) { nm = R.name.replace(/yl$/, 'oxy'); simple = R.simple; }
+    else if (R.name === 'tert-butyl') { nm = 'tert-butoxy'; simple = true; }
+    else { nm = (/[0-9(]/.test(R.name) ? enclose(R.name) : R.name) + 'oxy'; simple = false; }
+    if (old && OLDSUB[nm]) { nm = OLDSUB[nm]; simple = true; }
+    return {name: nm, simple, key: alphaKey(nm), sub: R};
+  }
+  if (X.el === 'N') { if (o === 1 && X.h === 2) return simpleItem('amino'); fail('azote hors domaine'); }
+  if (X.el === 'C') {
+    const r = role[x];
+    if (r === 'nitrile') return simpleItem('cyano');
+    if (r === 'acid') return simpleItem('carboxy');
+    if (r === 'amide') fail('amide non prioritaire (avec un acide ou un ester) : hors domaine de cette simulation');
+    if (r === 'ester') fail('ester en préfixe : hors domaine');
+    if (r === 'aldehyde' && !A[x].nb.some(n => n.j !== a && A[n.j].el === 'C')) return simpleItem('formyl');
+    if (r === 'ketone') {
+      const others = A[x].nb.filter(n => n.j !== a && A[n.j].el === 'C');
+      if (others.length === 1 && A[others[0].j].nb.length === 1) return simpleItem('acétyl');
+    }
+    const R = nameSubst(ctx, job.scope, x, a, o);
+    let nm = R.name, simple = R.simple;
+    if (old && OLDSUB[nm]) { nm = OLDSUB[nm]; simple = true; }
+    return {name: nm, simple, key: alphaKey(nm), sub: R};
+  }
+  fail('substituant hors domaine');
+}
+
+/* groupe substituant enraciné en x (lié à parent par une liaison d'ordre o) */
+function nameSubst(ctx, scope, x, parent, o) {
+  const {A, role} = ctx;
+  const S = new Set([x]), st = [x];
+  while (st.length) { const u = st.pop(); for (const n of A[u].nb) if (n.j !== parent && scope.has(n.j) && !S.has(n.j)) { S.add(n.j); st.push(n.j); } }
+  if (S.has(parent)) fail('cycle : hors domaine');
+  const elig = new Set([...S].filter(i => A[i].el === 'C' && !['nitrile', 'acid', 'amide', 'ester'].includes(role[i])));
+  if (!elig.has(x)) fail('substituant hors domaine');
+  const job = {elig, pg: [], fv: x, scope: S, pgAtoms: new Map()};
+  const ch = chooseChain(ctx, job); const b = ch.best;
+  const n = b.P.length, f = b.fvL[0];
+  const sat = !b.mult.length;
+  const suffix = o === 1 ? 'yl' : o === 2 ? 'ylidène' : 'ylidyne';
+  const om = n <= 2;
+  let core;
+  if (sat && f === 1) core = STEM[n] + suffix;
+  else {
+    const parts = [];
+    if (sat) parts.push({loc: null, txt: 'ane'});
+    if (b.dbl.length) parts.push({loc: om ? null : b.dbl.join(','), txt: MULT[b.dbl.length] + 'ène'});
+    if (b.tri.length) parts.push({loc: om ? null : b.tri.join(','), txt: MULT[b.tri.length] + 'yne'});
+    parts.push({loc: om ? null : String(f), txt: suffix});
+    core = joinParts(STEM[n] + ((b.dbl.length > 1 || b.tri.length > 1) ? 'a' : ''), parts, false);
+  }
+  const pre = prefixString(b.pre, n <= 1 ? 'all' : null);
+  let name = pre + core;
+  if (name === '2-méthylpropan-2-yl') name = 'tert-butyl';
+  const simple = !/[0-9(]/.test(name) && !b.pre.length;
+  const contract = sat && f === 1 && n <= 4 && o === 1;
+  return {name, simple, contract, chain: b.P, atoms: S};
+}
+
+/* concaténation avec élision du e final (ane/ène/yne) devant une voyelle */
+function elide(txt, next) {
+  if (!next || !isVowel(next[0])) return txt;
+  if (txt.endsWith('ène')) return txt.slice(0, -3) + 'én';
+  if (txt.endsWith('ane') || txt.endsWith('yne')) return txt.slice(0, -1);
+  return txt;
+}
+function joinParts(stem, parts, oldStyle) {
+  let s = stem, lead = '';
+  parts.forEach((p, k) => {
+    const nx = parts[k + 1]; const txt = elide(p.txt, nx ? nx.txt : null);
+    if (oldStyle && k === 0 && p.loc) { lead = p.loc + '-'; s += txt; }
+    else s += (p.loc ? '-' + p.loc + '-' : '') + txt;
+  });
+  return lead + s;
+}
+
+/* préfixes : regroupement, multiplicatifs, ordre alphabétique */
+function prefixGroups(items) {
+  const m = new Map();
+  for (const it of items) { if (!m.has(it.name)) m.set(it.name, {name: it.name, simple: it.simple, key: it.key, locs: []}); m.get(it.name).locs.push(it.loc); }
+  const gs = [...m.values()]; gs.forEach(g => g.locs.sort((a, b) => a - b));
+  gs.sort((a, b) => cmpv(a.key, b.key));
+  return gs;
+}
+const NONSUBST = new Set(['fluoro', 'chloro', 'bromo', 'hydroxy', 'oxo', 'amino', 'cyano', 'carboxy', 'carbamoyl']);
+function prefixString(items, omit) {
+  const gs = prefixGroups(items); let s = '';
+  gs.forEach((g, k) => {
+    const n = g.locs.length;
+    const body = (g.simple ? MULT[n] : MULTC[n]) + (g.simple ? g.name : (n > 1 || /[0-9(]/.test(g.name) || !g.simple ? enclose(g.name) : g.name));
+    let piece = (omit === 'all' ? '' : g.locs.join(',') + '-') + body;
+    // sans locant, « aminométhoxy… » se lirait comme un seul préfixe composé (NH2–CH2–O–) : on écrit amino(méthoxy)…
+    if (omit === 'all' && k && n === 1 && g.simple && !NONSUBST.has(g.name)) piece = '(' + body + ')';
+    if (k && /^[0-9]/.test(piece)) s += '-';
+    s += piece;
+  });
+  return s;
+}
+
+/* ---------- nom d'une molécule ---------- */
+function nameGraph(g, opt) {
+  opt = opt || {};
+  try { return nameCore(g, opt.old === true ? true : opt.old ? '1993' : false); }
+  catch (e) { if (e instanceof NomError) return {ok: false, err: e.message}; throw e; }
+}
+
+function nameCore(g, old) {
+  const A = build(g); const comps = components(A);
+  if (comps.length !== 1) fail('molécule en plusieurs morceaux');
+  if (!A.some(a => a.el === 'C')) fail('aucun carbone');
+  const cyc = g.bonds.length - A.length + 1;
+  const an = analyze(A); const ctx = makeCtx(A, an, old); old = old === true;
+  const present = [...new Set(an.groups.map(x => x.cls))].sort((a, b) => RANK[a] - RANK[b]);
+  const pclass = present[0] || null;
+  if (cyc > 0) return ringName(ctx, cyc, pclass);
+  const esters = an.groups.filter(x => x.cls === 'ester');
+  if (esters.length && (pclass !== 'ester' || esters.length > 1)) fail('plusieurs esters ou ester non prioritaire : hors domaine');
+  let scope = new Set(A.map(a => a.i)), alkyl = null;
+  if (pclass === 'ester') {
+    const e = esters[0]; const os = e.atoms[1];
+    const S = new Set([e.r]), st = [e.r];
+    while (st.length) { const u = st.pop(); for (const n of A[u].nb) if (n.j !== os && !S.has(n.j)) { S.add(n.j); st.push(n.j); } }
+    if ([...S].some(i => A[i].el !== 'C')) fail("groupe alkyle d'ester substitué : hors domaine");
+    for (const i of S) scope.delete(i);
+    alkyl = nameSubst(ctx, S, e.r, os, 1);
+  }
+  const pg = pclass ? an.groups.filter(x => x.cls === pclass) : [];
+  const pgAtoms = new Map(); for (const x of pg) { if (!pgAtoms.has(x.c)) pgAtoms.set(x.c, new Set()); x.atoms.forEach(t => pgAtoms.get(x.c).add(t)); }
+  const elig = new Set([...scope].filter(i => A[i].el === 'C' && !(an.role[i] && an.role[i] !== 'aldehyde' && an.role[i] !== 'ketone' && an.role[i] !== pclass)));
+  const job = {elig, pg, fv: null, scope, pgAtoms};
+  const ch = chooseChain(ctx, job); const b = ch.best; const n = b.P.length;
+  // omission des locants (P-14.3.4)
+  const term = pclass && TERMINAL[pclass];
+  const nSufOther = pclass && !term ? b.pgL.length : 0;
+  const mods = b.pre.length + nSufOther;
+  let omitAll = false, omitUnsat = false, omitPre = false;
+  if (n === 1) omitAll = true;
+  else if (n === 2) { omitUnsat = true; if (term) omitPre = true; else if (mods <= 1) omitAll = true; }
+  else if (n === 3 && mods === 0 && !term && (b.mult.length === 1)) omitUnsat = true;
+  // P-14.3.4.5 : toutes les positions substituables modifiées de la même façon (tétrachloroéthène)
+  if (n >= 2 && !nSufOther && b.pre.length && b.P.every(a => A[a].h === 0) && new Set(b.pre.map(p => p.name)).size === 1 && !term) omitPre = true;
+  const parts = [];
+  if (!b.mult.length) parts.push({loc: null, txt: 'ane'});
+  if (b.dbl.length) parts.push({loc: (omitAll || omitUnsat) ? null : b.dbl.join(','), txt: MULT[b.dbl.length] + 'ène'});
+  if (b.tri.length) parts.push({loc: (omitAll || omitUnsat) ? null : b.tri.join(','), txt: MULT[b.tri.length] + 'yne'});
+  if (pclass) parts.push({loc: (term || omitAll) ? null : b.pgL.join(','), txt: MULT[b.pgL.length] + SUFFIX[pclass]});
+  const stem = STEM[n] + ((b.dbl.length > 1 || b.tri.length > 1) ? 'a' : '');
+  let oldParts = parts;
+  if (old && !b.mult.length && pclass && !term && !omitAll) {
+    // ancien usage : locant du suffixe devant le nom (2-butanol)
+    oldParts = [{loc: b.pgL.join(','), txt: 'ane'}, {loc: null, txt: MULT[b.pgL.length] + SUFFIX[pclass]}];
+  }
+  const parent = joinParts(stem, old ? oldParts : parts, old);
+  const pre = prefixString(b.pre, (omitAll || omitPre) ? 'all' : null);
+  let name;
+  const glue = (p, q) => p + (p && /^[0-9]/.test(q) ? '-' : '') + q;
+  if (pclass === 'acid') name = 'acide ' + glue(pre, parent);
+  else if (pclass === 'ester') {
+    let al = alkyl.name; if (old && OLDSUB[al]) al = OLDSUB[al];
+    name = glue(pre, parent) + (isVowel(al[0]) ? " d'" : ' de ') + al + 'e';
+  } else name = glue(pre, parent);
+  return {ok: true, name, pclass, present, chain: b.P, best: b, choice: ch, alkyl, A, an, ring: false, ctx, job,
+    omit: {omitAll, omitUnsat, omitPre}, parentStr: parent, prefixStr: pre};
+}
+
+/* cycle carboné unique et saturé, sans groupe principal (cycloalcanes et dérivés halogénés) */
+function ringName(ctx, cyc, pclass) {
+  const {A} = ctx;
+  if (cyc > 1) fail('plusieurs cycles : hors domaine');
+  if (pclass) fail('cycle portant une fonction : hors domaine de cette simulation');
+  // atomes du cycle : on retire les feuilles jusqu'à ce qu'il ne reste que le cycle
+  const deg = A.map(a => a.nb.length), alive = new Set(A.map(a => a.i)); let ch = true;
+  while (ch) { ch = false; for (const i of [...alive]) if (deg[i] <= 1) { alive.delete(i); for (const n of A[i].nb) if (alive.has(n.j)) deg[n.j]--; ch = true; } }
+  const ring = [...alive];
+  if (ring.some(i => A[i].el !== 'C')) fail('hétérocycle : hors domaine');
+  // ordre cyclique
+  const cyc0 = [ring[0]]; while (cyc0.length < ring.length) { const last = cyc0[cyc0.length - 1]; const nx = A[last].nb.find(n => alive.has(n.j) && !cyc0.includes(n.j)); cyc0.push(nx.j); }
+  for (let k = 0; k < cyc0.length; k++) if (bo(ctx.A, cyc0[k], cyc0[(k + 1) % cyc0.length]) !== 1) fail('cycle insaturé : hors domaine');
+  const scope = new Set(A.map(a => a.i)); const N = cyc0.length; const cands = [];
+  for (let s = 0; s < N; s++) for (const d of [1, -1]) {
+    const P = []; for (let k = 0; k < N; k++) P.push(cyc0[((s + d * k) % N + N) % N]);
+    const pos = new Map(P.map((a, k) => [a, k + 1]));
+    const pre = prefixesFor(ctx, {pgAtoms: new Map(), scope}, P, pos);
+    const preL = pre.map(p => p.loc).sort((a, b) => a - b);
+    const alpha = pre.slice().sort((a, b) => cmpv(a.key, b.key) || a.loc - b.loc).map(p => p.loc);
+    cands.push({P, pos, pre, preL, alpha, mult: [], dbl: [], tri: [], pgL: [], k: {preL, alpha}});
+  }
+  cands.sort((a, b) => cmpv(a.preL, b.preL) || cmpv(a.alpha, b.alpha));
+  const b = cands[0];
+  const pre = prefixString(b.pre, b.pre.length === 1 ? 'all' : null);
+  const parent = 'cyclo' + STEM[N] + 'ane';
+  return {ok: true, name: pre + parent, pclass: null, present: [], chain: b.P, best: b, ring: true, A, an: ctx.an,
+    choice: {best: b, cands, red: []}, parentStr: parent, prefixStr: pre, omit: {}};
+}
+
+/* ---------- familles, squelettes, stéréo (page isomères) ---------- */
+function family(g) {
+  const r = nameGraph(g); if (!r.ok) return null;
+  const A = r.A; const halo = A.some(a => HALO[a.el]);
+  if (r.pclass) return {key: r.pclass, label: {acid: 'Acides carboxyliques', ester: 'Esters', amide: 'Amides', nitrile: 'Nitriles', aldehyde: 'Aldéhydes', ketone: 'Cétones', alcohol: 'Alcools', amine: 'Amines'}[r.pclass]};
+  if (r.an.ether) return {key: 'ether', label: 'Éthers-oxydes'};
+  if (halo) return {key: 'halo', label: 'Dérivés halogénés'};
+  if (r.ring) return {key: 'cyclo', label: 'Cycloalcanes'};
+  const m = g.bonds.some(b => b.o === 3) ? 'yne' : g.bonds.some(b => b.o === 2) ? 'ene' : 'ane';
+  return {key: m, label: {yne: 'Alcynes', ene: 'Alcènes', ane: 'Alcanes'}[m]};
+}
+/* squelette : atomes lourds sauf halogènes, O et N terminaux (OH, =O, NH2, ≡N) ; ordres de liaison ignorés */
+function skeleton(g) {
+  const A = build(g);
+  const keep = A.filter(a => !(HALO[a.el] || ((a.el === 'O' || a.el === 'N') && a.nb.length === 1))).map(a => a.i);
+  const idx = new Map(keep.map((a, k) => [a, k]));
+  const adj = keep.map(() => []);
+  for (const b of g.bonds) if (idx.has(b.a) && idx.has(b.b)) { adj[idx.get(b.a)].push(idx.get(b.b)); adj[idx.get(b.b)].push(idx.get(b.a)); }
+  return {n: keep.length, adj};
+}
+function canonSkeleton(sk) {
+  const {n, adj} = sk; const edges = adj.reduce((s, x) => s + x.length, 0) / 2;
+  if (edges === n - 1) { // arbre : codage AHU depuis le(s) centre(s)
+    let leaves = [], deg = adj.map(x => x.length), rem = n; const alive = new Array(n).fill(true);
+    for (let i = 0; i < n; i++) if (deg[i] <= 1) leaves.push(i);
+    while (rem > 2) { rem -= leaves.length; const nl = []; for (const l of leaves) { alive[l] = false; for (const j of adj[l]) if (alive[j] && --deg[j] === 1) nl.push(j); } leaves = nl; }
+    const centres = []; for (let i = 0; i < n; i++) if (alive[i]) centres.push(i);
+    const code = (u, p) => '(' + adj[u].filter(v => v !== p).map(v => code(v, u)).sort().join('') + ')';
+    return 'T' + centres.map(c => code(c, -1)).sort()[0];
+  }
+  // petit graphe cyclique : forme canonique par toutes les permutations (n ≤ 8)
+  let best = null; const perm = [], used = new Array(n).fill(false);
+  const rec = () => {
+    if (perm.length === n) { const inv = new Array(n); perm.forEach((v, k) => inv[v] = k); let s = ''; for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) s += adj[perm[i]].includes(perm[j]) ? '1' : '0'; if (best === null || s > best) best = s; return; }
+    for (let v = 0; v < n; v++) if (!used[v]) { used[v] = true; perm.push(v); rec(); perm.pop(); used[v] = false; }
+  };
+  rec(); return 'G' + n + ':' + best;
+}
+/* relation entre deux isomères de constitution */
+function relation(g1, g2) {
+  const f1 = family(g1), f2 = family(g2);
+  if (f1.key !== f2.key) return 'fonction';
+  return canonSkeleton(skeleton(g1)) === canonSkeleton(skeleton(g2)) ? 'position' : 'chaine';
+}
+/* drapeaux de stéréo-isomérie (non comptée) */
+function stereo(g) {
+  const A = build(g); const cyc = g.bonds.length - A.length + 1; const flags = [];
+  const code = (u, p, depth) => { if (depth > 12) return '…'; const a = A[u]; return a.el + a.h + '(' + a.nb.filter(n => n.j !== p).map(n => n.o + code(n.j, u, depth + 1)).sort().join(',') + ')'; };
+  if (!cyc) {
+    for (const b of g.bonds) {
+      if (b.o !== 2 || A[b.a].el !== 'C' || A[b.b].el !== 'C') continue;
+      const ok = [b.a, b.b].every(c => { const o = b.a === c ? b.b : b.a; const s = A[c].nb.filter(n => n.j !== o); if (s.length + A[c].h !== 2) return false; if (s.length === 0) return false; if (s.length === 1) return true; return code(s[0].j, c, 0) !== code(s[1].j, c, 0); });
+      if (ok) { flags.push('ZE'); break; }
+    }
+    for (const a of A) {
+      if (a.el !== 'C' || a.h > 1 || a.nb.some(n => n.o > 1) || a.nb.length + a.h !== 4) continue;
+      const cs = a.nb.map(n => code(n.j, a.i, 0)); if (a.h) cs.push('H');
+      if (new Set(cs).size === 4) { flags.push('C*'); break; }
+    }
+  } else {
+    const deg = A.map(a => a.nb.length), alive = new Set(A.map(a => a.i)); let ch = true;
+    while (ch) { ch = false; for (const i of [...alive]) if (deg[i] <= 1) { alive.delete(i); for (const n of A[i].nb) if (alive.has(n.j)) deg[n.j]--; ch = true; } }
+    const subd = [...alive].filter(i => A[i].h === 1 && A[i].nb.filter(n => !alive.has(n.j)).length === 1);
+    if (subd.length >= 2) flags.push('cistrans');
+  }
+  return flags;
+}
+
+return {retained, explain, parseSmiles, build, formula, unsaturation, nameGraph, family, skeleton, canonSkeleton, relation, stereo,
+  USUAL, CLS, ORDER, RANK, SUFFIX, PREFIX, TERMINAL, STEM, MULT, alphaKey, prefixGroups, NomError};
+})();
+if (typeof module !== 'undefined') module.exports = SFAChem;
+
+</script>
+<script>
+/* SFADraw : dessin 2D (formule topologique ou semi-développée) d'une petite molécule, généré en SVG. */
+const SFADraw = (() => {
+'use strict';
+const D = Math.PI / 180;
+const COL = {O: '#c0392b', N: '#2f5fd0', Cl: '#23855a', Br: '#8a2b1e', F: '#4a7d1f', C: '#0f1b2d'};
+const norm = a => { a %= 360; return a < 0 ? a + 360 : a; };
+
+function ringAtoms(A) {
+  const deg = A.map(a => a.nb.length), alive = new Set(A.map(a => a.i)); let ch = true;
+  while (ch) { ch = false; for (const i of [...alive]) if (deg[i] <= 1) { alive.delete(i); for (const n of A[i].nb) if (alive.has(n.j)) deg[n.j]--; ch = true; } }
+  return alive;
+}
+function longestPath(A) {
+  const far = s => { const d = new Map([[s, 0]]), par = new Map(), q = [s]; let last = s;
+    while (q.length) { const u = q.shift(); last = u; for (const n of A[u].nb) if (!d.has(n.j)) { d.set(n.j, d.get(u) + 1); par.set(n.j, u); q.push(n.j); } }
+    let best = s; for (const [k, v] of d) if (v > d.get(best) || (v === d.get(best) && A[k].el === 'C' && A[best].el !== 'C')) best = k;
+    return {best, par}; };
+  // on part d'un carbone pour que les deux bouts soient de préférence des carbones
+  const start = A.findIndex(a => a.el === 'C');
+  const a = far(start).best; const r = far(a); const P = [r.best];
+  while (P[P.length - 1] !== a) P.push(r.par.get(P[P.length - 1]));
+  return P;
+}
+const linear = (A, u) => A[u].nb.some(n => n.o === 3) || A[u].nb.filter(n => n.o === 2).length >= 2;
+
+function layout(g, opt) {
+  opt = opt || {};
+  const A = SFAChem.build(g); const n = A.length; const R = ringAtoms(A);
+  const base = new Array(n).fill(null); const angIn = new Array(n).fill(null);
+  if (R.size) {
+    const cyc = [...R]; const ord = [cyc[0]];
+    while (ord.length < cyc.length) { const l = ord[ord.length - 1]; ord.push(A[l].nb.find(x => R.has(x.j) && !ord.includes(x.j)).j); }
+    const N = ord.length, rad = 1 / (2 * Math.sin(Math.PI / N)), a0 = N === 4 ? 45 : N === 3 ? 90 : N === 6 ? 0 : 90;
+    ord.forEach((v, k) => { const a = (a0 + k * 360 / N) * D; base[v] = [rad * Math.cos(a), rad * Math.sin(a)]; });
+  } else {
+    const P = opt.main && opt.main.length ? opt.main : longestPath(A);
+    base[P[0]] = [0, 0]; let a = 30;
+    for (let k = 1; k < P.length; k++) {
+      if (k > 1 && !linear(A, P[k - 1])) a = -a;
+      const p = base[P[k - 1]]; base[P[k]] = [p[0] + Math.cos(a * D), p[1] + Math.sin(a * D)];
+    }
+  }
+  // points de choix : atome à 1 voisin placé et 1 enfant non linéaire
+  const solve = bits => {
+    const pos = base.map(p => p && p.slice()); let bi = 0, curls = 0; const q = []; const turn = new Array(n).fill(0);
+    pos.forEach((p, i) => { if (p) q.push(i); });
+    while (q.length) {
+      const u = q.shift(); const pu = pos[u];
+      const occ = A[u].nb.filter(x => pos[x.j]).map(x => norm(Math.atan2(pos[x.j][1] - pu[1], pos[x.j][0] - pu[0]) / D));
+      const U = A[u].nb.filter(x => !pos[x.j]).map(x => x.j);
+      if (!U.length) continue;
+      // les branches les plus longues d'abord
+      U.sort((x, y) => size(A, y, u) - size(A, x, u));
+      let angs = [];
+      if (occ.length === 0) { angs = U.map((_, k) => k * 360 / U.length + 90); }
+      else if (occ.length === 1 && U.length === 1) {
+        if (linear(A, u)) angs = [occ[0] + 180];
+        else { const b = (bits >> bi++) & 1; const s = b ? 1 : -1; angs = [occ[0] + 120 * s]; turn[U[0]] = s; if (turn[u] === s) curls++; }
+      } else if (occ.length === 1) {
+        const k = U.length + 1; angs = U.map((_, t) => occ[0] + (t + 1) * 360 / k);
+      } else {
+        const o = occ.slice().sort((x, y) => x - y); let gi = 0, gw = -1;
+        for (let t = 0; t < o.length; t++) { const w = norm(o[(t + 1) % o.length] - o[t]) || 360; if (w > gw) { gw = w; gi = t; } }
+        angs = U.map((_, t) => o[gi] + gw * (t + 1) / (U.length + 1));
+      }
+      U.forEach((v, t) => { const a = angs[t] * D; pos[v] = [pu[0] + Math.cos(a), pu[1] + Math.sin(a)]; q.push(v); });
+    }
+    let md = 9; for (let i = 0; i < n; i++) for (let j = i + 1; j < n; j++) { if (A[i].nb.some(x => x.j === j)) continue; md = Math.min(md, Math.hypot(pos[i][0] - pos[j][0], pos[i][1] - pos[j][1])); }
+    return {pos, score: Math.min(md, 1.3) - 0.02 * curls, nb: bi};
+  };
+  let best = solve(0); const nb = Math.min(best.nb, 11);
+  for (let b = 1; b < (1 << nb); b++) { const r = solve(b); if (r.score > best.score + 1e-9) best = r; }
+  return {A, pos: best.pos, ring: R};
+}
+function size(A, v, from) { const seen = new Set([from, v]), st = [v]; let c = 0; while (st.length) { const u = st.pop(); c++; for (const n of A[u].nb) if (!seen.has(n.j)) { seen.add(n.j); st.push(n.j); } } return c; }
+
+const SUBD = {2: '2', 3: '3', 4: '4'};
+function labelOf(A, i, mode, nC) {
+  const a = A[i];
+  if (a.el === 'C' && mode !== 'semi' && nC > 1) return null;
+  if (a.el === 'C' && mode !== 'semi' && nC === 1 && A.length > 1) return null;
+  return {el: a.el, h: a.h};
+}
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+/* opt : {mode, L, num:Map(atome->locant), hi:Set(atomes de la chaîne), sel, hit:Set, cls, title} */
+function svg(g, opt) {
+  opt = opt || {}; const mode = opt.mode || 'topo';
+  const L = opt.L || (mode === 'semi' ? 50 : 40); const fs = opt.fs || (mode === 'semi' ? 15 : 15);
+  const lay = layout(g, opt); const {A, pos} = lay; const n = A.length;
+  const nC = A.filter(a => a.el === 'C').length;
+  const P = pos.map(p => [p[0] * L, -p[1] * L]);
+  const cw = fs * 0.64, cwSub = fs * 0.45;
+  const labs = A.map((a, i) => labelOf(A, i, mode, nC));
+  // côté des H : à gauche si les voisins sont à droite
+  const hLeft = A.map((a, i) => { if (!a.nb.length) return false; const dx = a.nb.reduce((s, x) => s + (P[x.j][0] - P[i][0]), 0) / a.nb.length; return dx > L * 0.3; });
+  const lw = (lab) => lab.el.length * cw + (lab.h ? cw + (lab.h > 1 ? cwSub : 0) : 0);
+  const shrinkAt = (i, dx, dy) => {
+    const lab = labs[i]; if (!lab) return 0;
+    const ux = dx / Math.hypot(dx, dy), uy = dy / Math.hypot(dx, dy);
+    let hw = lab.el.length * cw * 0.55; const towardH = lab.h && ((ux > 0.2 && !hLeft[i]) || (ux < -0.2 && hLeft[i]));
+    if (towardH) hw += cw + (lab.h > 1 ? cwSub : 0);
+    const hh = fs * 0.62;
+    const t = Math.min(Math.abs(ux) > 1e-6 ? hw / Math.abs(ux) : 1e9, Math.abs(uy) > 1e-6 ? hh / Math.abs(uy) : 1e9);
+    return Math.min(t + 2, L * 0.48);
+  };
+  let minx = 1e9, miny = 1e9, maxx = -1e9, maxy = -1e9;
+  P.forEach((p, i) => { const w = labs[i] ? lw(labs[i]) : 0; minx = Math.min(minx, p[0] - w - 4); maxx = Math.max(maxx, p[0] + w + 4); miny = Math.min(miny, p[1] - fs); maxy = Math.max(maxy, p[1] + fs); });
+  const pad = opt.pad != null ? opt.pad : (opt.num ? 22 : 12);
+  minx -= pad; miny -= pad; maxx += pad; maxy += pad;
+  const W = maxx - minx, H = maxy - miny;
+  let s = `<svg class="${opt.cls || 'mol'}" viewBox="${minx.toFixed(1)} ${miny.toFixed(1)} ${W.toFixed(1)} ${H.toFixed(1)}" width="${W.toFixed(0)}" height="${H.toFixed(0)}" style="max-width:100%;height:auto" role="img" aria-label="${esc(opt.title || 'formule')}" font-family="Mulish,system-ui,sans-serif">`;
+  // surlignage de la chaîne principale
+  if (opt.hi && opt.hi.size) {
+    for (const b of g.bonds) if (opt.hi.has(b.a) && opt.hi.has(b.b)) s += `<line x1="${P[b.a][0].toFixed(1)}" y1="${P[b.a][1].toFixed(1)}" x2="${P[b.b][0].toFixed(1)}" y2="${P[b.b][1].toFixed(1)}" stroke="#bfe3d3" stroke-width="12" stroke-linecap="round"/>`;
+    if (opt.hi.size === 1) { const i = [...opt.hi][0]; s += `<circle cx="${P[i][0].toFixed(1)}" cy="${P[i][1].toFixed(1)}" r="10" fill="#bfe3d3"/>`; }
+  }
+  if (opt.sel != null && P[opt.sel]) s += `<circle cx="${P[opt.sel][0].toFixed(1)}" cy="${P[opt.sel][1].toFixed(1)}" r="${(L * 0.36).toFixed(1)}" fill="#f4c542" fill-opacity=".55"/>`;
+  // liaisons
+  const line = (x1, y1, x2, y2) => `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="#1a2433" stroke-width="2" stroke-linecap="round"/>`;
+  for (const b of g.bonds) {
+    const [x1, y1] = P[b.a], [x2, y2] = P[b.b]; const dx = x2 - x1, dy = y2 - y1, l = Math.hypot(dx, dy); const ux = dx / l, uy = dy / l;
+    const s1 = shrinkAt(b.a, dx, dy), s2 = shrinkAt(b.b, -dx, -dy);
+    const ax = x1 + ux * s1, ay = y1 + uy * s1, bx = x2 - ux * s2, by = y2 - uy * s2;
+    const nx = -uy, ny = ux, d = L * 0.16;
+    if (b.o === 1) s += line(ax, ay, bx, by);
+    else if (b.o === 3) { s += line(ax, ay, bx, by) + line(ax + nx * d, ay + ny * d, bx + nx * d, by + ny * d) + line(ax - nx * d, ay - ny * d, bx - nx * d, by - ny * d); }
+    else {
+      const da = A[b.a].nb.length, db = A[b.b].nb.length;
+      const centred = da === 1 || db === 1 || mode === 'semi' || linear(A, b.a) || linear(A, b.b);
+      if (centred) { const h = d / 2; s += line(ax + nx * h, ay + ny * h, bx + nx * h, by + ny * h) + line(ax - nx * h, ay - ny * h, bx - nx * h, by - ny * h); }
+      else {
+        // côté intérieur : là où sont les autres voisins (ou le centre du cycle)
+        let side = 0; for (const end of [b.a, b.b]) for (const x of A[end].nb) { if (x.j === b.a || x.j === b.b) continue; side += (P[x.j][0] - P[end][0]) * nx + (P[x.j][1] - P[end][1]) * ny; }
+        const sg = side >= 0 ? 1 : -1; const sh = l * 0.12;
+        s += line(ax, ay, bx, by) + line(ax + ux * sh + sg * nx * d, ay + uy * sh + sg * ny * d, bx - ux * sh + sg * nx * d, by - uy * sh + sg * ny * d);
+      }
+    }
+  }
+  // étiquettes
+  A.forEach((a, i) => {
+    const lab = labs[i]; if (!lab) return; const [x, y] = P[i]; const c = COL[lab.el] || '#0f1b2d';
+    const ew = lab.el.length * cw; const yb = y + fs * 0.36;
+    const hpart = lab.h ? `<tspan>H</tspan>${lab.h > 1 ? `<tspan font-size="${(fs * 0.7).toFixed(1)}" dy="${(fs * 0.28).toFixed(1)}">${lab.h}</tspan><tspan dy="${(-fs * 0.28).toFixed(1)}"></tspan>` : ''}` : '';
+    const hw2 = lab.h ? cw + (lab.h > 1 ? cwSub : 0) : 0; const rx = hLeft[i] ? x - ew / 2 - hw2 : x - ew / 2;
+    s += `<rect x="${(rx - 1).toFixed(1)}" y="${(y - fs * 0.55).toFixed(1)}" width="${(ew + hw2 + 2).toFixed(1)}" height="${(fs * 1.1).toFixed(1)}" fill="#fff" fill-opacity="${mode === 'semi' ? 1 : 0.9}"/>`;
+    if (!hLeft[i]) s += `<text x="${(x - ew / 2).toFixed(1)}" y="${yb.toFixed(1)}" font-size="${fs}" font-weight="700" fill="${c}">${esc(lab.el)}${hpart}</text>`;
+    else s += `<text x="${(x + ew / 2).toFixed(1)}" y="${yb.toFixed(1)}" font-size="${fs}" font-weight="700" fill="${c}" text-anchor="end">${hpart}${esc(lab.el)}</text>`;
+  });
+  // numéros (locants)
+  if (opt.num) for (const [i, k] of opt.num) {
+    const a = A[i]; let bis;
+    const angs = a.nb.map(x => norm(Math.atan2(P[x.j][1] - P[i][1], P[x.j][0] - P[i][0]) / D)).sort((x, y) => x - y);
+    if (!angs.length) bis = -90;
+    else { let gi = 0, gw = -1; for (let t = 0; t < angs.length; t++) { const w = norm(angs[(t + 1) % angs.length] - angs[t]) || 360; if (w > gw) { gw = w; gi = t; } } bis = angs[gi] + gw / 2; }
+    const off = labs[i] ? shrinkAt(i, Math.cos(bis * D), Math.sin(bis * D)) + 8 : L * 0.4;
+    const tx = P[i][0] + Math.cos(bis * D) * off, ty = P[i][1] + Math.sin(bis * D) * off;
+    s += `<text x="${tx.toFixed(1)}" y="${(ty + 4).toFixed(1)}" font-size="11.5" font-weight="800" fill="#1e3f8f" text-anchor="middle">${k}</text>`;
+  }
+  // zones de toucher
+  if (opt.hit) for (const i of opt.hit) s += `<circle class="hit" data-a="${i}" cx="${P[i][0].toFixed(1)}" cy="${P[i][1].toFixed(1)}" r="${(L * 0.45).toFixed(1)}" fill="transparent" style="cursor:pointer"/>`;
+  return s + '</svg>';
+}
+return {layout, svg, longestPath};
+})();
+if (typeof module !== 'undefined') module.exports = SFADraw;
+
+</script>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const DATA=[{"f": "C4H10", "total": 2, "shown": ["CC(C)C", "CCCC"], "ex": {"ring": 0, "enol": 0, "peroxide": 0, "other": 0}, "dom": "tous les isomères de constitution", "others": []}, {"f": "C5H12", "total": 3, "shown": ["CC(C)(C)C", "CCC(C)C", "CCCCC"], "ex": {"ring": 0, "enol": 0, "peroxide": 0, "other": 0}, "dom": "tous les isomères de constitution", "others": []}, {"f": "C6H14", "total": 5, "shown": ["CC(C)C(C)C", "CCC(C)(C)C", "CCC(C)CC", "CCCC(C)C", "CCCCCC"], "ex": {"ring": 0, "enol": 0, "peroxide": 0, "other": 0}, "dom": "tous les isomères de constitution", "others": []}, {"f": "C4H8", "total": 5, "shown": ["C1CCC1", "C=C(C)C", "C=CCC", "CC1CC1", "CC=CC"], "ex": {"ring": 0, "enol": 0, "peroxide": 0, "other": 0}, "dom": "tous les isomères de constitution", "others": []}, {"f": "C5H10", "total": 10, "shown": ["C1CCCC1", "C=C(C)CC", "C=CC(C)C", "C=CCCC", "CC1(C)CC1", "CC1CC1C", "CC1CCC1", "CC=C(C)C", "CC=CCC", "CCC1CC1"], "ex": {"ring": 0, "enol": 0, "peroxide": 0, "other": 0}, "dom": "tous les isomères de constitution", "others": []}, {"f": "C4H9Cl", "total": 4, "shown": ["CC(C)(C)Cl", "CC(C)CCl", "CCC(C)Cl", "CCCCCl"], "ex": {"ring": 0, "enol": 0, "peroxide": 0, "other": 0}, "dom": "tous les isomères de constitution", "others": []}, {"f": "C3H6Cl2", "total": 4, "shown": ["CC(C)(Cl)Cl", "CC(Cl)CCl", "CCC(Cl)Cl", "ClCCCCl"], "ex": {"ring": 0, "enol": 0, "peroxide": 0, "other": 0}, "dom": "tous les isomères de constitution", "others": []}, {"f": "C3H8O", "total": 3, "shown": ["CC(C)O", "CCCO", "CCOC"], "ex": {"ring": 0, "enol": 0, "peroxide": 0, "other": 0}, "dom": "tous les isomères de constitution", "others": []}, {"f": "C4H10O", "total": 7, "shown": ["CC(C)(C)O", "CC(C)CO", "CCC(C)O", "CCCCO", "CCCOC", "CCOCC", "COC(C)C"], "ex": {"ring": 0, "enol": 0, "peroxide": 0, "other": 0}, "dom": "tous les isomères de constitution", "others": []}, {"f": "C5H12O", "total": 14, "shown": ["CC(C)(C)CO", "CC(C)C(C)O", "CC(C)CCO", "CCC(C)(C)O", "CCC(C)CO", "CCC(C)OC", "CCC(O)CC", "CCCC(C)O", "CCCCCO", "CCCCOC", "CCCOCC", "CCOC(C)C", "COC(C)(C)C", "COCC(C)C"], "ex": {"ring": 0, "enol": 0, "peroxide": 0, "other": 0}, "dom": "tous les isomères de constitution", "others": []}, {"f": "C3H6O", "total": 9, "shown": ["C=CCO", "C=COC", "CC(C)=O", "CCC=O"], "ex": {"ring": 3, "enol": 2, "peroxide": 0, "other": 0}, "dom": "isomères sans cycle et sans énol", "others": []}, {"f": "C4H8O", "total": 26, "shown": ["C=C(C)CO", "C=C(C)OC", "C=CC(C)O", "C=CCCO", "C=CCOC", "C=COCC", "CC(C)C=O", "CC=CCO", "CC=COC", "CCC(C)=O", "CCCC=O"], "ex": {"ring": 11, "enol": 4, "peroxide": 0, "other": 0}, "dom": "isomères sans cycle et sans énol", "others": []}, {"f": "C2H4O2", "total": 10, "shown": ["CC(=O)O", "COC=O"], "ex": {"ring": 4, "enol": 2, "peroxide": 1, "other": 1}, "dom": "acides carboxyliques et esters sans cycle", "others": ["O=CCO"]}, {"f": "C3H6O2", "total": 34, "shown": ["CCC(=O)O", "CCOC=O", "COC(C)=O"], "ex": {"ring": 15, "enol": 6, "peroxide": 4, "other": 6}, "dom": "acides carboxyliques et esters sans cycle", "others": ["COCC=O", "O=CCCO", "CC(=O)CO", "CC(O)C=O", "C=COCO", "C=CC(O)O"]}, {"f": "C4H8O2", "total": 122, "shown": ["CC(C)C(=O)O", "CC(C)OC=O", "CCC(=O)OC", "CCCC(=O)O", "CCCOC=O", "CCOC(C)=O"], "ex": {"ring": 56, "enol": 18, "peroxide": 12, "other": 30}, "dom": "acides carboxyliques et esters sans cycle", "others": ["CCOCC=O", "CC(=O)CCO", "CC(C=O)CO", "CC(O)CC=O", "CCC(=O)CO", "CCC(O)C=O", "COC(C)C=O", "COCC(C)=O", "CC(=O)C(C)O", "CC(C)(O)C=O", "C=CCOCO", "C=COCCO"]}, {"f": "C5H10O2", "total": 400, "shown": ["CC(=O)OC(C)C", "CC(C)(C)C(=O)O", "CC(C)(C)OC=O", "CC(C)CC(=O)O", "CC(C)COC=O", "CCC(C)C(=O)O", "CCC(C)OC=O", "CCCC(=O)OC", "CCCCC(=O)O", "CCCCOC=O", "CCCOC(C)=O", "CCOC(=O)CC", "COC(=O)C(C)C"], "ex": {"ring": 196, "enol": 48, "peroxide": 34, "other": 109}, "dom": "acides carboxyliques et esters sans cycle", "others": ["CCCOCC=O", "CC(C)OCC=O", "CCC(=O)CCO", "CCC(=O)COC", "CCC(C=O)CO", "CCC(C=O)OC", "CCC(O)CC=O", "CCCC(=O)CO", "CCCC(O)C=O", "CCOC(C)C=O", "CCOCC(C)=O", "CC(=O)C(C)CO"]}];
+const sub=t=>t.replace(/(\d+)/g,'<sub>$1</sub>');
+const normN=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+const FORDER=['ane','ene','yne','cyclo','halo','alcohol','ether','aldehyde','ketone','acid','ester'];
+let cur=0,mode='find',dmode='topo',found=new Set(),picks=[],mols=[];
+DATA.forEach((d,k)=>{const b=document.createElement('button');b.className='btn';b.dataset.f=k;b.innerHTML=sub(d.f);b.onclick=()=>load(k);$('fchips').appendChild(b);});
+function load(k){cur=k;found=new Set();picks=[];
+  const d=DATA[k];
+  mols=d.shown.map((s,i)=>{const g=SFAChem.parseSmiles(s),r=SFAChem.nameGraph(g),o=SFAChem.nameGraph(g,{old:true});
+    const fam=SFAChem.family(g);const us=SFAChem.USUAL[r.name];
+    const o93=SFAChem.nameGraph(g,{old:'1993'}),ret=SFAChem.retained(r);
+    const olds=[o93.name,o.name].filter((x,k,a)=>x&&x!==r.name&&a.indexOf(x)===k);
+    return {i,s,g,name:r.name,ret,old:olds.length?olds.join(' ; '):null,olds,usual:us?us.replace(/ \(.*\)/,''):null,fam,sk:SFAChem.canonSkeleton(SFAChem.skeleton(g)),st:SFAChem.stereo(g)};});
+  document.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',+b.dataset.f===k));
+  const f=SFAChem.formula(mols[0].g),u=SFAChem.unsaturation(f.counts);
+  const terms=[`2 × ${u.C}`,'2'];if(u.N)terms.push(`${u.N}`);
+  const minus=[`${u.H}`];if(u.X)minus.push(`${u.X}`);
+  $('di').innerHTML=`<b>Degré d'insaturation de ${sub(d.f)}</b><br>DI = (2C + 2 + N − H − X) / 2<br>DI = (${terms.join(' + ')} − ${minus.join(' − ')}) / 2 = <b id="diVal">${u.value}</b><br>`+
+    (u.value===0?'Aucune liaison multiple et aucun cycle : toutes les liaisons sont simples.':/O/.test(d.f)?`Une liaison π (C=C ou C=O) <i>ou</i> un cycle.`:`Une liaison C=C <i>ou</i> un cycle.`);
+  const ex=d.ex,parts=[];if(ex.ring)parts.push(`${ex.ring} avec cycle`);if(ex.enol)parts.push(`${ex.enol} énol${ex.enol>1?'s':''} (OH sur C=C, instables)`);if(ex.peroxide)parts.push(`${ex.peroxide} avec liaison O–O`);if(ex.other){const exn=d.others.map(x=>SFAChem.nameGraph(SFAChem.parseSmiles(x))).filter(r=>r.ok).slice(0,2).map(r=>r.name);parts.push(`${ex.other} autre${ex.other>1?'s':''} sans cycle${exn.length?' (par exemple '+exn.join(', ')+')':''}`);}
+  $('dom').innerHTML=`<h3>Ce que la page compte</h3><p style="margin:0">Dessinés ici : <b id="nShown">${d.shown.length}</b> isomère${d.shown.length>1?'s':''} de constitution (${d.dom}).</p>`+
+    (d.total>d.shown.length?`<p style="margin:6px 0 0">Total pour ${sub(d.f)} : <b id="nTotal">${d.total}</b> structures qui respectent les valences, y compris des molécules instables ou rares. Non dessinées : ${parts.join(', ')}.</p>`:`<p style="margin:6px 0 0">C'est la liste complète : <b id="nTotal">${d.total}</b> sur ${d.total}.</p>`)+
+    '<p style="margin:6px 0 0" class="hint">Stéréoisomères non comptés.</p>';
+  $('rel').hidden=true;$('fb').textContent='';$('guess').value='';render();}
+function render(){
+  const d=DATA[cur];const show=i=>mode==='all'||found.has(i);
+  $('found').textContent=`${mode==='all'?mols.length:found.size} / ${mols.length}`;
+  const fams=[...new Set(mols.map(m=>m.fam.key))].sort((a,b)=>FORDER.indexOf(a)-FORDER.indexOf(b));
+  let h='';
+  fams.forEach((fk,fi)=>{const ms=mols.filter(m=>m.fam.key===fk);const anyShown=ms.some(m=>show(m.i));
+    if(fi)h+=`<div class="between">↕ isomérie de fonction${fk==='cyclo'&&fams.includes('ene')?' (de chaîne, selon d\'autres manuels)':''}</div>`;
+    h+=`<div class="fam"><h3>${anyShown||mode==='all'?ms[0].fam.label:'Famille à découvrir'}<span>${ms.length} isomère${ms.length>1?'s':''}</span></h3>`;
+    const sks=[...new Set(ms.map(m=>m.sk))];
+    sks.forEach((sk,si)=>{const ss=ms.filter(m=>m.sk===sk);
+      h+=`<div class="skel"><small>${si?'↕ isomérie de chaîne · ':''}${ss.length>1?'même squelette : isomères de position':'squelette '+(sks.length>1?String.fromCharCode(65+si):'unique')}</small><div class="cards">`;
+      for(const m of ss){
+        if(!show(m.i)){h+=`<div class="card hid" aria-label="isomère à trouver"><span class="q">?</span></div>`;continue;}
+        const badges=m.st.map(x=>`<span class="badge">${x==='ZE'?'Z/E':x==='C*'?'C* : 2 énantiomères':'cis/trans'}</span>`).join(' ');
+        h+=`<button class="card${picks.includes(m.i)?' pick':''}" data-i="${m.i}">${SFADraw.svg(m.g,{mode:dmode,L:dmode==='semi'?40:30,title:m.name,pad:8})}<span class="nm">${m.name}${m.ret?' ('+m.ret+')':''}</span>${m.old||m.usual?`<span class="od">(${[m.old,m.usual].filter(Boolean).join(' ; ')})</span>`:''}${badges}</button>`;}
+      h+='</div></div>';});
+    h+='</div>';});
+  $('grid').innerHTML=h;
+  document.querySelectorAll('.card[data-i]').forEach(c=>c.onclick=()=>pick(+c.dataset.i));
+}
+const REL={position:['Isomères de position','Même famille et même squelette : seul l\'emplacement du groupe ou de la liaison multiple change.'],
+  chaine:['Isomères de chaîne','Même famille, mais le squelette (enchaînement des atomes) est différent.'],
+  fonction:['Isomères de fonction','Ils n\'appartiennent pas à la même famille de composés.']};
+function pick(i){
+  picks=picks.includes(i)?picks.filter(x=>x!==i):picks.concat(i).slice(-2);
+  if(picks.length===2){const [a,b]=picks.map(k=>mols[k]);const r=SFAChem.relation(a.g,b.g);
+    const fk=[a.fam.key,b.fam.key].sort().join('/');let note='';
+    if(fk==='cyclo/ene')note='Ici, alcène et cycloalcane sont classés comme deux familles différentes : isomères de fonction. Beaucoup de manuels disent plutôt isomères de chaîne (ou de squelette) : aucun hétéroatome ne change, la chaîne se referme en cycle. Les deux usages existent ; suis celui de ton énoncé.';
+    else if(r!=='fonction'&&['ether','ester'].includes(a.fam.key))note='Ici, l\'oxygène '+(a.fam.key==='ester'?'de l\'ester (–O–)':'de l\'éther')+' fait partie du squelette : le déplacer le long d\'une même chaîne non ramifiée donne des isomères de position, ramifier la chaîne donne des isomères de chaîne. Les manuels ne classent pas tous ces cas de la même façon : certains parlent de métamérie, d\'autres ne regardent que la chaîne carbonée.';
+    $('rel').hidden=false;$('rel').innerHTML=`<div class="hint">${a.name} / ${b.name}</div><div class="nm" id="relName">${REL[r][0]}${fk==='cyclo/ene'?' (ou de chaîne)':''}</div><div class="sub">${REL[r][1]}</div>${note?`<div class="sub" id="relNote" style="margin-top:6px">${note}</div>`:''}`;}
+  else $('rel').hidden=true;
+  render();}
+function tryName(){
+  const v=normN($('guess').value);if(!v)return;
+  const m=mols.find(m=>[m.name,m.ret,m.usual,...m.olds].filter(Boolean).some(n=>normN(n)===v));
+  if(!m){$('fb').innerHTML='<span class="warn">Pas dans la liste.</span> Vérifie la formule brute, la chaîne principale et la numérotation (plus petits locants).';return;}
+  if(found.has(m.i)&&mode==='find'){$('fb').innerHTML=`Déjà trouvé : ${m.name}.`;return;}
+  found.add(m.i);$('guess').value='';
+  $('fb').innerHTML=`<span class="ok">Bravo :</span> ${m.name}.`+(found.size===mols.length?' Tu les as tous trouvés.':` Encore ${mols.length-found.size}.`);render();}
+$('try').onclick=tryName;$('guess').addEventListener('keydown',e=>{if(e.key==='Enter')tryName();});
+$('hint').onclick=()=>{const m=mols.find(m=>!found.has(m.i));if(!m){$('fb').textContent='Tout est trouvé.';return;}
+  $('fb').innerHTML=`Indice : il te manque au moins un isomère de la famille « ${m.fam.label.toLowerCase()} ».`;};
+$('reveal').onclick=()=>{mols.forEach(m=>found.add(m.i));render();};
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{mode=b.dataset.m;document.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('on',x===b));$('findBox').hidden=mode!=='find';render();});
+document.querySelectorAll('[data-dm]').forEach(b=>b.onclick=()=>{dmode=b.dataset.dm;document.querySelectorAll('[data-dm]').forEach(x=>x.classList.toggle('on',x===b));render();});
+load(8);
+window.__iso={DATA,load,mols:()=>mols.map(m=>({s:m.s,name:m.name,ret:m.ret,olds:m.olds,old:m.old,usual:m.usual,fam:m.fam.key,sk:m.sk,st:m.st,atoms:m.g.atoms,bonds:m.g.bonds})),
+  relation:(i,j)=>SFAChem.relation(mols[i].g,mols[j].g),setMode:m=>document.querySelector(`[data-m="${m}"]`).click(),
+  guess:t=>{$('guess').value=t;tryName();return found.size;},pick,relText:()=>$('rel').innerText,di:()=>+$('diVal').textContent};
+})();
+</script>
+<script src="../../kit/sfa-nav.js"></script></body>
+</html>

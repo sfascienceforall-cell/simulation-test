@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poussée d'Archimède · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+ <style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#fff;font-family:system-ui,-apple-system,sans-serif;}
+canvas{display:block;border-radius:12px;border:1.5px solid #e8e8e8;touch-action:none;cursor:grab;}
+.fml{font-size:13px;padding:10px 16px;border-radius:20px;background:#f5f5f5;border:1.5px solid #d0d0d0;color:#2c2c2a;margin:6px 0;font-family:ui-monospace,monospace;line-height:1.8;}
+.row{display:flex;align-items:center;gap:10px;margin:6px 0;flex-wrap:wrap;}
+.pill{font-size:13px;font-weight:500;color:#2c2c2a;background:#f5f5f5;border:1.5px solid #d0d0d0;border-radius:20px;padding:6px 14px;white-space:nowrap;}
+.val{min-width:86px;text-align:center;font-size:13px;font-weight:500;color:#2c2c2a;background:#f5f5f5;border:1.5px solid #d0d0d0;border-radius:20px;padding:5px 10px;}
+.btn{padding:8px 18px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid #d0d0d0;background:#fff;color:#2c2c2a;}
+.info{font-size:12px;padding:8px 14px;border-radius:20px;background:#f5f5f5;border:1.5px solid #d0d0d0;color:#555;margin:6px 0;font-family:ui-monospace,monospace;line-height:1.8;}
+input[type=range]{flex:1;min-width:110px;}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#FL">Fluides</a>›<b>Poussée d&#x27;Archimède</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Fluides</span><span class="sfa-chip free">Gratuit</span></div><h1>Poussée d&#x27;Archimède</h1><p>Flottaison et volume immergé</p></div>
+<section class="sfa-sim">
+
+
+
+<canvas id="cv" style="width:100%;height:60vh;min-height:360px;"></canvas>
+
+<div class="fml">
+  <b style="color:#185fa5">F̄ₐ = ρ_fluide · V_immergé · g</b> (poussée = poids du fluide déplacé) &nbsp;|&nbsp; flotte si <b style="color:#1D9E75">ρ_objet < ρ_fluide</b> &nbsp;|&nbsp; fraction immergée = ρ_objet/ρ_fluide &nbsp;·&nbsp; <i>glisse l'objet et regarde l'eau déplacée !</i>
+</div>
+
+<div class="row">
+  <span class="pill" style="min-width:135px;border-color:#f09595;color:#E24B4A;">ρ_objet</span>
+  <input type="range" id="ro" min="200" max="1600" value="600" step="50" style="accent-color:#E24B4A;">
+  <span class="val" id="rov" style="border-color:#f09595;color:#E24B4A;">600 kg/m³</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:135px;border-color:#b5d4f4;color:#185fa5;">ρ_fluide</span>
+  <input type="range" id="rf" min="700" max="1300" value="1000" step="25" style="accent-color:#378ADD;">
+  <span class="val" id="rfv" style="border-color:#b5d4f4;color:#185fa5;">1000 kg/m³</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:135px;border-color:#9FE1CB;color:#1D9E75;">taille de l'objet</span>
+  <input type="range" id="sz" min="0.6" max="1.4" value="1" step="0.1" style="accent-color:#1D9E75;">
+  <span class="val" id="szv" style="border-color:#9FE1CB;color:#1D9E75;">1.0×</span>
+</div>
+<div class="row">
+  <button class="btn" onclick="preset(600)">Bois (flotte)</button>
+  <button class="btn" onclick="preset(1000)">Densité = eau</button>
+  <button class="btn" onclick="preset(1400)">Métal (coule)</button>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:135px;">eau déplacée</span>
+  <button class="btn on" id="mNiv" onclick="setMode('niveau')">Le niveau monte</button>
+  <button class="btn" id="mDeb" onclick="setMode('debord')">Vase à trop-plein</button>
+  <button class="btn" id="mVid" onclick="vider()">Vider le bécher</button>
+</div>
+
+<div class="info" id="info"></div>
+
+<script>
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const RED='#E24B4A',BLUE='#378ADD',BLUE_D='#185fa5',FLUID='#dcecfa',FLUID2='#a8cff0',GREEN='#1D9E75',GREY='#8a95a3',AX='#d3d9e2',INK='#13233a';
+const FONT=(w,sz)=>w+' '+sz+'px Mulish,system-ui,sans-serif';
+function lbl(t,x,y,col,font,align){ctx.save();ctx.font=font;ctx.textAlign=align||'center';ctx.lineJoin='round';
+  ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=4;ctx.strokeText(t,x,y);ctx.fillStyle=col;ctx.fillText(t,x,y);ctx.restore();}
+let W=0,H=0,dpr=1;
+let ro=600,rf=1000,sz=1;
+const g=9.81;
+let y=0,vy=0,drag=false;     // y = position du haut de l'objet (px), dynamique
+let init=false;
+let mode='niveau', Aw=null, coll=0, pourT=0, lastGeo='';   // Aw : aire d'eau dans la cuve (px²) ; coll : eau recueillie (px²)
+const K=1/9;                                                 // échelle : 9 px = 1 cm (objet de 10 cm à la taille 1×)
+let lift=false;
+function setMode(m){mode=m;Aw=null;coll=0;if(m==='debord')lift=true;document.getElementById('mNiv').classList.toggle('on',m==='niveau');document.getElementById('mDeb').classList.toggle('on',m==='debord');document.getElementById('mVid').style.display=m==='debord'?'':'none';}
+function vider(){coll=0;Aw=null;lift=true;}
+document.getElementById('mVid').style.display='none';
+
+function bind(id,fmt,f){const s=document.getElementById(id),o=document.getElementById(id+'v');
+  s.addEventListener('input',()=>{const v=parseFloat(s.value);f(v);o.textContent=fmt(v);});}
+bind('ro',v=>v+' kg/m³',v=>ro=v);
+bind('rf',v=>v+' kg/m³',v=>rf=v);
+bind('sz',v=>v.toFixed(1)+'×',v=>sz=v);
+function preset(v){ro=v;document.getElementById('ro').value=v;document.getElementById('rov').textContent=v+' kg/m³';}
+
+function syncSize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;
+  const nW=Math.round(r.width)||700,nH=Math.round(r.height)||370;
+  if(nW!==W||nH!==H){W=nW;H=nH;cv.width=W*dpr;cv.height=H*dpr;}
+  ctx.setTransform(dpr,0,0,dpr,0,0);}
+
+function arrow(x,yy,vx,vv,col,lab,w){
+  const len=Math.hypot(vx,vv);if(len<3)return;
+  const ex=x+vx,ey=yy+vv;
+  const hs=Math.max(10,(w||2.5)*3.6),ang=Math.atan2(vv,vx);
+  ctx.strokeStyle=col;ctx.lineWidth=w||2.5;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(x,yy);ctx.lineTo(ex-vx/len*hs*0.4,ey-vv/len*hs*0.4);ctx.stroke();
+  ctx.fillStyle=col;ctx.save();ctx.translate(ex,ey);ctx.rotate(ang);
+  ctx.beginPath();ctx.moveTo(hs,0);ctx.lineTo(-hs*0.7,-hs*0.55);ctx.lineTo(-hs*0.7,hs*0.55);ctx.closePath();ctx.fill();ctx.restore();
+  if(lab){if(vv<0)lbl(lab,ex+9,ey+12,col,FONT(800,14),'left');else lbl(lab,ex+vx/len*17,ey+vv/len*17+5,col,FONT(800,13));}
+}
+
+function draw(){
+  syncSize();
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+
+  // cuve
+  const deb=mode==='debord';
+  const tankX=deb?W*0.06:W*0.16, tankW=deb?W*0.60:W*0.68, tankTop=H*0.16, tankBot=H*0.90;
+  const surf0=H*0.36;                       // surface au repos
+  const objW=90*sz, objH=90*sz;
+  if(!init){y=surf0-objH*0.5;init=true;}
+
+  // dynamique
+  const Vtot=objW*objH;                     // "volume" 2D (px²) — proxy
+  // niveau d'eau : l'objet immergé chasse l'eau (aire 2D conservée ; profondeur de la cuve = celle de l'objet)
+  if(lift){lift=false;y=surf0-objH-12;vy=0;Aw=null;}
+  const geoKey=W+'x'+H+mode+sz;
+  if(Aw===null||geoKey!==lastGeo){lastGeo=geoKey;Aw=tankW*(tankBot-surf0);
+    if(deb){ // cuve remplie jusqu'au bec avec l'objet dans sa position actuelle
+      const hs0=Math.max(0,Math.min(y+objH,tankBot)-Math.max(y,surf0));Aw-=objW*hs0;}}
+  function levelFor(Awater){let sf=surf0;for(let it=0;it<4;it++){const hs=Math.max(0,Math.min(y+objH,tankBot)-Math.max(y,sf));sf=tankBot-(Awater+objW*hs)/tankW;}return sf;}
+  let surf=levelFor(Aw);
+  if(deb&&surf<surf0-0.01){const ex=(surf0-surf)*tankW;Aw-=ex;coll+=ex;pourT=0.35;surf=levelFor(Aw);}
+  if(pourT>0)pourT-=1/60;
+  // immersion
+  let subTop=Math.max(y,surf);
+  let subBot=Math.min(y+objH,tankBot);
+  let hsub=Math.max(0,subBot-subTop);
+  const fracSub=Math.min(1,hsub/objH);
+  // forces (unités arbitraires cohérentes)
+  const Fg=ro*objH;                          // ∝ ρ_obj·V
+  const Fa=rf*hsub;                          // ∝ ρ_f·V_imm
+  if(!drag){
+    const net=(Fg-Fa)*0.00004;               // vers le bas +
+    vy+=net;vy*=0.90;                        // amortissement (traînée)
+    y+=vy;
+  }
+  // butées
+  if(y< tankTop-objH*0.6)y=tankTop-objH*0.6;
+  if(y+objH>tankBot){y=tankBot-objH;vy=0;}
+
+  // recalcul immersion après maj
+  subTop=Math.max(y,surf);subBot=Math.min(y+objH,tankBot);hsub=Math.max(0,subBot-subTop);
+  const frac=Math.min(1,hsub/objH);
+
+  // parois cuve
+  const rc=12;
+  // ombre douce sous la cuve
+  ctx.save();ctx.fillStyle='rgba(19,35,58,.08)';ctx.beginPath();ctx.ellipse(tankX+tankW/2,tankBot+8,tankW*0.48,6,0,0,7);ctx.fill();ctx.restore();
+  // verre (fond très léger)
+  ctx.fillStyle='#f7f9fb';ctx.beginPath();ctx.moveTo(tankX,tankTop);ctx.lineTo(tankX,tankBot-rc);ctx.quadraticCurveTo(tankX,tankBot,tankX+rc,tankBot);
+  ctx.lineTo(tankX+tankW-rc,tankBot);ctx.quadraticCurveTo(tankX+tankW,tankBot,tankX+tankW,tankBot-rc);ctx.lineTo(tankX+tankW,tankTop);ctx.closePath();ctx.fill();
+  // eau : dégradé (plus dense en profondeur, teinte selon ρ_fluide)
+  const deep=Math.max(0,Math.min(1,(rf-700)/600));
+  const wg=ctx.createLinearGradient(0,surf,0,tankBot);wg.addColorStop(0,'rgba(120,180,235,'+(0.28+deep*0.12)+')');wg.addColorStop(1,'rgba(55,138,221,'+(0.40+deep*0.18)+')');
+  ctx.save();ctx.beginPath();ctx.moveTo(tankX,surf);ctx.lineTo(tankX,tankBot-rc);ctx.quadraticCurveTo(tankX,tankBot,tankX+rc,tankBot);
+  ctx.lineTo(tankX+tankW-rc,tankBot);ctx.quadraticCurveTo(tankX+tankW,tankBot,tankX+tankW,tankBot-rc);ctx.lineTo(tankX+tankW,surf);ctx.closePath();ctx.fillStyle=wg;ctx.fill();ctx.restore();
+  ctx.strokeStyle='#378ADD';ctx.lineWidth=2;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(tankX,surf);ctx.lineTo(tankX+tankW,surf);ctx.stroke();
+  const Vimm_cm3=objW*hsub*objW*K*K*K;     // volume immergé (cm³)
+  if(mode==='niveau' && surf0-surf>0.3){
+    // la tranche d'eau soulevée a exactement le volume de la partie immergée
+    ctx.fillStyle='rgba(234,88,12,.28)';ctx.fillRect(tankX+2,surf,tankW-4,surf0-surf);
+    ctx.setLineDash([6,4]);ctx.strokeStyle='#64748b';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(tankX-6,surf0);ctx.lineTo(tankX+tankW+6,surf0);ctx.stroke();ctx.setLineDash([]);
+    lbl('niveau sans objet',tankX+tankW-14,surf0+15,'#64748b',FONT(700,11),'right');
+    lbl('eau soulevée = '+Vimm_cm3.toFixed(0)+' cm³',tankX+tankW-14,surf-7,'#c2410c',FONT(800,12),'right');
+  }
+  if(deb){
+    // bec verseur au niveau de départ, bécher gradué à droite
+    const spX=tankX+tankW, bkX=W*0.75, bkW=Math.min(W*0.16,objW*0.55), bkBot=tankBot, bkTop=tankBot-(tankBot-surf0)*0.95;
+    ctx.fillStyle='#cbd5e1';ctx.fillRect(spX,surf0-6,bkX+bkW*0.3-spX,6);
+    ctx.strokeStyle='#8a95a3';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(spX,surf0-6);ctx.lineTo(bkX+bkW*0.3,surf0-6);ctx.moveTo(spX,surf0);ctx.lineTo(bkX+bkW*0.3,surf0);ctx.stroke();
+    const hc=coll/bkW;   // hauteur d'eau dans le bécher (même profondeur → même conversion en cm³)
+    if(pourT>0){ctx.fillStyle='rgba(55,138,221,.75)';ctx.fillRect(bkX+bkW*0.3-4,surf0,4,bkBot-hc-surf0);}
+    const bg2=ctx.createLinearGradient(0,bkBot-hc,0,bkBot);bg2.addColorStop(0,'rgba(234,88,12,.35)');bg2.addColorStop(1,'rgba(55,138,221,.55)');
+    ctx.fillStyle=bg2;ctx.fillRect(bkX,bkBot-hc,bkW,hc);
+    ctx.strokeStyle='#8a95a3';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(bkX,bkTop);ctx.lineTo(bkX,bkBot);ctx.lineTo(bkX+bkW,bkBot);ctx.lineTo(bkX+bkW,bkTop);ctx.stroke();
+    // graduations (cm³)
+    const pxPer100=100/(bkW*objW*K*K*K);   // hauteur (px) pour 100 cm³
+    ctx.strokeStyle='rgba(19,35,58,.35)';ctx.lineWidth=1;
+    const lstep=pxPer100>=14?200:500;for(let v=100;v<5000;v+=100){const gy=bkBot-v/100*pxPer100;if(gy<bkTop)break;ctx.beginPath();ctx.moveTo(bkX+bkW-(v%lstep===0?14:8),gy);ctx.lineTo(bkX+bkW,gy);ctx.stroke();if(v%lstep===0){if(bkX-(tankX+tankW)>34)lbl(v+'',bkX-6,gy+4,'#64748b',FONT(700,10),'right');else lbl(v+'',bkX+3,gy+4,'#64748b',FONT(700,9.5),'left');}}
+    const Vc=coll*objW*K*K*K;
+    lbl('recueilli',bkX+bkW/2,bkTop-24,'#c2410c',FONT(700,11.5));
+    lbl(Vc.toFixed(0)+' cm³',bkX+bkW/2,bkTop-8,'#c2410c',FONT(800,13));
+  }
+  // parois
+  ctx.strokeStyle='#8a95a3';ctx.lineWidth=3;ctx.lineJoin='round';ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(tankX,tankTop);ctx.lineTo(tankX,tankBot-rc);ctx.quadraticCurveTo(tankX,tankBot,tankX+rc,tankBot);
+  ctx.lineTo(tankX+tankW-rc,tankBot);ctx.quadraticCurveTo(tankX+tankW,tankBot,tankX+tankW,tankBot-rc);ctx.lineTo(tankX+tankW,tankTop);ctx.stroke();
+  // reflet du verre
+  ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(tankX+8,tankTop+10);ctx.lineTo(tankX+8,tankBot-24);ctx.stroke();
+  // graduations sur la paroi droite
+  ctx.strokeStyle='rgba(19,35,58,.25)';ctx.lineWidth=1;
+  for(let gy=tankBot-20;gy>tankTop+10;gy-=(tankBot-tankTop)/12){ctx.beginPath();ctx.moveTo(tankX+tankW-10,gy);ctx.lineTo(tankX+tankW-2,gy);ctx.stroke();}
+  { const oxL=tankX+tankW/2-objW/2-8, t1='ρ_fluide = '+rf+' kg/m³';   // ne pas passer sous l'objet (téléphone)
+    ctx.font=FONT(800,12);
+    if(tankX+16+ctx.measureText(t1).width<oxL)lbl(t1,tankX+16,surf+20,BLUE_D,FONT(800,12),'left');
+    else{lbl('ρ_fluide',tankX+14,surf+19,BLUE_D,FONT(800,12),'left');lbl('= '+rf,tankX+14,surf+34,BLUE_D,FONT(800,12),'left');} }
+
+  // objet
+  const ox=tankX+tankW/2-objW/2;
+  ctx.save();
+  ctx.beginPath();ctx.rect(ox-4,y-4,objW+8,objH+8);ctx.clip?0:0;ctx.restore();
+  // bloc : teinte selon la densité (léger = clair, dense = foncé), dégradé + ombre douce
+  const dk=Math.max(0,Math.min(1,(ro-200)/1400));
+  const og=ctx.createLinearGradient(ox,y,ox+objW,y+objH);
+  og.addColorStop(0,'hsl(0,'+(70-dk*15)+'%,'+(95-dk*22)+'%)');og.addColorStop(1,'hsl(0,'+(62-dk*10)+'%,'+(86-dk*24)+'%)');
+  ctx.save();ctx.shadowColor='rgba(19,35,58,.22)';ctx.shadowBlur=10;ctx.shadowOffsetY=3;
+  ctx.fillStyle=og;ctx.beginPath();ctx.roundRect(ox,y,objW,objH,8);ctx.fill();ctx.restore();
+  ctx.strokeStyle='#a32d2d';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(ox,y,objW,objH,8);ctx.stroke();
+  // partie immergée teintée
+  if(hsub>0){
+    ctx.save();ctx.beginPath();ctx.rect(ox,subTop,objW,hsub);ctx.clip();
+    ctx.fillStyle='rgba(56,138,221,0.22)';ctx.beginPath();ctx.roundRect(ox+1,y+1,objW-2,objH-2,7);ctx.fill();ctx.restore();
+    if(subTop>y+2){ctx.strokeStyle='rgba(24,95,165,.55)';ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(ox+2,subTop);ctx.lineTo(ox+objW-2,subTop);ctx.stroke();ctx.setLineDash([]);}
+  }
+  // ρ de l'objet : coin haut-gauche (hors des flèches qui partent du centre)
+  if(objW>=80){lbl('ρ = '+ro,ox+8,y+18,'#a32d2d',FONT(800,12),'left');}
+  else{lbl('ρ = '+ro,ox+objW/2-4,y-7,'#a32d2d',FONT(800,12),'right');}
+
+  // forces depuis le centre
+  const cxO=ox+objW/2, cyO=y+objH/2;
+  arrow(cxO-14,cyO,0,Math.min(Fg*0.00045,120,H-cyO-30),RED,'P̄ = mḡ',3);   // étiquette jamais sous le bord bas
+  if(Fa>0)arrow(cxO+14,cyO,0,-Math.min(Fa*0.00045,120),BLUE,'F̄ₐ',3);
+
+  // verdict
+  ctx.font=FONT(800,14);ctx.textAlign='center';
+  let verdict,vcol;
+  if(ro<rf-10){verdict='FLOTTE  (ρ_objet < ρ_fluide)';vcol=GREEN;}
+  else if(ro>rf+10){verdict='COULE  (ρ_objet > ρ_fluide)';vcol=RED;}
+  else{verdict='ÉQUILIBRE indifférent (ρ_objet = ρ_fluide)';vcol=BLUE_D;}
+  { const vy0=tankTop-16>20?tankTop-14:H*0.10;let fs=14;ctx.font=FONT(800,fs);let tw=ctx.measureText(verdict).width;
+    if(tw>W-48){fs=Math.max(11,Math.floor(14*(W-48)/tw));ctx.font=FONT(800,fs);tw=ctx.measureText(verdict).width;}
+    const bg=vcol===GREEN?'#e1f5ee':vcol===RED?'#fcebeb':'#e6f1fb';
+    ctx.fillStyle=bg;ctx.beginPath();ctx.roundRect(W/2-tw/2-12,vy0-fs-5,tw+24,fs+13,(fs+13)/2);ctx.fill();
+    ctx.fillStyle=vcol;ctx.fillText(verdict,W/2,vy0);}
+
+  const fracTh=Math.min(1,ro/rf);
+  document.getElementById('info').innerHTML=
+    '<b style="color:'+RED+'">P = ρ_o·V·g</b> &nbsp;vs&nbsp; <b style="color:'+BLUE_D+'">Fₐ = ρ_f·V_imm·g</b> &nbsp;|&nbsp; '+
+    'fraction immergée mesurée ≈ '+(frac*100).toFixed(0)+'%'+
+    (ro<rf?' &nbsp;(théorie ρ_o/ρ_f = '+(fracTh*100).toFixed(0)+'%)':'');
+  { const Vi=objW*hsub*objW*K*K*K, Fa_N=rf*Vi*1e-6*g, Vc=coll*objW*K*K*K;
+    document.getElementById('info').innerHTML+='<br><b style="color:#c2410c">Eau déplacée</b> : volume immergé = '+Vi.toFixed(0)+' cm³ → poussée Fₐ = ρ_f·V·g = '+Fa_N.toFixed(2)+' N, c\'est le <b>poids de l\'eau déplacée</b> ('+(rf*Vi*1e-3).toFixed(0)+' g de fluide).'+
+      (mode==='debord'?' Recueilli dans le bécher : <b>'+Vc.toFixed(0)+' cm³</b>'+(Vc>1?' = '+(rf*Vc*1e-6*g).toFixed(2)+' N de poids.':'. Enfonce l\'objet : l\'eau qui déborde a le volume de la partie immergée.'):' La tranche orange qui monte a le même volume que la partie immergée de l\'objet.'); }
+
+  requestAnimationFrame(draw);
+}
+
+function getY(e){const r=cv.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return t.clientY-r.top;}
+cv.addEventListener('mousedown',e=>{drag=true;vy=0;cv.style.cursor='grabbing';});
+cv.addEventListener('mousemove',e=>{if(drag){y=getY(e)-45*sz;}});
+window.addEventListener('mouseup',()=>{drag=false;cv.style.cursor='grab';});
+cv.addEventListener('touchstart',e=>{drag=true;vy=0;},{passive:false});
+cv.addEventListener('touchmove',e=>{if(drag){e.preventDefault();y=getY(e)-45*sz;}},{passive:false});
+window.addEventListener('touchend',()=>{drag=false;});
+draw();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Mécanique des fluides<span>3 simulations</span></h2><ol><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/archimede/"><i>01</i>Poussée d&#x27;Archimède</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/pascal/"><i>02</i>Principe de Pascal</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Bernouilli-/"><i>03</i>Bernoulli</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

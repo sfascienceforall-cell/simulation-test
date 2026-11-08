@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Équivalence des référentiels inertiels · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+/* Équivalence des référentiels inertiels : écran partagé « vu du quai » (haut) / « vu du wagon » (bas), même monde dessiné deux fois, seule la fenêtre change. */
+#cv{display:block;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:10px}
+.row{display:flex;align-items:center;flex-wrap:wrap}
+body .row .val{font:800 13px Mulish,system-ui,sans-serif!important;white-space:nowrap;min-width:84px}
+body .row .pill{min-width:180px}
+body .info{font:600 13px/1.8 Mulish,system-ui,sans-serif!important}
+body .info b{font-weight:800}
+.tabs{gap:8px!important}
+.tabs .sp{flex:1}
+.lbl2{font:700 .86rem Mulish,system-ui,sans-serif;color:#2c3a4e;min-width:96px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font:600 .82rem Mulish,system-ui,sans-serif;color:#5b6b7b;margin:10px 0 2px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.legend i.dot{width:8px;height:8px;border-radius:50%;border:1.5px solid #fff;box-shadow:0 0 0 1px currentColor}
+.hint{font:600 .86rem/1.5 Mulish,system-ui,sans-serif;color:#2c3a4e;background:#f3f6fa;border-radius:8px;padding:8px 12px;flex:1}
+.vec{position:relative;display:inline-block}
+.vec::after{content:'';position:absolute;left:8%;right:2%;top:.02em;height:.42em;
+  background:linear-gradient(currentColor,currentColor) left 50%/calc(100% - .28em) 1.6px no-repeat;}
+.vec::before{content:'';position:absolute;right:0;top:.07em;border-left:.32em solid currentColor;border-top:.16em solid transparent;border-bottom:.16em solid transparent}
+.cmpw{margin:12px 0 4px;max-width:100%}
+#cmp{border-collapse:collapse;width:100%;font:600 13px Mulish,system-ui,sans-serif;font-variant-numeric:tabular-nums;table-layout:fixed}
+#cmp th,#cmp td{padding:7px 8px;text-align:left;border-bottom:1px solid #e3e8ee;vertical-align:middle;line-height:1.3}
+#cmp th{font-weight:800;font-size:12px;color:#5b6b7b}
+#cmp th.q{color:#0F6E56}#cmp th.w{color:#185fa5}
+#cmp td{color:#13233a;font-weight:700}
+#cmp td:first-child{color:#2c3a4e;font-weight:800}
+#cmp col.c1{width:27%}#cmp col.c2,#cmp col.c3{width:27%}#cmp col.c4{width:19%}
+.bd{display:inline-block;font:800 11.5px Mulish,system-ui,sans-serif;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.bd.s{background:#e3f4ed;color:#0F6E56}.bd.d{background:#f8eedf;color:#8a560f}.bd.x{background:#fbe5e5;color:#a32d2d}
+tr.flash td{background:#fbfcfe}
+@media (max-width:600px){#cv{height:720px!important;min-height:0!important}
+  #cmp{font-size:12px}#cmp th,#cmp td{padding:6px 4px}#cmp col.c1{width:29%}#cmp col.c2,#cmp col.c3{width:25%}#cmp col.c4{width:21%}
+  .bd{font-size:10.5px;padding:2px 6px}body .row .pill{min-width:0}}
+[hidden]{display:none!important}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH2">Dynamique</a>›<b>Équivalence des référentiels inertiels</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Dynamique</span><span class="sfa-chip free">Gratuit</span></div><h1>Équivalence des référentiels inertiels</h1><p>Dans un train à vitesse constante ou sur le quai : les mêmes lois de Newton, des trajectoires différentes</p></div>
+<section class="sfa-sim">
+
+
+
+<div class="row tabs">
+  <button class="btn on" id="tA">① Balle lancée vers le haut</button>
+  <button class="btn" id="tB">② Pendule et chariot</button>
+  <span class="sp"></span>
+  <button class="btn" id="bPause">Pause</button>
+</div>
+
+<canvas id="cv" style="width:100%;height:76vh;min-height:620px;max-height:880px;" aria-label="Écran partagé : en haut, le wagon vu du quai ; en bas, la même scène vue depuis le wagon. Touche la scène pour lancer la balle, ou attrape la masse du pendule."></canvas>
+
+<div class="legend" id="lgA">
+  <span><i style="background:#1D9E75"></i>v : vitesse vue du quai</span>
+  <span><i style="background:#378ADD"></i>v′ : vitesse vue du wagon</span>
+  <span><i style="background:#BA7517"></i>V : vitesse du train</span>
+  <span><i style="background:#7F77DD"></i>a : accélération</span>
+  <span><i style="background:#E24B4A"></i>P : poids</span>
+  <span><i class="dot" style="background:#1D9E75;color:#1D9E75"></i>positions toutes les 0,06 s</span>
+</div>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill" style="color:#BA7517">V &nbsp;vitesse du train</span>
+  <input type="range" id="sV" min="0" max="30" value="4" step="0.5" style="accent-color:#BA7517;">
+  <span class="val" id="sVv" style="color:#BA7517">4,0 m/s</span>
+</div>
+<div class="row" id="rowU">
+  <span class="pill" style="color:#185fa5">u &nbsp;vitesse du lancer (dans le wagon)</span>
+  <input type="range" id="sU" min="1" max="4.5" value="4" step="0.1" style="accent-color:#378ADD;">
+  <span class="val" id="sUv" style="color:#185fa5">4,0 m/s</span>
+</div>
+<div class="row" id="rowB1">
+  <button class="btn" id="bThrow">Lancer la balle</button>
+  <button class="btn on" id="bAuto">Relancer automatiquement</button>
+  <button class="btn on" id="bComp">Composition des vitesses</button>
+</div>
+<div class="row" id="rowB2" hidden>
+  <button class="btn" id="bSwing">Écarter le pendule</button>
+  <button class="btn" id="bReset">Remettre en place</button>
+</div>
+<div class="row">
+  <span class="lbl2">Le train…</span>
+  <button class="btn on" id="mC">roule à V constante</button>
+  <button class="btn" id="mA">accélère</button>
+  <button class="btn" id="mB">freine</button>
+</div>
+<div class="row">
+  <span class="pill" style="color:#8a560f">A &nbsp;accélération du train</span>
+  <input type="range" id="sA" min="0.5" max="3" value="2" step="0.1" style="accent-color:#BA7517;">
+  <span class="val" id="sAv" style="color:#8a560f">2,0 m/s²</span>
+</div>
+<div class="row">
+  <span class="lbl2">Affichage</span>
+  <button class="btn on" id="vBoth">Écran partagé</button>
+  <button class="btn" id="vQ">Vu du quai</button>
+  <button class="btn" id="vW">Vu du wagon</button>
+</div>
+<div class="row">
+  <span class="lbl2">Ralenti</span>
+  <button class="btn" id="r1">× 1</button>
+  <button class="btn on" id="r2">× ½</button>
+  <button class="btn" id="r4">× ¼</button>
+</div>
+<div class="row"><span class="hint" id="hint"></span></div>
+
+<div class="cmpw"><table id="cmp"><colgroup><col class="c1"><col class="c2"><col class="c3"><col class="c4"></colgroup>
+<thead><tr><th>Ce qu'on mesure</th><th class="q">Vu du quai (R)</th><th class="w">Vu du wagon (R′)</th><th>Verdict</th></tr></thead>
+<tbody id="cmpb"></tbody></table></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const cv=$('cv'),ctx=cv.getContext('2d');
+const BL='#378ADD',BLD='#185fa5',GR='#1D9E75',GRD='#0F6E56',RD='#E24B4A',RDD='#a32d2d',OR='#BA7517',ORD='#8a560f',VI='#7F77DD',INK='#13233a',GY='#8a95a3',AX='#d3d9e2',MUT='#5b6b7b';
+const FAM='Mulish,system-ui,sans-serif',FT='700 13px '+FAM,FS='600 12px '+FAM,FH='800 14px '+FAM;
+const fr=(v,n)=>(Math.abs(v)<0.5*Math.pow(10,-n)?0:v).toFixed(n).replace('.',',').replace('-','−');
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ---------- constantes physiques et géométrie (m, s) ---------- */
+const G=9.81,MB=0.2,MP=0.5,LP=1.1;
+const YF=1.05,YC=3.45,YR=3.72,CAR=16.4,GAP=1.0;     // plancher, plafond, toit ; longueur d'une voiture
+const HX=0.32,HY=YF+1.30,RB=0.11;                    // main du passager (repère du wagon), rayon de la balle
+const PIV=-0.85,TB0=0.55,TB1=2.25,TBY=YF+0.78,CW=0.26;// pendule ; table ; chariot
+const T0=2*Math.PI*Math.sqrt(LP/G);
+
+/* ---------- état ---------- */
+let exp=1,view='both',slow=0.5,paused=false,comp=true,autoT=true;
+let V=4,A=2,mode='const',burst=0,acur=0,XT=0;
+let u=4;
+const B={st:'held',x:HX,y:HY,vx:4,vy:0,tf:0,hold:0.35,res:null,rel:HX,crossed:false,miss:null};
+const P={th:0.32,om:0,al:0};const C={x:1.4,v:0};
+let dragP=false,hoverP=false;
+let trQ=[],trW=[],trH=[],trAcc=0;
+const cam={X:0.3,Wn:6};let cutFlash=0,camInit=false;
+let tSim=0;
+
+/* ---------- canvas ---------- */
+let W=0,H=0,dpr=1;
+function syncSize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;
+  const nW=Math.round(r.width)||600,nH=Math.round(r.height)||500;
+  if(nW!==W||nH!==H||cv.width!==Math.round(nW*dpr)){W=nW;H=nH;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
+  ctx.setTransform(dpr,0,0,dpr,0,0);}
+
+/* ---------- étiquettes : placement sans chevauchement, halo blanc, dessinées en dernier ---------- */
+let LQ=[],OB=[],RC=[],BAD=[];/* BAD : étiquettes mal placées, lu par les tests */
+const obSeg=(x1,y1,x2,y2,w)=>OB.push([x1,y1,x2,y2,w||1]);
+const obRect=(x,y,w,h)=>RC.push({x0:x,y0:y,x1:x+w,y1:y+h});
+const lab=(t,col,cands,o)=>LQ.push(Object.assign({t,col,cands,font:FT,vec:[]},o||{}));
+function around(x,y,r,n){const c=[];n=n||12;for(const rr of [r,r+10,r+22,r+38])for(let k=0;k<n;k++){const a=k/n*2*Math.PI,cx=Math.cos(a);
+  c.push([x+cx*rr,y+Math.sin(a)*rr,cx>0.3?'left':cx<-0.3?'right':'center']);}return c;}
+function segBox(s,b){let [x1,y1,x2,y2]=s,t0=0,t1=1;const dx=x2-x1,dy=y2-y1,p=[-dx,dx,-dy,dy],q=[x1-b.x0,b.x1-x1,y1-b.y0,b.y1-y1];
+  for(let i=0;i<4;i++){if(p[i]===0){if(q[i]<0)return false;}else{const r=q[i]/p[i];if(p[i]<0){if(r>t1)return false;if(r>t0)t0=r;}else{if(r<t0)return false;if(r<t1)t1=r;}}}return true;}
+const ovl=(a,b)=>{const ox=Math.min(a.x1,b.x1)-Math.max(a.x0,b.x0),oy=Math.min(a.y1,b.y1)-Math.max(a.y0,b.y0);return ox>0&&oy>0?ox*oy:0;};
+function txt(t,x,y,col,font,vec,al){ctx.font=font||FT;ctx.textAlign='left';ctx.textBaseline='middle';ctx.lineJoin='round';
+  ctx.lineWidth=4.5;ctx.strokeStyle='rgba(255,255,255,.96)';ctx.globalAlpha=al==null?1:al;ctx.strokeText(t,x,y);ctx.fillStyle=col;ctx.fillText(t,x,y);
+  for(const i of vec||[]){const x0=x+ctx.measureText(t.slice(0,i)).width,w=ctx.measureText(t[i]).width,yy=y-9.5;
+    ctx.strokeStyle=col;ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(x0+0.5,yy);ctx.lineTo(x0+w+1,yy);ctx.stroke();
+    ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x0+w+3,yy);ctx.lineTo(x0+w-0.5,yy-2.4);ctx.lineTo(x0+w-0.5,yy+2.4);ctx.closePath();ctx.fill();}
+  ctx.globalAlpha=1;ctx.textBaseline='alphabetic';}
+function flush(pan){const placed=[],bx0=pan.x,bx1=pan.x+pan.w,by0=pan.y,by1=pan.y+pan.h;
+  for(const L of LQ){const a0=L.cands[0];if(a0[0]<bx0-4||a0[0]>bx1+4||a0[1]<by0||a0[1]>by1)continue;ctx.font=L.font;const w=ctx.measureText(L.t).width,h=L.vec.length?19:15;let best=null,bs=Infinity;
+    const c0=L.cands[0],cx0=c0[2]==='left'?c0[0]+w/2:c0[2]==='right'?c0[0]-w/2:c0[0];
+    const cands=L.cands.slice();
+    for(const rr of [18,32,50,72,100])for(let q=0;q<16;q++){const a=q/16*2*Math.PI;cands.push([cx0+Math.cos(a)*(rr+w/2),c0[1]+Math.sin(a)*rr,'center']);}
+    cands.forEach((c,i)=>{const [x,y,al]=c;const x0=al==='left'?x:al==='right'?x-w:x-w/2;
+      const b={x0:x0-3,x1:x0+w+3,y0:y-h/2-(L.vec.length?3:1),y1:y+h/2+1};let s=i*0.5;
+      if(b.x0<bx0+2||b.x1>bx1-2||b.y0<by0+2||b.y1>by1-2)s+=1e7;
+      for(const p of placed){const o=ovl(b,p);if(o)s+=1e5+o;}
+      for(const r of RC){const o=ovl(b,r);if(o)s+=2e4+o;}
+      for(const sg of OB)if(segBox(sg,b))s+=80*sg[4];
+      if(s<bs){bs=s;best={b,x0,y};}});
+    if(bs>=2e4)BAD.push(L.t+' @'+Math.round(bs));let {x0,y}=best;x0=clamp(x0,bx0+4,bx1-4-w);y=clamp(y,by0+11,by1-10);
+    placed.push({x0:x0-3,x1:x0+w+3,y0:y-h/2-(L.vec.length?3:1),y1:y+h/2+1});txt(L.t,x0,y,L.col,L.font,L.vec,L.al);}
+  LQ=[];OB=[];RC=[];}
+
+/* ---------- outils de dessin ---------- */
+function arrow(x1,y1,x2,y2,col,w,o){const L=Math.hypot(x2-x1,y2-y1);if(L<2)return false;w=w||3;o=o||{};
+  const ux=(x2-x1)/L,uy=(y2-y1)/L,hl=Math.min(11+w,L*0.55),hw=hl*0.5;
+  ctx.save();ctx.globalAlpha=o.al==null?1:o.al;ctx.lineCap='round';
+  ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=w+3;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-ux*hl*0.8,y2-uy*hl*0.8);ctx.stroke();
+  ctx.strokeStyle=col;ctx.lineWidth=w;if(o.dash)ctx.setLineDash(o.dash);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-ux*hl*0.8,y2-uy*hl*0.8);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=col;ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=1.5;ctx.lineJoin='round';
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-ux*hl-uy*hw,y2-uy*hl+ux*hw);ctx.lineTo(x2-ux*hl+uy*hw,y2-uy*hl-ux*hw);ctx.closePath();ctx.stroke();ctx.fill();
+  ctx.restore();obSeg(x1,y1,x2,y2,1.5);return true;}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
+
+/* ---------- physique (repère du quai R, axe x vers l'avant du train, y vers le haut) ---------- */
+function throwBall(){if(B.st==='fly')return;B.st='fly';B.x=XT+HX;B.y=HY;B.vx=V;B.vy=u;B.tf=0;B.res=null;B.crossed=false;B.miss=null;
+  trQ=[];trW=[];trH=[];trAcc=0;sample();
+  const T=2*u/G;cam.Wn=V*T+3.6;cam.X=V>0.2?XT+HX+V*T/2-0.15:XT+sceneC();if(V>0.2)cutFlash=1;}
+function endBurst(){mode='const';burst=0;setModeBtns();}
+function sample(){if(exp===1){if(B.st!=='fly'&&trQ.length)return;
+    trQ.push({X:B.x,y:B.y});trW.push({x:B.x-XT,y:B.y});trH.push({X:XT+HX,y:HY});}
+  else{const bx=PIV+LP*Math.sin(P.th),by=YC-LP*Math.cos(P.th);trQ.push({X:XT+bx,y:by});trW.push({x:bx,y:by});
+    if(trQ.length>46){trQ.shift();trW.shift();}}}
+function step(h){
+  let a=0;if(mode==='acc')a=A;else if(mode==='brk')a=-A;
+  if(mode!=='const'){burst-=h;}
+  const V0=V;V+=a*h;
+  if(V>=30){V=30;if(mode==='acc')endBurst();}
+  if(V<=0){V=0;if(mode==='brk')endBurst();}
+  if(mode!=='const'&&burst<=0)endBurst();
+  acur=(V-V0)/h;XT+=(V0+V)/2*h;
+  // balle : chute libre dans R (seul le poids agit, frottements de l'air négligés)
+  if(B.st==='fly'){B.x+=B.vx*h;B.y+=B.vy*h-G*h*h/2;B.vy-=G*h;B.tf+=h;
+    if(!B.crossed&&B.vy<0&&B.y<=HY){B.crossed=true;const dx=B.x-(XT+HX);
+      if(Math.abs(dx)<0.13){B.st='held';B.res={ok:true,dx};B.hold=0.75;B.x=XT+HX;B.y=HY;B.vx=V;B.vy=0;sample();}
+      else{B.miss=dx;}}
+    if(B.st==='fly'&&B.y<=YF+RB){B.y=YF+RB;B.st='floor';B.rel=B.x-XT;B.res={ok:false,dx:B.miss!=null?B.miss:B.x-XT-HX};B.hold=1.3;B.vx=V;B.vy=0;
+      trQ.push({X:B.x,y:B.y});trW.push({x:B.rel,y:B.y});trH.push({X:XT+HX,y:HY});}}
+  else if(B.st==='held'){B.x=XT+HX;B.y=HY;B.vx=V;B.vy=0;}
+  else{B.x=XT+B.rel;B.vx=V;B.vy=0;}
+  if(B.st!=='fly'&&exp===1){B.hold-=h;if(B.hold<=0&&autoT){B.st='held';B.x=XT+HX;B.y=HY;throwBall();}}
+  // pendule : pivot lié au wagon, accélération du pivot = a  →  L·θ'' = −g·sinθ − a·cosθ (léger amortissement)
+  if(!dragP){P.al=-(G/LP)*Math.sin(P.th)-(a/LP)*Math.cos(P.th)-0.05*P.om;P.om+=P.al*h;P.th+=P.om*h;}
+  else P.al=0;
+  // chariot sur la table, roues sans frottement : aucune force horizontale → x' '' = −a dans le wagon
+  C.v+=-a*h;C.x+=C.v*h;const cl=TB0+CW/2+0.05,cr=TB1-CW/2-0.05;
+  if(C.x<cl){C.x=cl;C.v=0;}if(C.x>cr){C.x=cr;C.v=0;}
+  trAcc+=h;if(trAcc>=0.06){trAcc-=0.06;if(exp===2||B.st==='fly')sample();}
+  tSim+=h;
+}
+function advance(dt){let n=Math.ceil(dt/(1/600));const h=dt/n;for(let i=0;i<n;i++)step(h);}
+
+/* ---------- fenêtres (panneaux) ---------- */
+function panels(){const g=10;if(view==='both'){const h=(H-g)/2;return [{id:'q',x:0,y:0,w:W,h},{id:'w',x:0,y:h+g,w:W,h}];}
+  return [{id:view,x:0,y:0,w:W,h:H}];}
+const sBase=p=>Math.min(118,(p.h-6)/5.15);
+const sceneC=()=>exp===1?0.3:0.3;
+function camera(p){const sb=sBase(p);
+  if(p.id==='q'){const vis=Wn=>Math.max(Wn,p.w/sb);
+    const need=()=>exp===1?V*2*u/G+3.6:V*0.5+4.6;
+    if(!camInit){camInit=true;cam.Wn=need();cam.X=XT+sceneC()+(V>0.2?vis(cam.Wn)/2-2.3:0);}
+    let Wv=vis(cam.Wn);const sc=XT+sceneC();
+    const flying=exp===1&&(B.st==='fly'||(B.res&&B.hold>0));
+    if(!flying&&(sc>cam.X+Wv/2-(exp===1?0.9:1.6)||sc<cam.X-Wv/2+0.5)){cam.Wn=need();Wv=vis(cam.Wn);
+      cam.X=V>0.2?sc+Wv/2-(exp===1?2.0:Math.max(3.3,Wv*0.3)):sc;cutFlash=1;}
+    if(!flying&&V<0.05&&Math.abs(cam.X-sc)>0.01){if(Math.abs(cam.X-sc)>0.5)cutFlash=1;cam.Wn=need();Wv=vis(cam.Wn);cam.X=sc;}
+    if(flying&&sc>cam.X+Wv/2+3){cam.Wn=need();Wv=vis(cam.Wn);cam.X=sc;}
+    p.s=p.w/Wv;p.x0=cam.X-Wv/2;}
+  else{p.s=sb;p.x0=XT+sceneC()-p.w/sb/2;}
+  p.yb=p.y+p.h-Math.max(38,0.55*p.s);
+  p.sx=X=>p.x+(X-p.x0)*p.s;p.sy=y=>p.yb-y*p.s;p.X1=p.x0+p.w/p.s;}
+
+/* ---------- décor ---------- */
+function drawPlatform(p,blur){const s=p.s,y0=p.sy(0),y1=p.sy(0.95);
+  const g=ctx.createLinearGradient(0,y1,0,y0);g.addColorStop(0,'#eef1f5');g.addColorStop(1,'#e2e7ed');ctx.fillStyle=g;ctx.fillRect(p.x,y1,p.w,y0-y1);
+  ctx.fillStyle='#e9c46a';ctx.fillRect(p.x,y1,p.w,Math.max(1.5,0.05*s));
+  // lampadaires tous les 12 m
+  const k0=Math.floor((p.x0-6)/12),k1=Math.ceil((p.X1+6)/12);
+  for(let k=k0;k<=k1;k++){const X=6+12*k,x=p.sx(X);
+    ctx.strokeStyle=blur?'rgba(91,107,123,.35)':'#9aa6b4';ctx.lineWidth=Math.max(1.5,0.07*s);ctx.beginPath();ctx.moveTo(x,y1);ctx.lineTo(x,p.sy(4.35));ctx.lineTo(x+0.45*s,p.sy(4.45));ctx.stroke();
+    ctx.fillStyle=blur?'rgba(91,107,123,.35)':'#7d8a99';rr(x+0.3*s,p.sy(4.5),0.4*s,0.1*s+1,2);ctx.fill();
+    ctx.fillStyle='rgba(255,226,140,.8)';ctx.fillRect(x+0.33*s,p.sy(4.4),0.34*s,Math.max(1,0.03*s));}
+  // voyageurs qui attendent sur le quai
+  const j0=Math.floor((p.x0-2)/7.3),j1=Math.ceil((p.X1+2)/7.3),cols=['#8aa1b8','#b49a86','#9bb3a4'];
+  for(let j=j0;j<=j1;j++){const X=2.4+7.3*j,x=p.sx(X),c=cols[((j%3)+3)%3];person(x,y1,s*0.98,c,'#6b7685',blur?0.35:0.9,false);}}
+function person(x,yFeet,s,shirt,legs,al,face){ctx.save();ctx.globalAlpha=al;ctx.lineCap='round';
+  ctx.strokeStyle=legs;ctx.lineWidth=0.12*s;ctx.beginPath();ctx.moveTo(x-0.06*s,yFeet-0.02*s);ctx.lineTo(x-0.04*s,yFeet-0.88*s);ctx.moveTo(x+0.07*s,yFeet-0.02*s);ctx.lineTo(x+0.04*s,yFeet-0.88*s);ctx.stroke();
+  ctx.fillStyle=shirt;rr(x-0.15*s,yFeet-1.48*s,0.3*s,0.62*s,0.1*s);ctx.fill();
+  ctx.fillStyle='#e8c3a2';ctx.beginPath();ctx.arc(x,yFeet-1.62*s,0.115*s,0,7);ctx.fill();ctx.restore();}
+function drawGround(p,blur){const s=p.s,y0=p.sy(0);
+  const g=ctx.createLinearGradient(0,y0,0,p.y+p.h);g.addColorStop(0,'#e3e7ec');g.addColorStop(1,'#d5dbe2');ctx.fillStyle=g;ctx.fillRect(p.x,y0,p.w,p.y+p.h-y0);
+  // traverses
+  const ty=p.sy(-0.1),th=Math.max(3,0.12*s);
+  if(blur){ctx.fillStyle='rgba(139,119,101,.45)';ctx.fillRect(p.x,ty,p.w,th);}
+  else{ctx.fillStyle='#8b7765';const k0=Math.floor(p.x0/0.65)-1,k1=Math.ceil(p.X1/0.65)+1;
+    for(let k=k0;k<=k1;k++){const x=p.sx(k*0.65);if(0.26*s>=1.5)ctx.fillRect(x-0.13*s,ty,0.26*s,th);}}
+  // rail
+  const rg=ctx.createLinearGradient(0,p.sy(0),0,p.sy(-0.11));rg.addColorStop(0,'#aeb7c2');rg.addColorStop(0.3,'#6b7685');rg.addColorStop(1,'#4a5560');
+  ctx.fillStyle=rg;ctx.fillRect(p.x,p.sy(0),p.w,Math.max(2.5,0.11*s));
+  // repères de distance sur le quai (abscisse dans R)
+  const step=p.s>40?1:p.s>14?5:10,lstep=p.s>55?5:p.s>22?10:20;const yb=p.y+p.h;
+  const k0=Math.floor(p.x0/step),k1=Math.ceil(p.X1/step);ctx.strokeStyle=blur?'rgba(138,149,163,.35)':'#9aa5b1';ctx.lineWidth=1;
+  for(let k=k0;k<=k1;k++){const X=k*step,x=p.sx(X),big=Math.abs(X/lstep-Math.round(X/lstep))<1e-6;
+    ctx.beginPath();ctx.moveTo(x,yb-(big?9:5));ctx.lineTo(x,yb);ctx.stroke();
+    if(big&&!blur){ctx.font=FS;const t=Math.round(X)+' m',tw=ctx.measureText(t).width;if(x-tw/2>p.x+3&&x+tw/2<p.x+p.w-3)txt(t,x-tw/2,yb-16,'#6b7685',FS);}}}
+function carBody(p,Xc,main){const s=p.s,xl=p.sx(Xc-CAR/2),xr=p.sx(Xc+CAR/2),yF=p.sy(YF),yC=p.sy(YC),yR=p.sy(YR),yU=p.sy(0.66);
+  if(xr<p.x-20||xl>p.x+p.w+20)return;
+  // paroi du fond, percée de fenêtres (on voit le quai à travers)
+  ctx.save();ctx.beginPath();ctx.rect(xl,yC,xr-xl,yF-yC);
+  const n=7,pitch=CAR/n;for(let i=0;i<n;i++){const X=Xc-CAR/2+pitch*(i+0.5);ctx.roundRect(p.sx(X-0.78),p.sy(YF+2.05),1.56*s,1.05*s,0.12*s);}
+  ctx.fillStyle='#f0f3f7';ctx.fill('evenodd');
+  for(let i=0;i<n;i++){const X=Xc-CAR/2+pitch*(i+0.5);ctx.fillStyle='rgba(55,138,221,.07)';rr(p.sx(X-0.78),p.sy(YF+2.05),1.56*s,1.05*s,0.12*s);ctx.fill();
+    ctx.strokeStyle='#c3ccd7';ctx.lineWidth=Math.max(1,0.03*s);ctx.stroke();
+    // sièges contre la paroi
+    if(!(main&&X-Xc>-2.3&&X-Xc<2.9)){ctx.fillStyle='#d7dde5';rr(p.sx(X-0.32),p.sy(YF+1.08),0.64*s,0.62*s,0.08*s);ctx.fill();ctx.fillStyle='#ccd3dc';rr(p.sx(X-0.4),p.sy(YF+0.5),0.8*s,0.14*s,0.05*s);ctx.fill();}}
+  ctx.restore();
+  // plafond, éclairage
+  const cg=ctx.createLinearGradient(0,yR,0,yC);cg.addColorStop(0,'#cfd6df');cg.addColorStop(1,'#e4e9ef');ctx.fillStyle=cg;ctx.fillRect(xl,yR,xr-xl,yC-yR);
+  ctx.fillStyle='rgba(255,236,170,.9)';for(let i=0;i<5;i++){const X=Xc-CAR/2+CAR/5*(i+0.5);ctx.fillRect(p.sx(X-0.6),yC-Math.max(1.5,0.04*s),1.2*s,Math.max(1.5,0.04*s));}
+  // plancher et châssis
+  ctx.fillStyle='#aab4c0';ctx.fillRect(xl,yF,xr-xl,0.1*s);
+  const ug=ctx.createLinearGradient(0,yF,0,yU);ug.addColorStop(0,'#4a5768');ug.addColorStop(1,'#2f3a48');ctx.fillStyle=ug;ctx.fillRect(xl+0.25*s,yF+0.1*s,xr-xl-0.5*s,yU-yF-0.1*s);
+  // bogies et roues (rotation = distance parcourue / rayon)
+  for(const b of [-5.6,5.6]){const xb=p.sx(Xc+b);ctx.fillStyle='#3a4553';rr(xb-1.75*s,p.sy(0.78),3.5*s,0.3*s,0.06*s);ctx.fill();
+    for(const w of [-1.2,1.2]){const xw=p.sx(Xc+b+w),yw=p.sy(0.43),r=0.43*s;
+      const wg=ctx.createRadialGradient(xw-r*0.3,yw-r*0.3,r*0.1,xw,yw,r);wg.addColorStop(0,'#6b7685');wg.addColorStop(1,'#2b3440');
+      ctx.fillStyle=wg;ctx.beginPath();ctx.arc(xw,yw,r,0,7);ctx.fill();ctx.strokeStyle='#1d252f';ctx.lineWidth=Math.max(1,0.04*s);ctx.stroke();
+      const ang=-(Xc+b+w)/0.43;ctx.strokeStyle='rgba(220,226,233,.75)';ctx.lineWidth=Math.max(1,0.035*s);ctx.beginPath();
+      for(let q=0;q<3;q++){const aa=ang+q*Math.PI/3;ctx.moveTo(xw+Math.cos(aa)*r*0.78,yw+Math.sin(aa)*r*0.78);ctx.lineTo(xw-Math.cos(aa)*r*0.78,yw-Math.sin(aa)*r*0.78);}ctx.stroke();
+      ctx.fillStyle='#c9d1da';ctx.beginPath();ctx.arc(xw,yw,r*0.16,0,7);ctx.fill();}}}
+function carFront(p,Xc){const s=p.s,xl=p.sx(Xc-CAR/2),xr=p.sx(Xc+CAR/2),yF=p.sy(YF),yR=p.sy(YR);
+  if(xr<p.x-20||xl>p.x+p.w+20)return;
+  // cloisons d'extrémité et cadre (la paroi avant est retirée : vue en coupe)
+  const eg=ctx.createLinearGradient(xl,0,xl+0.22*s,0);eg.addColorStop(0,'#9aa7b6');eg.addColorStop(1,'#c3ccd7');
+  ctx.fillStyle=eg;ctx.fillRect(xl,yR,0.22*s,yF-yR+0.1*s);ctx.fillStyle='#b4bfcb';ctx.fillRect(xr-0.22*s,yR,0.22*s,yF-yR+0.1*s);
+  ctx.strokeStyle='#5b6b7b';ctx.lineWidth=Math.max(1.5,0.05*s);rr(xl,yR,xr-xl,yF-yR+0.1*s,Math.min(0.3*s,14));ctx.stroke();
+  ctx.fillStyle='#185fa5';ctx.fillRect(xl,yF+0.1*s,xr-xl,Math.max(2,0.09*s));
+  // soufflet d'intercirculation
+  ctx.fillStyle='#3d4a5c';const xg=p.sx(Xc+CAR/2+GAP/2);ctx.fillRect(xg-GAP/2*s*0.8,p.sy(YC-0.15),GAP*s*0.8,(YC-0.15-YF-0.1)*s);
+  ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=1;for(let i=1;i<5;i++){const xx=xg-GAP/2*s*0.8+GAP*s*0.8*i/5;ctx.beginPath();ctx.moveTo(xx,p.sy(YC-0.15));ctx.lineTo(xx,p.sy(YF+0.1));ctx.stroke();}}
+function passenger(p){const s=p.s,X=XT,x=v=>p.sx(X+v),y=v=>p.sy(YF+v);ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.strokeStyle='#2c3a4e';ctx.lineWidth=0.13*s;ctx.beginPath();ctx.moveTo(x(-0.07),y(0.04));ctx.lineTo(x(-0.04),y(0.9));ctx.moveTo(x(0.09),y(0.04));ctx.lineTo(x(0.05),y(0.9));ctx.stroke();
+  ctx.fillStyle='#1d252f';rr(x(-0.13),y(0.06),0.2*s,0.07*s,0.03*s);ctx.fill();rr(x(0.04),y(0.06),0.2*s,0.07*s,0.03*s);ctx.fill();
+  ctx.strokeStyle='#3e6274';ctx.lineWidth=0.09*s;ctx.beginPath();ctx.moveTo(x(-0.04),y(1.43));ctx.lineTo(x(-0.08),y(1.0));ctx.stroke();
+  const tg=ctx.createLinearGradient(x(-0.16),0,x(0.16),0);tg.addColorStop(0,'#3e6274');tg.addColorStop(1,'#5a8296');ctx.fillStyle=tg;rr(x(-0.16),y(1.5),0.32*s,0.64*s,0.1*s);ctx.fill();
+  ctx.fillStyle='#ecc3a0';ctx.beginPath();ctx.arc(x(0.02),y(1.65),0.12*s,0,7);ctx.fill();
+  ctx.fillStyle='#3b2a20';ctx.beginPath();ctx.arc(x(0.0),y(1.68),0.125*s,Math.PI*0.95,Math.PI*1.95);ctx.fill();
+  ctx.fillStyle='#1d252f';ctx.beginPath();ctx.arc(x(0.09),y(1.65),Math.max(0.8,0.017*s),0,7);ctx.fill();
+  ctx.strokeStyle='#4d7488';ctx.lineWidth=0.085*s;ctx.beginPath();ctx.moveTo(x(0.06),y(1.42));ctx.lineTo(x(0.2),y(1.12));ctx.lineTo(x(HX-0.01),y(HY-YF-0.07));ctx.stroke();
+  ctx.fillStyle='#ecc3a0';ctx.beginPath();ctx.arc(x(HX),y(HY-YF-0.07),0.05*s,0,7);ctx.fill();ctx.restore();}
+function ball(px,py,s){const r=Math.max(3.5,RB*s),g=ctx.createRadialGradient(px-r*0.35,py-r*0.4,r*0.1,px,py,r);g.addColorStop(0,'#ffe79a');g.addColorStop(0.55,'#f2b73a');g.addColorStop(1,'#c27f10');
+  ctx.save();ctx.shadowColor='rgba(12,31,46,.25)';ctx.shadowBlur=4;ctx.shadowOffsetY=1;ctx.fillStyle=g;ctx.beginPath();ctx.arc(px,py,r,0,7);ctx.fill();ctx.restore();
+  ctx.strokeStyle='#8a5a0a';ctx.lineWidth=1;ctx.beginPath();ctx.arc(px,py,r,0,7);ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.75)';ctx.lineWidth=1;ctx.beginPath();ctx.arc(px-r*1.2,py,r*1.05,-0.6,0.6);ctx.stroke();}
+function bobPos(){return [PIV+LP*Math.sin(P.th),YC-LP*Math.cos(P.th)];}
+function pendulum(p){const s=p.s,px=p.sx(XT+PIV),py=p.sy(YC),[bx,by]=bobPos(),X=p.sx(XT+bx),Y=p.sy(by);
+  ctx.fillStyle='#5b6b7b';rr(px-0.12*s,py-1,0.24*s,0.06*s+2,2);ctx.fill();
+  // verticale de référence (pointillés)
+  ctx.save();ctx.setLineDash([4,4]);ctx.strokeStyle='rgba(138,149,163,.7)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,p.sy(YC-LP-0.22));ctx.stroke();ctx.restore();
+  ctx.strokeStyle='#4a5560';ctx.lineWidth=Math.max(1.2,0.02*s);ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(X,Y);ctx.stroke();obSeg(px,py,X,Y,1);
+  const r=Math.max(4,0.1*s),g=ctx.createRadialGradient(X-r*0.35,Y-r*0.4,r*0.1,X,Y,r);g.addColorStop(0,'#c7d0da');g.addColorStop(0.6,'#6b7685');g.addColorStop(1,'#2f3a48');
+  ctx.save();if(hoverP||dragP){ctx.shadowColor='rgba(55,138,221,.6)';ctx.shadowBlur=12;}ctx.fillStyle=g;ctx.beginPath();ctx.arc(X,Y,r,0,7);ctx.fill();ctx.restore();
+  return {px,py,X,Y,r};}
+function table(p){const s=p.s,x0=p.sx(XT+TB0),x1=p.sx(XT+TB1),yt=p.sy(TBY);
+  ctx.fillStyle='#9c7650';for(const lx of [TB0+0.12,TB1-0.12]){ctx.fillRect(p.sx(XT+lx)-0.03*s,yt,0.06*s,(TBY-YF)*s);}
+  const g=ctx.createLinearGradient(0,yt,0,yt+0.06*s);g.addColorStop(0,'#d8b48a');g.addColorStop(1,'#a87f55');ctx.fillStyle=g;rr(x0,yt,x1-x0,Math.max(3,0.06*s),2);ctx.fill();
+  ctx.fillStyle='#6b7685';for(const bx of [TB0+0.02,TB1-0.05])ctx.fillRect(p.sx(XT+bx),p.sy(TBY+0.08),Math.max(2,0.03*s),0.08*s);
+  // chariot
+  const cx=p.sx(XT+C.x),cy=p.sy(TBY+0.04),wr=Math.max(2.2,0.035*s);
+  const cg=ctx.createLinearGradient(0,cy-0.12*s,0,cy);cg.addColorStop(0,'#5a6b80');cg.addColorStop(1,'#2f3a48');
+  ctx.fillStyle=cg;rr(cx-CW/2*s,cy-0.13*s,CW*s,0.1*s,0.03*s);ctx.fill();
+  for(const w of [-0.08,0.08]){ctx.fillStyle='#1d252f';ctx.beginPath();ctx.arc(cx+w*s,cy-0.005*s,wr,0,7);ctx.fill();ctx.fillStyle='#c9d1da';ctx.beginPath();ctx.arc(cx+w*s,cy-0.005*s,wr*0.35,0,7);ctx.fill();}
+  return {cx,cy};}
+
+/* ---------- rendu d'un panneau ---------- */
+let kV=10;
+function drawPanel(p){const isW=p.id==='w',s=p.s;
+  ctx.save();ctx.beginPath();ctx.rect(p.x,p.y,p.w,p.h);ctx.clip();
+  ctx.fillStyle='#fff';ctx.fillRect(p.x,p.y,p.w,p.h);
+  const blur=isW&&V*slow*s>650;
+  drawPlatform(p,blur);
+  const pitch=CAR+GAP,k0=Math.floor((p.x0-XT-CAR)/pitch),k1=Math.ceil((p.X1-XT+CAR)/pitch);
+  for(let k=k0;k<=k1;k++)carBody(p,XT+k*pitch,k===0);
+  let bob=null,cart=null;
+  if(exp===1)passenger(p);else{cart=table(p);bob=pendulum(p);}
+  for(let k=k0;k<=k1;k++)carFront(p,XT+k*pitch);
+  drawGround(p,blur);
+  // vitesse du train (vue du quai)
+  if(!isW&&V>0.05){const xa=p.sx(XT-1.0),ya=p.sy(YR+0.32),len=Math.min(160,14+V*6);
+    if(arrow(xa,ya,xa+len,ya,OR,3))lab('V = '+fr(V,1)+' m/s',ORD,[[xa+len/2,ya-13,'center'],[xa+len+8,ya,'left'],[xa-8,ya,'right']],{vec:[0]});}
+  // traces
+  const dots=(arr,f,col)=>{for(const d of arr){const [x,y]=f(d);ctx.fillStyle=col;ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x,y,3.3,0,7);ctx.fill();ctx.stroke();}};
+  if(exp===1){
+    if(!isW){ if(V>0.1){ctx.save();ctx.setLineDash([2,4]);ctx.strokeStyle='rgba(138,149,163,.55)';ctx.lineWidth=1;
+        for(let i=0;i<trQ.length&&i<trH.length;i++){ctx.beginPath();ctx.moveTo(p.sx(trQ[i].X),p.sy(trQ[i].y));ctx.lineTo(p.sx(trH[i].X),p.sy(trH[i].y));ctx.stroke();}ctx.restore();
+        for(const d of trH){ctx.strokeStyle='#8a95a3';ctx.lineWidth=1.5;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(p.sx(d.X),p.sy(d.y),2.6,0,7);ctx.fill();ctx.stroke();}}
+      dots(trQ,d=>[p.sx(d.X),p.sy(d.y)],GR);}
+    else dots(trW,d=>[p.sx(XT+d.x),p.sy(d.y)],BL);
+    for(const d of (isW?trW.map(d=>({X:XT+d.x,y:d.y})):trQ))obRect(p.sx(d.X)-4,p.sy(d.y)-4,8,8);
+    const bx=p.sx(B.x),by=p.sy(B.y);ball(bx,by,s);obRect(bx-8,by-8,16,16);
+    obRect(p.sx(XT-0.18),p.sy(YF+1.8),0.36*s,1.8*s);
+    // vecteurs de la balle
+    const fly=B.st==='fly';
+    const vx=isW?B.vx-V:B.vx,vy=B.vy;
+    if(fly||(!isW&&V>0.05)){
+      const ex=bx+vx*kV,ey=by-vy*kV;
+      if(!isW&&comp&&fly&&V>0.2&&Math.abs(vy)>0.15){arrow(bx,by,bx+V*kV,by,OR,2,{al:0.9});arrow(bx+V*kV,by,ex,ey,BL,2,{al:0.9,dash:[5,3]});
+        lab('V',ORD,around(bx+V*kV*0.55,by,10,8),{vec:[0]});lab('v′',BLD,around(bx+V*kV+(ex-bx-V*kV)*0.5,(by+ey)/2,10,8),{vec:[0]});}
+      if(arrow(bx,by,ex,ey,isW?BL:GR,3.2)){const nm=isW?'v′':'v';lab(fly?nm+' = '+fr(Math.hypot(vx,vy),1)+' m/s':'v = V',isW?BLD:GRD,around(ex,ey,12,12),{vec:[0]});}}
+    if(fly){const ax=isW?-acur:0,ay=-G,am=Math.hypot(ax,ay),FL=clamp(0.7*s,22,46),L=FL/G;
+      const x0=bx+17,ok=Math.abs(ax)<1e-6;arrow(x0,by,x0+ax*L,by-ay*L,VI,2.6);
+      lab(isW?(ok?'a′ = g':'a′ ≠ g'):'a = g',VI,[[x0+ax*L+7,by-ay*L-6,'left'],[x0+ax*L+7,by-ay*L+8,'left'],[x0+ax*L,by-ay*L+18,'center'],[x0+ax*L-8,by-ay*L-6,'right']],{vec:isW?[0,5]:[0,4]});
+      arrow(bx,by,bx,by+FL,RD,2.6);lab('P',RDD,[[bx-8,by+FL-6,'right'],[bx,by+FL+14,'center'],[bx-8,by+FL+6,'right']],{vec:[0]});}
+    // étiquette de trajectoire
+    if(trQ.length>4){const arr=isW?trW.map(d=>({X:XT+d.x,y:d.y})):trQ;let top=arr[0];for(const d of arr)if(d.y>top.y)top=d;
+      const tx=p.sx(top.X),ty=p.sy(top.y);
+      let mn=1e9,mxx=-1e9;for(const d of (isW?trW.map(d=>({X:d.x})):arr)){mn=Math.min(mn,d.X);mxx=Math.max(mxx,d.X);}const straight=mxx-mn<0.05;
+      lab(straight?'segment vertical':isW?'courbe vers l\'arrière':'parabole',isW?BLD:GRD,[[tx,ty-16,'center'],[tx+10,ty-10,'left'],[tx-10,ty-10,'right']],{font:FS});}
+    if(B.res&&B.st!=='fly'){const hx=p.sx(XT+HX),hy=p.sy(HY);
+      if(B.res.ok)lab('retombe dans la main',GRD,[[hx+14,hy+16,'left'],[hx,hy-26,'center'],[hx+14,hy-14,'left'],[hx-30,hy+30,'left']],{font:FS});
+      else{const fx=p.sx(B.x),fy=p.sy(B.y);lab('retombe '+fr(Math.abs(B.res.dx)*100,0)+' cm '+(B.res.dx<0?'derrière':'devant')+' la main',RDD,[[fx,fy-18,'center'],[fx-10,fy-14,'right'],[fx+10,fy-14,'left']],{font:FS});}}
+  }else{
+    dots(isW?trW.map(d=>({X:XT+d.x,y:d.y})):trQ,d=>[p.sx(d.X),p.sy(d.y)],isW?BL:GR);
+    const {X,Y,r,px,py}=bob;obRect(X-r-2,Y-r-2,2*r+4,2*r+4);
+    const [vx_,vy_]=[LP*P.om*Math.cos(P.th),LP*P.om*Math.sin(P.th)];
+    const vx=isW?vx_:vx_+V,vy=vy_;
+    const kk=Math.min(kV,26);
+    if(arrow(X,Y,X+vx*kk,Y-vy*kk,isW?BL:GR,3))lab((isW?'v′':'v')+' = '+fr(Math.hypot(vx,vy),1)+' m/s',isW?BLD:GRD,around(X+vx*kk,Y-vy*kk,12,12),{vec:[0]});
+    const Tn=MP*(G*Math.cos(P.th)+LP*P.om*P.om-acur*Math.sin(P.th)),Lf=clamp(0.62*s,18,40)/(MP*G);
+    arrow(X,Y,X,Y+MP*G*Lf,RD,2.6);lab('P',RDD,[[X+9,Y+MP*G*Lf-4,'left'],[X-9,Y+MP*G*Lf-4,'right'],[X,Y+MP*G*Lf+14,'center']],{vec:[0]});
+    const ux=(px-X),uy=(py-Y),ul=Math.hypot(ux,uy)||1;arrow(X,Y,X+ux/ul*Tn*Lf,Y+uy/ul*Tn*Lf,'#2c3a4e',2.4);
+    lab('T',INK,around(X+ux/ul*Tn*Lf,Y+uy/ul*Tn*Lf,10,10),{vec:[0]});
+    const {cx,cy}=cart;obRect(cx-CW/2*s,cy-0.14*s,CW*s,0.14*s);
+    const cvx=isW?C.v:C.v+V;
+    if(Math.abs(cvx)>0.05){const kc=Math.min(kV,26);if(arrow(cx,cy-0.24*s,cx+cvx*kc,cy-0.24*s,isW?BL:GR,2.6))lab('chariot '+fr(Math.abs(cvx),1)+' m/s',isW?BLD:GRD,[[cx+cvx*kc/2,cy-0.24*s-14,'center'],[cx,cy-0.24*s-28,'center']],{font:FS});}
+    else lab(C.x<=TB0+CW/2+0.051||C.x>=TB1-CW/2-0.051?'chariot contre la butée':'chariot immobile',isW?BLD:GRD,[[cx,cy-0.2*s-12,'center'],[cx,cy-0.2*s-28,'center'],[cx+CW*s*0.7,cy-0.2*s-12,'left'],[cx-CW*s*0.7,cy-0.2*s-12,'right'],[cx,cy+0.2*s+14,'center']],{font:FS});
+    // équilibre incliné si le train accélère
+    if(Math.abs(acur)>1e-6){const te=Math.atan(-acur/G),ex=px+Math.sin(te)*LP*s,ey=py+Math.cos(te)*LP*s;ctx.save();ctx.setLineDash([3,4]);ctx.strokeStyle=RD;ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(ex,ey);ctx.stroke();ctx.restore();
+      lab('équilibre penché de '+fr(Math.abs(te)*180/Math.PI,1)+'°',RDD,[[ex-8,ey+16,'right'],[ex+8,ey+16,'left'],[ex,ey+30,'center']],{font:FS});}
+  }
+  // note d'échelle quand la vue du quai est dézoomée
+  if(!isW&&s<0.72*sBase(p)&&s<48){const Tf=2*u/G;
+    const t=exp===1?'Même échelle en x et en y : à V = '+fr(V,1)+' m/s, la balle avance de '+fr(V*Tf,1)+' m pendant son vol, pour ne monter que de '+fr(u*u/2/G,2)+' m. La parabole vue du quai est très aplatie.'
+      :'Même échelle en x et en y : à V = '+fr(V,1)+' m/s, le train parcourt '+fr(V*T0,1)+' m pendant une seule oscillation du pendule ('+fr(T0,2)+' s).';
+    const top=p.y+(p.w<560?104:62),bot=p.sy(YR+0.9);
+    if(bot-top>40){ctx.font=FS;const mw=Math.min(p.w-40,560),words=t.split(' '),lines=[];let cur='';
+      for(const w of words){const tt=cur?cur+' '+w:w;if(ctx.measureText(tt).width>mw&&cur){lines.push(cur);cur=w;}else cur=tt;}lines.push(cur);
+      const lh=17,hh=lines.length*lh;if(hh<bot-top){const y0=top+(bot-top-hh)/2+lh/2;
+        lines.forEach((l,i)=>{const w=ctx.measureText(l).width;txt(l,p.x+p.w/2-w/2,y0+i*lh,MUT,FS);});obRect(p.x+p.w/2-mw/2,y0-lh/2,mw,hh);}}}
+  // en-têtes
+  const narrow=p.w<560;ctx.font=FH;
+  const t1=isW?'Vu du wagon':'Vu du quai';
+  const inert=Math.abs(acur)<1e-6;
+  const t2=isW?(inert?(narrow?'R′ : inertiel':'référentiel R′ : inertiel (V constante)'):(narrow?'R′ : NON inertiel':'référentiel R′ : NON inertiel (le train '+(acur>0?'accélère':'freine')+')')):(narrow?'R : inertiel':'référentiel R : inertiel (lié au sol)');
+  ctx.font=FS;const w2=ctx.measureText(t2).width;ctx.font=FH;const w1=ctx.measureText(t1).width;
+  const bw=Math.max(w1,w2)+22,bh=42,hx=p.x+10,hy=p.y+10;
+  ctx.save();ctx.shadowColor='rgba(12,31,46,.12)';ctx.shadowBlur=8;ctx.shadowOffsetY=2;ctx.fillStyle='rgba(255,255,255,.96)';rr(hx,hy,bw,bh,8);ctx.fill();ctx.restore();
+  ctx.strokeStyle=isW?'#c4dbf2':'#c6e6da';ctx.lineWidth=1;rr(hx,hy,bw,bh,8);ctx.stroke();
+  ctx.fillStyle=isW?BL:GR;rr(hx,hy+8,3,bh-16,2);ctx.fill();
+  ctx.font=FH;ctx.fillStyle=INK;ctx.textBaseline='middle';ctx.fillText(t1,hx+11,hy+14);
+  ctx.font=FS;ctx.fillStyle=isW?(inert?GRD:RDD):GRD;ctx.fillText(t2,hx+11,hy+30);ctx.textBaseline='alphabetic';obRect(hx-4,hy-4,bw+8,bh+8);
+  // pastille de droite
+  const c1=isW?(V>0.05?'le quai défile à '+fr(V,1)+' m/s':'le quai est immobile'):'train : V = '+fr(V,1)+' m/s';
+  const c2=mode==='acc'?'accélère : A = '+fr(A,1)+' m/s²':mode==='brk'?'freine : A = −'+fr(A,1)+' m/s²':'V constante';
+  ctx.font=FT;const cw1=ctx.measureText(c1).width;ctx.font=FS;const cw=Math.max(cw1,ctx.measureText(c2).width)+20;
+  let cx=p.x+p.w-10-cw,cy=hy;if(cx<hx+bw+8){cy=hy+bh+8;cx=p.x+10;}
+  ctx.fillStyle='rgba(255,255,255,.94)';rr(cx,cy,cw,40,8);ctx.fill();ctx.strokeStyle='#ecd9b8';ctx.stroke();
+  ctx.textBaseline='middle';ctx.font=FT;ctx.fillStyle=ORD;ctx.fillText(c1,cx+10,cy+13);ctx.font=FS;ctx.fillStyle=mode==='const'?MUT:RDD;ctx.fillText(c2,cx+10,cy+29);ctx.textBaseline='alphabetic';
+  obRect(cx-4,cy-4,cw+8,48);
+  flush(p);
+  if(!isW&&cutFlash>0){ctx.fillStyle='rgba(255,255,255,'+(0.55*cutFlash).toFixed(3)+')';ctx.fillRect(p.x,p.y,p.w,p.h);}
+  ctx.restore();
+  p.bob=bob;}
+
+/* ---------- lectures : formule, tableau, info ---------- */
+const cache={};function setHTML(id,h){if(cache[id]!==h){$(id).innerHTML=h;cache[id]=h;}}
+const vv=(c,t)=>'<b style="color:'+c+'"><span class="vec">'+t+'</span></b>';
+const bd=(k,t)=>'<span class="bd '+k+'">'+t+'</span>';
+function readouts(){const inert=Math.abs(acur)<1e-6;let f,rows,info,hint;
+  if(exp===1){const fly=B.st==='fly',vx=B.vx,vy=B.vy,vpx=vx-V;
+    f=vv(GRD,'v')+' = '+vv(ORD,'V')+' + '+vv(BLD,'v')+'<b style="color:'+BLD+'">′</b> &nbsp;→&nbsp; ('+fr(vx,2)+' ; '+fr(vy,2)+') = ('+fr(V,2)+' ; 0) + ('+fr(vpx,2)+' ; '+fr(vy,2)+') m/s';
+    f+=inert?'<br>'+vv(VI,'a')+' = '+vv(VI,'a')+'<b style="color:'+VI+'">′</b> = '+vv(VI,'g')+' (9,81 m/s² vers le bas) : '+vv(ORD,'V')+' est constante, elle n\'ajoute aucune accélération. Même force '+vv(RDD,'P')+', même accélération : Σ'+vv(RDD,'F')+' = m'+vv(VI,'a')+' est vraie dans les deux référentiels.'
+      :'<br>'+vv(VI,'a')+'<b style="color:'+VI+'">′</b> = '+vv(VI,'g')+' − '+vv(ORD,'A')+' : le wagon '+(acur>0?'accélère':'freine')+' (A = '+fr(Math.abs(acur),1)+' m/s²). Dans le wagon, la balle a une accélération horizontale de '+fr(Math.abs(acur),1)+' m/s² sans aucune force horizontale : Σ'+vv(RDD,'F')+' ≠ m'+vv(VI,'a')+'<b style="color:'+VI+'">′</b>, R′ n\'est pas inertiel.';
+    const sq=Math.hypot(vx,vy),sw=Math.hypot(vpx,vy),Tf=2*u/G;
+    const traj=B.res||fly?(V<0.05&&inert?['segment vertical','segment vertical']:['parabole',inert?'segment vertical':'courbe vers l\'arrière']):['—','—'];
+    const res=B.res?(B.res.ok?'oui':'non, '+fr(Math.abs(B.res.dx)*100,0)+' cm '+(B.res.dx<0?'derrière':'devant')):fly?'en vol…':'—';
+    const am=Math.hypot(acur,G);
+    rows=[
+      ['Vitesse de la balle',fr(sq,2)+' m/s',fr(sw,2)+' m/s',Math.abs(sq-sw)<0.005?bd('s','identique'):bd('d','change')],
+      ['Trajectoire',traj[0],traj[1],traj[0]===traj[1]?bd('s','identique'):bd('d','change')],
+      ['Accélération en vol','9,81 m/s² ↓',inert?'9,81 m/s² ↓':fr(am,2)+' m/s², penchée',inert?bd('s','identique'):bd('x','différente')],
+      ['Force sur la balle (poids)','P = '+fr(MB*G,2)+' N ↓','P = '+fr(MB*G,2)+' N ↓',bd('s','identique')],
+      ['ΣF = m·a vérifiée ?','oui',inert?'oui':'non',inert?bd('s','partout'):bd('x','faux dans R′')],
+      ['Retombe dans la main ?',res,res,bd('s','même fait')]];
+    info='V = '+fr(V,1)+' m/s'+(fly?' &nbsp;|&nbsp; temps de vol écoulé : '+fr(B.tf,2)+' s / '+fr(Tf,2)+' s':' &nbsp;|&nbsp; durée d\'un vol : 2u/g = '+fr(Tf,2)+' s')+
+      ' &nbsp;|&nbsp; hauteur atteinte : u²/2g = '+fr(u*u/2/G,2)+' m'+' &nbsp;|&nbsp; <b style="color:'+GRD+'">vu du quai : v = '+fr(sq,2)+' m/s</b> &nbsp;|&nbsp; <b style="color:'+BLD+'">vu du wagon : v′ = '+fr(sw,2)+' m/s</b>'+
+      ' &nbsp;|&nbsp; pendant le vol, le train avance de V·2u/g = '+fr(V*Tf,2)+' m';
+    hint=!inert?'Le train '+(acur>0?'accélère : la main est emportée vers l\'avant':'freine : la main ralentit')+' alors que la balle garde la vitesse horizontale qu\'elle avait au lancer. Vue du wagon, elle dévie '+(acur>0?'vers l\'arrière':'vers l\'avant')+' sans qu\'aucune force ne la pousse : un référentiel qui accélère n\'est pas inertiel.'
+      :V<0.05?'Train à l\'arrêt : les deux vues sont identiques. Monte V et relance : seule la vue du quai change.'
+      :'Vue du wagon, la balle monte et redescend à la verticale. Vue du quai, elle garde la vitesse horizontale V de la main et décrit une parabole. Même accélération g, même poids : elle retombe dans la main dans les deux cas.';
+  }else{const [bx,by]=bobPos(),vpx=LP*P.om*Math.cos(P.th),vpy=LP*P.om*Math.sin(P.th),vx=vpx+V;
+    f=vv(GRD,'v')+' = '+vv(ORD,'V')+' + '+vv(BLD,'v')+'<b style="color:'+BLD+'">′</b> pour la masse du pendule &nbsp;→&nbsp; ('+fr(vx,2)+' ; '+fr(vpy,2)+') = ('+fr(V,2)+' ; 0) + ('+fr(vpx,2)+' ; '+fr(vpy,2)+') m/s';
+    f+=inert?'<br>Mêmes forces ('+vv(RDD,'P')+' et '+vv(INK,'T')+'), même accélération : la période T = 2π√(L/g) = '+fr(T0,2)+' s est la même pour toute valeur de V. Les yeux fermés, impossible de savoir si le train roule.'
+      :'<br>Le train '+(acur>0?'accélère':'freine')+' : dans le wagon, le fil se penche de arctan(A/g) = '+fr(Math.atan(Math.abs(acur)/G)*180/Math.PI,1)+'° '+(acur>0?'vers l\'arrière':'vers l\'avant')+' et le chariot part '+(acur>0?'vers l\'arrière':'vers l\'avant')+' sans force horizontale : R′ n\'est pas inertiel.';
+    const ral=Math.hypot(LP*P.al,LP*P.om*P.om),[arx,ary]=[LP*P.al*Math.cos(P.th)-LP*P.om*P.om*Math.sin(P.th),LP*P.al*Math.sin(P.th)+LP*P.om*P.om*Math.cos(P.th)];
+    const aq=Math.hypot(arx+acur,ary),aw=Math.hypot(arx,ary);
+    const Tn=MP*(G*Math.cos(P.th)+LP*P.om*P.om-acur*Math.sin(P.th));
+    const sq=Math.hypot(vx,vpy),sw=Math.hypot(vpx,vpy);
+    const cq=C.v+V,cw=C.v;
+    rows=[
+      ['Vitesse de la masse',fr(sq,2)+' m/s',fr(sw,2)+' m/s',Math.abs(sq-sw)<0.005?bd('s','identique'):bd('d','change')],
+      ['Trajectoire de la masse',V<0.05&&inert?'arc de cercle':'ondulée, avance','arc de cercle',V<0.05&&inert?bd('s','identique'):bd('d','change')],
+      ['Accélération de la masse',fr(aq,2)+' m/s²',fr(aw,2)+' m/s²',inert?bd('s','identique'):bd('x','différente')],
+      ['Forces : poids, tension','P = '+fr(MP*G,2)+' N, T = '+fr(Tn,2)+' N','P = '+fr(MP*G,2)+' N, T = '+fr(Tn,2)+' N',bd('s','identique')],
+      ['Chariot posé sur la table',Math.abs(cq)<0.005?'immobile':fr(cq,2)+' m/s',Math.abs(cw)<0.005?'immobile':fr(cw,2)+' m/s',Math.abs(cq-cw)<0.005?bd('s','identique'):bd('d','change')],
+      ['ΣF = m·a vérifiée ?','oui',inert?'oui':'non',inert?bd('s','partout'):bd('x','faux dans R′')]];
+    info='V = '+fr(V,1)+' m/s &nbsp;|&nbsp; θ = '+fr(P.th*180/Math.PI,1)+'° &nbsp;|&nbsp; période T = 2π√(L/g) = '+fr(T0,2)+' s (L = '+fr(LP,2)+' m) &nbsp;|&nbsp; <b style="color:'+GRD+'">vu du quai : v = '+fr(sq,2)+' m/s</b> &nbsp;|&nbsp; <b style="color:'+BLD+'">vu du wagon : v′ = '+fr(sw,2)+' m/s</b>';
+    hint=!inert?'Le train '+(acur>0?'accélère':'freine')+' : le pendule se penche, le chariot roule tout seul sur la table. Là, les yeux fermés, tu sens que le train change de vitesse : R′ n\'est plus inertiel.'
+      :'Peux-tu savoir, les yeux fermés, si le train roule ? Non : à V constante, le pendule pend à la verticale, oscille avec la même période et le chariot reste où il est, que V vaille 0 ou 30 m/s. Attrape la masse pour l\'écarter.';
+  }
+  setHTML('fml',f);setHTML('hint',hint);setHTML('info',info);
+  setHTML('cmpb',rows.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td>'+r[2]+'</td><td>'+r[3]+'</td></tr>').join(''));}
+
+/* ---------- boucle ---------- */
+let last=0,rT=0,PAN=[];
+function frame(ts){const dtr=Math.min(0.05,(ts-(last||ts))/1000);last=ts;
+  if(!paused)advance(dtr*slow);
+  cutFlash=Math.max(0,cutFlash-dtr/0.22);
+  render();
+  rT+=dtr;if(rT>0.09){rT=0;readouts();syncV();}
+  requestAnimationFrame(frame);}
+function render(){syncSize();ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  PAN=panels();for(const p of PAN)camera(p);
+  const pw=W,mx=exp===1?Math.max(V+u,4):Math.max(V+2.5,4);kV=clamp(0.3*pw/mx,3,18);
+  for(const p of PAN)drawPanel(p);
+  if(PAN.length===2){const y=PAN[0].h;ctx.fillStyle='#f3f5f8';ctx.fillRect(0,y,W,10);ctx.fillStyle='#dfe4ea';ctx.fillRect(0,y+4.5,W,1);}}
+
+/* ---------- commandes ---------- */
+function setV(v){const d=v-V;V=v;if(B.st==='fly')B.vx+=d;} // réglage manuel : on change de scénario, pas d'accélération physique
+function syncV(){const sv=$('sV');if(Math.abs(+sv.value-V)>0.01&&document.activeElement!==sv){sv.value=V;}$('sVv').textContent=fr(V,1)+' m/s';}
+$('sV').addEventListener('input',e=>{setV(+e.target.value);$('sVv').textContent=fr(V,1)+' m/s';});
+$('sU').addEventListener('input',e=>{u=+e.target.value;$('sUv').textContent=fr(u,1)+' m/s';});
+$('sA').addEventListener('input',e=>{A=+e.target.value;$('sAv').textContent=fr(A,1)+' m/s²';});
+function setModeBtns(){$('mC').classList.toggle('on',mode==='const');$('mA').classList.toggle('on',mode==='acc');$('mB').classList.toggle('on',mode==='brk');}
+$('mC').onclick=()=>{endBurst();};
+$('mA').onclick=()=>{if(V>=30)return;mode='acc';burst=3;setModeBtns();if(exp===1){B.st='held';throwBall();}};
+$('mB').onclick=()=>{if(V<=0)return;mode='brk';burst=3;setModeBtns();if(exp===1){B.st='held';throwBall();}};
+$('bThrow').onclick=()=>{if(B.st!=='fly'){B.st='held';throwBall();}};
+$('bAuto').onclick=e=>{autoT=!autoT;e.target.classList.toggle('on',autoT);if(autoT&&B.st!=='fly')B.hold=Math.min(B.hold,0.3);};
+$('bComp').onclick=e=>{comp=!comp;e.target.classList.toggle('on',comp);};
+$('bSwing').onclick=()=>{P.th=-0.35;P.om=0;trQ=[];trW=[];};
+$('bReset').onclick=()=>{P.th=0.32;P.om=0;C.x=1.4;C.v=0;trQ=[];trW=[];};
+$('bPause').onclick=e=>{paused=!paused;e.target.classList.toggle('on',paused);e.target.textContent=paused?'Reprendre':'Pause';};
+for(const [id,v] of [['vBoth','both'],['vQ','q'],['vW','w']])$(id).onclick=()=>{view=v;['vBoth','vQ','vW'].forEach(i=>$(i).classList.toggle('on',i===id));};
+for(const [id,v] of [['r1',1],['r2',0.5],['r4',0.25]])$(id).onclick=()=>{slow=v;['r1','r2','r4'].forEach(i=>$(i).classList.toggle('on',i===id));};
+function setExp(e){exp=e;$('tA').classList.toggle('on',e===1);$('tB').classList.toggle('on',e===2);
+  $('rowU').hidden=e!==1;$('rowB1').hidden=e!==1;$('rowB2').hidden=e!==2;
+  trQ=[];trW=[];trH=[];camInit=false;
+  if(e===1){B.st='held';B.res=null;B.hold=0.3;}else{P.th=0.32;P.om=0;C.x=1.4;C.v=0;}
+  cache.cmpb=null;readouts();}
+$('tA').onclick=()=>setExp(1);$('tB').onclick=()=>setExp(2);
+
+/* ---------- interaction directe : toucher pour lancer, attraper la masse du pendule ---------- */
+function pt(e){const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];}
+const panAt=q=>PAN.find(p=>q[0]>=p.x&&q[0]<=p.x+p.w&&q[1]>=p.y&&q[1]<=p.y+p.h);
+function nearBob(q){const p=panAt(q);if(!p||!p.bob)return false;return Math.hypot(q[0]-p.bob.X,q[1]-p.bob.Y)<Math.max(26,p.bob.r+14);}
+let dragPan=null;
+cv.addEventListener('pointerdown',e=>{const q=pt(e);
+  if(exp===2&&nearBob(q)){dragP=true;dragPan=panAt(q);cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing';e.preventDefault();return;}
+  if(exp===1&&B.st!=='fly'){B.st='held';throwBall();}});
+cv.addEventListener('pointermove',e=>{const q=pt(e);
+  if(dragP&&dragPan){const p=dragPan,X=p.x0+(q[0]-p.x)/p.s,y=(p.yb-q[1])/p.s,xr=X-XT;
+    P.th=clamp(Math.atan2(xr-PIV,YC-y),-1.05,1.05);P.om=0;return;}
+  hoverP=exp===2&&nearBob(q);cv.style.cursor=hoverP?'grab':exp===1?'pointer':'default';});
+const rel=()=>{if(dragP){dragP=false;dragPan=null;cv.style.cursor='grab';trQ=[];trW=[];}};
+cv.addEventListener('pointerup',rel);cv.addEventListener('pointercancel',rel);
+
+window.__ri={bad:()=>{const b=BAD.slice();BAD=[];return b;},adv:s=>{advance(s);},render:()=>{render();readouts();},
+  set(o){if(o.V!=null){setV(o.V);}if(o.u!=null){u=o.u;$('sU').value=u;$('sUv').textContent=fr(u,1)+' m/s';}if(o.A!=null)A=o.A;
+    if(o.exp)setExp(o.exp);if(o.view){const m={both:'vBoth',q:'vQ',w:'vW'};$(m[o.view]).click();}if(o.mode){({const:$('mC'),acc:$('mA'),brk:$('mB')})[o.mode].click();}
+    if(o.th!=null){P.th=o.th;P.om=0;}syncV();},
+  get st(){return {V,XT,acur,mode,B:{...B},P:{...P},C:{...C},tSim}}};
+setExp(1);
+requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Dynamique : forces et lois de Newton<span>11 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/diagramme-forces/"><i>01</i>Diagramme de forces et 2ᵉ loi</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/inertie/"><i>02</i>1re loi : le principe d&#x27;inertie</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/referentiels-inertiels/"><i>03</i>Équivalence des référentiels inertiels</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/chariot-poulie/"><i>04</i>2e loi : F = m·a</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ascenseur/"><i>05</i>Poids apparent dans un ascenseur</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/action-reaction/"><i>06</i>Action et réaction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/action-reaction-exemples/"><i>07</i>Action-réaction : la fusée et d&#x27;autres exemples</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/plan_incline/"><i>08</i>Plan incliné</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/frottement-coef/"><i>09</i>Coefficient de frottement</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/tourniquet/"><i>10</i>Forces sur un tourniquet</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/impulsion/"><i>11</i>Impulsion</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

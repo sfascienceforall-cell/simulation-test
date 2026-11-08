@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Onde progressive et stationnaire · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+.val{white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font:600 .82rem Mulish,system-ui,sans-serif;color:#5f6b7a;margin:10px 0 2px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.legend i.dot{width:10px;height:10px;border-radius:50%}
+.modes,.nrow,.togs{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.nrow .btn{min-width:44px;padding:6px 10px!important}
+.lbl2{font:700 .86rem Mulish,system-ui,sans-serif;color:#2c3a4e;margin-right:4px}
+.hint{font:500 .84rem Mulish,system-ui,sans-serif;color:#5f6b7a}
+[hidden]{display:none!important}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH5">Ondes</a>›<b>Onde progressive et stationnaire</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Ondes</span><span class="sfa-chip free">Gratuit</span></div><h1>Onde progressive et stationnaire</h1><p>Superposition, nœuds et ventres</p></div>
+<section class="sfa-sim">
+
+
+
+<div class="row modes">
+  <button class="btn" id="mProg">Onde progressive</button>
+  <button class="btn on" id="mStat">Corde fixée : onde stationnaire</button>
+</div>
+
+<canvas id="cv" style="width:100%;height:62vh;min-height:400px;" aria-label="Corde vibrante excitée par un vibreur : ondes incidente, réfléchie et stationnaire"></canvas>
+
+<div class="legend" id="legS">
+  <span><i style="background:#378ADD"></i>Onde incidente →</span>
+  <span><i style="background:#E24B4A"></i>Onde réfléchie ←</span>
+  <span><i style="background:#1D9E75;height:5px"></i>Corde = somme des deux</span>
+  <span><i style="background:#7F77DD;opacity:.6"></i>Enveloppe ±2A</span>
+  <span><i class="dot" style="background:#BA7517"></i>N : nœud (immobile)</span>
+  <span><i class="dot" style="background:#7F77DD"></i>V : ventre (amplitude max)</span>
+</div>
+<div class="legend" id="legP" hidden>
+  <span><i style="background:#378ADD;height:5px"></i>Corde parcourue par l'onde →</span>
+  <span><i class="dot" style="background:#7F77DD"></i>P : un point de la corde</span>
+  <span><i style="background:#BA7517"></i>λ : longueur d'onde</span>
+  <span><i style="background:#185fa5"></i>v : vitesse de propagation</span>
+</div>
+
+<div class="fml" id="fml"></div>
+
+<div class="row nrow" id="rowN">
+  <span class="lbl2">Mode propre n</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:170px;color:#13233a">f &nbsp;fréquence du vibreur</span>
+  <input type="range" id="sf" min="0" max="1000" value="500" step="1" style="accent-color:#13233a;">
+  <span class="val" id="sfv" style="color:#13233a">–</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:170px;color:#a32d2d">F &nbsp;tension de la corde</span>
+  <input type="range" id="sF" min="1" max="100" value="40" step="1" style="accent-color:#a32d2d;">
+  <span class="val" id="sFv" style="color:#a32d2d">40 N</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:170px;color:#0F6E56">μ &nbsp;masse linéique</span>
+  <input type="range" id="sM" min="1" max="20" value="10" step="0.5" style="accent-color:#1D9E75;">
+  <span class="val" id="sMv" style="color:#0F6E56">10 g/m</span>
+</div>
+<div class="row" id="rowL">
+  <span class="pill" style="min-width:170px;color:#5f6b7a">L &nbsp;longueur de la corde</span>
+  <input type="range" id="sL" min="0.4" max="2" value="1.2" step="0.05" style="accent-color:#8a95a3;">
+  <span class="val" id="sLv" style="color:#5f6b7a">1,20 m</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:170px;color:#5f6b7a">ralenti de l'animation</span>
+  <input type="range" id="sR" min="0" max="6" value="3" step="1" style="accent-color:#8a95a3;">
+  <span class="val" id="sRv" style="color:#5f6b7a">× 1/80</span>
+</div>
+<div class="row togs" id="rowT">
+  <button class="btn on" id="tInc">Incidente</button>
+  <button class="btn on" id="tRef">Réfléchie</button>
+  <button class="btn on" id="tSum">Somme (corde)</button>
+  <button class="btn on" id="tEnv">Enveloppe ±2A</button>
+</div>
+<div class="row">
+  <button class="btn" id="bPause">Pause</button>
+  <button class="btn" id="bRestart" hidden>Relancer l'onde</button>
+</div>
+<div class="row"><span class="hint" id="hint"></span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const cv=$('cv'),ctx=cv.getContext('2d');
+const BL='#378ADD',BLD='#185fa5',GR='#1D9E75',GRD='#0F6E56',RD='#E24B4A',RDD='#a32d2d',OR='#BA7517',VI='#7F77DD',INK='#13233a',GY='#8a95a3',AX='#d3d9e2',MUT='#5f6b7a';
+const FT='600 13px Mulish,system-ui,sans-serif',FB='800 13px Mulish,system-ui,sans-serif',FS='700 12px Mulish,system-ui,sans-serif',FBIG='800 15px Mulish,system-ui,sans-serif';
+const fr=(v,n)=>v.toFixed(n).replace('.',',');
+const fmt=v=>Math.abs(v)>=100?fr(v,0):Math.abs(v)>=10?fr(v,1):fr(v,2);
+const G=9.81, EPS=0.08;               // EPS = amortissement (partie imaginaire de kL) : pic de résonance ≈ 1/sinh(EPS) ≈ 12,5
+const SLOW=[10,20,40,80,160,320,640];
+const SUB='₀₁₂₃₄₅₆₇₈₉';
+
+let W=0,H=0,dpr=1;
+function syncSize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;
+  const nW=Math.round(r.width)||600,nH=Math.round(r.height)||420;
+  if(nW!==W||nH!==H||cv.width!==Math.round(nW*dpr)){W=nW;H=nH;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
+  ctx.setTransform(dpr,0,0,dpr,0,0);}
+
+/* ---------- étiquettes : placement sans chevauchement, halo blanc, dessinées en dernier ---------- */
+let LQ=[],OB=[],RC=[];
+const obSeg=(x1,y1,x2,y2,w)=>OB.push([x1,y1,x2,y2,w||1]);
+const obRect=(x,y,w,h)=>RC.push({x0:x,y0:y,x1:x+w,y1:y+h});
+const lab=(t,col,cands,font)=>LQ.push({t,col,cands,font:font||FB});
+function segBox(s,b){let [x1,y1,x2,y2]=s,t0=0,t1=1;const dx=x2-x1,dy=y2-y1,p=[-dx,dx,-dy,dy],q=[x1-b.x0,b.x1-x1,y1-b.y0,b.y1-y1];
+  for(let i=0;i<4;i++){if(p[i]===0){if(q[i]<0)return false;}else{const r=q[i]/p[i];if(p[i]<0){if(r>t1)return false;if(r>t0)t0=r;}else{if(r<t0)return false;if(r<t1)t1=r;}}}return true;}
+const ovl=(a,b)=>{const ox=Math.min(a.x1,b.x1)-Math.max(a.x0,b.x0),oy=Math.min(a.y1,b.y1)-Math.max(a.y0,b.y0);return ox>0&&oy>0?ox*oy:0;};
+function halo(t,col,x,y,font,al){ctx.font=font||FB;ctx.textAlign=al||'left';ctx.textBaseline='middle';ctx.lineJoin='round';
+  ctx.lineWidth=5;ctx.strokeStyle='rgba(255,255,255,.96)';ctx.strokeText(t,x,y);ctx.fillStyle=col;ctx.fillText(t,x,y);ctx.textBaseline='alphabetic';}
+function flush(){const placed=[];
+  for(const L of LQ){ctx.font=L.font;const w=ctx.measureText(L.t).width,h=15;let best=null,bs=Infinity;
+    const c0=L.cands[0],cx0=c0[2]==='left'?c0[0]+w/2:c0[2]==='right'?c0[0]-w/2:c0[0];
+    for(const rr of [16,30,46,66])for(let q=0;q<12;q++){const a=q/12*2*Math.PI;L.cands.push([cx0+Math.cos(a)*(rr+w/2),c0[1]+Math.sin(a)*rr,'center']);}
+    L.cands.forEach((c,i)=>{const [x,y,al]=c;const x0=al==='left'?x:al==='right'?x-w:x-w/2;
+      const b={x0:x0-3,x1:x0+w+3,y0:y-h/2-1,y1:y+h/2+1};let s=i*0.6;
+      if(b.x0<2||b.x1>W-2||b.y0<2||b.y1>H-2)s+=1e7;
+      for(const p of placed){const o=ovl(b,p);if(o)s+=1e5+o;}
+      for(const r of RC){const o=ovl(b,r);if(o)s+=2e4+o;}
+      for(const sg of OB)if(segBox(sg,b))s+=60*sg[4];
+      if(s<bs){bs=s;best={x0,y};}});
+    let {x0,y}=best;x0=Math.max(4,Math.min(W-4-w,x0));y=Math.max(10,Math.min(H-10,y));
+    placed.push({x0:x0-3,x1:x0+w+3,y0:y-h/2-1,y1:y+h/2+1});halo(L.t,L.col,x0,y,L.font,'left');}
+  LQ=[];OB=[];RC=[];}
+const at=(x,y,al)=>[[x,y,al||'center']];
+/* obstacles le long d'une courbe (polyligne) */
+function obPoly(P,step,w){for(let i=step;i<P.length;i+=step)obSeg(P[i-step][0],P[i-step][1],P[i][0],P[i][1],w||1);}
+
+/* ---------- état ---------- */
+let mode='stat';                 // 'stat' ou 'prog'
+let F=40, mu=0.010, L=1.2, slowI=3, f=0, lockN=3, paused=false;
+let show={inc:true,ref:true,sum:true,env:true};
+let phi=0;                       // phase ωt (réelle) accumulée
+let tDisp=0;                     // temps d'affichage (s)
+const v=()=>Math.sqrt(F/mu), f1=()=>v()/(2*L);
+// progressive
+const DP=2.0;                    // longueur de corde visible en mode progressif (m)
+let tProg=0, uP=0.3;            // temps réel écoulé depuis l'émission (s), position relative de P
+// stationnaire : profils complexes (incident, réfléchi) échantillonnés le long de la corde, relaxés vers le régime établi
+const NS=241; const Zi=new Float64Array(2*NS), Zr=new Float64Array(2*NS), Ti=new Float64Array(2*NS), Tr=new Float64Array(2*NS);
+const TAU=0.9;                   // constante de temps (affichage) de la montée en amplitude
+
+/* ---------- complexes ---------- */
+// régime établi d'une corde excitée en x=0 par y = a·cos ωt, fixée en x=L ; k = kr − i·EPS/L (petit amortissement)
+// y(x) = a·sin(k(L−x))/sin(kL) = Zi + Zr ;  Zi = a·e^{ik(L−x)}/(2i·sin kL) (vers +x),  Zr = −a·e^{−ik(L−x)}/(2i·sin kL) (vers −x)
+function target(fq){const p=Math.PI*fq/f1();         // Re(kL)
+  const sr=Math.sin(p)*Math.cosh(EPS), si=-Math.cos(p)*Math.sinh(EPS);   // sin(p − iε)
+  // 1/(2i·s) = −i/(2s) = −i·conj(s)/(2|s|²)
+  // c = 1/(2i s) : 2i s = −2 si + 2i sr  →  c = (−2si − 2i sr)/|2is|²
+  const den=4*(sr*sr+si*si), cr=(-2*si)/den, ci=(-2*sr)/den;
+  for(let j=0;j<NS;j++){const u=j/(NS-1), th=p*(1-u), g=EPS*(1-u);
+    const er=Math.exp(g), e1r=er*Math.cos(th), e1i=er*Math.sin(th);          // e^{ik(L−x)} = e^{ε(1−u)}·e^{i p(1−u)}
+    const ei=Math.exp(-g), e2r=ei*Math.cos(th), e2i=-ei*Math.sin(th);        // e^{−ik(L−x)}
+    Ti[2*j]=e1r*cr-e1i*ci; Ti[2*j+1]=e1r*ci+e1i*cr;
+    Tr[2*j]=-(e2r*cr-e2i*ci); Tr[2*j+1]=-(e2r*ci+e2i*cr);}
+}
+// courbe de résonance universelle : amplitude max le long de la corde / amplitude du vibreur, en fonction de f/f1
+const RMAX=6.6, NR=661, RES=new Float64Array(NR);
+(function(){for(let i=0;i<NR;i++){const r=i/(NR-1)*RMAX, p=Math.PI*r;
+  const s=Math.hypot(Math.sin(p)*Math.cosh(EPS),Math.cos(p)*Math.sinh(EPS));let m=0;
+  for(let j=0;j<=120;j++){const th=p*(1-j/120),g=EPS*(1-j/120);const a=Math.hypot(Math.sin(th)*Math.cosh(g),Math.cos(th)*Math.sinh(g));if(a>m)m=a;}
+  RES[i]=m/s;}})();
+const resAt=r=>{const x=Math.max(0,Math.min(1,r/RMAX))*(NR-1),i=Math.min(NR-2,Math.floor(x)),t=x-i;return RES[i]*(1-t)+RES[i+1]*t;};
+const PEAK=resAt(1);
+
+/* ---------- curseur de fréquence (plage dépendant du mode) ---------- */
+function fRange(){if(mode==='stat'){const a=f1();return [0.25*a,RMAX*a];}
+  const vv=v();return [vv/2.5,vv/0.25];}                       // λ entre 2,5 m et 25 cm
+function fToS(fq){const [a,b]=fRange();return Math.round(1000*Math.log(fq/a)/Math.log(b/a));}
+function sToF(s){const [a,b]=fRange();return a*Math.pow(b/a,s/1000);}
+function setF(fq,fromSlider){const [a,b]=fRange();f=Math.max(a,Math.min(b,fq));if(!fromSlider)$('sf').value=fToS(f);
+  $('sfv').textContent=fmt(f)+' Hz';refreshN();dirty=true;}
+function refreshN(){document.querySelectorAll('#rowN .btn').forEach(b=>{const n=+b.dataset.n;b.classList.toggle('on',mode==='stat'&&Math.abs(f/(n*f1())-1)<0.003);});}
+for(let n=1;n<=6;n++){const b=document.createElement('button');b.className='btn';b.dataset.n=n;b.textContent='n = '+n;
+  b.onclick=()=>{lockN=n;setF(n*f1());};$('rowN').appendChild(b);}
+$('sf').addEventListener('input',e=>{lockN=0;setF(sToF(+e.target.value),true);});
+function paramChanged(){ // F, μ ou L ont bougé
+  if(mode==='stat'&&lockN)setF(lockN*f1()); else setF(f);
+  if(mode==='prog'&&frontX()<DP)restartProg();
+  dirty=true;}
+$('sF').addEventListener('input',e=>{F=+e.target.value;$('sFv').textContent=F+' N';paramChanged();});
+$('sM').addEventListener('input',e=>{mu=+e.target.value/1000;$('sMv').textContent=fr(mu*1000,1).replace(',0','')+' g/m';paramChanged();});
+$('sL').addEventListener('input',e=>{L=+e.target.value;$('sLv').textContent=fr(L,2)+' m';paramChanged();});
+$('sR').addEventListener('input',e=>{slowI=+e.target.value;$('sRv').textContent='× 1/'+SLOW[slowI];});
+const tog=(id,key)=>$(id).onclick=e=>{show[key]=!show[key];e.target.classList.toggle('on',show[key]);};
+tog('tInc','inc');tog('tRef','ref');tog('tSum','sum');tog('tEnv','env');
+$('bPause').onclick=e=>{paused=!paused;e.target.classList.toggle('on',paused);e.target.textContent=paused?'Reprendre':'Pause';};
+$('bRestart').onclick=()=>restartProg();
+function restartProg(){tProg=0;phi=0;}
+const frontX=()=>v()*tProg;
+function setMode(m){mode=m;$('mProg').classList.toggle('on',m==='prog');$('mStat').classList.toggle('on',m==='stat');
+  const st=m==='stat';$('rowN').hidden=!st;$('rowT').hidden=!st;$('rowL').hidden=!st;$('legS').hidden=!st;$('legP').hidden=st;$('bRestart').hidden=st;
+  if(st){lockN=lockN||3;setF(lockN*f1());}
+  else{setF(v()/0.8);restartProg();}
+  $('hint').textContent=st?'Astuce : clique un mode n, ou fais glisser le repère sur la courbe de résonance (en bas) pour régler le vibreur. Hors résonance, la corde bouge à peine.':
+    'Astuce : fais glisser le point P le long de la corde. L\'onde avance, P ne fait que monter et descendre.';
+  dirty=true;}
+$('mProg').onclick=()=>setMode('prog');$('mStat').onclick=()=>setMode('stat');
+
+/* ---------- géométrie ---------- */
+let Gm={};
+function geom(){const Hs=Math.round(H*0.64);
+  const box=Math.max(34,Math.min(62,W*0.07));
+  const x0=Math.round(12+box+10);
+  const R=12, x1=mode==='stat'?Math.round(W-30-R):W+40;
+  const cy=Math.round(Hs*0.42);
+  const Ap=Math.max(40,Math.min(Hs*0.29,cy-40));
+  const yb=Math.round(Hs-56), yf=Math.round(Hs-22);
+  const gx0=Math.max(44,Math.min(62,W*0.06)), gx1=W-16, gy0=Hs+20, gy1=H-26;
+  const sx=mode==='stat'?(x1-x0)/L:(W-10-x0)/DP;          // px par mètre
+  Gm={Hs,box,x0,x1,R,cy,Ap,yb,yf,gx0,gx1,gy0,gy1,sx};}
+
+/* ---------- dessin : décor ---------- */
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function bench(xa,xb){const {yb,yf}=Gm;const d=14;
+  // plateau en perspective
+  ctx.beginPath();ctx.moveTo(xa+d,yb);ctx.lineTo(xb-d,yb);ctx.lineTo(xb,yf);ctx.lineTo(xa,yf);ctx.closePath();
+  const g=ctx.createLinearGradient(0,yb,0,yf);g.addColorStop(0,'#f3f5f8');g.addColorStop(1,'#e6eaf0');ctx.fillStyle=g;ctx.fill();
+  ctx.strokeStyle='#d3d9e2';ctx.lineWidth=1;ctx.stroke();
+  // chant avant
+  const g2=ctx.createLinearGradient(0,yf,0,yf+9);g2.addColorStop(0,'#cfd6df');g2.addColorStop(1,'#b9c2cd');ctx.fillStyle=g2;ctx.fillRect(xa,yf,xb-xa,9);
+  ctx.fillStyle='rgba(19,35,58,.06)';ctx.fillRect(xa+4,yf+9,xb-xa-8,3);}
+function shadowCurve(P){const {yb,yf}=Gm;const ym=(yb+yf)/2;ctx.save();
+  ctx.beginPath();P.forEach((p,i)=>{const y=ym+(p[1]-Gm.cy)*0.10;i?ctx.lineTo(p[0]+6,y):ctx.moveTo(p[0]+6,y);});
+  ctx.strokeStyle='rgba(19,35,58,.10)';ctx.lineWidth=7;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();
+  ctx.strokeStyle='rgba(19,35,58,.10)';ctx.lineWidth=3;ctx.stroke();ctx.restore();}
+function vibreur(yEnd,label,amp){const {x0,box,cy,yb,yf}=Gm;const bx=12,bw=box,by=Math.round(cy+Math.max(16,(amp||0)+12)),bh=Math.max(26,Math.min(46,(yb+yf)/2-by-16));
+  const ym=(yb+yf)/2;
+  // pied
+  ctx.fillStyle='#c3cbd6';rr(bx+bw/2-4,by+bh-2,8,ym-by-bh+2,2);ctx.fill();
+  ctx.fillStyle='rgba(19,35,58,.12)';ctx.beginPath();ctx.ellipse(bx+bw/2,ym+2,bw*0.45,4,0,0,7);ctx.fill();
+  ctx.fillStyle='#9aa5b3';rr(bx+bw/2-bw*0.32,ym-3,bw*0.64,6,3);ctx.fill();
+  // tige d'excitation jusqu'à l'extrémité de la corde
+  ctx.strokeStyle='#5f6b7a';ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x0-2,by+2);ctx.lineTo(x0-2,yEnd);ctx.stroke();
+  ctx.fillStyle='#13233a';ctx.beginPath();ctx.arc(x0-2,yEnd,3.2,0,7);ctx.fill();
+  // boîtier
+  ctx.save();ctx.shadowColor='rgba(19,35,58,.22)';ctx.shadowBlur=8;ctx.shadowOffsetY=3;
+  const g=ctx.createLinearGradient(0,by,0,by+bh);g.addColorStop(0,'#2a3e5c');g.addColorStop(1,'#13233a');ctx.fillStyle=g;rr(bx,by,x0+6-bx,bh,7);ctx.fill();ctx.restore();
+  ctx.fillStyle='rgba(255,255,255,.10)';rr(bx+3,by+3,x0-bx,bh*0.35,5);ctx.fill();
+  // symbole ~
+  ctx.strokeStyle='#f4c542';ctx.lineWidth=2;ctx.beginPath();const cx=(bx+x0+6)/2,cyy=by+bh*0.58,ww=Math.min(14,bw*0.3);
+  for(let i=0;i<=20;i++){const t=i/20;const X=cx-ww+2*ww*t,Y=cyy-4*Math.sin(t*2*Math.PI);i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);}ctx.stroke();
+  obRect(bx,by-4,x0+6-bx,bh+8);obSeg(x0-2,by,x0-2,yEnd,2);
+  lab(label,INK,[[cx,by+bh+14,'center'],[bx,by+bh+14,'left'],[bx,by+bh+30,'left'],[bx,by-14,'left'],[cx,by-14,'center']],FS);}
+function pulleyMass(){const {x1,R,cy,yb,yf}=Gm;const ym=(yb+yf)/2;
+  const m=F/G; const mh=Math.round(18+Math.cbrt(m)*10), mw=Math.round(16+Math.cbrt(m)*7);
+  const xr=x1+R, yTop=cy+R+30;
+  // potence
+  ctx.fillStyle='#c3cbd6';rr(x1-3,cy+R,6,ym-cy-R,2);ctx.fill();
+  ctx.fillStyle='#9aa5b3';rr(x1-14,ym-3,28,6,3);ctx.fill();
+  // fil vers la masse
+  ctx.strokeStyle='#0F6E56';ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(xr,cy+R);ctx.lineTo(xr,yTop);ctx.stroke();
+  // poulie
+  ctx.save();ctx.shadowColor='rgba(19,35,58,.25)';ctx.shadowBlur=6;ctx.shadowOffsetY=2;
+  const g=ctx.createRadialGradient(x1-4,cy+R-4,2,x1,cy+R,R+1);g.addColorStop(0,'#ffffff');g.addColorStop(1,'#aeb8c5');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x1,cy+R,R,0,7);ctx.fill();ctx.restore();
+  ctx.strokeStyle='#5f6b7a';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(x1,cy+R,R,0,7);ctx.stroke();
+  ctx.fillStyle='#13233a';ctx.beginPath();ctx.arc(x1,cy+R,2.6,0,7);ctx.fill();
+  // fil sur la gorge (quart de tour)
+  ctx.strokeStyle='#0F6E56';ctx.lineWidth=2.2;ctx.beginPath();ctx.arc(x1,cy+R,R,-Math.PI/2,0);ctx.stroke();
+  // masse
+  ctx.save();ctx.shadowColor='rgba(19,35,58,.25)';ctx.shadowBlur=8;ctx.shadowOffsetY=3;
+  const g2=ctx.createLinearGradient(xr-mw/2,0,xr+mw/2,0);g2.addColorStop(0,'#5d6878');g2.addColorStop(.45,'#9aa5b3');g2.addColorStop(1,'#4a5464');
+  ctx.fillStyle=g2;rr(xr-mw/2,yTop,mw,mh,4);ctx.fill();ctx.restore();
+  ctx.fillStyle='#13233a';ctx.beginPath();ctx.arc(xr,yTop,2.5,0,7);ctx.fill();
+  // poids = tension F
+  const ya=yTop+mh+4, yb2=ya+30;
+  ctx.strokeStyle=RDD;ctx.fillStyle=RDD;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(xr,ya);ctx.lineTo(xr,yb2-8);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(xr,yb2);ctx.lineTo(xr-6,yb2-10);ctx.lineTo(xr+6,yb2-10);ctx.closePath();ctx.fill();
+  obRect(xr-mw/2,yTop,mw,mh);obSeg(xr,ya,xr,yb2,3);obSeg(xr,cy,xr,yTop,1);obRect(x1-R,cy,2*R,2*R);
+  lab('F = '+F+' N',RDD,[[xr-12,yb2-6,'right'],[xr-12,ya+8,'right'],[xr-mw/2-6,yTop+mh/2,'right']]);
+  if(W>=520)lab('m = '+fr(m,2)+' kg',MUT,[[xr-mw/2-6,yTop+mh/2,'right'],[xr-12,yTop-10,'right']],FS);}
+function arrowH(xa,xb,y,col,w){ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w||1.6;ctx.beginPath();ctx.moveTo(xa+5,y);ctx.lineTo(xb-5,y);ctx.stroke();
+  for(const [x,s] of [[xa,1],[xb,-1]]){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+s*8,y-4);ctx.lineTo(x+s*8,y+4);ctx.closePath();ctx.fill();}
+  ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(xa,y-6);ctx.lineTo(xa,y+6);ctx.moveTo(xb,y-6);ctx.lineTo(xb,y+6);ctx.stroke();}
+function tube(P,dark,mid,light,w){ctx.lineCap='round';ctx.lineJoin='round';
+  const path=()=>{ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));};
+  path();ctx.strokeStyle='rgba(255,255,255,.9)';ctx.lineWidth=w+4;ctx.stroke();
+  path();ctx.strokeStyle=dark;ctx.lineWidth=w;ctx.stroke();
+  path();ctx.strokeStyle=mid;ctx.lineWidth=w-2;ctx.stroke();
+  ctx.save();ctx.translate(0,-w*0.22);path();ctx.strokeStyle=light;ctx.lineWidth=Math.max(1,w*0.3);ctx.stroke();ctx.restore();}
+function thin(P,col,w,dash){ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+  ctx.strokeStyle=col;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();ctx.setLineDash([]);}
+function chevron(x,y,dir,col){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x+dir*6,y);ctx.lineTo(x-dir*4,y-5);ctx.lineTo(x-dir*1,y);ctx.lineTo(x-dir*4,y+5);ctx.closePath();ctx.fill();}
+
+/* ---------- mode corde fixée ---------- */
+let dirty=true;
+function stepStat(dt){if(dirty){target(f);dirty=false;}
+  const d=Math.exp(-dt/TAU);
+  for(let i=0;i<2*NS;i++){Zi[i]=Ti[i]+(Zi[i]-Ti[i])*d;Zr[i]=Tr[i]+(Zr[i]-Tr[i])*d;}}
+function drawStat(){const {x0,x1,cy,Ap,sx,R,yb,yf,Hs}=Gm;
+  const scale=Ap/PEAK;                       // px par unité d'amplitude du vibreur
+  const c=Math.cos(phi),s=Math.sin(phi);
+  const X=j=>x0+(x1-x0)*j/(NS-1);
+  const Pi=[],Pr=[],Ps=[],Eu=[],Ed=[];let envMax=0,envArr=new Float64Array(NS);
+  for(let j=0;j<NS;j++){const ir=Zi[2*j],ii=Zi[2*j+1],rr_=Zr[2*j],ri=Zr[2*j+1];
+    const yi=ir*c-ii*s, yr=rr_*c-ri*s;                 // Re[Z e^{iφ}]
+    const e=Math.hypot(ir+rr_,ii+ri);envArr[j]=e;if(e>envMax)envMax=e;
+    const x=X(j);Pi.push([x,cy-yi*scale]);Pr.push([x,cy-yr*scale]);Ps.push([x,cy-(yi+yr)*scale]);Eu.push([x,cy-e*scale]);Ed.push([x,cy+e*scale]);}
+  bench(4,x1-6);
+  // règle L
+  shadowCurve(Ps);
+  // enveloppe
+  if(show.env){ctx.beginPath();Eu.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));for(let j=NS-1;j>=0;j--)ctx.lineTo(Ed[j][0],Ed[j][1]);ctx.closePath();
+    ctx.fillStyle='rgba(127,119,221,.08)';ctx.fill();thin(Eu,'rgba(127,119,221,.7)',1.5,[5,5]);thin(Ed,'rgba(127,119,221,.7)',1.5,[5,5]);}
+  // axe de repos
+  ctx.strokeStyle=AX;ctx.lineWidth=1;ctx.setLineDash([2,4]);ctx.beginPath();ctx.moveTo(x0,cy);ctx.lineTo(x1,cy);ctx.stroke();ctx.setLineDash([]);
+  // nœuds / ventres (positions exactes : x = L − m·λ/2, mesurées depuis l'extrémité fixe)
+  const lam=v()/f, kr=2*Math.PI/lam;
+  const nodes=[],vents=[];for(let m=0;;m++){const x=L-m*lam/2;if(x<-1e-6)break;nodes.push(Math.max(0,x));}
+  for(let m=0;;m++){const x=L-(m+0.5)*lam/2;if(x<0)break;vents.push(x);}
+  // ondes composantes
+  if(show.inc)thin(Pi,'rgba(55,138,221,.85)',2.2);
+  if(show.ref)thin(Pr,'rgba(226,75,74,.85)',2.2);
+  // flèches de propagation sur les crêtes
+  const crest=(dir)=>{const out=[];const Z=dir>0?Zi:Zr;for(let j=1;j<NS-1;j++){const y=k=>Z[2*k]*c-Z[2*k+1]*s;const a=y(j-1),b=y(j),d=y(j+1);
+      if(b>a&&b>=d&&b*scale>6)out.push([X(j),cy-b*scale]);}return out;};
+  if(show.inc)crest(1).forEach(p=>chevron(p[0],p[1]-7,1,BL));
+  if(show.ref)crest(-1).forEach(p=>chevron(p[0],p[1]-7,-1,RD));
+  // corde (somme)
+  if(show.sum)tube(Ps,'#0b5a44',GR,'rgba(255,255,255,.55)',5.5);
+  else thin(Ps,'rgba(29,158,117,.25)',2);
+  // décor par-dessus
+  const yEnd=cy-(Zi[0]*c-Zi[1]*s+Zr[0]*c-Zr[1]*s)*scale;
+  vibreur(yEnd,'vibreur · '+fmt(f)+' Hz');
+  pulleyMass();
+  // marqueurs
+  const xs=x=>x0+x*sx;
+  nodes.forEach(x=>{const X_=xs(x);ctx.save();ctx.shadowColor='rgba(19,35,58,.25)';ctx.shadowBlur=4;ctx.fillStyle=OR;ctx.beginPath();ctx.arc(X_,cy,5.5,0,7);ctx.fill();ctx.restore();
+    ctx.strokeStyle='#fff';ctx.lineWidth=1.8;ctx.beginPath();ctx.arc(X_,cy,5.5,0,7);ctx.stroke();});
+  const envAt=x=>{const j=Math.round(x/L*(NS-1));return envArr[Math.max(0,Math.min(NS-1,j))];};
+  vents.forEach(x=>{const X_=xs(x),e=envAt(x)*scale;ctx.fillStyle=VI;ctx.beginPath();ctx.arc(X_,cy-e,3.5,0,7);ctx.fill();ctx.beginPath();ctx.arc(X_,cy+e,3.5,0,7);ctx.fill();});
+  // obstacles pour les étiquettes
+  obPoly(Ps,6,2);if(show.inc)obPoly(Pi,10,1);if(show.ref)obPoly(Pr,10,1);if(show.env){obPoly(Eu,10,0.5);obPoly(Ed,10,0.5);}
+  nodes.forEach(x=>obRect(xs(x)-6,cy-6,12,12));
+  // étiquettes N / V
+  const mid=L/2;const iv=vents.reduce((b,x,i)=>Math.abs(x-mid)<Math.abs(vents[b]-mid)?i:b,0);
+  const ni=nodes.reduce((b,x,i)=>(x>0&&x<L&&(b<0||Math.abs(x-mid)<Math.abs(nodes[b]-mid)))?i:b,-1);
+  const crowd=vents.length>4;
+  nodes.forEach((x,i)=>{const X_=xs(x);if(x<=0.0001&&Math.abs(X_-x0)<4)return;
+    lab(i===ni&&!crowd?'N · nœud':'N',OR,[[X_,cy+16,'center'],[X_+8,cy+14,'left'],[X_-8,cy+14,'right'],[X_,cy-16,'center']]);});
+  vents.forEach((x,i)=>{const X_=xs(x),e=envAt(x)*scale;
+    lab(i===iv&&!crowd?'V · ventre':'V',VI,[[X_,cy-e-14,'center'],[X_,cy-e-28,'center'],[X_,cy+e+14,'center']]);});
+  // cote 2A sur le ventre le plus à droite
+  if(vents.length&&envMax*scale>16){const xv=xs(vents[0])+10,e=envAt(vents[0])*scale;
+    ctx.strokeStyle=VI;ctx.fillStyle=VI;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(xv,cy-e+5);ctx.lineTo(xv,cy-2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(xv,cy-e);ctx.lineTo(xv-4,cy-e+8);ctx.lineTo(xv+4,cy-e+8);ctx.closePath();ctx.fill();
+    obSeg(xv,cy-e,xv,cy,2);
+    const A2=envAt(vents[0])*2;        // amplitude réelle (mm) : vibreur a = 2 mm
+    lab('2A = '+fr(A2/10,1)+' cm',VI,[[xv+6,cy-e/2,'left'],[xv+6,cy-e*0.75,'left'],[xv-16,cy-e/2,'right']],FS);}
+  // cote λ/2 entre deux nœuds voisins (près du centre)
+  if(nodes.length>=2){let a=0;for(let i=0;i<nodes.length-1;i++)if(Math.abs((nodes[i]+nodes[i+1])/2-mid)<Math.abs((nodes[a]+nodes[a+1])/2-mid))a=i;
+    const xa=xs(nodes[a+1]),xb=xs(nodes[a]);
+    {const yc=Math.min(yb-14,cy+Math.max(envMax*scale,10)+20);
+      ctx.strokeStyle='rgba(186,117,23,.35)';ctx.lineWidth=1;ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(xa,cy+8);ctx.lineTo(xa,yc);ctx.moveTo(xb,cy+8);ctx.lineTo(xb,yc);ctx.stroke();ctx.setLineDash([]);
+      if(xb-xa>18)arrowH(xa,xb,yc,OR,1.6);obSeg(xa,yc,xb,yc,3);
+      lab('λ/2 = '+fr(lam/2*100,1)+' cm',OR,[[(xa+xb)/2,yc+13,'center'],[(xa+xb)/2,yc-12,'center'],[xb+6,yc,'left'],[xa-6,yc,'right']]);}}
+  // cote L sur le plateau
+  {const y=yf-10;ctx.globalAlpha=.9;arrowH(x0,x1,y,MUT,1.2);ctx.globalAlpha=1;obSeg(x0,y,x1,y,1);
+    lab('L = '+fr(L,2)+' m',MUT,[[(x0+x1)/2,y,'center'],[(x0+x1)/2+60,y,'center'],[(x0+x1)/2-60,y,'center']]);}
+  return {envMax,nodes,vents,lam};}
+
+/* ---------- courbe de résonance ---------- */
+let gDrag=false;
+function drawRes(){const {gx0,gx1,gy0,gy1}=Gm;const a1=f1();const fmax=RMAX*a1;
+  const X=fq=>gx0+(gx1-gx0)*fq/fmax, Y=r=>gy1-(gy1-gy0)*Math.min(1,r/(PEAK*1.08));
+  // fond
+  ctx.fillStyle='#fafbfc';rr(gx0-4,gy0-6,gx1-gx0+8,gy1-gy0+8,6);ctx.fill();
+  ctx.strokeStyle=AX;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(gx0,gy0-2);ctx.lineTo(gx0,gy1);ctx.lineTo(gx1,gy1);ctx.stroke();
+  // pics f_n
+  for(let n=1;n<=6;n++){const x=X(n*a1);ctx.strokeStyle='rgba(29,158,117,.25)';ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(x,gy0);ctx.lineTo(x,gy1);ctx.stroke();ctx.setLineDash([]);
+    ctx.strokeStyle=AX;ctx.beginPath();ctx.moveTo(x,gy1);ctx.lineTo(x,gy1+4);ctx.stroke();
+    halo('f'+SUB[n],GRD,x,gy1+13,FS,'center');}
+  // courbe
+  ctx.beginPath();for(let i=0;i<=400;i++){const r=i/400*RMAX;const x=gx0+(gx1-gx0)*i/400,y=Y(resAt(r));i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+  const gr=ctx.createLinearGradient(0,gy0,0,gy1);gr.addColorStop(0,'rgba(29,158,117,.22)');gr.addColorStop(1,'rgba(29,158,117,.02)');
+  ctx.lineTo(gx1,gy1);ctx.lineTo(gx0,gy1);ctx.closePath();ctx.fillStyle=gr;ctx.fill();
+  ctx.beginPath();for(let i=0;i<=400;i++){const r=i/400*RMAX;const x=gx0+(gx1-gx0)*i/400,y=Y(resAt(r));i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+  ctx.strokeStyle=GR;ctx.lineWidth=2;ctx.stroke();
+  // repère du vibreur
+  const xf=X(f),rf=resAt(f/a1),yf=Y(rf);
+  ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xf,gy0-2);ctx.lineTo(xf,gy1);ctx.stroke();
+  ctx.save();ctx.shadowColor='rgba(19,35,58,.3)';ctx.shadowBlur=5;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(xf,yf,6.5,0,7);ctx.fill();ctx.restore();
+  ctx.strokeStyle=INK;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(xf,yf,6.5,0,7);ctx.stroke();
+  // poignée
+  ctx.fillStyle=INK;rr(xf-7,gy0-8,14,9,3);ctx.fill();
+  obSeg(xf,gy0,xf,gy1,2);obRect(xf-8,yf-8,16,16);
+  // textes
+  // graduations verticales : × 1, × 5, × 10
+  ctx.font=FS;for(const r of [1,5,10]){const y=Y(r);ctx.strokeStyle=AX;ctx.beginPath();ctx.moveTo(gx0-4,y);ctx.lineTo(gx0,y);ctx.stroke();halo('×'+r,GY,gx0-7,y,FS,'right');}
+  {const P=[];for(let i=0;i<=200;i++){const r=i/200*RMAX;P.push([gx0+(gx1-gx0)*i/200,Y(resAt(r))]);}obPoly(P,2,1);}
+  lab(W<600?'amplitude corde ÷ vibreur':'amplitude de la corde ÷ amplitude du vibreur, selon la fréquence f',MUT,[[gx0+8,gy0+6,'left'],[gx1-6,gy0+6,'right'],[(gx0+gx1)/2,gy0+6,'center']],FS);
+  const tag=rf>0.6*PEAK?'résonance : × '+fr(rf,1):'hors résonance : × '+fr(rf,1);
+  const yt=Math.max(gy0+26,Math.min(gy1-12,yf-2));
+  lab(tag,rf>0.6*PEAK?GRD:RDD,[[xf+12,yt,'left'],[xf-12,yt,'right'],[xf+12,yt-20,'left'],[xf-12,yt-20,'right'],[xf+12,(gy0+gy1)/2,'left'],[xf-12,(gy0+gy1)/2,'right']]);}
+
+/* ---------- mode progressif ---------- */
+function drawProg(){const {x0,cy,Ap,sx,yb,yf,gx0,gx1,gy0,gy1}=Gm;
+  const vv=v(),lam=vv/f,k=2*Math.PI/lam,a=Ap*0.55,xf=frontX();
+  const xr=W-10;const xm=Math.min(DP,(W+30-x0)/sx);
+  const yAt=x=>x>xf?0:a*Math.sin(phi-k*x)*Math.min(1,(xf-x)/(lam*0.15));   // front adouci
+  const P=[];for(let X=x0;X<=W+30;X+=2){const x=(X-x0)/sx;P.push([X,cy-yAt(x)]);}
+  bench(4,W+20);
+  shadowCurve(P);
+  ctx.strokeStyle=AX;ctx.lineWidth=1;ctx.setLineDash([2,4]);ctx.beginPath();ctx.moveTo(x0,cy);ctx.lineTo(W,cy);ctx.stroke();ctx.setLineDash([]);
+  tube(P,'#1f5f9e',BL,'rgba(255,255,255,.55)',5.5);
+  // fondu à droite : la corde continue (pas de réflexion)
+  const g=ctx.createLinearGradient(W-60,0,W,0);g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(1,'rgba(255,255,255,.95)');ctx.fillStyle=g;ctx.fillRect(W-60,cy-a-20,60,2*a+40);
+  vibreur(cy-a*Math.sin(phi)*(tProg>0?1:0),'vibreur · '+fmt(f)+' Hz',a);
+  obPoly(P,6,2);
+  // point P
+  const xp=uP*DP,Xp=x0+xp*sx,yp=cy-yAt(xp);
+  ctx.strokeStyle='rgba(127,119,221,.45)';ctx.lineWidth=1.5;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(Xp,cy-a-4);ctx.lineTo(Xp,cy+a+4);ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle='rgba(127,119,221,.7)';ctx.lineWidth=1.5;for(const yy of [cy-a,cy+a]){ctx.beginPath();ctx.moveTo(Xp-7,yy);ctx.lineTo(Xp+7,yy);ctx.stroke();}
+  ctx.save();ctx.shadowColor='rgba(19,35,58,.3)';ctx.shadowBlur=6;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(Xp,yp,8,0,7);ctx.fill();ctx.restore();
+  ctx.fillStyle=VI;ctx.beginPath();ctx.arc(Xp,yp,5.5,0,7);ctx.fill();
+  obSeg(Xp,cy-a,Xp,cy+a,2);obRect(Xp-9,yp-9,18,18);
+  lab('P',VI,[[Xp+12,yp-12,'left'],[Xp-12,yp-12,'right'],[Xp+12,yp+12,'left']],FBIG);
+  // λ : entre deux crêtes successives, celles les plus proches du centre de la fenêtre
+  const crests=[];{const m0=Math.ceil((phi-Math.PI/2-k*Math.min(xf,xm))/(2*Math.PI)),m1=Math.floor((phi-Math.PI/2)/(2*Math.PI));
+    for(let m=m1;m>=m0&&crests.length<40;m--){const x=(phi-Math.PI/2-2*Math.PI*m)/k;if(x>=0&&x<=Math.min(xf-lam*0.15,xm))crests.push(x);}}
+  crests.sort((p,q)=>p-q);
+  const xmid=Math.min(xf,xm)/2;let ci=-1;for(let i=0;i<crests.length-1;i++){if(x0+crests[i+1]*sx>W-30)break;if(ci<0||Math.abs((crests[i]+crests[i+1])/2-xmid)<Math.abs((crests[ci]+crests[ci+1])/2-xmid))ci=i;}
+  if(ci>=0){const Xa=x0+crests[ci]*sx,Xb=x0+crests[ci+1]*sx,yc=cy-a-18;
+    ctx.strokeStyle='rgba(186,117,23,.45)';ctx.lineWidth=1;ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(Xa,cy-a-4);ctx.lineTo(Xa,yc-6);ctx.moveTo(Xb,cy-a-4);ctx.lineTo(Xb,yc-6);ctx.stroke();ctx.setLineDash([]);
+    arrowH(Xa,Xb,yc,OR,1.8);obSeg(Xa,yc,Xb,yc,3);
+    lab('λ = '+fr(lam,2)+' m',OR,[[(Xa+Xb)/2,yc-13,'center'],[(Xa+Xb)/2,yc+13,'center']]);}
+  // v : sur le front s'il est visible, sinon au-dessus d'une crête
+  let xv=null;if(xf<xm&&tProg>0)xv=x0+xf*sx;else if(crests.length){const c2=crests.filter(x=>x0+x*sx<W-90);if(c2.length)xv=x0+c2[c2.length-1]*sx;}
+  if(xv!==null){const yv=xf<xm?cy-24:cy+a+20, xa=xv-10, xb=Math.min(W-12,xv+52);
+    ctx.strokeStyle=BLD;ctx.fillStyle=BLD;ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(xa,yv);ctx.lineTo(xb-9,yv);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(xb,yv);ctx.lineTo(xb-12,yv-6);ctx.lineTo(xb-10,yv);ctx.lineTo(xb-12,yv+6);ctx.closePath();ctx.fill();
+    obSeg(xa,yv,xb,yv,3);
+    lab('v = '+fmt(vv)+' m/s',BLD,[[(xa+xb)/2,yv+(xf<xm?-14:14),'center'],[xb+6,yv,'left'],[xa-6,yv,'right']]);
+    if(xf<xm&&tProg>0)lab('front de l\'onde',MUT,[[xv,cy+16,'center'],[xv+8,cy+16,'left']],FS);}
+  // fenêtre : règle 0 → 2 m
+  {const y=yf-10;ctx.strokeStyle=GY;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(xr,y);ctx.stroke();
+    for(let m=0;m<=DP*2;m++){const X=x0+m*0.5*sx;ctx.beginPath();ctx.moveTo(X,y-4);ctx.lineTo(X,y+4);ctx.stroke();
+      if(m%2===0||sx>120)halo(fr(m*0.5,1).replace(',0','')+' m',GY,X,y-11,FS,m===0?'left':m===DP*2?'right':'center');}
+    obSeg(x0,y-16,xr,y-16,1);}
+  // graphe y_P(t)
+  drawHist(a);
+  return {lam};}
+function drawHist(a){const {gx0,gx1,gy0,gy1}=Gm;const ym=(gy0+gy1)/2,hA=(gy1-gy0)/2-8;
+  const Tdisp=SLOW[slowI]/f;                     // période à l'écran (s)
+  const span=Math.max(3,Tdisp*2.6);
+  ctx.fillStyle='#fafbfc';rr(gx0-4,gy0-6,gx1-gx0+8,gy1-gy0+8,6);ctx.fill();
+  ctx.strokeStyle=AX;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(gx0,gy0-2);ctx.lineTo(gx0,gy1);ctx.moveTo(gx0,ym);ctx.lineTo(gx1,ym);ctx.stroke();
+  const X=t=>gx1-(tDisp-t)/span*(gx1-gx0);
+  const xp0=uP*DP,vv=v(),k0=2*Math.PI*f/vv,S=SLOW[slowI];
+  const yP=t=>{const back=(tDisp-t)/S, tp=tProg-back;if(tp<0)return 0;const fx=vv*tp-xp0;if(fx<=0)return 0;
+    return Math.sin(phi-2*Math.PI*f*back-k0*xp0)*Math.min(1,fx/(vv/f*0.15));};
+  ctx.beginPath();const N=Math.round(gx1-gx0);let tFirst=null;
+  for(let i=0;i<=N;i++){const t=tDisp-span+span*i/N;const y=yP(t);const yy=ym-y*hA;i?ctx.lineTo(X(t),yy):ctx.moveTo(X(t),yy);}
+  ctx.strokeStyle=VI;ctx.lineWidth=2.2;ctx.lineJoin='round';ctx.stroke();
+  ctx.fillStyle=VI;ctx.beginPath();ctx.arc(gx1,ym-yP(tDisp)*hA,4.5,0,7);ctx.fill();
+  // cote T entre deux maxima (analytique)
+  const xp=uP*DP,k=2*Math.PI*f/v();const ph=phi-k*xp-Math.PI/2;
+  const back=((ph%(2*Math.PI))+2*Math.PI)%(2*Math.PI);        // phase écoulée depuis le dernier maximum
+  const t1=tDisp-back/(2*Math.PI)*Tdisp, t0=t1-Tdisp;
+  const reached=frontX()>xp+0.15*v()/f;
+  if(reached&&tDisp-t0<span&&(tProg-(tDisp-t0)/SLOW[slowI])*v()>xp+0.15*v()/f){const xa=X(t0),xb=X(t1),yc=gy0+6;
+    ctx.strokeStyle='rgba(127,119,221,.35)';ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(xa,yc);ctx.lineTo(xa,ym-hA);ctx.moveTo(xb,yc);ctx.lineTo(xb,ym-hA);ctx.stroke();ctx.setLineDash([]);
+    if(xb-xa>20)arrowH(xa,xb,yc,VI,1.4);obSeg(xa,yc,xb,yc,3);
+    lab('T = '+fmt(1000/f)+' ms',VI,[[(xa+xb)/2,yc+12,'center'],[xb+6,yc,'left'],[xa-6,yc,'right']],FS);}
+  halo('y du point P au cours du temps',MUT,gx0+6,gy1+12,FS,'left');
+  halo('temps →',MUT,gx1,gy1+12,FS,'right');}
+
+/* ---------- interaction ---------- */
+function ptr(e){const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];}
+let pDrag=false;
+cv.addEventListener('pointerdown',e=>{const [x,y]=ptr(e);
+  if(mode==='stat'&&y>Gm.gy0-14&&y<Gm.gy1+20){gDrag=true;cv.setPointerCapture(e.pointerId);dragF(x);}
+  else if(mode==='prog'){const Xp=Gm.x0+uP*DP*Gm.sx;if(Math.abs(x-Xp)<26&&y<Gm.Hs){pDrag=true;cv.setPointerCapture(e.pointerId);}}});
+cv.addEventListener('pointermove',e=>{const [x,y]=ptr(e);
+  if(gDrag)dragF(x);else if(pDrag){uP=Math.max(0.02,Math.min(0.95,(x-Gm.x0)/Gm.sx/DP));}
+  else{let c='default';if(mode==='stat'&&y>Gm.gy0-14&&y<Gm.gy1+20)c='ew-resize';if(mode==='prog'&&Math.abs(x-(Gm.x0+uP*DP*Gm.sx))<26&&y<Gm.Hs)c='grab';cv.style.cursor=c;}});
+const up=()=>{gDrag=false;pDrag=false;};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+function dragF(x){const {gx0,gx1}=Gm;let fq=(x-gx0)/(gx1-gx0)*RMAX*f1();
+  // aimantation douce sur les modes propres
+  const n=Math.round(fq/f1());if(n>=1&&n<=6&&Math.abs(fq-n*f1())<0.04*f1()){fq=n*f1();lockN=n;}else lockN=0;
+  setF(fq);}
+
+/* ---------- textes ---------- */
+let lastTxt='';
+function texts(r){const vv=v(),lam=vv/f;let fm,inf;
+  if(mode==='stat'){const a1=f1();const n=lockN||Math.round(f/a1);const nn=Math.max(1,Math.min(6,n));const ratio=resAt(f/a1);const reso=Math.abs(f/(nn*a1)-1)<0.01;
+    fm=`<b style="color:#185fa5">v</b> = √(<b style="color:#a32d2d">F</b>/<b style="color:#0F6E56">μ</b>) = √(${F} / ${fr(mu,4)}) = <b style="color:#185fa5">${fmt(vv)} m/s</b> &nbsp;·&nbsp; `+
+      `mode n = ${nn} : λ<sub>${nn}</sub> = 2L/n = <b style="color:#BA7517">${fr(2*L/nn,2)} m</b> &nbsp;·&nbsp; f<sub>${nn}</sub> = n·v/(2L) = <b style="color:#0F6E56">${fmt(nn*a1)} Hz</b><br>`+
+      `y(x,t) = <b style="color:#378ADD">A·sin(ωt − kx)</b> + <b style="color:#E24B4A">réfléchie</b> → onde stationnaire : amplitude <b style="color:#7F77DD">2A·|sin k(L − x)|</b>, nœuds tous les <b style="color:#BA7517">λ/2</b>`;
+    inf=`vibreur : <b style="color:#13233a">f = ${fmt(f)} Hz</b> → λ = v/f = <b style="color:#BA7517">${fr(lam,3)} m</b> &nbsp;|&nbsp; T = 1/f = ${fmt(1000/f)} ms &nbsp;|&nbsp; `+
+      (reso?`<b style="color:#0F6E56">résonance sur le mode ${nn}</b> : ${nn+1} nœuds, ${nn} ventre${nn>1?'s':''}, L = ${nn}·λ/2`:`<b style="color:#a32d2d">hors résonance</b> (L/(λ/2) = ${fr(2*L/lam,2)}, pas un entier)`)+
+      ` &nbsp;|&nbsp; amplitude du ventre ≈ ${fr(ratio,1)} × celle du vibreur (2 mm) &nbsp;|&nbsp; ralenti × 1/${SLOW[slowI]}`;}
+  else{fm=`<b style="color:#185fa5">v</b> = √(<b style="color:#a32d2d">F</b>/<b style="color:#0F6E56">μ</b>) = √(${F} / ${fr(mu,4)}) = <b style="color:#185fa5">${fmt(vv)} m/s</b> &nbsp;·&nbsp; `+
+      `<b style="color:#BA7517">λ</b> = v/f = v·T = <b style="color:#BA7517">${fr(lam,2)} m</b> &nbsp;·&nbsp; <b style="color:#7F77DD">T</b> = 1/f = <b style="color:#7F77DD">${fmt(1000/f)} ms</b><br>`+
+      `y(x,t) = A·sin(ωt − kx) avec ω = 2πf et k = 2π/λ : le profil avance de λ pendant une période T.`;
+    inf=`vibreur : <b style="color:#13233a">f = ${fmt(f)} Hz</b> &nbsp;|&nbsp; λ = ${fr(lam,3)} m &nbsp;|&nbsp; v = λ·f = ${fmt(vv)} m/s &nbsp;|&nbsp; P à x = ${fr(uP*DP,2)} m : il oscille verticalement, sans avancer &nbsp;|&nbsp; ralenti × 1/${SLOW[slowI]} (l'onde parcourt 2 m en ${fmt(2/vv*1000)} ms réelles)`;}
+  const t=fm+'§'+inf;if(t!==lastTxt){lastTxt=t;$('fml').innerHTML=fm;$('info').innerHTML=inf;}}
+
+/* ---------- boucle ---------- */
+let last=performance.now();
+// départ : un peu désaccordé, pour voir l'amplitude monter jusqu'à la résonance
+setMode('stat');target(f*0.93);Zi.set(Ti);Zr.set(Tr);dirty=true;
+function frame(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
+  syncSize();geom();
+  if(!paused){tDisp+=dt;const dtr=dt/SLOW[slowI];phi+=2*Math.PI*f*dtr;
+    if(mode==='stat')stepStat(dt);else{tProg+=dtr;}}
+  else if(mode==='stat'&&dirty){target(f);dirty=false;}
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  if(mode==='stat'){drawStat();drawRes();}
+  else drawProg();
+  flush();texts();
+  requestAnimationFrame(frame);}
+requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Ondes, interférences et diffraction<span>8 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Onde-progressive/"><i>01</i>Onde progressive</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Fonction-d-onde-f-x-vt-/"><i>02</i>Fonction d&#x27;onde f(x − vt)</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Relation-v-f/"><i>03</i>Relation v = λf</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Onde-progressive-et-Onde-stationnaire/"><i>04</i>Onde progressive et stationnaire</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/diffraction/"><i>05</i>Diffraction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/yung/"><i>06</i>Fentes de Young</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/effet-de-battement/"><i>07</i>Battements</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Doppler/"><i>08</i>Effet Doppler</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

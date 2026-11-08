@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculer un pH · SFA</title>
+<meta name="description" content="Choisis une espèce et une concentration : compare le pH exact au pH donné par la formule simplifiée, et vois quand elle cesse d'être valable.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+canvas.cv{display:block;width:100%;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.row{display:flex;align-items:center;flex-wrap:wrap}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.hint{font:500 .84rem var(--f-ui);color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font:600 .82rem var(--f-ui);color:var(--muted);margin:10px 0 2px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.legend i.dash{background:repeating-linear-gradient(90deg,currentColor 0 5px,transparent 5px 9px)!important;height:2px}
+.legend i.box{height:10px;width:14px;border-radius:3px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:12px 0}
+.stat{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:0}
+.stat small{display:block;font:800 10.5px var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat b{display:block;font:800 1.2rem/1.3 var(--f-ui);font-variant-numeric:tabular-nums;color:var(--ink)}
+.stat span{display:block;font:600 .78rem/1.35 var(--f-ui);color:var(--muted)}
+.note{border-radius:10px;padding:10px 14px;margin:10px 0;font:600 .88rem/1.5 var(--f-ui)}
+.note.warn{background:#fff6e6;border-left:4px solid #BA7517;color:#5a3d00}
+.note.ok{background:#ecf6f1;border-left:4px solid #2e6b55;color:#1d4637}
+.note.info2{background:var(--sel);border-left:4px solid var(--navy);color:var(--ink2)}
+.chipok,.chipno{display:inline-block;font:800 11px var(--f-ui);padding:2px 8px;border-radius:999px;margin-right:6px}
+.chipok{background:#dcefe6;color:#1d4637}.chipno{background:#fbe1dc;color:#8a2a1a}
+table.t{border-collapse:collapse;width:100%;font:600 .84rem var(--f-ui);font-variant-numeric:tabular-nums}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top}
+table.t th{font:800 .72rem var(--f-ui);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.tw{overflow-x:auto}
+.sfa-card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-top:14px}
+.sfa-card h2{font:800 1.05rem var(--f-ui);margin:0 0 8px}
+.sfa-card ul{margin:0;padding-left:20px}.sfa-card li{margin:5px 0}
+.sfa-card.trap{border-left:4px solid #BA7517}
+.sfa-card details{border-top:1px solid var(--line);padding:10px 0}
+.sfa-card details:first-of-type{border-top:0}
+.sfa-card summary{cursor:pointer;font-weight:700;color:var(--ink)}
+.sfa-card details p{margin:8px 0 0;color:var(--ink2)}
+.sfa-card sub,.sfa-card sup,.stat sub,.stat sup,.note sub,.note sup,table.t sub,table.t sup,.btn sub{font-size:.72em}
+.panel[hidden]{display:none!important}
+
+#cv{height:430px}
+@media (max-width:640px){#cv{height:520px}}
+.stat b{font-size:1.1rem}
+.dist{margin:6px 0 2px}
+.dist .r{display:grid;grid-template-columns:minmax(90px,150px) 1fr 70px;gap:8px;align-items:center;font:600 .84rem var(--f-ui);margin:4px 0}
+.dist .bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden}.dist .bar i{display:block;height:100%;background:#378ADD;border-radius:99px}
+.dist .r span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.crit{list-style:none;margin:8px 0;padding:0;font:600 .86rem/1.5 var(--f-ui);color:var(--ink2)}.crit li{margin:5px 0}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a class="on" href="../">Simulations de chimie</a><a href="../exercices/">Exercices de chimie</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations de physique</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="../">Simulations de chimie</a>›<a href="../#acides-bases">Acides et bases</a>›<b>Calculer un pH</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Chimie · Acides et bases</span><span class="sfa-chip free">Gratuit</span></div><h1>Calculer un pH</h1><p>Choisis une espèce et une concentration : compare le pH exact au pH donné par la formule simplifiée, et vois quand elle cesse d'être valable.</p></div>
+
+<section class="sfa-sim">
+<canvas id="cv" class="cv" aria-label="pH-mètre et courbe du pH en fonction de la concentration, calcul exact et formule simplifiée"></canvas>
+<div class="legend"><span><i style="background:#378ADD"></i>pH exact</span><span style="color:#BA7517"><i class="dash"></i>formule simplifiée</span><span><i class="box" style="background:#cfe8dc"></i>formule valable</span><span><i class="box" style="background:#f6d3cc"></i>formule non valable</span></div>
+
+<div class="row"><span class="pill">Forts</span><div class="seg sp"><button class="btn" data-k="hcl">HCl</button><button class="btn" data-k="naoh">NaOH</button></div></div>
+<div class="row"><span class="pill">Faibles</span><div class="seg sp"><button class="btn on" data-k="ac">CH₃COOH</button><button class="btn" data-k="hf">HF</button><button class="btn" data-k="hcn">HCN</button><button class="btn" data-k="nh3">NH₃</button></div></div>
+<div class="row"><span class="pill">Polyacides</span><div class="seg sp"><button class="btn" data-k="h3po4">H₃PO₄</button><button class="btn" data-k="h2co3">H₂CO₃</button></div></div>
+<div class="row"><span class="pill">Ampholytes</span><div class="seg sp"><button class="btn" data-k="nahco3">NaHCO₃ (HCO₃⁻)</button><button class="btn" data-k="nah2po4">NaH₂PO₄ (H₂PO₄⁻)</button></div></div>
+<div class="row"><span class="pill">Sels</span><div class="seg sp"><button class="btn" data-k="nacl">NaCl</button><button class="btn" data-k="acna">CH₃COONa</button><button class="btn" data-k="nh4cl">NH₄Cl</button><button class="btn" data-k="na2co3">Na₂CO₃</button></div></div>
+<div class="row"><span class="pill" style="min-width:170px;color:#185fa5">C concentration</span>
+  <input type="range" id="C" min="0" max="32" step="1" value="24" style="accent-color:#378ADD"><span class="val" id="Cv" style="color:#185fa5"></span></div>
+<div class="row"><span class="hint">Échelle logarithmique : de 1,0·10⁻⁸ à 1,0 mol/L.</span></div>
+
+<div class="stats" id="stats"></div>
+<div id="crit"></div>
+<div id="notes"></div>
+<div class="dist" id="dist"></div>
+<p class="hint" style="margin-top:10px">Calcul exact : électroneutralité + tous les équilibres + autoprotolyse de l'eau, résolus numériquement. K<sub>w</sub> = [H₃O⁺]·[OH⁻] = 1,0·10⁻¹⁴ <b>à 25 °C</b>. Modèle idéal : concentrations à la place des activités. C'est une approximation, d'autant plus grossière que la solution est concentrée (nettement au-delà de 0,1 mol/L).</p>
+</section>
+
+<section class="sfa-card"><h2>Ce qu'il faut retenir</h2><ul>
+<li>Acide fort : pH = −log C. Base forte : pH = 14 + log C. Valable tant que l'eau reste négligeable (C au-dessus de 10⁻⁶ mol/L environ).</li>
+<li>Acide faible : pH = ½(pKa − log C), seulement si le pourcentage de dissociation α reste sous 5 %. Plus on dilue, plus α augmente.</li>
+<li>Base faible : pOH = ½(pKb − log C), avec pKa + pKb = 14 (à 25 °C) pour un couple.</li>
+<li>Ampholyte (HCO₃⁻, H₂PO₄⁻) : pH ≈ ½(pKa₁ + pKa₂), presque indépendant de C, à condition que C soit grand devant Ka₁ et que Ka₂·C soit grand devant K<sub>w</sub>.</li>
+<li>Polyacide : si les pKa sont bien séparés, seule la première acidité fixe le pH.</li>
+</ul></section>
+
+<section class="sfa-card trap"><h2>Pièges classiques</h2><ul>
+<li>HCl 10⁻⁸ mol/L n'a pas un pH de 8 : une solution d'acide ne peut pas être basique. L'eau fournit plus de H₃O⁺ que l'acide, le pH vaut 6,98.</li>
+<li>Appliquer ½(pKa − log C) sans vérifier α : avec HF ou un acide très dilué, α dépasse vite 5 % et la formule se trompe.</li>
+<li>K<sub>w</sub> = 10⁻¹⁴ et « neutre = pH 7 » ne valent qu'à 25 °C. À une autre température, K<sub>w</sub> change et la neutralité n'est plus à pH 7.</li>
+<li>« L'ampholyte ne dépend pas de C » a des limites : H₂PO₄⁻ s'écarte déjà de ½(pKa₁ + pKa₂) sous 2·10⁻² mol/L environ (écart de 0,1 à 10⁻² mol/L), car Ka₁ = 7,1·10⁻³ n'est plus petit devant C.</li>
+</ul></section>
+
+<section class="sfa-card"><h2>Défis</h2>
+<details><summary>1. Quel est le pH d'une solution de HCl à 1,0·10⁻⁸ mol/L ?</summary>
+<p>Environ 6,98. Il faut écrire [H₃O⁺] = C + [OH⁻] avec [OH⁻] = K<sub>w</sub>/[H₃O⁺] : l'eau apporte ici près de dix fois plus de H₃O⁺ que l'acide. La formule −log C donnerait 8, ce qui est absurde.</p></details>
+<details><summary>2. En dessous de quelle concentration la formule de l'acide faible ne vaut-elle plus pour CH₃COOH ?</summary>
+<p>Vers 7·10⁻³ mol/L : à 1,0·10⁻² mol/L, α vaut environ 4 % (formule valable) ; à 5,0·10⁻³ mol/L, α dépasse 5 %. Promène le curseur et regarde la bande verte devenir rouge.</p></details>
+<details><summary>3. NaHCO₃ à 0,10 mol/L puis à 1,0·10⁻⁵ mol/L : le pH change-t-il ?</summary>
+<p>À 0,10 mol/L, pH = 8,34 = ½(6,35 + 10,33). À 1,0·10⁻⁵ mol/L, le pH exact tombe vers 7,7 : l'ampholyte est si dilué que sa réaction sur lui-même (2 HCO₃⁻ ⇌ H₂CO₃ + CO₃²⁻) devient négligeable devant ses réactions avec l'eau ; HCO₃⁻ se comporte surtout en base faible et le pH se rapproche de 7. « Indépendant de C » n'est vrai que pour des solutions assez concentrées.</p></details>
+</section>
+
+</main>
+<aside class="sfa-side">
+  <div class="sfa-list"><h2>Acides et bases<span>3 simulations</span></h2><ol><li><a href="../titrage-tampon/"><i>01</i>Titrage et tampon</a></li><li><a class="on" aria-current="page" href="../ph-metre/"><i>02</i>Calculer un pH</a></li><li><a href="../predominance-pi/"><i>03</i>Espèces majoritaires et point isoélectrique</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside>
+</div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de chimie</footer>
+<script>
+(()=>{
+/* ---------- SFA chimie : outils communs (format, équilibres, dessin) ---------- */
+const $=id=>document.getElementById(id);
+const LN10=Math.LN10;
+const KW=1.0e-14;               /* VALEURS-REFERENCE : Kw = 1,0·10⁻¹⁴ à 25 °C */
+const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+/* nombre à n décimales, virgule décimale, vrai signe moins */
+const fr=(v,n)=>{if(!isFinite(v))return '—';let s=v.toFixed(n);if(/^-0[,.]?0*$/.test(s))s=s.slice(1);return s.replace('.',',').replace(/^-/,'−');};
+/* notation scientifique « 1,0·10⁻⁸ » avec s chiffres significatifs */
+function sci(v,s){if(v===0)return '0';if(!isFinite(v))return '—';const e=Math.floor(Math.log10(Math.abs(v))+1e-12);let m=v/Math.pow(10,e);
+  let ms=m.toFixed((s||2)-1);if(Math.abs(+ms)>=10){m/=10;ms=m.toFixed((s||2)-1);return fmtE(ms,e+1);}return fmtE(ms,e);}
+function fmtE(ms,e){ms=ms.replace('.',',').replace(/^-/,'−');if(e===0)return ms;return ms+'·10'+String(e).split('').map(c=>SUP[c]).join('');}
+/* concentration lisible */
+function conc(C){if(C>=0.01&&C<100)return (+C).toPrecision(2).replace('.',',');return sci(C,2);}
+function concU(C){return conc(C)+' mol/L';}
+/* valeurs « jolies » 1-2-3-5 par décade pour les curseurs logarithmiques */
+function niceList(e0,e1){const L=[];for(let e=e0;e<e1;e++)for(const m of [1,2,3,5])L.push(+(m*Math.pow(10,e)).toPrecision(3));L.push(Math.pow(10,e1));return L;}
+
+/* ---------- équilibres acide-base : calcul exact ----------
+   Un système = { C : concentration analytique (mol/L), pK : [pKa1, pKa2, …], z0 : charge de la forme la plus protonée }.
+   fracs(pH, pK)[i] = fraction de la forme qui a perdu i protons (charge z0 − i).
+   Électroneutralité : [H⁺] − [OH⁻] + Σ cations spectateurs − Σ anions spectateurs + Σ C·Σ αᵢ(z0 − i) = 0,
+   résolue par dichotomie sur le pH (la charge nette décroît strictement avec le pH). */
+function fracs(pH,pK){const l=[0];let a=0;for(const p of pK){a+=pH-p;l.push(a);}
+  const m=Math.max(...l);let s=0;const t=l.map(v=>{const e=Math.pow(10,v-m);s+=e;return e;});return t.map(e=>e/s);}
+function netQ(pH,S){const h=Math.pow(10,-pH);let q=h-KW/h+(S.cat||0)-(S.an||0);
+  for(const y of (S.sys||[])){const a=fracs(pH,y.pK);let z=0;for(let i=0;i<a.length;i++)z+=a[i]*(y.z0-i);q+=y.C*z;}return q;}
+function solvePH(S){let lo=-3,hi=17;for(let k=0;k<64;k++){const m=(lo+hi)/2;if(netQ(m,S)>0)lo=m;else hi=m;}return (lo+hi)/2;}
+const meanZ=(pH,pK,z0)=>{const a=fracs(pH,pK);let z=0;for(let i=0;i<a.length;i++)z+=a[i]*(z0-i);return z;};
+
+/* ---------- canevas ---------- */
+function makeCanvas(cv){const ctx=cv.getContext('2d');const o={cv,ctx,W:0,H:0};
+  o.sync=()=>{const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;const w=Math.round(r.width)||600,h=Math.round(r.height)||400;
+    if(w!==o.W||h!==o.H||cv.width!==Math.round(w*d)){o.W=w;o.H=h;cv.width=Math.round(w*d);cv.height=Math.round(h*d);}ctx.setTransform(d,0,0,d,0,0);};
+  return o;}
+const FT='700 12.5px Mulish,system-ui,sans-serif',FN='600 11.5px Mulish,system-ui,sans-serif',FB='800 13px Mulish,system-ui,sans-serif';
+function halo(ctx,t,x,y,col,font,al,bl){ctx.save();ctx.font=font||FT;ctx.textAlign=al||'left';ctx.textBaseline=bl||'middle';ctx.lineJoin='round';
+  ctx.lineWidth=4;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.strokeText(t,x,y);ctx.fillStyle=col;ctx.fillText(t,x,y);ctx.restore();}
+/* étiquettes sans chevauchement : on propose des positions, la meilleure libre est retenue */
+function Labeler(ctx,W,H){const Q=[],R=[];return {
+  block(x0,y0,x1,y1){R.push({x0,y0,x1,y1});},
+  add(t,col,cands,font){Q.push({t,col,cands,font:font||FT});},
+  flush(){const P=[];for(const L of Q){ctx.font=L.font;const w=ctx.measureText(L.t).width,h=15;let best=null,bs=Infinity;
+    L.cands.forEach((c,i)=>{const [x,y,al]=c;const x0=al==='left'?x:al==='right'?x-w:x-w/2;const b={x0:x0-2,x1:x0+w+2,y0:y-h/2,y1:y+h/2};let s=i;
+      if(b.x0<1||b.x1>W-1||b.y0<1||b.y1>H-1)s+=1e6;
+      for(const p of P.concat(R)){const ox=Math.min(b.x1,p.x1)-Math.max(b.x0,p.x0),oy=Math.min(b.y1,p.y1)-Math.max(b.y0,p.y0);if(ox>0&&oy>0)s+=1e4+ox*oy;}
+      if(s<bs){bs=s;best={b,x0,y};}});
+    let x0=Math.max(2,Math.min(W-2-w,best.x0)),y=Math.max(8,Math.min(H-8,best.y));P.push({x0:x0-2,x1:x0+w+2,y0:y-h/2,y1:y+h/2});halo(ctx,L.t,x0,y,L.col,L.font,'left');}}};}
+/* repère cartésien : renvoie les fonctions de passage */
+function axes(ctx,b,xr,yr,o){o=o||{};const X=x=>b.x+(x-xr[0])/(xr[1]-xr[0])*b.w,Y=y=>b.y+b.h-(y-yr[0])/(yr[1]-yr[0])*b.h;
+  ctx.save();ctx.fillStyle='#fff';ctx.fillRect(b.x,b.y,b.w,b.h);ctx.font=FN;ctx.lineWidth=1;
+  const yt=o.yticks||[];ctx.textAlign='right';ctx.textBaseline='middle';
+  for(const v of yt){ctx.strokeStyle='#eef0f3';ctx.beginPath();ctx.moveTo(b.x,Y(v));ctx.lineTo(b.x+b.w,Y(v));ctx.stroke();ctx.fillStyle='#8a95a3';ctx.fillText(o.yfmt?o.yfmt(v):fr(v,0),b.x-6,Y(v));}
+  const xt=o.xticks||[];ctx.textAlign='center';ctx.textBaseline='top';
+  for(const v of xt){ctx.strokeStyle='#f1f3f6';ctx.beginPath();ctx.moveTo(X(v),b.y);ctx.lineTo(X(v),b.y+b.h);ctx.stroke();ctx.fillStyle='#8a95a3';ctx.fillText(o.xfmt?o.xfmt(v):fr(v,0),X(v),b.y+b.h+5);}
+  ctx.strokeStyle='#c8ccd0';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x,b.y+b.h);ctx.lineTo(b.x+b.w,b.y+b.h);ctx.stroke();
+  ctx.fillStyle='#5f6b7a';ctx.font='700 11.5px Mulish,system-ui,sans-serif';
+  if(o.xlabel){ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText(o.xlabel,b.x+b.w,b.y+b.h+19);}
+  if(o.ylabel){ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(o.ylabel,b.x-(o.ylabelDx||28),b.y-6);}
+  ctx.restore();return {X,Y};}
+function niceStep(range,px,minPx){const raw=range*minPx/px,p=Math.pow(10,Math.floor(Math.log10(raw)));for(const m of [1,2,5,10])if(m*p>=raw)return m*p;return 10*p;}
+function ticks(a,b,st){const t=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)t.push(+v.toFixed(10));return t;}
+function poly(ctx,pts,col,w,dash){ctx.save();ctx.strokeStyle=col;ctx.lineWidth=w||2;ctx.lineJoin='round';if(dash)ctx.setLineDash(dash);ctx.beginPath();let on=false;
+  for(const p of pts){if(!p||!isFinite(p[1])){on=false;continue;}on?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);on=true;}ctx.stroke();ctx.restore();}
+/* couleur : mélange de deux couleurs rgba */
+const mix=(a,b,t)=>a.map((v,i)=>v+(b[i]-v)*t);
+const rgba=c=>`rgba(${c[0]|0},${c[1]|0},${c[2]|0},${(c[3]==null?1:c[3]).toFixed(3)})`;
+/* indicateurs colorés (pKa : VALEURS-REFERENCE). Couleurs des formes acide et basique ; zone de virage ≈ pKa ± 1 (règle simplifiée). */
+const INDIC={
+  none:{nom:'Aucun',pK:null},
+  mo:{nom:'Méthylorange',pK:3.6,ac:[205,45,45,.80],ba:[240,170,40,.80],acN:'rouge',baN:'jaune orangé'},
+  rm:{nom:'Rouge de méthyle',pK:5.1,ac:[214,40,80,.78],ba:[240,206,50,.80],acN:'rouge',baN:'jaune'},
+  pp:{nom:'Phénolphtaléine',pK:9.7,ac:[255,255,255,0],ba:[214,51,138,.78],acN:'incolore',baN:'rose fuchsia'}};
+function indicColor(key,pH){const I=INDIC[key];if(!I||I.pK==null)return [214,232,246,.55];const f=1/(1+Math.pow(10,I.pK-pH));
+  const base=[214,232,246,.45];const c=mix(I.ac,I.ba,f);const a=c[3];return [base[0]*(1-a)+c[0]*a,base[1]*(1-a)+c[1]*a,base[2]*(1-a)+c[2]*a,Math.max(.45,a)];}
+function indicFrac(key,pH){const I=INDIC[key];return I&&I.pK!=null?1/(1+Math.pow(10,I.pK-pH)):null;}
+/* bécher dessiné */
+function beaker(ctx,x,y,w,h,fill,lev){ctx.save();const r=8;
+  ctx.fillStyle=rgba(fill);const lh=h*Math.max(0.08,Math.min(0.95,lev));ctx.beginPath();ctx.moveTo(x+1,y+h-lh);ctx.lineTo(x+w-1,y+h-lh);ctx.lineTo(x+w-1,y+h-r);ctx.quadraticCurveTo(x+w-1,y+h-1,x+w-r,y+h-1);ctx.lineTo(x+r,y+h-1);ctx.quadraticCurveTo(x+1,y+h-1,x+1,y+h-r);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+4,y+h-lh+1);ctx.lineTo(x+w-4,y+h-lh+1);ctx.stroke();
+  ctx.strokeStyle='#7d8794';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-5,y);ctx.lineTo(x,y+4);ctx.lineTo(x,y+h-r);ctx.quadraticCurveTo(x,y+h,x+r,y+h);ctx.lineTo(x+w-r,y+h);ctx.quadraticCurveTo(x+w,y+h,x+w,y+h-r);ctx.lineTo(x+w,y);ctx.stroke();
+  ctx.strokeStyle='#c3c9d1';ctx.lineWidth=1;for(let k=1;k<5;k++){const yy=y+h-h*k/5;ctx.beginPath();ctx.moveTo(x+w-12,yy);ctx.lineTo(x+w-2,yy);ctx.stroke();}
+  ctx.restore();return y+h-lh;}
+/* afficheur de pH-mètre */
+function phMeter(ctx,x,y,w,h,pH,label){ctx.save();ctx.fillStyle='#13233a';ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,w,h,8):ctx.rect(x,y,w,h);ctx.fill();
+  ctx.fillStyle='#dff3e7';ctx.fillRect(x+7,y+7,w-14,h-24);ctx.fillStyle='#0f3d2c';ctx.font='800 '+Math.round(Math.min(26,(h-24)*0.75))+'px "JetBrains Mono",ui-monospace,monospace';
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(fr(pH,2),x+w/2,y+7+(h-24)/2+1);
+  ctx.fillStyle='#c9d3e0';ctx.font='800 10px Mulish,system-ui,sans-serif';ctx.fillText(label||'pH-mètre · 25 °C',x+w/2,y+h-9);ctx.restore();}
+function setHTML(id,h){const e=$(id);if(e&&e._h!==h){e.innerHTML=h;e._h=h;}}
+function segBtns(id,cb){const box=$(id);box.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{box.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.k);}));}
+function selectSeg(id,k){$(id).querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.k===k));}
+
+
+const cvo=makeCanvas($('cv')),ctx=cvo.ctx;
+const BL='#378ADD',BLD='#185fa5',OR='#BA7517',GRD='#0F6E56',RDD='#a32d2d';
+const CL=niceList(-8,0);
+/* pKa : VALEURS-REFERENCE */
+const P3=[2.15,7.20,12.38],P2=[6.35,10.33];
+const SP={
+  hcl:{lab:'HCl',nom:'acide chlorhydrique',k:'AF',sol:C=>({an:C})},
+  naoh:{lab:'NaOH',nom:'hydroxyde de sodium',k:'BF',sol:C=>({cat:C})},
+  ac:{lab:'CH₃COOH',nom:'acide éthanoïque (acide acétique)',k:'Af',pK:[4.76],z0:0,forms:['CH₃COOH','CH₃COO⁻'],sol:C=>({})},
+  hf:{lab:'HF',nom:'acide fluorhydrique',k:'Af',pK:[3.14],z0:0,forms:['HF','F⁻'],sol:C=>({})},
+  hcn:{lab:'HCN',nom:'acide cyanhydrique',k:'Af',pK:[9.31],z0:0,forms:['HCN','CN⁻'],sol:C=>({})},
+  nh3:{lab:'NH₃',nom:'ammoniac',k:'Bf',pK:[9.25],z0:1,forms:['NH₄⁺','NH₃'],sol:C=>({})},
+  h3po4:{lab:'H₃PO₄',nom:'acide phosphorique (triacide)',k:'Pa',pK:P3,z0:0,forms:['H₃PO₄','H₂PO₄⁻','HPO₄²⁻','PO₄³⁻'],sol:C=>({})},
+  h2co3:{lab:'H₂CO₃',nom:'acide carbonique (CO₂ dissous, diacide)',k:'Pa',pK:P2,z0:0,forms:['H₂CO₃','HCO₃⁻','CO₃²⁻'],sol:C=>({})},
+  nahco3:{lab:'NaHCO₃',nom:'hydrogénocarbonate de sodium (bicarbonate) : ampholyte HCO₃⁻',k:'Amp',pK:P2,z0:0,mid:1,forms:['H₂CO₃','HCO₃⁻','CO₃²⁻'],sol:C=>({cat:C})},
+  nah2po4:{lab:'NaH₂PO₄',nom:'dihydrogénophosphate de sodium : ampholyte H₂PO₄⁻',k:'Amp',pK:P3,z0:0,mid:1,forms:['H₃PO₄','H₂PO₄⁻','HPO₄²⁻','PO₄³⁻'],sol:C=>({cat:C})},
+  nacl:{lab:'NaCl',nom:'chlorure de sodium (sel d\'acide fort et de base forte)',k:'N',sol:C=>({cat:C,an:C})},
+  acna:{lab:'CH₃COONa',nom:'éthanoate de sodium (acétate de sodium) : base faible CH₃COO⁻',k:'Bf',pK:[4.76],z0:0,forms:['CH₃COOH','CH₃COO⁻'],sol:C=>({cat:C})},
+  nh4cl:{lab:'NH₄Cl',nom:'chlorure d\'ammonium : acide faible NH₄⁺',k:'Af',pK:[9.25],z0:1,forms:['NH₄⁺','NH₃'],sol:C=>({an:C})},
+  na2co3:{lab:'Na₂CO₃',nom:'carbonate de sodium : dibase CO₃²⁻',k:'Bf',pK:P2,z0:0,forms:['H₂CO₃','HCO₃⁻','CO₃²⁻'],sol:C=>({cat:2*C})}};
+let sp='ac',Ci=24,C=CL[24];
+function solution(s,C){const S=SP[s],o=S.sol(C);if(S.pK)o.sys=[{C,pK:S.pK,z0:S.z0}];return o;}
+const exactPH=(s,C)=>solvePH(solution(s,C));
+const lg=Math.log10;
+/* formule simplifiée + texte */
+function formula(s,C){const S=SP[s],l=lg(C);switch(S.k){
+  case 'AF':return {pH:-l,t:'pH = −log C = −log('+sci(C,2)+')'};
+  case 'BF':return {pH:14+l,t:'pH = 14 + log C = 14 + log('+sci(C,2)+')'};
+  case 'Af':return {pH:0.5*(S.pK[0]-l),t:'pH = ½(pKa − log C) = ½('+fr(S.pK[0],2)+' − log '+sci(C,2)+')'};
+  case 'Pa':return {pH:0.5*(S.pK[0]-l),t:'pH = ½(pKa₁ − log C) = ½('+fr(S.pK[0],2)+' − log '+sci(C,2)+') (1re acidité seule)'};
+  case 'Bf':{const pKa=S.pK[S.pK.length-1],pKb=14-pKa;return {pH:14-0.5*(pKb-l),pKb,t:'pOH = ½(pKb − log C) avec pKb = 14 − '+fr(pKa,2)+' = '+fr(pKb,2)+' ; pH = 14 − pOH'};}
+  case 'Amp':{const a=S.pK[S.mid-1],b=S.pK[S.mid];return {pH:0.5*(a+b),t:'pH = ½(pKa₁ + pKa₂) = ½('+fr(a,2)+' + '+fr(b,2)+')'};}
+  case 'N':return {pH:7,t:'Na⁺ et Cl⁻ n\'agissent pas sur le pH : pH = 7 (à 25 °C)'};}}
+/* critères de validité de la formule simplifiée (seuil 5 %) */
+function criteria(s,C,pH){const S=SP[s],h=Math.pow(10,-pH),oh=KW/h,L=[];
+  const a=S.pK?fracs(pH,S.pK):null;
+  if(S.k==='AF'||S.k==='Af'||S.k==='Pa')L.push({ok:oh<0.05*h,t:'Eau négligeable : [OH⁻] = '+sci(oh,2)+' doit rester sous 5 % de [H₃O⁺] = '+sci(h,2)});
+  if(S.k==='BF'||S.k==='Bf')L.push({ok:h<0.05*oh,t:'Eau négligeable : [H₃O⁺] = '+sci(h,2)+' doit rester sous 5 % de [OH⁻] = '+sci(oh,2)});
+  if(S.k==='Af'||S.k==='Pa'){const al=1-a[0];L.push({ok:al<=0.05,t:'Dissociation α = '+pc(al)+' ≤ 5 %'});}
+  if(S.k==='Pa'){const a2=a.slice(2).reduce((x,y)=>x+y,0);L.push({ok:a2<=0.05,t:'2e acidité négligeable : '+S.forms[2]+' et au-delà = '+pc(a2)+' ≤ 5 %'});}
+  if(S.k==='Bf'){const al=1-a[a.length-1];L.push({ok:al<=0.05,t:'Protonation α = '+pc(al)+' ≤ 5 %'});}
+  if(S.k==='Amp'){const K1=Math.pow(10,-S.pK[S.mid-1]),K2=Math.pow(10,-S.pK[S.mid]);
+    L.push({ok:K1<0.05*C,t:'Ka₁ = '+sci(K1,2)+' petit devant C (sous 5 % de C)'});
+    L.push({ok:KW<0.05*K2*C,t:'Eau négligeable : K<sub>w</sub> sous 5 % de Ka₂·C = '+sci(K2*C,2)});}
+  return L;}
+const pc=x=>x<0.0001?sci(x*100,2)+' %':(x<0.1?fr(x*100,2):fr(x*100,1))+' %';
+function valid(s,C){const p=exactPH(s,C);const L=criteria(s,C,p);return L.every(c=>c.ok);}
+/* courbes en cache */
+const cache={};
+function curves(s){if(cache[s])return cache[s];const E=[],F=[],V=[];for(let k=0;k<=400;k++){const l=-8+8*k/400,c=Math.pow(10,l);E.push([l,exactPH(s,c)]);F.push([l,formula(s,c).pH]);V.push([l,valid(s,c)]);}return cache[s]={E,F,V};}
+
+document.querySelectorAll('.sp button').forEach(b=>b.addEventListener('click',()=>{sp=b.dataset.k;document.querySelectorAll('.sp button').forEach(x=>x.classList.toggle('on',x===b));update();}));
+$('C').oninput=e=>{Ci=+e.target.value;C=CL[Ci];update();};
+const stat=(a,b,c)=>'<div class="stat"><small>'+a+'</small><b>'+b+'</b><span>'+c+'</span></div>';
+const note=(c,t)=>'<div class="note '+c+'">'+t+'</div>';
+function update(){const S=SP[sp],p=exactPH(sp,C),f=formula(sp,C),d=f.pH-p,h=Math.pow(10,-p),L=criteria(sp,C,p),ok=L.every(c=>c.ok);
+  $('Cv').textContent=concU(C);
+  let s=stat('pH exact',fr(p,2),'[H₃O⁺] = '+sci(h,2)+' ; [OH⁻] = '+sci(KW/h,2)+' mol/L');
+  s+=stat('pH formule simplifiée',fr(f.pH,2),f.t);
+  s+=stat('Écart',(Math.abs(d)<0.005?'0,00':(d>0?'+':'')+fr(d,2)),Math.abs(d)<=0.05?'négligeable (≤ 0,05)':'trop grand : la formule se trompe');
+  const a=S.pK?fracs(p,S.pK):null;
+  if(S.k==='AF'||S.k==='BF')s+=stat('Dissociation','100 %','totale : c\'est la définition d\'un acide ou d\'une base forte');
+  else if(S.k==='N')s+=stat('Dissociation','100 %','sel totalement dissocié en Na⁺ et Cl⁻');
+  else if(S.k==='Bf')s+=stat('% de protonation',pc(1-a[a.length-1]),'part de la base qui a capté un H⁺');
+  else if(S.k==='Amp')s+=stat('Ampholyte transformé',pc(1-a[S.mid]),'part de '+S.forms[S.mid]+' qui a réagi');
+  else s+=stat('% de dissociation α',pc(1-a[0]),'part de l\'acide qui a cédé un H⁺');
+  setHTML('stats',s);
+  let c='<div class="note '+(ok?'ok':'warn')+'"><b>'+S.lab+'</b>, '+S.nom+'. Formule simplifiée : '+(ok?'<b>valable ici</b>.':'<b>non valable ici</b>, il faut le calcul exact.')+
+    (L.length?'<ul class="crit">'+L.map(x=>'<li><span class="'+(x.ok?'chipok':'chipno')+'">'+(x.ok?'oui':'non')+'</span>'+x.t+'</li>').join('')+'</ul>':'')+'</div>';
+  setHTML('crit',c);
+  let n='';
+  if((S.k==='AF'||S.k==='Af'||S.k==='Pa')&&f.pH>7)n+=note('warn','La formule donne pH = '+fr(f.pH,2)+' &gt; 7 pour une solution d\'acide : c\'est absurde. À cette dilution, l\'autoprotolyse de l\'eau (K<sub>w</sub>) impose pH ≈ 7 ; le calcul exact donne '+fr(p,2)+'.');
+  if((S.k==='BF'||S.k==='Bf')&&f.pH<7)n+=note('warn','La formule donne pH = '+fr(f.pH,2)+' &lt; 7 pour une solution de base : c\'est absurde. L\'eau impose pH ≈ 7 ; le calcul exact donne '+fr(p,2)+'.');
+  if(S.k==='Amp')n+=note('info2','Ampholyte : pH ≈ ½(pKa₁ + pKa₂) = '+fr(f.pH,2)+', en principe indépendant de C. Le calcul exact donne '+fr(p,2)+(ok?' : l\'approximation tient à cette concentration.':Math.abs(d)<=0.05?' : les conditions ne sont pas strictement remplies, mais l\'écart reste faible à cette concentration.':' : à cette dilution, l\'indépendance vis-à-vis de C ne tient plus.'));
+  else if(!ok&&L.length&&Math.abs(d)<=0.05)n+=note('info2','Le seuil de 5 % est une convention : juste au-delà, l\'écart avec le calcul exact reste petit ('+fr(Math.abs(d),2)+'), mais il grandit vite quand on s\'éloigne.');
+  if(S.k==='Pa'){const a2=a.slice(2).reduce((x,y)=>x+y,0);n+=note(a2<=0.05?'info2':'warn','2e acidité : '+S.forms[2]+' et au-delà représentent '+pc(a2)+' de l\'acide'+(a2<=0.05?' : seule la 1re acidité compte pour le pH.':' : elle n\'est plus négligeable à cette dilution, la formule « 1re acidité seule » ne s\'applique pas.'));}
+  if(C>0.1&&S.k!=='N')n+=note('info2','Au-delà de 0,1 mol/L, les solutions réelles s\'écartent du modèle idéal (activités) : les valeurs affichées restent celles du modèle idéal utilisé dans les exercices.');
+  setHTML('notes',n);
+  if(a){let t='<div class="hint" style="margin:6px 0 2px">Répartition des formes à ce pH</div>';S.forms.forEach((nm,i)=>{t+='<div class="r"><span>'+nm+'</span><div class="bar"><i style="width:'+(a[i]*100).toFixed(2)+'%"></i></div><span>'+pc(a[i])+'</span></div>';});setHTML('dist',t);}
+  else setHTML('dist','');}
+
+function draw(){cvo.sync();const W=cvo.W,H=cvo.H;ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  const narrow=W<640,p=exactPH(sp,C),f=formula(sp,C),S=SP[sp];
+  let g;
+  /* appareil : bécher + pH-mètre + échelle de pH */
+  if(narrow){beaker(ctx,24,30,80,70,[214,232,246,.6],0.65);phMeter(ctx,118,24,Math.min(130,W-250),62,p);
+    halo(ctx,S.lab+' '+concU(C),64,114,BLD,FN,'center');drawScale(W-100,20,86,92,p,true);g={x:44,y:162,w:W-60,h:H-162-44};}
+  else{const aw=Math.max(170,Math.min(220,W*0.24));const bw=Math.min(100,aw-60),bx=(aw-bw)/2+6;
+    phMeter(ctx,(aw-140)/2+6,20,140,72,p);
+    ctx.strokeStyle='#7d8794';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(aw/2+6,92);ctx.lineTo(aw/2+6,170);ctx.stroke();
+    beaker(ctx,bx,120,bw,100,[214,232,246,.6],0.7);halo(ctx,S.lab+' '+concU(C),aw/2+6,236,BLD,FN,'center');
+    drawScale(aw/2-20,262,52,H-262-30,p,false);g={x:aw+44,y:30,w:W-aw-62,h:H-30-46};}
+  const K=curves(sp);
+  const {X,Y}=axes(ctx,g,[-8,0],[0,14],{yticks:[0,2,4,6,7,8,10,12,14],xticks:[-8,-7,-6,-5,-4,-3,-2,-1,0],xfmt:v=>v===0?'1':'10'+String(v).split('').map(ch=>SUP[ch]).join(''),xlabel:'C (mol/L), échelle log',ylabel:'pH'});
+  ctx.save();ctx.beginPath();ctx.rect(g.x,g.y,g.w,g.h);ctx.clip();
+  /* bande de validité */
+  for(let i=0;i<K.V.length-1;i++){ctx.fillStyle=K.V[i][1]?'#cfe8dc':'#f6d3cc';ctx.fillRect(X(K.V[i][0]),g.y+g.h-8,X(K.V[i+1][0])-X(K.V[i][0])+0.6,8);}
+  ctx.strokeStyle='#d6dbe2';ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(g.x,Y(7));ctx.lineTo(g.x+g.w,Y(7));ctx.stroke();ctx.setLineDash([]);
+  poly(ctx,K.F.map(q=>[X(q[0]),Y(Math.max(-1,Math.min(15,q[1])))]),OR,2,[6,5]);
+  poly(ctx,K.E.map(q=>[X(q[0]),Y(q[1])]),BL,2.6);
+  const lc=lg(C);ctx.strokeStyle='rgba(24,95,165,.35)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(X(lc),g.y);ctx.lineTo(X(lc),g.y+g.h);ctx.stroke();
+  ctx.restore();
+  const lb=Labeler(ctx,W,H);
+  const fy=Math.max(-0.3,Math.min(14.3,f.pH));
+  ctx.fillStyle='#fff';ctx.strokeStyle=OR;ctx.lineWidth=2;ctx.beginPath();ctx.arc(X(lc),Y(fy),5,0,7);ctx.fill();ctx.stroke();lb.block(X(lc)-7,Y(fy)-7,X(lc)+7,Y(fy)+7);
+  ctx.fillStyle=BLD;ctx.strokeStyle='#fff';ctx.beginPath();ctx.arc(X(lc),Y(p),6,0,7);ctx.fill();ctx.stroke();lb.block(X(lc)-8,Y(p)-8,X(lc)+8,Y(p)+8);
+  const up=f.pH>p;
+  lb.add('exact '+fr(p,2),BLD,[[X(lc)+10,Y(p)+(up?14:-14),'left'],[X(lc)-10,Y(p)+(up?14:-14),'right'],[X(lc)+10,Y(p),'left'],[X(lc)-10,Y(p),'right']],FB);
+  lb.add('formule '+fr(f.pH,2),OR,[[X(lc)+10,Y(fy)+(up?-14:14),'left'],[X(lc)-10,Y(fy)+(up?-14:14),'right'],[X(lc)+10,Y(fy),'left'],[X(lc)-10,Y(fy),'right']],FB);
+  lb.add('Kw = 1,0·10⁻¹⁴ à 25 °C','#5f6b7a',[[g.x+g.w-6,g.y+10,'right'],[g.x+8,g.y+10,'left']],FN);
+  lb.flush();requestAnimationFrame(draw);}
+/* échelle de pH colorée (repère visuel, pas un indicateur réel) */
+function drawScale(x,y,w,h,p,horizontalLabels){ctx.save();const bw=12;const gr=ctx.createLinearGradient(0,y+h,0,y);
+  gr.addColorStop(0,'#d9534f');gr.addColorStop(0.5,'#e9eef3');gr.addColorStop(1,'#3f6fb5');ctx.fillStyle=gr;ctx.fillRect(x,y,bw,h);ctx.strokeStyle='#c8ccd0';ctx.strokeRect(x,y,bw,h);
+  ctx.font=FN;ctx.fillStyle='#8a95a3';ctx.textAlign='left';ctx.textBaseline='middle';
+  for(const v of [0,7,14]){const yy=y+h-h*v/14;ctx.fillText(String(v),x+bw+4,yy);}
+  const yy=y+h-h*Math.max(0,Math.min(14,p))/14;ctx.fillStyle='#13233a';ctx.beginPath();ctx.moveTo(x-2,yy);ctx.lineTo(x-10,yy-5);ctx.lineTo(x-10,yy+5);ctx.fill();
+  ctx.fillStyle='#5f6b7a';ctx.font='700 10.5px Mulish,system-ui,sans-serif';ctx.fillText(p<6.5?'acide':p>7.5?'basique':'≈ neutre',x+bw+22,yy);ctx.restore();}
+update();requestAnimationFrame(draw);
+window.__sim={set(o){if(o.sp){sp=o.sp;document.querySelectorAll('.sp button').forEach(x=>x.classList.toggle('on',x.dataset.k===sp));}
+  if(o.C!=null){C=o.C;const i=CL.findIndex(v=>Math.abs(v/o.C-1)<1e-9);if(i>=0){Ci=i;$('C').value=i;}}update();},
+  get:()=>({sp,C,pH:exactPH(sp,C),f:formula(sp,C).pH})};
+
+})();
+</script>
+<script src="../../kit/sfa-nav.js"></script></body>
+</html>

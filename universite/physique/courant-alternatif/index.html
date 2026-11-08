@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Courant alternatif et valeur efficace · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block}
+.val{white-space:nowrap}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH10">Courant alternatif</a>›<b>Courant alternatif et valeur efficace</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Courant alternatif</span><span class="sfa-chip free">Gratuit</span></div><h1>Courant alternatif et valeur efficace</h1><p>Période, fréquence, valeur efficace et puissance</p></div>
+<section class="sfa-sim">
+
+
+
+<canvas id="cv" style="width:100%;height:62vh;min-height:400px;" aria-label="Oscilloscope : tension alternative, puissance instantanée et comparaison avec le continu"></canvas>
+
+<div class="fml" id="fml">
+  <b style="color:#185fa5">u(t) = U<sub>max</sub>·sin(2π<span style="color:#BA7517">f</span>t)</b> &nbsp;·&nbsp;
+  <b style="color:#BA7517">T = 1/f</b> &nbsp;·&nbsp;
+  <b style="color:#0F6E56">U<sub>eff</sub> = U<sub>max</sub>/√2</b><br>
+  <b style="color:#7F77DD">p(t) = u²/R</b> varie de 0 à U<sub>max</sub>²/R ; sa moyenne vaut
+  <b style="color:#a32d2d">P<sub>moy</sub> = U<sub>max</sub>²/(2R) = U<sub>eff</sub>²/R</b> : la même puissance qu'en continu sous U<sub>eff</sub>.
+</div>
+
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#185fa5">U<sub>max</sub> &nbsp;amplitude</span>
+  <input type="range" id="Um" min="1" max="400" value="325" step="1" style="accent-color:#378ADD;">
+  <span class="val" id="Umv" style="color:#185fa5">325 V</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#BA7517">f &nbsp;fréquence</span>
+  <input type="range" id="f" min="1" max="200" value="50" step="1" style="accent-color:#BA7517;">
+  <span class="val" id="fv" style="color:#BA7517">50 Hz</span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#3d3d3a">R &nbsp;résistance</span>
+  <input type="range" id="R" min="10" max="1000" value="529" step="1" style="accent-color:#5b6b7b;">
+  <span class="val" id="Rv" style="color:#3d3d3a">529 Ω</span>
+</div>
+<div class="row">
+  <button class="btn on" id="sect">Secteur 230 V / 50 Hz</button>
+  <button class="btn" id="dc">Continu (U = U<sub>eff</sub>)</button>
+  <button class="btn" id="pause">Pause</button>
+</div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const INK='#3d3d3a',BLUE='#378ADD',BLUE_D='#185fa5',GREEN='#1D9E75',GREEN_D='#0F6E56',RED='#E24B4A',RED_D='#a32d2d',
+      ORANGE='#BA7517',VIOLET='#7F77DD',GREY='#9aa0a6',AX='#c8ccd0';
+const FT='600 13px Mulish,system-ui,sans-serif',FB='700 13px Mulish,system-ui,sans-serif',FN='600 12px Mulish,system-ui,sans-serif',FS='600 11px Mulish,system-ui,sans-serif';
+const $=id=>document.getElementById(id);
+const fr=(v,d)=>v.toFixed(d).replace('.',',');
+const n3=v=>{const a=Math.abs(v);return a>=100?fr(v,0):a>=10?fr(v,1):fr(v,2);};
+const fP=v=>{const a=Math.abs(v);return a>=1000?n3(v/1000)+' kW':a>=1||a===0?n3(v)+' W':n3(v*1000)+' mW';};
+const fT=s=>s>=1?fr(s,2)+' s':s>=0.01?fr(s*1000,1)+' ms':fr(s*1000,2)+' ms';
+let Um=230*Math.SQRT2,f=50,R=529,dc=false,paused=false,tSim=0,last=performance.now();
+const VC=[0.5,1,2,5,10,20,50,100,200],TC=[0.1,0.2,0.5,1,2,5,10,20,50,100,200,500];   // V/div, ms/div
+const SWEEP=4;   // le curseur traverse l'écran en 4 s : ralenti
+
+let W=0,H=0,dpr=1;
+function syncSize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;
+  const nW=Math.round(r.width)||700,nH=Math.round(r.height)||420;
+  if(nW!==W||nH!==H||cv.width!==Math.round(W*dpr)){W=nW;H=nH;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
+  ctx.setTransform(dpr,0,0,dpr,0,0);}
+
+let LBL=[];
+function tag(t,x,y,col,font,al){
+  ctx.font=font||FT;ctx.textAlign=al||'center';ctx.textBaseline='middle';
+  const w=ctx.measureText(t).width;let x0=al==='right'?x-w:al==='left'?x:x-w/2;
+  const dx=Math.max(0,4-x0)-Math.max(0,x0+w-(W-4));x+=dx;x0+=dx;
+  ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.strokeText(t,x,y);
+  ctx.fillStyle=col;ctx.fillText(t,x,y);ctx.textBaseline='alphabetic';LBL.push({t,x:x0,y:y-7,w,h:14});
+}
+function arrowHead(x,y,ang,col,s){ctx.save();ctx.translate(x,y);ctx.rotate(ang);ctx.fillStyle=col;
+  ctx.beginPath();ctx.moveTo(s,0);ctx.lineTo(-s*0.8,-s*0.62);ctx.lineTo(-s*0.8,s*0.62);ctx.closePath();ctx.fill();ctx.restore();}
+function dbl(x1,y1,x2,y2,col){ctx.strokeStyle=col;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  const a=Math.atan2(y2-y1,x2-x1);arrowHead(x2,y2,a,col,6);arrowHead(x1,y1,a+Math.PI,col,6);}
+
+function draw(now){
+  syncSize();const dtr=Math.min(0.05,(now-last)/1000);last=now;
+  LBL=[];ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  const T=1/f,Ue=Um/Math.SQRT2,w=2*Math.PI*f;
+  const Pm=Ue*Ue/R,pmax=Um*Um/R;
+  // calibres automatiques
+  const vdiv=VC.find(c=>Um/c<=3.4)||VC[VC.length-1];
+  const tdiv=(TC.find(c=>c/1000*10>=2*T)||TC[TC.length-1])/1000;
+  const win=10*tdiv,slow=SWEEP/win;
+  if(!paused)tSim=(tSim+dtr/slow)%win;
+
+  // ---- mise en page ----
+  const wide=W>=640;
+  const capH=30;
+  let sx,sy,sw,sh,px,py,pw,ph,rxp,ryp,rwp,rhp;
+  if(wide){
+    sx=16;sw=Math.round(W*0.64)-sx;sy=14;
+    const avail=H-sy-capH*2-14;sh=Math.round(avail*0.58);
+    py=sy+sh+capH;ph=avail-sh;px=sx;pw=sw;
+    rxp=sx+sw+22;ryp=sy;rwp=W-rxp-12;rhp=H-ryp-14;
+  }else{
+    sx=10;sw=W-20;sy=10;rhp=150;
+    const avail=H-sy-capH*2-rhp-12;sh=Math.round(avail*0.58);py=sy+sh+capH;ph=avail-sh;px=sx;pw=sw;
+    rxp=sx;ryp=py+ph+capH+4;rwp=sw;rhp=H-ryp-6;
+  }
+  const X=t=>sx+t/win*sw;
+  const vpx=sh/8/vdiv, Y=u=>sy+sh/2-u*vpx;
+  const pScale=ph*0.86/pmax, YP=p=>py+ph-p*pScale;
+
+  // ---- écran de l'oscilloscope ----
+  ctx.fillStyle='#fbfcfd';ctx.fillRect(sx,sy,sw,sh);
+  ctx.strokeStyle='#e3e7eb';ctx.lineWidth=1;
+  for(let i=1;i<10;i++){const x=Math.round(sx+i*sw/10)+.5;ctx.beginPath();ctx.moveTo(x,sy);ctx.lineTo(x,sy+sh);ctx.stroke();}
+  for(let j=1;j<8;j++){const y=Math.round(sy+j*sh/8)+.5;ctx.beginPath();ctx.moveTo(sx,y);ctx.lineTo(sx+sw,y);ctx.stroke();}
+  ctx.strokeStyle=AX;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(sx,sy+sh/2);ctx.lineTo(sx+sw,sy+sh/2);ctx.moveTo(sx+sw/2,sy);ctx.lineTo(sx+sw/2,sy+sh);ctx.stroke();
+  // petites graduations sur les axes centraux
+  ctx.strokeStyle='#b9c0c8';for(let i=0;i<50;i++){const x=sx+i*sw/50;ctx.beginPath();ctx.moveTo(x,sy+sh/2-3);ctx.lineTo(x,sy+sh/2+3);ctx.stroke();}
+  for(let j=0;j<40;j++){const y=sy+j*sh/40;ctx.beginPath();ctx.moveTo(sx+sw/2-3,y);ctx.lineTo(sx+sw/2+3,y);ctx.stroke();}
+  ctx.strokeStyle='#cfd5db';ctx.lineWidth=1;ctx.strokeRect(sx+.5,sy+.5,sw-1,sh-1);
+
+  // continu U = U_eff (comparaison)
+  if(dc){ctx.strokeStyle=GREEN;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(sx,Y(Ue));ctx.lineTo(sx+sw,Y(Ue));ctx.stroke();}
+  else{ctx.setLineDash([6,5]);ctx.strokeStyle=GREEN;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(sx,Y(Ue));ctx.lineTo(sx+sw,Y(Ue));ctx.stroke();ctx.setLineDash([]);}
+  // trace u(t)
+  ctx.strokeStyle=BLUE;ctx.lineWidth=2.4;ctx.beginPath();
+  for(let i=0;i<=sw;i++){const t=i/sw*win,u=Um*Math.sin(w*t);i?ctx.lineTo(sx+i,Y(u)):ctx.moveTo(sx+i,Y(u));}ctx.stroke();
+  // U_max : du zéro au premier sommet
+  const xpk=X(T/4);dbl(xpk,Y(0)-2,xpk,Y(Um)+2,BLUE_D);
+  // T : entre deux sommets successifs, sous la courbe
+  const yT=sy+sh-sh/16, xa=X(T/4), xb=X(5*T/4);
+  ctx.setLineDash([2,3]);ctx.strokeStyle=ORANGE;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(xa,Y(Um));ctx.lineTo(xa,yT);ctx.moveTo(xb,Y(Um));ctx.lineTo(xb,yT);ctx.stroke();ctx.setLineDash([]);
+  dbl(xa+1,yT,xb-1,yT,ORANGE);
+
+  // ---- graphique p(t) ----
+  ctx.fillStyle='#fbfcfd';ctx.fillRect(px,py,pw,ph);ctx.strokeStyle='#cfd5db';ctx.strokeRect(px+.5,py+.5,pw-1,ph-1);
+  ctx.strokeStyle='#e3e7eb';for(let i=1;i<10;i++){const x=Math.round(px+i*pw/10)+.5;ctx.beginPath();ctx.moveTo(x,py);ctx.lineTo(x,py+ph);ctx.stroke();}
+  ctx.fillStyle='rgba(127,119,221,.16)';ctx.beginPath();ctx.moveTo(px,YP(0));
+  for(let i=0;i<=pw;i++){const t=i/pw*win,u=Um*Math.sin(w*t);ctx.lineTo(px+i,YP(u*u/R));}ctx.lineTo(px+pw,YP(0));ctx.closePath();ctx.fill();
+  if(dc){ctx.strokeStyle=GREEN;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(px,YP(Pm));ctx.lineTo(px+pw,YP(Pm));ctx.stroke();}
+  ctx.strokeStyle=VIOLET;ctx.lineWidth=2.2;ctx.beginPath();
+  for(let i=0;i<=pw;i++){const t=i/pw*win,u=Um*Math.sin(w*t);i?ctx.lineTo(px+i,YP(u*u/R)):ctx.moveTo(px+i,YP(u*u/R));}ctx.stroke();
+  ctx.setLineDash([7,5]);ctx.strokeStyle=RED_D;ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(px,YP(Pm));ctx.lineTo(px+pw,YP(Pm));ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle=AX;ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(px,YP(0));ctx.lineTo(px+pw,YP(0));ctx.stroke();
+
+  // ---- curseur temporel commun ----
+  const xc=X(tSim),uc=dc?Ue:Um*Math.sin(w*tSim),pc=uc*uc/R;
+  ctx.strokeStyle='rgba(61,61,58,.35)';ctx.lineWidth=1;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(xc,sy);ctx.lineTo(xc,sy+sh);ctx.moveTo(xc,py);ctx.lineTo(xc,py+ph);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=dc?GREEN_D:BLUE_D;ctx.beginPath();ctx.arc(xc,Y(uc),5,0,7);ctx.fill();
+  ctx.fillStyle=dc?GREEN_D:VIOLET;ctx.beginPath();ctx.arc(xc,YP(pc),5,0,7);ctx.fill();
+
+  // ---- panneau : deux résistances qui chauffent ----
+  const colW=rwp/2;
+  [['Alternatif',false],['Continu',true]].forEach(([nm,isDC],k)=>{
+    const cx0=rxp+k*colW,cxm=cx0+colW/2;
+    const pInst=isDC?Pm:(Um*Math.sin(w*tSim))**2/R, lum=pmax>0?pInst/pmax*Math.min(1,Math.sqrt(Pm/50)):0;
+    const top=ryp+(wide?40:34);
+    const rw=Math.min(96,colW*0.55),rh=wide?30:Math.min(26,rhp*0.15),ry=wide?ryp+rhp*0.3:top+28;
+    const rcx=cxm-(wide?14:12);
+    // fils + générateur symbolique
+    ctx.strokeStyle='#5b6470';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(rcx-rw/2-14,ry);ctx.lineTo(rcx+rw/2+14,ry);ctx.stroke();
+    // halo de chaleur
+    const gr=ctx.createRadialGradient(rcx,ry,4,rcx,ry,rw*0.75);
+    gr.addColorStop(0,'rgba(232,100,26,'+(0.75*lum).toFixed(3)+')');gr.addColorStop(1,'rgba(232,100,26,0)');
+    ctx.fillStyle=gr;ctx.beginPath();ctx.arc(rcx,ry,rw*0.75,0,7);ctx.fill();
+    const c1=[255-25*lum,255-150*lum,255-215*lum].map(Math.round);
+    ctx.fillStyle='rgb('+c1.join(',')+')';ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.beginPath();ctx.rect(rcx-rw/2,ry-rh/2,rw,rh);ctx.fill();ctx.stroke();
+    // courant i (sens qui alterne en alternatif)
+    const ic=isDC?Ue/Um:Math.sin(w*tSim), al=Math.abs(ic)*rw*0.5;
+    if(al>4){const y=ry-rh/2-12;ctx.strokeStyle=RED;ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(rcx-al*Math.sign(ic),y);ctx.lineTo(rcx+al*Math.sign(ic)-5*Math.sign(ic),y);ctx.stroke();
+      arrowHead(rcx+al*Math.sign(ic),y,ic>0?0:Math.PI,RED,6);}
+    // thermomètre : suit la puissance MOYENNE (inertie thermique)
+    const tx=rcx+rw/2+(wide?26:20),tb=ry+(wide?80:44),tt=wide?ry-70:top+2,lvl=Pm/(Pm+150);
+    ctx.fillStyle='#fff';ctx.strokeStyle='#9aa0a6';ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(tx-4,tt,8,tb-tt,4);ctx.fill();ctx.stroke();
+    ctx.beginPath();ctx.arc(tx,tb+5,7,0,7);ctx.fillStyle=RED_D;ctx.fill();
+    ctx.fillStyle=RED_D;ctx.fillRect(tx-2,tb-(tb-tt-4)*lvl,4,(tb-tt-4)*lvl+2);
+    // étiquettes
+    tag(nm,cxm,ryp+10,isDC?GREEN_D:BLUE_D,FB);
+    tag(isDC?'U = Ueff = '+n3(Ue)+' V':'Umax = '+n3(Um)+' V',cxm,ryp+(wide?28:24),isDC?GREEN_D:BLUE_D,FS);
+    const yl=Math.max(tb+22,ry+rh/2+18);
+    tag('p = '+fP(pInst),cxm,yl,isDC?GREEN_D:VIOLET,FS);
+    tag('Pmoy = '+fP(Pm),cxm,yl+15,RED_D,FS);
+  });
+  if(wide){const nt=['Le résistor en alternatif clignote','(p varie de 0 à pmax, à 2f),','mais il chauffe autant que l\'autre :','les thermomètres suivent Pmoy.'];
+    nt.forEach((t,i)=>tag(t,rxp+rwp/2,ryp+rhp*0.3+150+i*17,'#5b6b7b','500 12px Mulish,system-ui,sans-serif'));}
+  // séparateur
+  ctx.strokeStyle='#e3e7eb';ctx.lineWidth=1;ctx.beginPath();
+  if(wide){ctx.moveTo(rxp-11,sy);ctx.lineTo(rxp-11,H-14);}else{ctx.moveTo(sx,ryp-2);ctx.lineTo(sx+sw,ryp-2);}ctx.stroke();
+
+  // ---- étiquettes de l'oscilloscope (dessinées après les courbes) ----
+  tag('Umax',xpk+8,(Y(0)+Y(Um))/2,BLUE_D,FB,'left');
+  tag('T = '+fT(T),(xa+xb)/2,yT-11,ORANGE,FB);
+  const xl=sx+sw-6;
+  tag(dc?'continu : U = Ueff = '+n3(Ue)+' V':'Ueff = '+n3(Ue)+' V',xl,Y(Ue)-11,GREEN_D,FS,'right');
+  tag('u(t)',sx+6,sy+11,BLUE_D,FB,'left');
+  tag('p(t) = u²/R',px+6,py+11,VIOLET,FB,'left');
+  tag((dc?'P continu = ':'Pmoy = ')+fP(Pm),px+pw-6,YP(Pm)-11,RED_D,FS,'right');
+  // légendes sous les graphiques (calibres + valeurs instantanées)
+  tag('Y : '+(vdiv<1?fr(vdiv,1):vdiv)+' V/div · X : '+(tdiv*1000<1?fr(tdiv*1000,1):tdiv*1000)+' ms/div',sx,sy+sh+11,INK,FS,'left');
+  tag('ralenti ×1/'+Math.round(slow),px,py+ph+11,GREY,FS,'left');
+  tag('u = '+(uc>=0?'+':'−')+n3(Math.abs(uc))+' V',sx+sw,sy+sh+11,dc?GREEN_D:BLUE_D,FN,'right');
+  tag('p = '+fP(pc),px+pw,py+ph+11,dc?GREEN_D:VIOLET,FN,'right');
+  tag('0',px-0+6,YP(0)-9,GREY,FS,'left');
+  tag('pmax = '+fP(pmax),px+(wide?150:96),YP(pmax)-1,VIOLET,FS,'left');
+
+  window.__L=LBL;
+  info(T,Ue,Pm,pmax);
+  requestAnimationFrame(draw);
+}
+
+let lastI='';
+function info(T,Ue,Pm,pmax){
+  const b=(c,t)=>'<b style="color:'+c+'">'+t+'</b>';
+  const s=b(ORANGE,'T = 1/f = '+fT(T))+' &nbsp;|&nbsp; '+b(ORANGE,'f = '+f+' Hz')+' &nbsp;|&nbsp; '+b(BLUE_D,'U<sub>max</sub> = '+n3(Um)+' V')+
+    ' &nbsp;|&nbsp; '+b(GREEN_D,'U<sub>eff</sub> = U<sub>max</sub>/√2 = '+n3(Ue)+' V')+' &nbsp;|&nbsp; '+b(RED_D,'P<sub>moy</sub> = U<sub>eff</sub>²/R = '+fP(Pm))+
+    ' &nbsp;|&nbsp; '+b(VIOLET,'p<sub>max</sub> = U<sub>max</sub>²/R = '+n3(pmax)+' W = 2·P<sub>moy</sub>')+
+    (dc?' &nbsp;|&nbsp; '+b(GREEN_D,'continu sous '+n3(Ue)+' V : P = '+n3(Pm)+' W, la même'):'');
+  if(s!==lastI){lastI=s;$('info').innerHTML=s;}
+}
+
+function bind(id,fmt,set){const el=$(id),o=$(id+'v');el.addEventListener('input',()=>{const v=parseFloat(el.value);set(v);o.textContent=fmt(v);$('sect').classList.toggle('on',Math.abs(Um-325.27)<0.6&&f===50);});}
+bind('Um',v=>v+' V',v=>Um=v);bind('f',v=>v+' Hz',v=>f=v);bind('R',v=>v+' Ω',v=>R=v);
+$('sect').onclick=()=>{Um=230*Math.SQRT2;f=50;$('Um').value=325;$('f').value=50;$('Umv').textContent='325 V';$('fv').textContent='50 Hz';$('sect').classList.add('on');};
+$('dc').onclick=()=>{dc=!dc;$('dc').classList.toggle('on',dc);};
+$('pause').onclick=()=>{paused=!paused;$('pause').classList.toggle('on',paused);$('pause').textContent=paused?'Reprendre':'Pause';};
+window.__set=(id,v)=>{$(id).value=v;$(id).dispatchEvent(new Event('input'));};
+window.__t=v=>{tSim=v;};
+requestAnimationFrame(draw);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Courant alternatif<span>1 simulation</span></h2><ol><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/courant-alternatif/"><i>01</i>Courant alternatif et valeur efficace</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

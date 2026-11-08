@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Champ électrostatique · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#fff;font-family:system-ui,-apple-system,sans-serif;}
+canvas{display:block;border-radius:12px;border:1.5px solid #e8e8e8;cursor:default;touch-action:none;}
+.cc{display:flex;align-items:center;gap:8px;margin:5px 0;}
+.cc-label{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex-shrink:0;}
+.val{min-width:58px;text-align:center;font-size:13px;font-weight:500;color:#2c2c2a;background:#f5f5f5;border:1.5px solid #d0d0d0;border-radius:20px;padding:5px 10px;}
+.btn{padding:8px 20px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1.5px solid #d0d0d0;background:#fff;color:#2c2c2a;}
+.btn.active{border-color:#185fa5;background:#e6f1fb;color:#185fa5;}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH8">Électrostatique</a>›<b>Champ électrostatique</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Électrostatique</span><span class="sfa-chip free">Gratuit</span></div><h1>Champ électrostatique</h1><p>Lignes de champ autour des charges</p></div>
+<section class="sfa-sim">
+
+
+
+<canvas id="cv" style="width:100%;height:60vh;min-height:320px;"></canvas>
+
+<div style="font-size:13px;padding:10px 16px;border-radius:20px;background:#f5f5f5;border:1.5px solid #d0d0d0;color:#2c2c2a;margin:6px 0;font-family:ui-monospace,monospace;line-height:1.8;">
+  E = k·Q/r² &nbsp;|&nbsp; k = 9×10⁹ N·m²/C² &nbsp;|&nbsp; Maintiens le clic sur une charge pour la déplacer
+</div>
+
+<div style="display:flex;align-items:center;gap:10px;margin:8px 0 6px;">
+  <span style="font-size:13px;font-weight:500;color:#2c2c2a;background:#f5f5f5;border:1.5px solid #d0d0d0;border-radius:20px;padding:6px 14px;white-space:nowrap;">Nb de charges</span>
+  <div style="display:flex;gap:6px;">
+    <button class="btn active" id="nb1" onclick="setNb(1)">1</button>
+    <button class="btn" id="nb2" onclick="setNb(2)">2</button>
+    <button class="btn" id="nb3" onclick="setNb(3)">3</button>
+  </div>
+</div>
+
+<div id="ctrls"></div>
+
+<script>
+const cv=document.getElementById('cv');
+const K=9e9;
+let W=0,H=0,nb=1,dragging=-1;
+
+const COLORS=['#E24B4A','#378ADD','#1D9E75'];
+const BGCOLORS=['#fcebeb','#e6f1fb','#e1f5ee'];
+const BCOLORS=['#f09595','#b5d4f4','#9FE1CB'];
+
+const charges=[
+  {x:0.5,y:0.5,q:3},
+  {x:0.28,y:0.5,q:-3},
+  {x:0.72,y:0.5,q:2},
+];
+
+function setNb(n){
+  nb=n;
+  [1,2,3].forEach(i=>{document.getElementById('nb'+i).className=i===n?'btn active':'btn';});
+  buildControls();
+}
+
+function buildControls(){
+  const div=document.getElementById('ctrls');
+  div.innerHTML='';
+  for(let i=0;i<nb;i++){
+    const q=charges[i].q;
+    const row=document.createElement('div');
+    row.className='cc';
+    row.innerHTML=`
+      <div class="cc-label" style="background:${BGCOLORS[i]};border:2px solid ${COLORS[i]};color:${COLORS[i]};">Q${i+1}</div>
+      <input type="range" id="q${i}" min="-5" max="5" value="${q}" step="0.5" style="flex:1;accent-color:${COLORS[i]};">
+      <span class="val" id="qv${i}" style="border-color:${BCOLORS[i]};color:${COLORS[i]};">${q>=0?'+':''}${q} nC</span>
+    `;
+    div.appendChild(row);
+    document.getElementById('q'+i).addEventListener('input',()=>{
+      charges[i].q=parseFloat(document.getElementById('q'+i).value);
+      const v=charges[i].q;
+      document.getElementById('qv'+i).textContent=(v>=0?'+':'')+v+' nC';
+    });
+  }
+}
+
+function syncSize(){
+  const r=cv.getBoundingClientRect();
+  const nW=Math.round(r.width)||700;
+  const nH=Math.round(r.height)||360;
+  if(nW!==W||nH!==H){
+    W=nW;H=nH;cv.width=Math.round(W*(window.devicePixelRatio||1));cv.height=Math.round(H*(window.devicePixelRatio||1));
+    charges[0].x=0.5;charges[0].y=0.5;
+    charges[1].x=0.28;charges[1].y=0.5;
+    charges[2].x=0.72;charges[2].y=0.5;
+  }
+}
+
+function px(c){return c.x*W;}
+function py(c){return c.y*H;}
+function chargeRadius(q){return 14+Math.abs(q)*2;}
+
+function fieldAt(x,y){
+  let Ex=0,Ey=0;
+  for(let i=0;i<nb;i++){
+    const c=charges[i];
+    const dx=x-px(c),dy=y-py(c);
+    const r2=dx*dx+dy*dy;
+    if(r2<4) continue;
+    const r=Math.sqrt(r2);
+    const E=K*Math.abs(c.q*1e-9)/(r2*1e-4);
+    const sign=c.q>=0?1:-1;
+    Ex+=sign*E*dx/r; Ey+=sign*E*dy/r;
+  }
+  return{Ex,Ey};
+}
+
+function drawArrowHead(ctx,x,y,dx,dy,size,color){
+  const len=Math.sqrt(dx*dx+dy*dy);
+  if(len<0.001) return;
+  const nx=dx/len,ny=dy/len;
+  const ang=Math.atan2(ny,nx);
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(ang);
+  ctx.fillStyle=color;
+  ctx.beginPath();
+  ctx.moveTo(size,0);
+  ctx.lineTo(-size*0.8,-size*0.6);
+  ctx.lineTo(-size*0.45,0);
+  ctx.lineTo(-size*0.8, size*0.6);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function draw(){
+  syncSize();
+  const ctx=cv.getContext('2d');const dpr=window.devicePixelRatio||1;ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,W,H);ctx.lineCap='round';ctx.lineJoin='round';
+  // grille discrète
+  ctx.strokeStyle='#f3f5f8';ctx.lineWidth=1;
+  for(let gx=22;gx<W;gx+=44){ctx.beginPath();ctx.moveTo(Math.round(gx)+.5,0);ctx.lineTo(Math.round(gx)+.5,H);ctx.stroke();}
+  for(let gy=22;gy<H;gy+=44){ctx.beginPath();ctx.moveTo(0,Math.round(gy)+.5);ctx.lineTo(W,Math.round(gy)+.5);ctx.stroke();}
+
+  const nLines=20;
+  const startR=20;
+  // intervalle en nombre de steps entre deux flèches
+  const ARROW_EVERY=60;
+
+  for(let i=0;i<nb;i++){
+    const c=charges[i];
+    if(c.q===0) continue;
+    const sign=c.q>0?1:-1;
+    const col='#5b6b80';
+
+    for(let l=0;l<nLines;l++){
+      const ang=l*2*Math.PI/nLines;
+      let x=px(c)+startR*Math.cos(ang);
+      let y=py(c)+startR*Math.sin(ang);
+
+      // stocker les points de la ligne
+      const pts=[{x,y}];
+      let prevDx=0,prevDy=0,endNear=false;
+
+      for(let s=0;s<600;s++){
+        const {Ex,Ey}=fieldAt(x,y);
+        const En=Math.sqrt(Ex*Ex+Ey*Ey);
+        if(En<1e-6) break;
+        const step=sign*4;
+        const nx=step*Ex/En, ny=step*Ey/En;
+        x+=nx; y+=ny;
+        prevDx=nx; prevDy=ny;
+        if(x<0||x>W||y<0||y>H) break;
+        let near=false;
+        for(let j=0;j<nb;j++){
+          if(j===i) continue;
+          const dc=charges[j];
+          if(charges[j].q*c.q<0&&Math.sqrt((x-px(dc))**2+(y-py(dc))**2)<chargeRadius(dc.q)+4){near=true;break;}
+        }
+        if(near){endNear=true;break;}
+        pts.push({x,y,dx:nx,dy:ny});
+      }
+
+      // une ligne qui va d'une charge − à une charge + est déjà tracée depuis la charge + : on ne la dessine pas deux fois
+      if(sign<0&&endNear) continue;
+      // tracer la ligne
+      ctx.beginPath();
+      ctx.strokeStyle='rgba(91,107,128,0.55)'; ctx.lineWidth=1.5;
+      ctx.moveTo(pts[0].x,pts[0].y);
+      for(let p=1;p<pts.length;p++) ctx.lineTo(pts[p].x,pts[p].y);
+      ctx.stroke();
+
+      // flèches réparties le long de la ligne
+      const arrowPositions=[
+        Math.floor(pts.length*0.25),
+        Math.floor(pts.length*0.55),
+        Math.floor(pts.length*0.80),
+      ];
+      for(const ap of arrowPositions){
+        if(ap>0&&ap<pts.length){
+          const pt=pts[ap];
+          if(pt.dx!==undefined){
+            drawArrowHead(ctx,pt.x,pt.y,pt.dx,pt.dy,6,'#3d4b5e');
+          }
+        }
+      }
+    }
+  }
+
+  // grille de petits vecteurs E (direction, intensité en log)
+  const gStep=44;
+  for(let gx=gStep/2;gx<W;gx+=gStep){
+    for(let gy=gStep/2;gy<H;gy+=gStep){
+      let near=false;for(let j=0;j<nb;j++){if(Math.hypot(gx-px(charges[j]),gy-py(charges[j]))<chargeRadius(charges[j].q)+10)near=true;}
+      if(near)continue;
+      const {Ex,Ey}=fieldAt(gx,gy);
+      const En=Math.sqrt(Ex*Ex+Ey*Ey);
+      if(En<1) continue;
+      const sc=Math.min(16,Math.log10(En+1)*2.2);
+      const nx=Ex/En,ny=Ey/En;
+      const alpha=Math.min(0.55,sc/16*0.5+0.12);
+      ctx.strokeStyle=`rgba(55,138,221,${alpha})`; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.moveTo(gx-nx*sc/2,gy-ny*sc/2); ctx.lineTo(gx+nx*sc/2,gy+ny*sc/2); ctx.stroke();
+      if(sc>5)drawArrowHead(ctx,gx+nx*sc/2,gy+ny*sc/2,nx,ny,3.5,`rgba(55,138,221,${alpha})`);
+    }
+  }
+
+  const placed=[];
+  // charges : sphère (rouge si +, bleue si −) avec anneau de la couleur du curseur Qi
+  for(let i=0;i<nb;i++){
+    const c=charges[i];
+    const r=chargeRadius(c.q),X=px(c),Y=py(c);
+    const isPos=c.q>0,isZero=c.q===0;
+    const g=ctx.createRadialGradient(X-r*0.35,Y-r*0.4,r*0.15,X,Y,r);
+    if(isZero){g.addColorStop(0,'#ffffff');g.addColorStop(1,'#d3d9e2');}
+    else if(isPos){g.addColorStop(0,'#f8b4b3');g.addColorStop(0.6,'#E24B4A');g.addColorStop(1,'#a32d2d');}
+    else{g.addColorStop(0,'#b9d8f6');g.addColorStop(0.6,'#378ADD');g.addColorStop(1,'#185fa5');}
+    ctx.save();ctx.shadowColor='rgba(19,35,58,0.28)';ctx.shadowBlur=10;ctx.shadowOffsetY=3;
+    ctx.beginPath(); ctx.arc(X,Y,r,0,Math.PI*2);ctx.fillStyle=g; ctx.fill();ctx.restore();
+    ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(X,Y,r,0,Math.PI*2);ctx.stroke();
+    ctx.strokeStyle=COLORS[i]; ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(X,Y,r+2.5,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle=isZero?'#5f6b7a':'#fff'; ctx.font='800 '+Math.round(14+r*0.35)+'px Mulish,system-ui,sans-serif'; ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(isZero?'0':isPos?'+':'−',X,Y+1);ctx.textBaseline='alphabetic';
+    const qv=c.q;
+    // étiquette sur fond blanc arrondi (les lignes de champ passent dessous), jamais rognée par le bord
+    ctx.font='800 13px Mulish,system-ui,sans-serif';
+    const lt='Q'+(i+1)+' = '+(qv>=0?'+':'−')+Math.abs(qv)+' nC',lw=ctx.measureText(lt).width;
+    const lx=Math.max(lw/2+8,Math.min(W-lw/2-8,X));let ly=Y+r+18;
+    // sous la charge, sinon au-dessus, sinon plus bas : jamais sur une autre étiquette ni hors du cadre
+    const cand=[Y+r+18,Y-r-18,Y+r+42,Y-r-42].filter(v=>v>12&&v<H-12);
+    const free=v=>!placed.some(o=>Math.abs(o.x-lx)<(o.w+lw)/2+14&&Math.abs(o.y-v)<22)&&!charges.slice(0,nb).some((o,j)=>j!==i&&Math.abs(px(o)-lx)<lw/2+chargeRadius(o.q)+6&&Math.abs(py(o)-v)<chargeRadius(o.q)+12);
+    ly=cand.find(free)??cand[0]??Y+r+18;placed.push({x:lx,y:ly,w:lw});
+    ctx.fillStyle='rgba(255,255,255,0.92)';ctx.strokeStyle='#e3e7ed';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(lx-lw/2-6,ly-10,lw+12,20,8);ctx.fill();ctx.stroke();
+    ctx.fillStyle=COLORS[i]==='#378ADD'?'#185fa5':COLORS[i]==='#1D9E75'?'#0F6E56':'#a32d2d';ctx.textBaseline='middle';ctx.fillText(lt,lx,ly+0.5);ctx.textBaseline='alphabetic';
+  }
+
+  requestAnimationFrame(draw);
+}
+
+function getPos(e){
+  const r=cv.getBoundingClientRect();
+  const touch=e.touches?e.touches[0]:e;
+  return{x:touch.clientX-r.left,y:touch.clientY-r.top};
+}
+function startDrag(e){
+  const {x,y}=getPos(e);
+  for(let i=0;i<nb;i++){
+    const c=charges[i];
+    const r=chargeRadius(c.q)+8;
+    if(Math.sqrt((x-px(c))**2+(y-py(c))**2)<r){dragging=i;cv.style.cursor='grabbing';break;}
+  }
+}
+function moveDrag(e){
+  if(dragging<0) return;
+  e.preventDefault();
+  const {x,y}=getPos(e);
+  const m=chargeRadius(charges[dragging].q)+3;   // la charge reste entière dans le canvas
+  charges[dragging].x=Math.max(m/W,Math.min(1-m/W,x/W));
+  charges[dragging].y=Math.max(m/H,Math.min(1-m/H,y/H));
+}
+function endDrag(){dragging=-1;cv.style.cursor='default';}
+
+cv.addEventListener('mousedown',startDrag);
+cv.addEventListener('mousemove',moveDrag);
+cv.addEventListener('mouseup',endDrag);
+cv.addEventListener('touchstart',startDrag,{passive:false});
+cv.addEventListener('touchmove',moveDrag,{passive:false});
+cv.addEventListener('touchend',endDrag);
+
+buildControls();
+draw();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Électrostatique : charges et champs<span>7 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/forces-l-ctrostatique-/"><i>01</i>Forces électrostatiques</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/champ-l-ctrostatique-/"><i>02</i>Champ électrostatique</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/potentiel-carte/"><i>03</i>Potentiel électrique : carte et équipotentielles</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/potentiel-travail/"><i>04</i>Travail et différence de potentiel</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/potentiel-electronvolt/"><i>05</i>Accélérer une charge : l&#x27;électronvolt</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/charge-champ-uniforme/"><i>06</i>Une charge entre deux plaques</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Conducteur/"><i>07</i>Conducteur</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

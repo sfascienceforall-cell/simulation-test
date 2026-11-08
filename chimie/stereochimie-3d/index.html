@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>R/S, Fischer et E/Z · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style id="sfa-chim">
+/* Compléments communs aux simulations de chimie SFA (mêmes cartes et même typo que le kit) */
+*{box-sizing:border-box}
+.sfa-card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-top:14px}
+.sfa-card h2{font:800 15px var(--f-ui);margin:0 0 8px;color:var(--ink)}
+.sfa-card ul{margin:0;padding-left:20px}.sfa-card li{margin:4px 0}
+.sfa-card.trap{border-left:4px solid #BA7517}
+.sfa-card.keep{border-left:4px solid var(--green)}
+.defi{border-top:1px solid var(--line);padding:10px 0}.defi:first-of-type{border-top:0}
+.defi p{margin:0 0 6px;font-weight:600}
+.defi details summary{cursor:pointer;font:800 13px var(--f-ui);color:var(--green);list-style:none}
+.defi details summary::-webkit-details-marker{display:none}
+.defi details summary::before{content:"+ ";}.defi details[open] summary::before{content:"− ";}
+.defi details div{margin-top:6px;color:var(--ink2);background:var(--bg);border-radius:8px;padding:8px 12px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.ctl .lab{font:700 .86rem var(--f-ui);color:var(--ink2);margin-right:2px}
+.hint{font:500 .84rem var(--f-ui);color:var(--muted)}
+.btn{background:var(--paper);border:1px solid var(--line2);border-radius:8px;color:var(--ink);font:800 .82rem var(--f-ui);padding:8px 12px;cursor:pointer;touch-action:manipulation}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.chem{font-family:var(--f-ui)}
+.big{font:800 1.6rem/1.1 var(--f-ui);color:var(--ink)}
+.ok{color:var(--green);font-weight:800}.warn{color:#a32d2d;font-weight:800}
+sub,sup{font-size:.72em;line-height:0}
+</style>
+<script>
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche (repris du kit SFA). */
+addEventListener('DOMContentLoaded',()=>{
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+});
+</script>
+<style>
+.st-wrap{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:860px){.st-wrap{grid-template-columns:minmax(0,1fr)}}
+#stage{position:relative;height:430px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;touch-action:none;user-select:none;-webkit-user-select:none}
+#stage canvas{display:block;width:100%!important;height:100%!important;border:0!important;border-radius:0!important;cursor:grab;touch-action:none}
+#stage canvas:active{cursor:grabbing}
+#ov{position:absolute;inset:0;pointer-events:none;width:100%;height:100%}
+#labs{position:absolute;inset:0;pointer-events:none}
+.plab{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:4px;white-space:nowrap}
+.plab b{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;color:#fff;font:800 12px var(--f-ui)}
+.plab span{font:700 11px var(--f-ui);color:var(--ink2);background:rgba(255,255,255,.88);padding:1px 4px;border-radius:4px}
+.stage-msg{position:absolute;left:8px;right:8px;bottom:8px;font:700 12.5px/1.35 var(--f-ui);color:var(--ink);background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:8px;padding:6px 9px;pointer-events:none}
+.stage-tip{position:absolute;left:8px;top:8px;font:600 11.5px var(--f-ui);color:var(--muted);background:rgba(255,255,255,.85);padding:3px 7px;border-radius:6px;pointer-events:none}
+.legend-at{display:flex;flex-wrap:wrap;gap:4px 12px;font:600 12px var(--f-ui);color:var(--muted);margin-top:6px}
+.legend-at i{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:-1px;margin-right:4px;border:1px solid #c9cdd3}
+.pane{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14px}
+.pane h3{font:800 14px var(--f-ui);margin:0 0 6px}
+.pane ol,.pane ul{margin:4px 0 6px;padding-left:20px}.pane li{margin:3px 0}
+.rk{width:100%;border-collapse:collapse;font-size:13px;margin:6px 0}
+.rk td,.rk th{border-bottom:1px solid var(--line);padding:4px 4px;text-align:left;vertical-align:top}
+.rk th{font:800 11px var(--f-ui);color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.num{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;color:#fff;font:800 11px var(--f-ui)}
+.verdict{font:800 1.25rem/1.25 var(--f-ui);margin:8px 0 2px}
+#fis{width:100%;max-width:360px;height:auto;display:block;margin:4px auto 6px;touch-action:manipulation}
+#fis .tap{cursor:pointer}
+.msg{margin-top:8px;padding:8px 10px;border-radius:8px;background:#fff8e1;border:1px solid #f1d98c;color:#5a4300;font-weight:600;font-size:13px}
+.msg:empty{display:none}
+.iso{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.iso .btn{font-size:.8rem!important}
+.iso-note{font-size:13px;color:var(--ink2)}
+@media (max-width:640px){#stage{height:340px}}
+</style>
+<link rel="stylesheet" href="../../kit/sfa-nav.css"></head>
+<body>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a class="on" href="../">Simulations de chimie</a><a href="../exercices/">Exercices de chimie</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations de physique</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="../">Simulations de chimie</a>›<a href="../#organique">Chimie organique</a>›<b>R/S, Fischer et E/Z</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Chimie · Stéréochimie</span><span class="sfa-chip free">Gratuit</span></div><h1>R/S, Fischer et E/Z</h1><p>Fais tourner la molécule au doigt, numérote ses groupes et lis le sens : une configuration ne se devine pas, elle se déduit.</p></div>
+<section class="sfa-sim">
+  <div class="ctl"><span class="lab">Molécule</span>
+    <select id="mol" aria-label="Choix de la molécule">
+      <optgroup label="Un centre stéréogène">
+        <option value="lactique">Acide lactique</option>
+        <option value="alanine">Alanine</option>
+        <option value="butanol">Butan-2-ol</option>
+        <option value="glycer">Glycéraldéhyde</option>
+      </optgroup>
+      <optgroup label="Deux centres stéréogènes">
+        <option value="dibromo">2,3-Dibromobutane (a une forme méso)</option>
+        <option value="threo">Thréonine</option>
+      </optgroup>
+      <optgroup label="Alcènes (E/Z)">
+        <option value="butene">But-2-ène</option>
+        <option value="bromobutene">2-Bromobut-2-ène (cis = E)</option>
+        <option value="bromochloro">1-Bromo-1-chloroprop-1-ène</option>
+      </optgroup>
+    </select>
+  </div>
+  <div class="tabs" role="tablist" aria-label="Mode">
+    <button class="btn on" data-mode="cip" role="tab">Priorités CIP (R/S)</button>
+    <button class="btn" data-mode="fis" role="tab">Projection de Fischer</button>
+    <button class="btn" data-mode="ez" role="tab">E/Z</button>
+  </div>
+  <div class="st-wrap">
+    <div style="min-width:0">
+      <div id="stage" aria-label="Molécule en 3D : fais glisser pour la faire tourner">
+        <svg id="ov"></svg><div id="labs"></div>
+        <div class="stage-tip">Glisse pour faire tourner</div>
+        <div class="stage-msg" id="smsg"></div>
+      </div>
+      <div class="ctl">
+        <button class="btn" id="b4">Mettre le 4 en arrière</button>
+        <button class="btn" id="bFv">Vue de Fischer</button>
+        <button class="btn" id="bMir">Miroir (énantiomère)</button>
+        <button class="btn" id="bRe">Recentrer</button>
+      </div>
+      <div class="legend-at">
+        <span><i style="background:#3a3f47"></i>C</span><span><i style="background:#f2f2f2"></i>H</span><span><i style="background:#d23b2f"></i>O</span><span><i style="background:#2f5fd0"></i>N</span><span><i style="background:#2e9e4f"></i>Cl</span><span><i style="background:#8a2b1e"></i>Br</span>
+        <span>Modèle boules et bâtonnets (longueurs et tailles schématiques)</span>
+      </div>
+    </div>
+    <div class="pane" id="panel"></div>
+  </div>
+  <div class="info" id="info" style="margin-top:12px"></div>
+  <div class="sfa-card" id="isoCard" style="margin-top:12px"></div>
+</section>
+
+<div class="sfa-card keep"><h2>Ce qu'il faut retenir</h2><ul>
+  <li>Priorités CIP : on compare d'abord le numéro atomique de l'atome lié au centre ; en cas d'égalité, on compare les atomes suivants, rangés du plus lourd au plus léger, jusqu'au premier point de différence.</li>
+  <li>Une double liaison compte double : C=O se lit comme un C relié à deux O.</li>
+  <li>Le groupe 4 vers l'arrière, 1 → 2 → 3 dans le sens horaire : R ; antihoraire : S. Si le 4 pointe vers toi, inverse ta lecture.</li>
+  <li>Fischer : rotation de 180° dans le plan, même molécule ; rotation de 90° ou échange de deux groupes, configuration inversée.</li>
+  <li>n centres stéréogènes donnent au plus 2<sup>n</sup> stéréoisomères. Une molécule symétrique en a moins : avec deux centres, la forme méso remplace un couple d'énantiomères (3 stéréoisomères au lieu de 4).</li>
+</ul></div>
+
+<div class="sfa-card trap"><h2>Pièges classiques</h2><ul>
+  <li>R/S ne dit rien du signe (+) ou (−) : ce signe se mesure au polarimètre. L'acide (S)-lactique est dextrogyre (+), mais son ester méthylique, toujours (S), est lévogyre (−).</li>
+  <li>R/S n'est pas D/L. D/L se lit sur la projection de Fischer, R/S vient des priorités. La L-alanine est (S), mais la L-cystéine est (R) : le soufre change les priorités.</li>
+  <li>E/Z n'est pas cis/trans. Cis/trans compare la chaîne ; E/Z compare les groupes prioritaires. Le cis-2-bromobut-2-ène est (E).</li>
+  <li>Sur Fischer, ne tourne jamais de 90° : tu dessines l'énantiomère sans le savoir.</li>
+</ul></div>
+
+<div class="sfa-card"><h2>Défis</h2>
+  <div class="defi"><p>1. Sur le glycéraldéhyde, touche deux groupes de la projection de Fischer pour les échanger, puis échange deux autres groupes. La configuration a-t-elle changé ?</p>
+    <details><summary>Voir la réponse</summary><div>Non. Chaque échange inverse la configuration : deux échanges la rétablissent. C'est une astuce utile pour mettre H en bas sans se tromper.</div></details></div>
+  <div class="defi"><p>2. Choisis le 2,3-dibromobutane et affiche ses stéréoisomères. Pourquoi n'en trouve-t-on que 3 et pas 2² = 4 ?</p>
+    <details><summary>Voir la réponse</summary><div>(2R,3S) et (2S,3R) sont la même molécule : la forme méso possède un plan de symétrie et son image dans un miroir lui est superposable. Il reste le couple d'énantiomères (2R,3R)/(2S,3S) et la forme méso.</div></details></div>
+  <div class="defi"><p>3. Sur le 1-bromo-1-chloroprop-1-ène, peut-on dire cis ou trans ? Et E ou Z ?</p>
+    <details><summary>Voir la réponse</summary><div>Cis/trans n'a pas de sens : le carbone 1 porte Br et Cl, aucun groupe n'est commun aux deux carbones. E/Z marche toujours : Br est prioritaire sur Cl, CH₃ sur H ; on regarde s'ils sont du même côté (Z) ou de part et d'autre (E).</div></details></div>
+</div>
+</main>
+<aside class="sfa-side">
+  <div class="sfa-list"><h2>Chimie organique : stéréochimie et réactivité<span>3 simulations</span></h2><ol><li><a class="on" aria-current="page" href="../stereochimie-3d/"><i>01</i>R/S, Fischer et E/Z</a></li><li><a href="../conformations/"><i>02</i>Newman et chaise</a></li><li><a href="../effets-electroniques/"><i>03</i>Effets électroniques en organique</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside>
+</div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de chimie</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const D=Math.PI/180;
+/* ---------- vecteurs ---------- */
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],mul=(a,k)=>[a[0]*k,a[1]*k,a[2]*k];
+const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const len=a=>Math.hypot(a[0],a[1],a[2]),norm=a=>mul(a,1/len(a));
+const rotX=(v,t)=>[v[0],v[1]*Math.cos(t)-v[2]*Math.sin(t),v[1]*Math.sin(t)+v[2]*Math.cos(t)];
+
+/* ---------- atomes et groupes (numéros atomiques : règle CIP n° 1) ---------- */
+const Z={H:1,C:6,N:7,O:8,Cl:17,Br:35};
+const COL={H:0xf2f2f2,C:0x3a3f47,N:0x2f5fd0,O:0xd23b2f,Cl:0x2e9e4f,Br:0x8a2b1e};
+const RAD={H:.25,C:.38,N:.37,O:.36,Cl:.47,Br:.53};
+/* set = atomes portés par le premier atome (hors centre), doubles liaisons dupliquées */
+const G={
+  H:{lab:'H',a:'H',set:[]},
+  OH:{lab:'OH',a:'O',set:['H']},
+  NH2:{lab:'NH₂',a:'N',set:['H','H']},
+  Br:{lab:'Br',a:'Br',set:[]},
+  Cl:{lab:'Cl',a:'Cl',set:[]},
+  CH3:{lab:'CH₃',a:'C',set:['H','H','H']},
+  C2H5:{lab:'CH₂CH₃',a:'C',set:['C','H','H']},
+  CH2OH:{lab:'CH₂OH',a:'C',set:['O','H','H']},
+  COOH:{lab:'COOH',a:'C',set:['O','O','O'],dup:'C=O'},
+  CHO:{lab:'CHO',a:'C',set:['O','O','H'],dup:'C=O'}
+};
+const MOLS={
+  lactique:{nom:'Acide 2-hydroxypropanoïque (acide lactique)',st:{top:'COOH',c:[{L:'OH',R:'H'}],bot:'CH3'},num:[2],dl:{g:'OH'},rot:{S:'(+)',R:'(−)'}},
+  alanine:{nom:'Acide 2-aminopropanoïque (alanine)',st:{top:'COOH',c:[{L:'NH2',R:'H'}],bot:'CH3'},num:[2],dl:{g:'NH2'}},
+  butanol:{nom:'Butan-2-ol (2-butanol)',st:{top:'C2H5',c:[{L:'H',R:'OH'}],bot:'CH3'},num:[2],rot:{S:'(+)',R:'(−)'}},
+  glycer:{nom:'2,3-Dihydroxypropanal (glycéraldéhyde)',st:{top:'CHO',c:[{L:'H',R:'OH'}],bot:'CH2OH'},num:[2],dl:{g:'OH'},rot:{R:'(+)',S:'(−)'}},
+  dibromo:{nom:'2,3-Dibromobutane',st:{top:'CH3',c:[{L:'H',R:'Br'},{L:'Br',R:'H'}],bot:'CH3'},num:[2,3],clab:['CHBr–CH₃','CHBr–CH₃']},
+  threo:{nom:'Acide 2-amino-3-hydroxybutanoïque (thréonine)',st:{top:'COOH',c:[{L:'NH2',R:'H'},{L:'H',R:'OH'}],bot:'CH3'},num:[2,3],dl:{g:'NH2'},clab:['CH(NH₂)–COOH','CH(OH)–CH₃']},
+  butene:{alk:1,nom:'But-2-ène (2-butène)',a:['CH3','H'],b:['CH3','H'],ref:['CH3','CH3'],nums:[2,3]},
+  bromobutene:{alk:1,nom:'2-Bromobut-2-ène',a:['CH3','Br'],b:['CH3','H'],ref:['CH3','CH3'],nums:[2,3]},
+  bromochloro:{alk:1,nom:'1-Bromo-1-chloroprop-1-ène',a:['Br','Cl'],b:['CH3','H'],ref:null,nums:[1,2]}
+};
+const PCOL=['#a32d2d','#BA7517','#1D9E75','#5f6b7a'];
+const clone=o=>JSON.parse(JSON.stringify(o));
+
+/* ---------- comparaison CIP ---------- */
+const sortSet=s=>s.slice().sort((a,b)=>Z[b]-Z[a]);
+const fmtSet=s=>'('+(s.length?s.join(', '):'aucun')+')';
+function cmp(a,b){
+  if(Z[a.a]!==Z[b.a])return {s:Z[a.a]-Z[b.a],r:'num'};
+  const A=sortSet(a.set),B=sortSet(b.set);
+  for(let i=0;i<3;i++){const za=Z[A[i]]||0,zb=Z[B[i]]||0;if(za!==zb)return {s:za-zb,r:'set',A,B,i};}
+  return {s:0,r:'tie'};
+}
+function why(hi,lo){const c=cmp(hi.d,lo.d);
+  if(c.r==='num')return `<b>${hi.d.lab}</b> avant <b>${lo.d.lab}</b> : atome lié ${hi.d.a} (Z = ${Z[hi.d.a]}) contre ${lo.d.a} (Z = ${Z[lo.d.a]}). Règle 1 : numéro atomique.`;
+  if(c.r==='set'){const A=sortSet(hi.d.set),B=sortSet(lo.d.set);
+    let t=`<b>${hi.d.lab}</b> avant <b>${lo.d.lab}</b> : égalité sur le premier atome (${hi.d.a}). On compare les atomes suivants : ${fmtSet(A)} contre ${fmtSet(B)}. Premier point de différence : ${A[c.i]} > ${B[c.i]||'rien'}.`;
+    const dd=[hi.d,lo.d].filter(x=>x.dup);if(dd.length)t+=` Dans ${dd.map(x=>x.lab).join(' et ')}, la double liaison C=O est dupliquée : elle compte comme deux O.`;
+    return t;}
+  return '<span class="warn">Égalité non résolue</span>';}
+
+/* ---------- Fischer : sous-groupes d'un centre ---------- */
+let MOL,ST,AL,curId='lactique',mode='cip',selK=0;
+function centreDesc(st,k,j){const cj=st.c[j],n=st.c.length;
+  const other=j<k?(j===0?G[st.top].a:'C'):(j===n-1?G[st.bot].a:'C');
+  return {lab:MOL.clab[cj.i],a:'C',set:[G[cj.L].a,G[cj.R].a,other],centre:j};}
+function subs(st,k){const n=st.c.length;
+  const g=key=>Object.assign({key},G[key]);
+  return [{pos:'up',d:k===0?g(st.top):centreDesc(st,k,k-1)},{pos:'dn',d:k===n-1?g(st.bot):centreDesc(st,k,k+1)},
+          {pos:'L',d:g(st.c[k].L)},{pos:'R',d:g(st.c[k].R)}];}
+function ranked(st,k){const s=subs(st,k);s.sort((x,y)=>-cmp(x.d,y.d).s);
+  for(let i=0;i<3;i++)if(cmp(s[i].d,s[i+1].d).s===0)console.error('CIP : égalité non résolue',curId,k);
+  return s;}
+/* lecture sur la projection (coordonnées écran, y vers le bas) */
+const FP={up:[0,-1],dn:[0,1],L:[-1,0],R:[1,0]};
+const area=(p1,p2,p3)=>(p2[0]-p1[0])*(p3[1]-p1[1])-(p2[1]-p1[1])*(p3[0]-p1[0]);   // > 0 : sens horaire à l'écran
+function fisRead(st,k){const r=ranked(st,k);const a=area(FP[r[0].pos],FP[r[1].pos],FP[r[2].pos]);
+  const cw=a>0,h4=r[3].pos==='L'||r[3].pos==='R';const rs=(cw!==h4)?'R':'S';return {rs,cw,h4,r};}
+
+/* ---------- construction 3D ---------- */
+let atoms=[],bonds=[],centres=[],subIdx=[];
+const BL={H:1.09,C:1.53,N:1.47,O:1.43,Cl:1.77,Br:1.94};
+function addAtom(el,p){atoms.push({el,p});return atoms.length-1;}
+function perp(d){const a=Math.abs(d[2])<.9?[0,0,1]:[1,0,0];const e1=norm(cross(d,a));return [e1,cross(d,e1)];}
+function grow(key,pi,d,len0){
+  const P=atoms[pi].p,g=G[key],el=g.a;const xi=addAtom(el,add(P,mul(d,len0||BL[el])));bonds.push([pi,xi,1]);
+  const X=atoms[xi].p,[e1,e2]=perp(d);
+  const tet=k=>norm(add(mul(d,1/3),mul(add(mul(e1,Math.cos(k*2.0944)),mul(e2,Math.sin(k*2.0944))),0.9428)));
+  const tri=s=>norm(add(mul(d,0.5),mul(e1,s*0.866)));
+  const H=(dir,l)=>{const h=addAtom('H',add(X,mul(dir,l||1.09)));bonds.push([xi,h,1]);};
+  switch(key){
+    case 'OH':H(tet(0),0.96);break;
+    case 'NH2':H(tet(0),1.01);H(tet(1),1.01);break;
+    case 'CH3':H(tet(0));H(tet(1));H(tet(2));break;
+    case 'C2H5':H(tet(0));H(tet(1));grow('CH3',xi,tet(2));break;
+    case 'CH2OH':H(tet(0));H(tet(1));grow('OH',xi,tet(2));break;
+    case 'COOH':{const o=addAtom('O',add(X,mul(tri(1),1.21)));bonds.push([xi,o,2,e2]);grow('OH',xi,tri(-1),1.34);break;}
+    case 'CHO':{const o=addAtom('O',add(X,mul(tri(1),1.21)));bonds.push([xi,o,2,e2]);H(tri(-1),1.1);break;}
+  }
+  return xi;}
+const ALPHA=Math.acos(1/Math.sqrt(3));   // 54,74° : demi-angle tétraédrique
+const PHI=Math.PI-2*ALPHA;               // 70,53° : rotation d'un centre au suivant (chaîne éclipsée de Fischer)
+const U0=[0,Math.sin(ALPHA),-Math.cos(ALPHA)],D0=[0,-Math.sin(ALPHA),-Math.cos(ALPHA)],L0=[-Math.sin(ALPHA),0,Math.cos(ALPHA)],R0=[Math.sin(ALPHA),0,Math.cos(ALPHA)];
+function buildFischer(st){
+  atoms=[];bonds=[];centres=[];subIdx=[];const n=st.c.length;let p=[0,0,0];
+  for(let k=0;k<n;k++){if(k)p=add(p,mul(rotX(D0,(k-1)*PHI),1.53));centres.push(addAtom('C',p));if(k)bonds.push([centres[k-1],centres[k],1]);}
+  const top=grow(st.top,centres[0],rotX(U0,0)),bot=grow(st.bot,centres[n-1],rotX(D0,(n-1)*PHI));
+  for(let k=0;k<n;k++){const L=grow(st.c[k].L,centres[k],rotX(L0,k*PHI)),R=grow(st.c[k].R,centres[k],rotX(R0,k*PHI));
+    subIdx.push({up:k===0?top:centres[k-1],dn:k===n-1?bot:centres[k+1],L,R});}
+}
+function buildAlkene(al){
+  atoms=[];bonds=[];centres=[];subIdx=[];
+  const a=addAtom('C',[-0.67,0,0]),b=addAtom('C',[0.67,0,0]);centres=[a,b];bonds.push([a,b,2,[0,0,1]]);
+  const s60=Math.sin(60*D);
+  const au=grow(al.a[0],a,[-0.5,s60,0]),ad=grow(al.a[1],a,[-0.5,-s60,0]),bu=grow(al.b[0],b,[0.5,s60,0]),bd=grow(al.b[1],b,[0.5,-s60,0]);
+  subIdx=[{up:au,dn:ad},{up:bu,dn:bd}];}
+/* R/S à partir de la géométrie 3D : produit mixte (v1 × v2)·v3 < 0  ⇔  R */
+function rs3D(k){const r=ranked(ST,k),c=atoms[centres[k]].p;const v=r.map(s=>sub(atoms[subIdx[k][s.pos]].p,c));
+  return dot(cross(v[0],v[1]),v[2])<0?'R':'S';}
+function ezInfo(){const al=AL;const g=key=>Object.assign({key},G[key]);
+  const side=(arr)=>{const u={pos:'up',d:g(arr[0])},d={pos:'dn',d:g(arr[1])};const c=cmp(u.d,d.d);return {hi:c.s>0?u:d,lo:c.s>0?d:u};};
+  const A=side(al.a),B=side(al.b);
+  const pa=atoms[subIdx[0][A.hi.pos]].p,pb=atoms[subIdx[1][B.hi.pos]].p,ca=atoms[centres[0]].p,cb=atoms[centres[1]].p;
+  const ax=norm(sub(cb,ca));const pr=v=>sub(v,mul(ax,dot(v,ax)));
+  const same=dot(pr(sub(pa,ca)),pr(sub(pb,cb)))>0;
+  let ct=null;if(al.ref){const ia=al.a.indexOf(al.ref[0]),ib=al.b.indexOf(al.ref[1]);ct=(ia===ib)?'cis':'trans';}
+  return {A,B,ez:same?'Z':'E',ct};}
+function descriptors(){if(MOL.alk)return null;return ST.c.map((_,k)=>{const a=rs3D(k),f=fisRead(ST,k).rs;
+  if(a!==f)console.error('Désaccord 3D / Fischer',curId,k,a,f);return a;});}
+const cn=k=>MOL.num[ST.c[k].i];
+const descStr=ds=>ds.length===1?'('+ds[0]+')':'('+ds.map((d,k)=>[cn(k),d]).sort((a,b)=>a[0]-b[0]).map(x=>x[0]+x[1]).join(',')+')';
+
+/* ---------- opérations sur Fischer ---------- */
+const swapLR=c=>({L:c.R,R:c.L,i:c.i});
+const rot180=s=>({top:s.bot,c:s.c.slice().reverse().map(swapLR),bot:s.top});
+const mirror=s=>({top:s.top,c:s.c.map(swapLR),bot:s.bot});
+const rot90=s=>({top:s.c[0].L,c:[{L:s.bot,R:s.top,i:0}],bot:s.c[0].R});   // un quart de tour horaire (un seul centre)
+const key=s=>JSON.stringify([s.top,s.c.map(c=>[c.L,c.R]),s.bot]);   // l'identité i des carbones n'entre pas dans la comparaison
+const same=(s,t)=>key(s)===key(t)||key(rot180(s))===key(t);
+function stereoisomers(st){const n=st.c.length,out=[];
+  for(let m=0;m<(1<<n);m++){const s=clone(st);for(let k=0;k<n;k++)if(m>>k&1)s.c[k]=swapLR(s.c[k]);
+    if(!out.some(o=>same(o,s)))out.push(s);}
+  return out;}
+
+/* ---------- three.js ---------- */
+const stage=$('stage');
+let renderer=null,scene,camera,mg,inner,meshes=[],glOK=true;
+try{renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});}catch(e){glOK=false;}
+const sph=glOK?new THREE.SphereGeometry(1,28,18):null,cyl=glOK?new THREE.CylinderGeometry(1,1,1,14):null;
+const mats={};const mat=el=>mats[el]||(mats[el]=new THREE.MeshPhongMaterial({color:COL[el],shininess:45,specular:0x333333}));
+if(glOK){
+  renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));renderer.setClearColor(0xffffff,1);
+  stage.insertBefore(renderer.domElement,stage.firstChild);
+  scene=new THREE.Scene();camera=new THREE.PerspectiveCamera(32,1,0.1,200);camera.position.set(0,0,16);
+  scene.add(new THREE.AmbientLight(0xffffff,0.55));const dl=new THREE.DirectionalLight(0xffffff,0.75);dl.position.set(4,7,10);scene.add(dl);
+  const dl2=new THREE.DirectionalLight(0xffffff,0.25);dl2.position.set(-6,-3,4);scene.add(dl2);
+  mg=new THREE.Group();inner=new THREE.Group();mg.add(inner);scene.add(mg);
+}else{$('smsg').textContent='Ton navigateur ne permet pas l\'affichage 3D (WebGL). La projection de Fischer et les explications restent disponibles.';}
+const V=a=>new THREE.Vector3(a[0],a[1],a[2]);
+function halfBond(pa,pb,el,r,off){const a=V(pa),b=V(pb);if(off){a.add(off);b.add(off);}
+  const m=new THREE.Mesh(cyl,mat(el));const mid=a.clone().add(b).multiplyScalar(.5);const dir=b.clone().sub(a);
+  m.position.copy(mid);m.scale.set(r,dir.length(),r);m.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize());inner.add(m);meshes.push(m);}
+function rebuildMeshes(){if(!glOK)return;meshes.forEach(m=>inner.remove(m));meshes=[];
+  atoms.forEach(a=>{const m=new THREE.Mesh(sph,mat(a.el));m.position.copy(V(a.p));m.scale.setScalar(RAD[a.el]);inner.add(m);meshes.push(m);});
+  bonds.forEach(([i,j,o,off])=>{const pa=atoms[i].p,pb=atoms[j].p,mid=mul(add(pa,pb),.5);
+    if(o===2){const of=V(off).normalize().multiplyScalar(.1);[of,of.clone().negate()].forEach(q=>{halfBond(pa,mid,atoms[i].el,.065,q);halfBond(mid,pb,atoms[j].el,.065,q);});}
+    else{halfBond(pa,mid,atoms[i].el,.1);halfBond(mid,pb,atoms[j].el,.1);}});
+  const hl=new THREE.Mesh(sph,new THREE.MeshBasicMaterial({color:0xf4c542,transparent:true,opacity:.28,depthWrite:false}));
+  hl.scale.setScalar(.62);hl.position.copy(V(atoms[centres[MOL.alk?0:selK]].p));if(MOL.alk){hl.position.set(0,0,0);hl.scale.set(1.25,.62,.62);}
+  inner.add(hl);meshes.push(hl);
+  centreInner();fitCam();}
+function centreInner(){if(!glOK)return;const c=MOL.alk?[0,0,0]:atoms[centres[selK]].p;inner.position.set(-c[0],-c[1],-c[2]);}
+function fitCam(){if(!glOK)return;let r=0;const c=MOL.alk?[0,0,0]:atoms[centres[selK]].p;atoms.forEach(a=>r=Math.max(r,len(sub(a.p,c))+RAD[a.el]));
+  const w=stage.clientWidth,h=stage.clientHeight,asp=w/h;const t=Math.tan(camera.fov*D/2);
+  camera.position.z=Math.max(r/t,r/(t*asp))*1.12+r*0.3;camera.lookAt(0,0,0);}
+function resize(){if(!glOK)return;const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();fitCam();}
+new ResizeObserver(resize).observe(stage);
+
+/* rotation au doigt / à la souris */
+let drag=null,anim=null;
+if(glOK){const cv=renderer.domElement;
+  cv.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};anim=null;cv.setPointerCapture(e.pointerId);e.preventDefault();});
+  cv.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag={x:e.clientX,y:e.clientY};
+    const q=new THREE.Quaternion().setFromEuler(new THREE.Euler(dy*0.011,dx*0.011,0,'XYZ'));mg.quaternion.premultiply(q);});
+  const up=()=>drag=null;cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);}
+function animateTo(q){if(!glOK)return;anim={from:mg.quaternion.clone(),to:q,t0:performance.now(),dur:700};}
+function qBack4(){const r=ranked(ST,selK),c=atoms[centres[selK]].p;
+  const v4=norm(sub(atoms[subIdx[selK][r[3].pos]].p,c)),v1=sub(atoms[subIdx[selK][r[0].pos]].p,c);
+  const zl=mul(v4,-1),yl=norm(sub(v1,mul(zl,dot(v1,zl)))),xl=cross(yl,zl);
+  const m=new THREE.Matrix4().makeBasis(V(xl),V(yl),V(zl));return new THREE.Quaternion().setFromRotationMatrix(m).invert();}
+const qFischer=k=>new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),-k*PHI);
+
+/* ---------- surimpression : numéros et flèche ---------- */
+const ov=$('ov'),labs=$('labs');
+function proj(i){const v=V(atoms[i].p);inner.localToWorld(v);const w=v.clone();v.project(camera);
+  return {x:(v.x+1)/2*stage.clientWidth,y:(1-v.y)/2*stage.clientHeight,w};}
+function arcPath(c,pts,cw,r){const th=pts.map(p=>Math.atan2(p.y-c.y,p.x-c.x));const md=x=>((x%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
+  const s=cw?1:-1,d13=md(s*(th[2]-th[0]));const a0=th[0]+s*0.22,a1=th[0]+s*(d13-0.12);
+  let d='';const N=40;for(let i=0;i<=N;i++){const a=a0+(a1-a0)*i/N;d+=(i?'L':'M')+(c.x+r*Math.cos(a)).toFixed(1)+' '+(c.y+r*Math.sin(a)).toFixed(1);}
+  const ex=c.x+r*Math.cos(a1),ey=c.y+r*Math.sin(a1),tx=-Math.sin(a1)*s,ty=Math.cos(a1)*s,h=11;
+  const head=`M${(ex+tx*h*0.2).toFixed(1)} ${(ey+ty*h*0.2).toFixed(1)}L${(ex-tx*h+ty*h*.55).toFixed(1)} ${(ey-ty*h-tx*h*.55).toFixed(1)}L${(ex-tx*h-ty*h*.55).toFixed(1)} ${(ey-ty*h+tx*h*.55).toFixed(1)}Z`;
+  return {d,head};}
+let lastOv='';
+function overlay(){if(!glOK)return;let svg='',html='',msg='';const W=stage.clientWidth,H=stage.clientHeight;if(!W||!H)return;
+  if(MOL.alk){const E=ezInfo();const items=[[0,E.A.hi,1],[0,E.A.lo,2],[1,E.B.hi,1],[1,E.B.lo,2]];
+    const pa=proj(centres[0]),pb=proj(centres[1]);const dx=pb.x-pa.x,dy=pb.y-pa.y,L=Math.hypot(dx,dy)||1;
+    svg+=`<line x1="${pa.x-dx/L*W}" y1="${pa.y-dy/L*W}" x2="${pb.x+dx/L*W}" y2="${pb.y+dy/L*W}" stroke="#13233a" stroke-width="1.5" stroke-dasharray="6 5" opacity=".55"/>`;
+    for(const [s,it,p] of items){const q=proj(subIdx[s][it.pos]);const c=s?pb:pa;const ox=(q.x-c.x),oy=(q.y-c.y),l=Math.hypot(ox,oy)||1;
+      html+=`<div class="plab" style="left:${q.x+ox/l*22}px;top:${q.y+oy/l*22}px"><b style="background:${p===1?'#a32d2d':'#8a95a3'}">${p}</b><span>${it.d.lab}</span></div>`;
+      if(p===1)svg+=`<circle cx="${q.x}" cy="${q.y}" r="17" fill="none" stroke="#a32d2d" stroke-width="2.5"/>`;}
+    msg=E.ez==='Z'?'Les deux groupes prioritaires (1) sont du même côté de la double liaison : <b>Z</b> (zusammen).':'Les deux groupes prioritaires (1) sont de part et d\'autre de la double liaison : <b>E</b> (entgegen).';
+  }else{const r=ranked(ST,selK),c=proj(centres[selK]);const P=r.map(s=>proj(subIdx[selK][s.pos]));
+    if(mode!=='ez')P.forEach((q,i)=>{const ox=q.x-c.x,oy=q.y-c.y,l=Math.hypot(ox,oy)||1;
+      html+=`<div class="plab" style="left:${q.x+ox/l*24}px;top:${q.y+oy/l*24}px"><b style="background:${PCOL[i]}">${i+1}</b><span>${r[i].d.lab}</span></div>`;});
+    const z4=P[3].w.clone().sub(c.w).normalize().z;const cw=area(...P.slice(0,3).map(q=>[q.x,q.y]))>0;
+    const rad=Math.max(28,0.55*Math.min(...P.slice(0,3).map(q=>Math.hypot(q.x-c.x,q.y-c.y))));
+    const truth=rs3D(selK),C='C'+cn(selK);
+    if(z4<-0.55){const a=arcPath(c,P.slice(0,3),cw,rad);svg+=`<path d="${a.d}" fill="none" stroke="#13233a" stroke-width="3"/><path d="${a.head}" fill="#13233a"/>`;
+      const v=cw?'R':'S';msg=`Le 4 est en arrière. 1 → 2 → 3 tourne dans le sens ${cw?'horaire':'antihoraire'} : <b>${C} est ${v}</b>.`;if(v!==truth)msg+=' <span class="warn">(lecture à vérifier)</span>';}
+    else if(z4>0.55){const a=arcPath(c,P.slice(0,3),cw,rad);svg+=`<path d="${a.d}" fill="none" stroke="#BA7517" stroke-width="3" stroke-dasharray="7 5"/><path d="${a.head}" fill="#BA7517"/>`;
+      const v=cw?'S':'R';msg=`Le 4 pointe vers toi. Sens lu : ${cw?'horaire':'antihoraire'}, donc on inverse : <b>${C} est ${v}</b>.`;}
+    else msg=`Fais tourner la molécule pour envoyer le groupe 4 (${r[3].d.lab}) vers l'arrière, ou touche « Mettre le 4 en arrière ».`;}
+  if(/NaN/.test(svg+html))return;const k=svg+html+msg;if(k!==lastOv){ov.setAttribute('viewBox',`0 0 ${W} ${H}`);ov.innerHTML=svg;labs.innerHTML=html;$('smsg').innerHTML=msg;lastOv=k;}}
+function loop(t){if(glOK){if(anim){const u=Math.min(1,(t-anim.t0)/anim.dur),e=u<.5?2*u*u:1-2*(1-u)*(1-u);
+    mg.quaternion.copy(anim.from).slerp(anim.to,e);if(u>=1)anim=null;}
+  renderer.render(scene,camera);overlay();}
+  requestAnimationFrame(loop);}
+
+/* ---------- panneaux ---------- */
+let fisSel=null,fisMsg='';
+const num=(i)=>`<span class="num" style="background:${PCOL[i]}">${i+1}</span>`;
+function cipPanel(){const n=ST.c.length,ds=descriptors();let h='';
+  if(n>1)h+=`<div class="ctl" style="margin-top:0"><span class="lab">Centre étudié</span>${ST.c.map((_,k)=>`<button class="btn${k===selK?' on':''}" data-k="${k}">C${cn(k)}</button>`).join('')}</div>`;
+  const r=ranked(ST,selK);
+  h+=`<h3>1. Numéroter les groupes de C${cn(selK)}</h3><table class="rk"><tr><th>Rang</th><th>Groupe</th><th>Atome lié</th><th>Atomes suivants</th></tr>`+
+    r.map((s,i)=>`<tr><td>${num(i)}</td><td><b>${s.d.lab}</b></td><td>${s.d.a} (Z = ${Z[s.d.a]})</td><td>${s.d.set.length?fmtSet(sortSet(s.d.set)):'—'}</td></tr>`).join('')+'</table>';
+  h+='<ul>'+[0,1,2].map(i=>`<li>${why(r[i],r[i+1])}</li>`).join('')+'</ul>';
+  h+=`<h3>2. Envoyer le 4 vers l'arrière</h3><p>Touche « Mettre le 4 en arrière » ou fais tourner toi-même.</p>`;
+  h+=`<h3>3. Lire le sens 1 → 2 → 3</h3><p>Horaire : R (rectus). Antihoraire : S (sinister).</p><div class="verdict">C${cn(selK)} : ${ds[selK]}</div>`;
+  return h;}
+function fisSVG(){const n=ST.c.length,gap=70,top=40,cx=180,L=78,W=360,H=top*2+gap*(n+1);let s=`<svg id="fis" viewBox="0 0 ${W} ${H}" role="img" aria-label="Projection de Fischer">`;
+  const r=ranked(ST,selK),rk={};r.forEach((x,i)=>rk[x.pos]=i);
+  const yC=k=>top+gap*(k+1),yT=top,yB=top+gap*(n+1);
+  s+=`<line x1="${cx}" y1="${yT+14}" x2="${cx}" y2="${yB-14}" stroke="#13233a" stroke-width="2.4"/>`;
+  const lbl=(x,y,t,id,anchor,k,pos)=>{const sel=fisSel&&fisSel.k===k&&fisSel.pos===pos;const i=(k===selK)?rk[pos]:undefined;
+    let o=`<g class="tap" data-k="${k}" data-pos="${pos}"><rect x="${x-(anchor==='end'?64:anchor==='start'?4:32)}" y="${y-15}" width="68" height="30" rx="7" fill="${sel?'#fff2c7':'rgba(255,255,255,0)'}" stroke="${sel?'#BA7517':'none'}"/>`+
+      `<text x="${x}" y="${y+5}" text-anchor="${anchor}" font-family="Mulish,sans-serif" font-weight="800" font-size="16" fill="#0f1b2d">${t}</text></g>`;
+    if(i!==undefined&&mode!=='ez'){const tw=t.replace(/[₂₃]/g,'').length*11.5+6;const bx=anchor==='end'?x-tw-12:anchor==='start'?x+tw+12:x+tw/2+14;o+=`<circle cx="${bx}" cy="${y-1}" r="10" fill="${PCOL[i]}"/><text x="${bx}" y="${y+3.5}" text-anchor="middle" font-family="Mulish,sans-serif" font-weight="800" font-size="11" fill="#fff">${i+1}</text>`;}
+    return o;};
+  s+=lbl(cx,yT,G[ST.top].lab,'',  'middle',0,'up');s+=lbl(cx,yB,G[ST.bot].lab,'','middle',n-1,'dn');
+  for(let k=0;k<n;k++){const y=yC(k);s+=`<line x1="${cx-L}" y1="${y}" x2="${cx+L}" y2="${y}" stroke="#13233a" stroke-width="2.4"/>`;
+    if(k===selK)s+=`<circle cx="${cx}" cy="${y}" r="7" fill="#f4c542" stroke="#13233a" stroke-width="1.5"/>`;
+    s+=`<text x="${cx+8}" y="${y-8}" font-family="Mulish,sans-serif" font-size="11" font-weight="700" fill="#8a95a3">C${cn(k)}</text>`;
+    if(k===selK&&mode!=='ez'){[['up',-1],['dn',1]].forEach(([ps,sg])=>{const nb=k+sg;if(nb<0||nb>=n)return;const i=rk[ps],by=y+sg*gap/2;
+      s+=`<circle cx="${cx+16}" cy="${by}" r="10" fill="${PCOL[i]}"/><text x="${cx+16}" y="${by+3.5}" text-anchor="middle" font-family="Mulish,sans-serif" font-weight="800" font-size="11" fill="#fff">${i+1}</text>`;});}
+    s+=lbl(cx-L-6,y,G[ST.c[k].L].lab,'','end',k,'L');s+=lbl(cx+L+6,y,G[ST.c[k].R].lab,'','start',k,'R');}
+  /* flèche 1 → 2 → 3 sur la projection */
+  const f=fisRead(ST,selK),yc=yC(selK);const P=r.slice(0,3).map(x=>({x:cx+FP[x.pos][0]*40,y:yc+FP[x.pos][1]*40}));
+  if(mode==='fis'){const a=arcPath({x:cx,y:yc},P,f.cw,30);s+=`<path d="${a.d}" fill="none" stroke="${f.h4?'#BA7517':'#13233a'}" stroke-width="2.4"${f.h4?' stroke-dasharray="6 4"':''}/><path d="${a.head}" fill="${f.h4?'#BA7517':'#13233a'}"/>`;}
+  return s+'</svg>';}
+function dlInfo(){if(!MOL.dl)return null;const okTop=['COOH','CHO'].includes(ST.top),okBot=['CH3','CH2OH'].includes(ST.bot);
+  const c=ST.c[0];if(!okTop||!okBot||(c.L!==MOL.dl.g&&c.R!==MOL.dl.g))return '?';return c.R===MOL.dl.g?'D':'L';}
+function fisPanel(){const n=ST.c.length,f=fisRead(ST,selK),ds=descriptors();let h='';
+  if(n>1)h+=`<div class="ctl" style="margin-top:0"><span class="lab">Centre lu</span>${ST.c.map((_,k)=>`<button class="btn${k===selK?' on':''}" data-k="${k}">C${cn(k)}</button>`).join('')}</div>`;
+  h+=fisSVG();
+  h+=`<p class="hint" style="text-align:center">Horizontaux : vers toi. Verticaux : vers l'arrière. Touche deux groupes ${n>1?'horizontaux d\'un même carbone':''} pour les échanger.</p>`;
+  h+=`<div class="ctl" style="justify-content:center"><button class="btn" id="fR180">Tourner de 180°</button><button class="btn" id="fR90"${n>1?' disabled title="Réservé aux molécules à un seul centre"':''}>Tourner de 90°</button><button class="btn" id="fRes">Réinitialiser</button></div>`;
+  h+=`<h3>Lecture de C${cn(selK)}</h3><p>Le groupe 4 (${f.r[3].d.lab}) est ${f.h4?'<b>horizontal</b> : il pointe vers toi':'<b>vertical</b> : il est déjà en arrière'}. `+
+     `Sur la projection, 1 → 2 → 3 tourne dans le sens ${f.cw?'horaire':'antihoraire'}${f.h4?', on inverse':''} : <b>${f.rs}</b>.</p>`;
+  const dl=dlInfo();if(dl)h+=`<p>D/L : ${dl==='?'?'illisible ici. Remets la chaîne carbonée verticale avec le carbone le plus oxydé en haut (bouton « Réinitialiser »).':`le groupe ${G[MOL.dl.g].lab} du carbone 2 est à ${dl==='D'?'droite':'gauche'} : forme <b>${dl}</b>.`}</p>`;
+  h+=`<div class="msg" id="fmsg">${fisMsg}</div>`;
+  h+=`<h3 style="margin-top:10px">Règles de manipulation</h3><ul><li>Rotation de 180° dans le plan : même molécule.</li><li>Rotation de 90° : configuration inversée.</li><li>Échange de deux groupes : configuration inversée (deux échanges : retour au départ).</li><li>Si le groupe 4 est horizontal, inverse le sens lu.</li></ul>`;
+  return h;}
+function ezPanel(){const E=ezInfo(),al=AL;let h='';
+  const side=(arr,S,nC)=>`<tr><td><b>C${nC}</b></td><td>${num(0).replace('>1<','>1<')} <b>${S.hi.d.lab}</b></td><td><b>${S.lo.d.lab}</b></td><td>${cmp(S.hi.d,S.lo.d).r==='num'?`${S.hi.d.a} (Z = ${Z[S.hi.d.a]}) > ${S.lo.d.a} (Z = ${Z[S.lo.d.a]})`:`${fmtSet(sortSet(S.hi.d.set))} > ${fmtSet(sortSet(S.lo.d.set))}`}</td></tr>`;
+  h+=`<h3>1. Sur chaque carbone de la double liaison, le groupe prioritaire</h3><table class="rk"><tr><th>Carbone</th><th>Prioritaire</th><th>Autre</th><th>Pourquoi</th></tr>${side(al.a,E.A,MOL.nums[0])}${side(al.b,E.B,MOL.nums[1])}</table>`;
+  h+=`<h3>2. Même côté ou côtés opposés ?</h3><div class="verdict">(${E.ez})-${MOL.nom.split(' (')[0].replace(/^./,c=>c.toLowerCase())}</div>`;
+  h+=`<p>${E.ez==='Z'?'Z : les deux groupes prioritaires sont du même côté.':'E : les deux groupes prioritaires sont de part et d\'autre.'}</p>`;
+  h+=`<h3>3. Et cis/trans ?</h3><p>${E.ct?`La chaîne principale (les deux CH₃ terminaux) est du ${E.ct==='cis'?'même côté':'côté opposé'} : <b>${E.ct}</b>. `+(E.ct==='cis'&&E.ez==='E'||E.ct==='trans'&&E.ez==='Z'?'<span class="warn">Ici cis et E ne coïncident pas : '+(E.ct==='cis'?'cis = E':'trans = Z')+'.</span> Cis/trans compare la chaîne, E/Z compare les groupes prioritaires.':'Ici cis/trans et Z/E coïncident, mais ce n\'est pas une règle.'):'Non défini : le carbone 1 porte Br et Cl, aucun groupe n\'est commun aux deux carbones. Seul E/Z permet de nommer cet isomère.'}</p>`;
+  h+=`<div class="ctl"><button class="btn" id="bEZ">Basculer Z ⇄ E</button></div><div class="msg">${fisMsg}</div>`;
+  return h;}
+function isoCard(){let h='<h2>Compteur de stéréoisomères</h2>';
+  if(MOL.alk){const E=ezInfo();h+=`<p class="iso-note">Une double liaison C=C stéréogène : 2 stéréoisomères, (Z) et (E). Ce sont des <b>diastéréoisomères</b>, pas des énantiomères : la molécule est plane, son image dans un miroir lui est superposable. Affiché : (${E.ez}).</p>`;return h;}
+  const n=ST.c.length,list=stereoisomers(ST),meso=list.filter(s=>same(s,mirror(s))).length;
+  h+=`<p class="iso-note">${n} centre${n>1?'s':''} stéréogène${n>1?'s':''} : au plus 2${n>1?'<sup>'+n+'</sup>':''} = ${1<<n}.${meso?` Forme méso : ${meso} (achirale, plan de symétrie interne), donc ${list.length} stéréoisomères.`:` Aucune forme méso : ${list.length} stéréoisomères.`}</p><div class="iso">`;
+  const save=ST;list.forEach((s,i)=>{ST=s;buildFischer(ST);const d=descStr(descriptors());const isM=same(s,mirror(s));
+    ST=save;const rel=same(s,ST)?'affiché':same(s,mirror(ST))?'énantiomère':'diastéréoisomère';
+    h+=`<button class="btn${rel==='affiché'?' on':''}" data-iso="${i}">${d}${isM?' méso':''} · ${rel}</button>`;});
+  ST=save;buildFischer(ST);
+  h+='</div><p class="hint">Énantiomères : images l\'une de l\'autre dans un miroir, non superposables (toutes les configurations inversées). Diastéréoisomères : stéréoisomères qui ne sont pas des énantiomères.</p>';
+  isoList=list;return h;}
+let isoList=[];
+function info(){let h=`<b>${MOL.nom}</b>`;
+  if(MOL.alk){const E=ezInfo();h+=` &nbsp;|&nbsp; double liaison C${MOL.nums[0]}=C${MOL.nums[1]} : <b>${E.ez}</b> &nbsp;|&nbsp; cis/trans : ${E.ct||'non défini'}`;}
+  else{const ds=descriptors(),d=descStr(ds);const dl=dlInfo();
+    h+=` &nbsp;|&nbsp; configuration <b>${d}</b>`;if(dl&&dl!=='?')h+=` &nbsp;|&nbsp; Fischer : <b>${dl}</b>`;
+    if(ST.c.length===1&&MOL.rot)h+=` &nbsp;|&nbsp; pouvoir rotatoire (mesuré, pas déduit) : <b>${MOL.rot[ds[0]]}</b>`;
+    if(ST.c.length>1&&same(ST,mirror(ST)))h+=' &nbsp;|&nbsp; <b>méso</b> : achirale, image dans un miroir superposable';}
+  $('info').innerHTML=h;}
+function render(){const p=$('panel');
+  if(MOL.alk)p.innerHTML=ezPanel();else p.innerHTML=mode==='fis'?fisPanel():cipPanel();
+  $('isoCard').innerHTML=isoCard();info();
+  document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('on',b.dataset.mode===(MOL.alk?'ez':mode)));
+  $('b4').disabled=!!MOL.alk||!glOK;$('bFv').disabled=!!MOL.alk||!glOK;
+  $('bMir').textContent=MOL.alk?'Miroir':'Miroir (énantiomère)';
+  p.querySelectorAll('[data-k]').forEach(b=>{if(b.tagName==='BUTTON')b.onclick=()=>{selK=+b.dataset.k;fisSel=null;rebuildMeshes();render();};});
+  p.querySelectorAll('#fis .tap').forEach(g=>g.addEventListener('click',()=>tapFis(+g.dataset.k,g.dataset.pos)));
+  const on=(id,f)=>{const e=$(id);if(e)e.onclick=f;};
+  on('fR180',()=>fisOp('r180'));on('fR90',()=>fisOp('r90'));on('fRes',()=>{ST=clone(MOL.st);ST.c.forEach((c,k)=>c.i=k);selK=0;fisMsg='Projection de départ rétablie.';rebuild();});
+  on('bEZ',()=>{AL.b=[AL.b[1],AL.b[0]];fisMsg='Rotation impossible autour de C=C : passer de Z à E demande de rompre la liaison π. Ce sont deux molécules différentes.';rebuild();});
+  $('isoCard').querySelectorAll('[data-iso]').forEach(b=>b.onclick=()=>{ST=clone(isoList[+b.dataset.iso]);fisMsg='';rebuild();});}
+function rebuild(){if(MOL.alk)buildAlkene(AL);else buildFischer(ST);rebuildMeshes();render();}
+function fisOp(op){const before=descStr(descriptors());
+  if(op==='r180'){ST=rot180(ST);if(ST.c.length>1)selK=ST.c.length-1-selK;}
+  if(op==='r90')ST=rot90(ST);
+  buildFischer(ST);const after=descStr(descriptors());
+  if(op==='r180')fisMsg=`Rotation de 180° dans le plan : ${before} reste ${after}. C'est la même molécule, vue tête en bas.`;
+  if(op==='r90')fisMsg=`Rotation de 90° : la lecture donne ${after} au lieu de ${before}. Les groupes verticaux sont passés à l'horizontale (vers toi) : tu as dessiné l'énantiomère.`;
+  fisSel=null;rebuildMeshes();render();}
+function tapFis(k,pos){
+  if(!fisSel){fisSel={k,pos};fisMsg='Touche un deuxième groupe pour l\'échanger avec le premier.';render();return;}
+  const a=fisSel;fisSel=null;if(a.k===k&&a.pos===pos){fisMsg='';render();return;}
+  const n=ST.c.length,before=descStr(descriptors());
+  if(n===1){const get=p=>p==='up'?ST.top:p==='dn'?ST.bot:ST.c[0][p];const set=(p,v)=>{if(p==='up')ST.top=v;else if(p==='dn')ST.bot=v;else ST.c[0][p]=v;};
+    const va=get(a.pos),vb=get(pos);set(a.pos,vb);set(pos,va);}
+  else{if(a.k!==k||!['L','R'].includes(a.pos)||!['L','R'].includes(pos)){fisMsg='Avec deux centres, échange les deux groupes horizontaux d\'un même carbone.';render();return;}
+    ST.c[k]=swapLR(ST.c[k]);}
+  buildFischer(ST);const after=descStr(descriptors());
+  fisMsg=`Échange de deux groupes : ${before} devient ${after}. Une seule permutation inverse la configuration.`;rebuildMeshes();render();}
+function setMol(id){curId=id;MOL=MOLS[id];selK=0;fisSel=null;fisMsg='';$('mol').value=id;
+  if(MOL.alk){AL=clone({a:MOL.a,b:MOL.b,ref:MOL.ref});}else{ST=clone(MOL.st);ST.c.forEach((c,k)=>c.i=k);}
+  if(MOL.alk)buildAlkene(AL);else buildFischer(ST);rebuildMeshes();
+  if(glOK)mg.quaternion.copy(MOL.alk?new THREE.Quaternion().setFromEuler(new THREE.Euler(-0.35,0.25,0)):qFischer(0).premultiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0.15,-0.55,0))));
+  render();}
+$('mol').onchange=e=>setMol(e.target.value);
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{const m=b.dataset.mode;
+  if(m==='ez'){if(!MOL.alk)setMol('butene');mode='ez';return;}
+  mode=m;if(MOL.alk)setMol('lactique');else{fisSel=null;fisMsg='';render();}
+  if(m==='fis'&&glOK)animateTo(qFischer(selK));});
+$('b4').onclick=()=>{if(!MOL.alk&&glOK)animateTo(qBack4());};
+$('bFv').onclick=()=>{if(!MOL.alk&&glOK)animateTo(qFischer(selK));};
+$('bRe').onclick=()=>{if(glOK){fitCam();animateTo(MOL.alk?new THREE.Quaternion():qFischer(MOL.alk?0:selK));}};
+$('bMir').onclick=()=>{if(MOL.alk){fisMsg='Molécule plane : son image dans un miroir lui est superposable. Un alcène comme celui-ci n\'a pas d\'énantiomère.';render();return;}
+  const before=descStr(descriptors());ST=mirror(ST);buildFischer(ST);const after=descStr(descriptors());
+  fisMsg=same(ST,mirror(ST))?`Image dans un miroir : ${after}, superposable à la molécule de départ (forme méso).`:`Image dans un miroir : ${before} devient ${after}, l'énantiomère. Tous les centres sont inversés.`;
+  rebuildMeshes();render();};
+
+/* accès pour les tests automatiques */
+window.__stereo={setMol,mirror:()=>$('bMir').click(),fis:op=>fisOp(op),tap:tapFis,back4:()=>{if(glOK){anim=null;mg.quaternion.copy(qBack4());mg.updateMatrixWorld(true);overlay();}},
+  fischerView:()=>{if(glOK)mg.quaternion.copy(qFischer(selK));},selK:k=>{selK=k;rebuildMeshes();render();},ez:()=>{const b=$('bEZ');if(b)b.click();},
+  state:()=>({id:curId,st:clone(ST||null),al:clone(AL||null),atoms:clone(atoms),bonds:bonds.map(b=>b.slice(0,3)),centres:centres.slice(),
+    desc:MOL.alk?null:descriptors(),fis:MOL.alk?null:ST.c.map((_,k)=>fisRead(ST,k).rs),ez:MOL.alk?ezInfo().ez:null,ct:MOL.alk?ezInfo().ct:null,dl:MOL.alk?null:dlInfo(),
+    niso:MOL.alk?2:stereoisomers(ST).length,msg:$('smsg').textContent,info:$('info').textContent})};
+setMol('lactique');resize();requestAnimationFrame(loop);
+})();
+</script>
+<script src="../../kit/sfa-nav.js"></script></body>
+</html>

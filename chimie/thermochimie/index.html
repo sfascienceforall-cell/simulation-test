@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thermochimie : enthalpie, entropie, spontanéité · SFA</title>
+<meta name="description" content="Construis un cycle de Hess, calcule ΔH à partir des enthalpies de formation, trouve quand une réaction devient spontanée et mesure une chaleur au calorimètre.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+canvas.cv{display:block;width:100%;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.row{display:flex;align-items:center;flex-wrap:wrap}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.hint{font:500 .84rem var(--f-ui);color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font:600 .82rem var(--f-ui);color:var(--muted);margin:10px 0 2px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.legend i.dash{background:repeating-linear-gradient(90deg,currentColor 0 5px,transparent 5px 9px)!important;height:2px}
+.legend i.box{height:10px;width:14px;border-radius:3px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:12px 0}
+.stat{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 12px;min-width:0}
+.stat small{display:block;font:800 10.5px var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.stat b{display:block;font:800 1.2rem/1.3 var(--f-ui);font-variant-numeric:tabular-nums;color:var(--ink)}
+.stat span{display:block;font:600 .78rem/1.35 var(--f-ui);color:var(--muted)}
+.note{border-radius:10px;padding:10px 14px;margin:10px 0;font:600 .88rem/1.5 var(--f-ui)}
+.note.warn{background:#fff6e6;border-left:4px solid #BA7517;color:#5a3d00}
+.note.ok{background:#ecf6f1;border-left:4px solid #2e6b55;color:#1d4637}
+.note.info2{background:var(--sel);border-left:4px solid var(--navy);color:var(--ink2)}
+.chipok,.chipno{display:inline-block;font:800 11px var(--f-ui);padding:2px 8px;border-radius:999px;margin-right:6px}
+.chipok{background:#dcefe6;color:#1d4637}.chipno{background:#fbe1dc;color:#8a2a1a}
+table.t{border-collapse:collapse;width:100%;font:600 .84rem var(--f-ui);font-variant-numeric:tabular-nums}
+table.t th,table.t td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top}
+table.t th{font:800 .72rem var(--f-ui);letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.tw{overflow-x:auto}
+.sfa-card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-top:14px}
+.sfa-card h2{font:800 1.05rem var(--f-ui);margin:0 0 8px}
+.sfa-card ul{margin:0;padding-left:20px}.sfa-card li{margin:5px 0}
+.sfa-card.trap{border-left:4px solid #BA7517}
+.sfa-card details{border-top:1px solid var(--line);padding:10px 0}
+.sfa-card details:first-of-type{border-top:0}
+.sfa-card summary{cursor:pointer;font-weight:700;color:var(--ink)}
+.sfa-card details p{margin:8px 0 0;color:var(--ink2)}
+.sfa-card sub,.sfa-card sup,.stat sub,.stat sup,.note sub,.note sup,table.t sub,table.t sup,.btn sub{font-size:.72em}
+.panel[hidden]{display:none!important}
+
+.stat b{font-size:1.05rem}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+.g2 canvas{height:320px}
+#cH,#cF,#cC{height:320px}
+@media (max-width:760px){.g2{grid-template-columns:minmax(0,1fr)}.g2 canvas{height:290px}#cH,#cF,#cC{height:290px}}
+.pill.w{min-width:190px}
+@media (max-width:520px){.pill.w{min-width:0}}
+.steps{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.step{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff}
+.step .eq{font:700 .98rem/1.5 var(--f-ui);color:var(--ink);overflow-wrap:anywhere}
+.step .eq em{font-style:normal;font-weight:800;color:#185fa5;white-space:nowrap}
+.step .ctl{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
+.step .ctl .btn{padding:6px 10px!important}
+.step.inv{border-left:4px solid #BA7517}
+.eqbox{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:700 .95rem/1.6 var(--f-ui);overflow-wrap:anywhere}
+.eqbox small{display:block;font:800 10.5px var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.eqbox s{color:#8a95a3}
+.stat small .nt{text-transform:none;display:inline;font:inherit;color:inherit;letter-spacing:0}
+table.t th.nt{text-transform:none}
+.tag25{display:inline-block;font:800 11px var(--f-ui);padding:2px 9px;border-radius:999px;background:#f1eef9;color:#5a3fa0;margin:4px 0}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a class="on" href="../">Simulations de chimie</a><a href="../exercices/">Exercices de chimie</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations de physique</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="../">Simulations de chimie</a>›<a href="../#equilibres-energie">Équilibres et énergie</a>›<b>Thermochimie : enthalpie, entropie, spontanéité</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Chimie · Équilibres et énergie</span><span class="sfa-chip free">Gratuit</span></div><h1>Thermochimie : enthalpie, entropie, spontanéité</h1><p>Construis un cycle de Hess, calcule ΔH à partir des enthalpies de formation, trouve quand une réaction devient spontanée et mesure une chaleur au calorimètre.</p></div>
+
+<section class="sfa-sim">
+<div class="row"><span class="pill">Mode</span><div class="seg" id="sMode">
+  <button class="btn on" data-k="hess">Loi de Hess</button><button class="btn" data-k="form">Enthalpies de formation</button>
+  <button class="btn" data-k="gibbs">ΔG = ΔH − TΔS</button><button class="btn" data-k="calo">Calorimétrie</button></div></div>
+<span class="tag25">Valeurs tabulées usuelles à 25 °C (298,15 K) et 1 bar</span>
+
+<!-- ===== Hess ===== -->
+<div id="pHess" class="panel">
+<div class="row"><span class="pill">Réaction à obtenir</span><div class="seg" id="sPz">
+  <button class="btn on" data-k="0">Formation de CO</button><button class="btn" data-k="1">Formation de CH₄</button><button class="btn" data-k="2">Oxydation de SO₂</button></div></div>
+<div class="eqbox"><small>Réaction cible</small><span id="hTarget"></span></div>
+<p class="hint" style="margin-top:8px">Retourne et multiplie les équations données pour que leur somme soit la réaction cible. Les espèces présentes des deux côtés se simplifient.</p>
+<div class="steps" id="hSteps"></div>
+<div class="eqbox"><small>Somme des équations</small><span id="hSum"></span></div>
+<canvas id="cH" class="cv" style="margin-top:10px" aria-label="Chemin des enthalpies : chaque étape ajoute son ΔH"></canvas>
+<div class="stats" id="stHess"></div>
+<div id="nHess"></div>
+</div>
+
+<!-- ===== Formation ===== -->
+<div id="pForm" class="panel" hidden>
+<div class="row"><span class="pill">Réaction</span><div class="seg" id="sRx"></div></div>
+<div class="eqbox"><small>Équation</small><span id="fEq"></span></div>
+<canvas id="cF" class="cv" style="margin-top:10px" aria-label="Diagramme d'enthalpie : réactifs, corps simples, produits"></canvas>
+<div class="stats" id="stForm"></div>
+<div id="nForm"></div>
+<div class="tw" id="tForm"></div>
+</div>
+
+<!-- ===== Gibbs ===== -->
+<div id="pGibbs" class="panel" hidden>
+<div class="row"><span class="pill">Réaction</span><div class="seg" id="sG"></div></div>
+<div class="eqbox"><small>Équation</small><span id="gEq"></span></div>
+<div class="g2"><canvas id="cQ" class="cv" aria-label="Les quatre cas de signes de ΔH et ΔS"></canvas><canvas id="cG" class="cv" aria-label="ΔG en fonction de T"></canvas></div>
+<div class="legend" id="lgG"></div>
+<div class="row"><span class="pill w" style="color:#185fa5">ΔH (kJ/mol)</span>
+  <input type="range" id="gH" min="-300" max="300" step="0.1" value="178.3" style="accent-color:#378ADD"><span class="val" id="gHv" style="color:#185fa5"></span></div>
+<div class="row"><span class="pill w" style="color:#BA7517">ΔS (J·mol⁻¹·K⁻¹)</span>
+  <input type="range" id="gS" min="-300" max="300" step="0.1" value="160.6" style="accent-color:#BA7517"><span class="val" id="gSv" style="color:#BA7517"></span></div>
+<div class="row"><span class="pill w" style="color:#a32d2d">T température</span>
+  <input type="range" id="gT" min="100" max="2000" step="1" value="298" style="accent-color:#E24B4A"><span class="val" id="gTv" style="color:#a32d2d"></span></div>
+<div class="stats" id="stGibbs"></div>
+<div id="nGibbs"></div>
+<div class="tw" id="tGibbs"></div>
+<p class="hint" style="margin-top:10px">ΔG° = ΔH° − T·ΔS°, avec ΔH° et ΔS° supposés indépendants de T (approximation usuelle). « Spontanée » veut dire ici : ΔG° &lt; 0, réactifs et produits dans leur état standard, à T et P constantes.</p>
+</div>
+
+<!-- ===== Calorimétrie ===== -->
+<div id="pCalo" class="panel" hidden>
+<div class="row"><span class="pill">Expérience</span><div class="seg" id="sCal"><button class="btn on" data-k="mix">Métal chaud dans l'eau</button><button class="btn" data-k="rx">Réaction dans un calorimètre</button></div></div>
+<canvas id="cC" class="cv" aria-label="Calorimètre : températures et chaleur échangée"></canvas>
+<div id="pMix">
+<div class="row"><span class="pill">Métal</span><div class="seg" id="sMet"><button class="btn" data-k="Al">Aluminium</button><button class="btn" data-k="Fe">Fer</button><button class="btn on" data-k="Cu">Cuivre</button></div></div>
+<div class="row"><span class="pill w" style="color:#a32d2d">m métal</span><input type="range" id="m1" min="10" max="500" step="10" value="200" style="accent-color:#E24B4A"><span class="val" id="m1v" style="color:#a32d2d"></span></div>
+<div class="row"><span class="pill w" style="color:#a32d2d">θ initiale du métal</span><input type="range" id="T1" min="20" max="150" step="1" value="100" style="accent-color:#E24B4A"><span class="val" id="T1v" style="color:#a32d2d"></span></div>
+<div class="row"><span class="pill w" style="color:#185fa5">m eau</span><input type="range" id="m2" min="50" max="500" step="10" value="300" style="accent-color:#378ADD"><span class="val" id="m2v" style="color:#185fa5"></span></div>
+<div class="row"><span class="pill w" style="color:#185fa5">θ initiale de l'eau</span><input type="range" id="T2" min="5" max="40" step="1" value="20" style="accent-color:#378ADD"><span class="val" id="T2v" style="color:#185fa5"></span></div>
+</div>
+<div id="pRx" hidden>
+<div class="row"><span class="pill w" style="color:#185fa5">m solution (eau)</span><input type="range" id="mw" min="50" max="500" step="10" value="100" style="accent-color:#378ADD"><span class="val" id="mwv" style="color:#185fa5"></span></div>
+<div class="row"><span class="pill w" style="color:#a32d2d">ΔT mesurée</span><input type="range" id="dT" min="-150" max="150" step="1" value="60" style="accent-color:#E24B4A"><span class="val" id="dTv" style="color:#a32d2d"></span></div>
+<div class="row"><span class="pill w" style="color:#0F6E56">n de réactif limitant</span><input type="range" id="nr" min="1" max="40" step="1" value="10" style="accent-color:#1D9E75"><span class="val" id="nrv" style="color:#0F6E56"></span></div>
+</div>
+<div class="stats" id="stCalo"></div>
+<div id="nCalo"></div>
+<p class="hint" style="margin-top:10px">q = m·c·ΔT avec m en g, c en J/(g·K) et ΔT en K (un écart de 1 °C vaut un écart de 1 K). Capacités thermiques massiques tabulées usuelles : eau 4,18 ; aluminium 0,897 ; fer 0,449 ; cuivre 0,385 J/(g·K). Modèle simplifié : calorimètre parfaitement isolé, capacité thermique du récipient négligée, pas de changement d'état.</p>
+</div>
+</section>
+
+<section class="sfa-card"><h2>Ce qu'il faut retenir</h2><ul>
+<li>H est une fonction d'état : ΔH ne dépend que de l'état de départ et de l'état d'arrivée. Loi de Hess : si on retourne une équation, ΔH change de signe ; si on la multiplie par un nombre, ΔH est multiplié par ce nombre ; si on additionne des équations, on additionne leurs ΔH.</li>
+<li>ΔH°<sub>r</sub> = Σ ν·ΔH°<sub>f</sub>(produits) − Σ ν·ΔH°<sub>f</sub>(réactifs). L'enthalpie de formation d'un corps simple dans son état standard (O₂(g), H₂(g), N₂(g), C(graphite)…) vaut 0.</li>
+<li>ΔG = ΔH − TΔS. La réaction est spontanée si ΔG &lt; 0. Quatre cas : ΔH &lt; 0 et ΔS &gt; 0, toujours ; ΔH &gt; 0 et ΔS &lt; 0, jamais ; mêmes signes, cela dépend de T, et le basculement a lieu à T = ΔH/ΔS (ΔH en J/mol). Ce T n'est qu'une estimation : on suppose ΔH et ΔS indépendants de T.</li>
+<li>Calorimétrie : q = m·c·ΔT. Dans un calorimètre isolé, la chaleur cédée par l'un est reçue par l'autre : la somme des q vaut 0. Si l'eau se réchauffe, la réaction a cédé de la chaleur : elle est exothermique, ΔH = −q<sub>eau</sub>/n &lt; 0.</li>
+</ul></section>
+
+<section class="sfa-card trap"><h2>Pièges classiques</h2><ul>
+<li>kJ et J : ΔH est donné en kJ/mol mais ΔS en J/(mol·K). Convertis avant de calculer TΔS ou T = ΔH/ΔS, sinon tu te trompes d'un facteur 1000.</li>
+<li>ΔH°<sub>f</sub> = 0 pour les corps simples seulement dans leur forme standard : O₃ et H₂O(g) n'ont pas une enthalpie de formation nulle. Et l'entropie molaire S° d'un corps simple n'est <b>pas</b> nulle (O₂ : 205,14 J/(mol·K)).</li>
+<li>L'état physique compte : la combustion du méthane libère 890 kJ/mol si l'eau est liquide, 802 kJ/mol si elle reste gazeuse. Et n'oublie pas les coefficients stœchiométriques dans les sommes.</li>
+<li>Spontanée ne veut pas dire rapide : ΔG renseigne sur le sens possible, pas sur la vitesse. Une réaction très favorable peut être infiniment lente sans catalyseur (voir la simulation de cinétique).</li>
+</ul></section>
+
+<section class="sfa-card"><h2>Défis</h2>
+<details><summary>1. Formation de CH₄ : quelle combinaison des trois équations données donne C(graphite) + 2 H₂(g) → CH₄(g) ?</summary>
+<p>Garde la combustion du carbone telle quelle, multiplie celle de H₂ par 2 et retourne celle de CH₄ : ΔH = −393,5 + 2 × (−285,8) + 890,3 = −74,8 kJ/mol. CO₂, H₂O(l) et O₂ se simplifient entièrement. Vérifie dans le mode « Loi de Hess ».</p></details>
+<details><summary>2. À partir de quelle température la décomposition de CaCO₃ devient-elle spontanée dans les conditions standard ?</summary>
+<p>ΔH° = +178,3 kJ/mol et ΔS° = +160,6 J/(mol·K), mêmes signes : spontanée au-dessus de T = 178 300/160,6 ≈ 1110 K, soit environ 837 °C. C'est une estimation (ΔH° et ΔS° supposés indépendants de T, CO₂ sous 1 bar) : on mesure plutôt vers 900 °C. Si tu oublies de convertir les kJ en J, tu trouves 1,11 K, une température absurde.</p></details>
+<details><summary>3. Tu plonges 200 g de cuivre à 100 °C dans 300 g d'eau à 20 °C. Quelle est la température finale ?</summary>
+<p>θ<sub>f</sub> = (200 × 0,385 × 100 + 300 × 4,18 × 20)/(200 × 0,385 + 300 × 4,18) = 32 780/1331 ≈ 24,6 °C. L'eau gagne à peine 5 °C : sa capacité thermique (1254 J/K) est bien plus grande que celle du cuivre (77 J/K).</p></details>
+</section>
+
+</main>
+<aside class="sfa-side">
+  <div class="sfa-list"><h2>Équilibres et énergie<span>2 simulations</span></h2><ol><li><a href="../cinetique/"><i>01</i>Cinétique chimique</a></li><li><a class="on" aria-current="page" href="../thermochimie/"><i>02</i>Thermochimie : enthalpie, entropie, spontanéité</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside>
+</div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de chimie</footer>
+<script>
+(()=>{
+/* ---------- SFA chimie : outils communs (format, équilibres, dessin) ---------- */
+const $=id=>document.getElementById(id);
+const LN10=Math.LN10;
+const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+/* nombre à n décimales, virgule décimale, vrai signe moins */
+const fr=(v,n)=>{if(!isFinite(v))return '—';let s=v.toFixed(n);if(/^-0[,.]?0*$/.test(s))s=s.slice(1);return s.replace('.',',').replace(/^-/,'−');};
+/* notation scientifique « 1,0·10⁻⁸ » avec s chiffres significatifs */
+function sci(v,s){if(v===0)return '0';if(!isFinite(v))return '—';const e=Math.floor(Math.log10(Math.abs(v))+1e-12);let m=v/Math.pow(10,e);
+  let ms=m.toFixed((s||2)-1);if(Math.abs(+ms)>=10){m/=10;ms=m.toFixed((s||2)-1);return fmtE(ms,e+1);}return fmtE(ms,e);}
+function fmtE(ms,e){ms=ms.replace('.',',').replace(/^-/,'−');if(e===0)return ms;return ms+'·10'+String(e).split('').map(c=>SUP[c]).join('');}
+/* valeurs « jolies » 1-2-3-5 par décade pour les curseurs logarithmiques */
+function niceList(e0,e1){const L=[];for(let e=e0;e<e1;e++)for(const m of [1,2,3,5])L.push(+(m*Math.pow(10,e)).toPrecision(3));L.push(Math.pow(10,e1));return L;}
+
+/* ---------- canevas ---------- */
+function makeCanvas(cv){const ctx=cv.getContext('2d');const o={cv,ctx,W:0,H:0};
+  o.sync=()=>{const r=cv.getBoundingClientRect(),d=window.devicePixelRatio||1;const w=Math.round(r.width)||600,h=Math.round(r.height)||400;
+    if(w!==o.W||h!==o.H||cv.width!==Math.round(w*d)){o.W=w;o.H=h;cv.width=Math.round(w*d);cv.height=Math.round(h*d);}ctx.setTransform(d,0,0,d,0,0);};
+  return o;}
+const FT='700 12.5px Mulish,system-ui,sans-serif',FN='600 11.5px Mulish,system-ui,sans-serif',FB='800 13px Mulish,system-ui,sans-serif';
+function halo(ctx,t,x,y,col,font,al,bl){ctx.save();ctx.font=font||FT;ctx.textAlign=al||'left';ctx.textBaseline=bl||'middle';ctx.lineJoin='round';
+  ctx.lineWidth=4;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.strokeText(t,x,y);ctx.fillStyle=col;ctx.fillText(t,x,y);ctx.restore();}
+/* étiquettes sans chevauchement : on propose des positions, la meilleure libre est retenue */
+function Labeler(ctx,W,H){const Q=[],R=[];return {
+  block(x0,y0,x1,y1){R.push({x0,y0,x1,y1});},
+  add(t,col,cands,font){Q.push({t,col,cands,font:font||FT});},
+  flush(){const P=[];for(const L of Q){ctx.font=L.font;const w=ctx.measureText(L.t).width,h=15;let best=null,bs=Infinity;
+    L.cands.forEach((c,i)=>{const [x,y,al]=c;const x0=al==='left'?x:al==='right'?x-w:x-w/2;const b={x0:x0-2,x1:x0+w+2,y0:y-h/2,y1:y+h/2};let s=i;
+      if(b.x0<1||b.x1>W-1||b.y0<1||b.y1>H-1)s+=1e6;
+      for(const p of P.concat(R)){const ox=Math.min(b.x1,p.x1)-Math.max(b.x0,p.x0),oy=Math.min(b.y1,p.y1)-Math.max(b.y0,p.y0);if(ox>0&&oy>0)s+=1e4+ox*oy;}
+      if(s<bs){bs=s;best={b,x0,y};}});
+    let x0=Math.max(2,Math.min(W-2-w,best.x0)),y=Math.max(8,Math.min(H-8,best.y));P.push({x0:x0-2,x1:x0+w+2,y0:y-h/2,y1:y+h/2});halo(ctx,L.t,x0,y,L.col,L.font,'left');}}};}
+/* repère cartésien : renvoie les fonctions de passage */
+function axes(ctx,b,xr,yr,o){o=o||{};const X=x=>b.x+(x-xr[0])/(xr[1]-xr[0])*b.w,Y=y=>b.y+b.h-(y-yr[0])/(yr[1]-yr[0])*b.h;
+  ctx.save();ctx.fillStyle='#fff';ctx.fillRect(b.x,b.y,b.w,b.h);ctx.font=FN;ctx.lineWidth=1;
+  const yt=o.yticks||[];ctx.textAlign='right';ctx.textBaseline='middle';
+  for(const v of yt){ctx.strokeStyle='#eef0f3';ctx.beginPath();ctx.moveTo(b.x,Y(v));ctx.lineTo(b.x+b.w,Y(v));ctx.stroke();ctx.fillStyle='#8a95a3';ctx.fillText(o.yfmt?o.yfmt(v):fr(v,0),b.x-6,Y(v));}
+  const xt=o.xticks||[];ctx.textAlign='center';ctx.textBaseline='top';
+  for(const v of xt){ctx.strokeStyle='#f1f3f6';ctx.beginPath();ctx.moveTo(X(v),b.y);ctx.lineTo(X(v),b.y+b.h);ctx.stroke();ctx.fillStyle='#8a95a3';ctx.fillText(o.xfmt?o.xfmt(v):fr(v,0),X(v),b.y+b.h+5);}
+  ctx.strokeStyle='#c8ccd0';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x,b.y+b.h);ctx.lineTo(b.x+b.w,b.y+b.h);ctx.stroke();
+  ctx.fillStyle='#5f6b7a';ctx.font='700 11.5px Mulish,system-ui,sans-serif';
+  if(o.xlabel){ctx.textAlign='right';ctx.textBaseline='top';ctx.fillText(o.xlabel,b.x+b.w,b.y+b.h+19);}
+  if(o.ylabel){ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillText(o.ylabel,b.x-(o.ylabelDx||28),b.y-6);}
+  ctx.restore();return {X,Y};}
+function niceStep(range,px,minPx){const raw=range*minPx/px,p=Math.pow(10,Math.floor(Math.log10(raw)));for(const m of [1,2,5,10])if(m*p>=raw)return m*p;return 10*p;}
+function ticks(a,b,st){const t=[];for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st)t.push(+v.toFixed(10));return t;}
+function poly(ctx,pts,col,w,dash){ctx.save();ctx.strokeStyle=col;ctx.lineWidth=w||2;ctx.lineJoin='round';if(dash)ctx.setLineDash(dash);ctx.beginPath();let on=false;
+  for(const p of pts){if(!p||!isFinite(p[1])){on=false;continue;}on?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);on=true;}ctx.stroke();ctx.restore();}
+function setHTML(id,h){const e=$(id);if(e&&e._h!==h){e.innerHTML=h;e._h=h;}}
+function segBtns(id,cb){const box=$(id);box.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{box.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.k);}));}
+function selectSeg(id,k){$(id).querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.k===k));}
+/* ---------- ajouts cinétique / thermochimie ---------- */
+const stat=(a,b,c)=>'<div class="stat"><small>'+a+'</small><b>'+b+'</b><span>'+(c||'')+'</span></div>';
+const note=(c,t)=>'<div class="note '+c+'">'+t+'</div>';
+/* nombre avec s chiffres significatifs, notation scientifique hors de [0,01 ; 10 000[ */
+function num(v,s){s=s||3;if(v===0)return '0';if(!isFinite(v))return '—';const a=Math.abs(v);if(a<0.01||a>=1e4)return sci(v,s);
+  const d=Math.max(0,s-1-Math.floor(Math.log10(a)+1e-12));return fr(v,d);}
+/* signe explicite */
+const sg=(v,n)=>(v>0?'+':'')+fr(v,n);
+const decOf=st=>Math.max(0,-Math.floor(Math.log10(st)+1e-9));
+/* générateur pseudo-aléatoire reproductible */
+function rng(seed){let a=seed>>>0;return ()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return ((t^(t>>>14))>>>0)/4294967296;};}
+function gauss(r){let u=0,v=0;while(u===0)u=r();v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+/* régression linéaire y = a + b x */
+function linfit(P){const n=P.length;let sx=0,sy=0,sxx=0,sxy=0,syy=0;for(const [x,y] of P){sx+=x;sy+=y;sxx+=x*x;sxy+=x*y;syy+=y*y;}
+  const b=(n*sxy-sx*sy)/(n*sxx-sx*sx),a=(sy-b*sx)/n;const ss=syy-sy*sy/n;let sr=0;for(const [x,y] of P)sr+=(y-a-b*x)**2;return {a,b,r2:ss>0?1-sr/ss:1};}
+/* fonction erreur complémentaire (Numerical Recipes, erreur relative < 1,2·10⁻⁷) */
+function erfc(x){const z=Math.abs(x),t=1/(1+0.5*z);const r=t*Math.exp(-z*z-1.26551223+t*(1.00002368+t*(0.37409196+t*(0.09678418+t*(-0.18628806+t*(0.27886807+t*(-1.13520398+t*(1.48851587+t*(-0.82215223+t*0.17087277)))))))));return x>=0?r:2-r;}
+/* flèche */
+function arrow(ctx,x0,y0,x1,y1,col,w,head){ctx.save();ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w||1.6;ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();
+  const a=Math.atan2(y1-y0,x1-x0),h=head||7;if(Math.hypot(x1-x0,y1-y0)>h*1.2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x1-h*Math.cos(a-0.4),y1-h*Math.sin(a-0.4));ctx.lineTo(x1-h*Math.cos(a+0.4),y1-h*Math.sin(a+0.4));ctx.closePath();ctx.fill();}ctx.restore();}
+function dashLine(ctx,x0,y0,x1,y1,col,w,d){ctx.save();ctx.strokeStyle=col;ctx.lineWidth=w||1;ctx.setLineDash(d||[4,4]);ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x1,y1);ctx.stroke();ctx.restore();}
+function dot(ctx,x,y,r,col,fill){ctx.save();ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fillStyle=fill||col;ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=2;ctx.stroke();ctx.restore();}
+function title(ctx,t,x,y,col){ctx.save();ctx.font='800 12.5px Mulish,system-ui,sans-serif';ctx.fillStyle=col||'#0f1b2d';ctx.textAlign='left';ctx.textBaseline='top';ctx.fillText(t,x,y);ctx.restore();}
+
+
+const BL='#378ADD',BLD='#185fa5',GR='#1D9E75',GRD='#0F6E56',RD='#E24B4A',RDD='#a32d2d',OR='#BA7517',INK='#3d3d3a',GY='#9aa0a6',VI='#7F77DD';
+const R=8.314;               /* VALEURS-REFERENCE : R = 8,314 J/(mol·K) */
+/* Valeurs tabulées à 25 °C, 1 bar : une seule source cohérente, tables NBS (Wagman et al., 1982), arrondies.
+   Vérifiées par le professeur : VALEURS-REFERENCE.md, section « Valeurs thermodynamiques et nucléaires des simulations ».
+   H : ΔH°f en kJ/mol ; S : S° en J/(mol·K). */
+const SP={
+  'C':{tx:'C(graphite)',H:0},                       /* vérifié */
+  'S':{tx:'S(s, orthorhombique)',H:0},                   /* vérifié */
+  'H2':{tx:'H₂(g)',H:0,S:130.68},                   /* vérifié */
+  'O2':{tx:'O₂(g)',H:0,S:205.14},                   /* vérifié */
+  'N2':{tx:'N₂(g)',H:0,S:191.61},                   /* vérifié */
+  'CO':{tx:'CO(g)',H:-110.5},                       /* vérifié */
+  'CO2':{tx:'CO₂(g)',H:-393.5,S:213.74},            /* vérifié */
+  'H2Ol':{tx:'H₂O(l)',H:-285.8,S:69.91},            /* vérifié */
+  'H2Og':{tx:'H₂O(g)',H:-241.8},                    /* vérifié */
+  'CH4':{tx:'CH₄(g)',H:-74.8},                      /* vérifié */
+  'NH3':{tx:'NH₃(g)',H:-46.1,S:192.45},             /* vérifié */
+  'SO2':{tx:'SO₂(g)',H:-296.8},                     /* vérifié */
+  'SO3':{tx:'SO₃(g)',H:-395.7},                     /* vérifié */
+  'CaCO3':{tx:'CaCO₃(s)',H:-1206.9,S:92.9},         /* vérifié (calcite) */
+  'CaO':{tx:'CaO(s)',H:-635.1,S:39.75},             /* vérifié */
+  'O3':{tx:'O₃(g)',H:142.7,S:238.93},               /* vérifié */
+  'H2O2':{tx:'H₂O₂(l)',H:-187.8,S:109.6},           /* vérifié */
+  'H2Os':{tx:'H₂O(s)'}};
+const FUS={H:6.01,S:22.0};   /* fusion de la glace à 0 °C : ΔH = 6,01 kJ/mol (vérifié), ΔS = 6010/273,15 = 22,0 J/(mol·K) */
+const CM={eau:4.18,Al:0.897,Fe:0.449,Cu:0.385};   /* J/(g·K) à 25 °C, valeurs tabulées usuelles (CRC) — vérifiées */
+const MET={Al:'aluminium',Fe:'fer',Cu:'cuivre'};
+let mode='hess';
+
+/* ---------- équations ---------- */
+function cf(c){const a=Math.abs(c);if(Math.abs(a-1)<1e-9)return '';if(Math.abs(a-Math.round(a))<1e-9)return Math.round(a)+' ';
+  if(Math.abs(2*a-Math.round(2*a))<1e-9){const q=Math.round(2*a);return (q===1?'½':q+'/2')+' ';}
+  if(Math.abs(4*a-Math.round(4*a))<1e-9){const q=Math.round(4*a);return (q===1?'¼':q+'/4')+' ';}return fr(a,2)+' ';}
+/* objet {espèce: coefficient}, négatif = réactif */
+function eqTxt(o,em){const L=[],Rr=[];for(const s in o){const c=o[s];if(Math.abs(c)<1e-9)continue;const t=(em?'<em>'+cf(c)+'</em>':cf(c))+SP[s].tx;(c<0?L:Rr).push(t);}
+  return (L.join(' + ')||'∅')+' → '+(Rr.join(' + ')||'∅');}
+function addTo(o,e,c){for(const s in e)o[s]=(o[s]||0)+c*e[s];return o;}
+const kj=v=>sg(v,1)+' kJ/mol';
+
+/* ---------- mode Hess ---------- */
+const PZ=[
+  {nm:'Formation de CO',T:{C:-1,O2:-0.5,CO:1},st:[{e:{C:-1,O2:-1,CO2:1},H:-393.5,nm:'combustion du carbone'},{e:{CO:-1,O2:-0.5,CO2:1},H:-283.0,nm:'combustion de CO'}]},
+  {nm:'Formation de CH₄',T:{C:-1,H2:-2,CH4:1},st:[{e:{C:-1,O2:-1,CO2:1},H:-393.5,nm:'combustion du carbone'},{e:{H2:-1,O2:-0.5,H2Ol:1},H:-285.8,nm:'combustion de H₂'},{e:{CH4:-1,O2:-2,CO2:1,H2Ol:2},H:-890.3,nm:'combustion de CH₄'}]},
+  {nm:'Oxydation de SO₂',T:{SO2:-2,O2:-1,SO3:2},st:[{e:{S:-1,O2:-1,SO2:1},H:-296.8,nm:'combustion du soufre'},{e:{S:-2,O2:-3,SO3:2},H:-791.4,nm:'formation de 2 SO₃'}]}];
+let pz=0,SG=[],MU=[];
+const MULTS=[0.5,1,2,3];
+function resetPz(){SG=PZ[pz].st.map(()=>1);MU=PZ[pz].st.map(()=>1);buildSteps();}
+function buildSteps(){const P=PZ[pz];let h='';
+  P.st.forEach((s,i)=>{h+='<div class="step" id="st'+i+'"><div class="eq" id="se'+i+'"></div><div class="ctl"><button class="btn" data-i="'+i+'" data-a="inv">Retourner</button><span class="pill">Multiplier par</span>'+
+    MULTS.map(m=>'<button class="btn" data-i="'+i+'" data-m="'+m+'">× '+(m===0.5?'½':m)+'</button>').join('')+'</div></div>';});
+  $('hSteps').innerHTML=h;
+  $('hSteps').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{const i=+b.dataset.i;if(b.dataset.a==='inv')SG[i]=-SG[i];else MU[i]=+b.dataset.m;updHess();}));}
+function hessState(){const P=PZ[pz];const sum={};let H=0;const terms=[];
+  P.st.forEach((s,i)=>{const c=SG[i]*MU[i];addTo(sum,s.e,c);H+=c*s.H;terms.push({c,H:c*s.H});});
+  let ok=true;const keys=new Set(Object.keys(sum).concat(Object.keys(P.T)));for(const s of keys)if(Math.abs((sum[s]||0)-(P.T[s]||0))>1e-9)ok=false;
+  return {sum,H,terms,ok};}
+function updHess(){const P=PZ[pz],S=hessState();
+  $('hTarget').innerHTML=eqTxt(P.T)+' &nbsp; ΔH = ?';
+  P.st.forEach((s,i)=>{const c=SG[i]*MU[i],e={};addTo(e,s.e,c);
+    $('se'+i).innerHTML=eqTxt(e,true)+' &nbsp; ΔH = <em>'+kj(c*s.H)+'</em>';$('st'+i).classList.toggle('inv',SG[i]<0);
+    $('st'+i).querySelectorAll('button').forEach(b=>{if(b.dataset.a)b.classList.toggle('on',SG[i]<0);else b.classList.toggle('on',+b.dataset.m===MU[i]);});});
+  /* espèces simplifiées : présentes dans au moins une étape, absentes de la somme */
+  const gone=[];const all={};P.st.forEach(s=>{for(const k in s.e)all[k]=1;});for(const k in all)if(Math.abs(S.sum[k]||0)<1e-9)gone.push(SP[k].tx);
+  $('hSum').innerHTML=eqTxt(S.sum)+(gone.length?'<br><span class="hint">simplifiées : <s>'+gone.join('</s>, <s>')+'</s></span>':'')+'<br>ΔH = '+S.terms.map(t=>'('+fr(t.H,1)+')').join(' + ')+' = <b>'+kj(S.H)+'</b>';
+  drawHess(S);
+  let s='';s+=stat('ΔH de la somme',kj(S.H),S.ok?'= ΔH de la réaction cible':'la somme n\'est pas encore la cible');
+  s+=stat('Étapes retournées',SG.filter(v=>v<0).length+' / '+SG.length,'retourner change le signe de ΔH');
+  setHTML('stHess',s);
+  let nt='';
+  if(S.ok)nt+=note('ok','Gagné : la somme est exactement la réaction cible. ΔH = '+kj(S.H)+'. '+(pz===0?'C\'est l\'enthalpie de formation de CO(g) : impossible à mesurer directement (la combustion du carbone donne toujours un peu de CO₂), mais facile à calculer par Hess.':pz===1?'C\'est l\'enthalpie de formation du méthane, obtenue à partir de trois combustions faciles à mesurer.':'Deux moles de SO₂ s\'oxydent en SO₃ : réaction exothermique.'));
+  else{const side=c=>Math.abs(c)<1e-9?'absent':(cf(c).trim()||'1')+' côté '+(c>0?'produits':'réactifs');const d=[];
+    for(const k of new Set(Object.keys(S.sum).concat(Object.keys(P.T)))){const a=S.sum[k]||0,b=P.T[k]||0;if(Math.abs(a-b)>1e-9)d.push(SP[k].tx+' : '+side(a)+' au lieu de '+side(b));}
+    nt+=note('warn','Pas encore. Écarts avec la cible : '+d.join(' ; ')+'. Retourne une équation si une espèce est du mauvais côté ; multiplie-la si le coefficient ne va pas.');}
+  setHTML('nHess',nt);}
+function drawHess(S){const o=makeCanvas.cH||(makeCanvas.cH=makeCanvas($('cH')));o.sync();const ctx=o.ctx,W=o.W,H=o.H;ctx.clearRect(0,0,W,H);
+  const lv=[0];for(const t of S.terms)lv.push(lv[lv.length-1]+t.H);
+  let y0=Math.min(...lv),y1=Math.max(...lv);const pd=(y1-y0)*0.12+20;y0-=pd;y1+=pd;
+  const b={x:60,y:46,w:W-74,h:H-46-20},ys=niceStep(y1-y0,b.h,32);
+  const {Y}=axes(ctx,b,[0,1],[y0,y1],{yticks:ticks(y0,y1,ys),yfmt:v=>fr(v,0),ylabel:'H (kJ/mol), départ = 0',ylabelDx:56});
+  title(ctx,'Chemin des enthalpies',8,8,INK);
+  const n=S.terms.length,seg=b.w/(n+1.6),X=i=>b.x+12+i*seg;
+  for(let i=0;i<=n;i++){ctx.save();ctx.strokeStyle=i===0?INK:i===n?(S.ok?GRD:INK):'#7d8794';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(X(i),Y(lv[i]));ctx.lineTo(X(i)+seg*0.62,Y(lv[i]));ctx.stroke();ctx.restore();}
+  for(let i=0;i<n;i++){const x=X(i)+seg*0.62,c=S.terms[i].H<0?BLD:RDD;arrow(ctx,x,Y(lv[i]),X(i+1),Y(lv[i+1]),c,1.8);
+    halo(ctx,'étape '+(i+1)+' : '+sg(S.terms[i].H,1),(x+X(i+1))/2+4,(Y(lv[i])+Y(lv[i+1]))/2,c,FN,'left');}
+  const xe=b.x+b.w-18;dashLine(ctx,X(0),Y(0),xe,Y(0),'#c3c9d1',1);arrow(ctx,xe,Y(0),xe,Y(lv[n]),S.ok?GRD:GY,2.2);
+  halo(ctx,(S.ok?'ΔH cible = ':'somme = ')+sg(lv[n],1),xe-6,(Y(0)+Y(lv[n]))/2,S.ok?GRD:'#5f6b7a',FT,'right');
+  halo(ctx,'départ',X(0),Y(0)-10,INK,FN,'left');}
+segBtns('sPz',v=>{pz=+v;resetPz();updHess();});
+
+/* ---------- mode enthalpies de formation ---------- */
+const RX=[
+  {nm:'Combustion de CH₄ (eau liquide)',e:{CH4:-1,O2:-2,CO2:1,H2Ol:2},tab:-890},
+  {nm:'Combustion de CH₄ (eau gazeuse)',e:{CH4:-1,O2:-2,CO2:1,H2Og:2}},
+  {nm:'Synthèse de NH₃',e:{N2:-1,H2:-3,NH3:2}},
+  {nm:'Décomposition de CaCO₃',e:{CaCO3:-1,CaO:1,CO2:1}},
+  {nm:'Combustion de CO',e:{CO:-2,O2:-1,CO2:2}},
+  {nm:'Décomposition de H₂O₂',e:{H2O2:-2,H2Ol:2,O2:1}},
+  {nm:'Formation d\'O₃ à partir d\'O₂',e:{O2:-3,O3:2}}];
+let rx=0;
+$('sRx').innerHTML=RX.map((r,i)=>'<button class="btn'+(i===0?' on':'')+'" data-k="'+i+'">'+r.nm+'</button>').join('');
+function sums(e,useCoef){let P=0,Rr=0;for(const s in e){const c=useCoef?Math.abs(e[s]):1,v=c*SP[s].H;if(e[s]>0)P+=v;else Rr+=v;}return {P,R:Rr,H:P-Rr};}
+function updForm(){const X0=RX[rx],S=sums(X0.e,true),Wr=sums(X0.e,false);
+  $('fEq').innerHTML=eqTxt(X0.e);
+  drawForm(S);
+  let s='';s+=stat('Σ <span class="nt">ν·ΔH°<sub>f</sub></span> produits',kj(S.P),'');s+=stat('Σ <span class="nt">ν·ΔH°<sub>f</sub></span> réactifs',kj(S.R),'');
+  s+=stat('<span class="nt">ΔH°<sub>r</sub></span>',kj(S.H),'Σ produits − Σ réactifs ; par mole de réaction telle qu\'écrite');s+=stat('Bilan',S.H<0?'exothermique':'endothermique',S.H<0?'le système cède de la chaleur':'le système absorbe de la chaleur');
+  setHTML('stForm',s);
+  let nt='';
+  if(X0.tab!=null)nt+=note('ok','Valeur tabulée usuelle de l\'enthalpie de combustion du méthane : '+fr(X0.tab,0)+' kJ/mol (eau liquide). Le calcul par les enthalpies de formation donne '+kj(S.H)+' : même résultat, c\'est la loi de Hess.');
+  if(rx===1){const l=sums(RX[0].e,true).H;nt+=note('info2','Avec de l\'eau gazeuse, ΔH°r = '+kj(S.H)+' au lieu de '+kj(l)+'. La différence, '+fr(S.H-l,1)+' kJ, est la chaleur nécessaire pour vaporiser 2 mol d\'eau à 25 °C (2 × 44,0 kJ/mol).');}
+  if(Math.abs(Wr.H-S.H)>0.05)nt+=note('warn','Piège : sans les coefficients stœchiométriques, tu trouverais '+kj(Wr.H)+'. Faux : chaque ΔH°f se multiplie par son coefficient.');
+  nt+=note('info2','Les corps simples dans leur état standard (O₂(g), H₂(g), N₂(g), C(graphite)) ont ΔH°f = 0 : ils servent de référence commune, le niveau 0 du diagramme.');
+  setHTML('nForm',nt);
+  let t='<table class="t"><tr><th>Espèce</th><th>Côté</th><th class="nt">ν</th><th class="nt">ΔH°<sub>f</sub> (kJ/mol)</th><th class="nt">ν·ΔH°<sub>f</sub> (kJ/mol)</th></tr>';
+  for(const sp in X0.e){const c=X0.e[sp];t+='<tr><td><b>'+SP[sp].tx+'</b></td><td>'+(c<0?'réactif':'produit')+'</td><td>'+(cf(c).trim()||'1')+'</td><td>'+fr(SP[sp].H,1)+'</td><td>'+fr(Math.abs(c)*SP[sp].H,1)+'</td></tr>';}
+  setHTML('tForm',t+'</table>');}
+function drawForm(S){const o=makeCanvas.cF||(makeCanvas.cF=makeCanvas($('cF')));o.sync();const ctx=o.ctx,W=o.W,H=o.H;ctx.clearRect(0,0,W,H);
+  let y0=Math.min(0,S.R,S.P),y1=Math.max(0,S.R,S.P);const pd=(y1-y0)*0.14+30;y0-=pd;y1+=pd;
+  const b={x:60,y:46,w:W-74,h:H-46-20},ys=niceStep(y1-y0,b.h,32);
+  const {Y}=axes(ctx,b,[0,1],[y0,y1],{yticks:ticks(y0,y1,ys),yfmt:v=>fr(v,0),ylabel:'H (kJ/mol)',ylabelDx:56});
+  title(ctx,'Passage par les corps simples (ΔH°f = 0)',8,8,INK);
+  const w=b.w/4.2,xa=b.x+w*0.25,xm=b.x+w*1.6,xb=b.x+w*2.95;
+  const bar=(x,y,c,t)=>{ctx.save();ctx.strokeStyle=c;ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(x,Y(y));ctx.lineTo(x+w,Y(y));ctx.stroke();ctx.restore();halo(ctx,t,x+w/2,Y(y)+(y>=Math.max(S.R,S.P,0)-1e-9?-11:13),c,FN,'center');};
+  bar(xa,S.R,BLD,'réactifs');bar(xm,0,'#5f6b7a','corps simples');bar(xb,S.P,RDD,'produits');
+  const xr=b.x+b.w-12;dashLine(ctx,xa,Y(S.R),xr,Y(S.R),'#c3c9d1',1);dashLine(ctx,xb+w,Y(S.P),xr,Y(S.P),'#c3c9d1',1);
+  const p1=[xa+w*0.85,Y(S.R),xm+w*0.15,Y(0)],p2=[xm+w*0.85,Y(0),xb+w*0.15,Y(S.P)];
+  arrow(ctx,...p1,'#5f6b7a',1.6);arrow(ctx,...p2,'#5f6b7a',1.6);arrow(ctx,xr,Y(S.R),xr,Y(S.P),S.H<0?BLD:RDD,2.4);
+  const L=Labeler(ctx,W,H);for(const [x,y] of [[xa,Y(S.R)],[xm,Y(0)],[xb,Y(S.P)]])L.block(x,y-16,x+w,y+16);L.block(xr-3,Math.min(Y(S.R),Y(S.P)),xr+3,Math.max(Y(S.R),Y(S.P)));
+  for(const p of [p1,p2])for(let i=1;i<10;i++){const x=p[0]+(p[2]-p[0])*i/10,y=p[1]+(p[3]-p[1])*i/10;L.block(x-3,y-3,x+3,y+3);}
+  const mid=p=>[(p[0]+p[2])/2,(p[1]+p[3])/2];const m1=mid(p1),m2=mid(p2),mr=(Y(S.R)+Y(S.P))/2;
+  L.add('ΔH°r = '+sg(S.H,1),S.H<0?BLD:RDD,[[xr-6,mr,'right'],[xr-6,mr+18,'right'],[xr-6,mr-18,'right'],[xr-6,mr+36,'right']],FT);
+  L.add(sg(-S.R,1),'#5f6b7a',[[m1[0]+6,m1[1],'left'],[m1[0]-6,m1[1],'right'],[m1[0]+6,m1[1]+16,'left'],[m1[0]-6,m1[1]-16,'right']]);
+  L.add(sg(S.P,1),'#5f6b7a',[[m2[0]-6,m2[1],'right'],[m2[0]+6,m2[1],'left'],[m2[0]-6,m2[1]+16,'right'],[m2[0]+6,m2[1]-16,'left'],[m2[0]-6,m2[1]+32,'right']]);
+  L.flush();}
+segBtns('sRx',v=>{rx=+v;updForm();});
+
+/* ---------- mode ΔG ---------- */
+const GP=[
+  {nm:'Décomposition de CaCO₃',e:{CaCO3:-1,CaO:1,CO2:1}},
+  {nm:'Synthèse de NH₃',e:{N2:-1,H2:-3,NH3:2}},
+  {nm:'Décomposition de H₂O₂',e:{H2O2:-2,H2Ol:2,O2:1}},
+  {nm:'Formation d\'O₃',e:{O2:-3,O3:2}},
+  {nm:'Fusion de la glace',e:{H2Os:-1,H2Ol:1},fus:true},
+  {nm:'Personnalisée',e:null}];
+let gp=0,gH=0,gS=0,gT=298;
+$('sG').innerHTML=GP.map((r,i)=>'<button class="btn'+(i===0?' on':'')+'" data-k="'+i+'">'+r.nm+'</button>').join('');
+function presetHS(i){const P=GP[i];if(P.fus)return {H:FUS.H,S:FUS.S};let H=0,S=0;for(const s in P.e){H+=P.e[s]*SP[s].H;S+=P.e[s]*SP[s].S;}return {H,S};}
+function setPreset(i){gp=i;if(GP[i].e){const v=presetHS(i);gH=+v.H.toFixed(1);gS=+v.S.toFixed(2);}selectSeg('sG',String(i));}
+const Tinv=()=>gH*1000/gS;
+function caseOf(){if(gH<0&&gS>0)return 'toujours spontanée';if(gH>0&&gS<0)return 'jamais spontanée';if(gH<0&&gS<0)return 'spontanée si T < ΔH/ΔS';if(gH>0&&gS>0)return 'spontanée si T > ΔH/ΔS';return 'cas limite (ΔH ou ΔS nul)';}
+function drawQuad(){const o=makeCanvas.cQ||(makeCanvas.cQ=makeCanvas($('cQ')));o.sync();const ctx=o.ctx,W=o.W,H=o.H;ctx.clearRect(0,0,W,H);
+  const b={x:52,y:40,w:W-74,h:H-40-34};
+  const {X,Y}=axes(ctx,b,[-300,300],[-300,300],{xticks:[-300,-200,-100,0,100,200,300],yticks:[-300,-200,-100,0,100,200,300],xlabel:'ΔS (J·mol⁻¹·K⁻¹)',ylabel:'ΔH (kJ/mol)',ylabelDx:44});
+  title(ctx,'Les quatre cas (zone verte : ΔG < 0 à '+fr(gT,0)+' K)',8,8,INK);
+  /* zone ΔH < T·ΔS/1000 */
+  ctx.save();ctx.beginPath();ctx.rect(b.x,b.y,b.w,b.h);ctx.clip();const sl=gT/1000;
+  ctx.beginPath();ctx.moveTo(X(-300),Y(-300*sl));ctx.lineTo(X(300),Y(300*sl));ctx.lineTo(X(300),Y(-300-300*sl));ctx.lineTo(X(-300),Y(-300-300*sl));ctx.closePath();ctx.fillStyle='rgba(29,158,117,.13)';ctx.fill();
+  poly(ctx,[[X(-300),Y(-300*sl)],[X(300),Y(300*sl)]],GR,1.8,[6,4]);ctx.restore();
+  ctx.save();ctx.strokeStyle='#9aa0a6';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(X(0),b.y);ctx.lineTo(X(0),b.y+b.h);ctx.moveTo(b.x,Y(0));ctx.lineTo(b.x+b.w,Y(0));ctx.stroke();ctx.restore();
+  const q=(t1,t2,x,y,c,al)=>{halo(ctx,t1,x,y,c,'800 11px Mulish,system-ui,sans-serif',al);halo(ctx,t2,x,y+13,c,FN,al);};
+  q('ΔH < 0, ΔS > 0','toujours',X(295),Y(-245),GRD,'right');q('ΔH > 0, ΔS < 0','jamais',X(-295),Y(285),RDD,'left');
+  q('ΔH < 0, ΔS < 0','si T < ΔH/ΔS',X(-295),Y(-245),'#5f6b7a','left');q('ΔH > 0, ΔS > 0','si T > ΔH/ΔS',X(295),Y(285),'#5f6b7a','right');
+  halo(ctx,'ΔG = 0',X(-150)+8,Y(Math.max(-280,Math.min(280,-150*sl)))+8,GRD,FN,'left');
+  dot(ctx,X(gS),Y(gH),6,INK,(gH-gT*gS/1000)<0?GR:RD);}
+function drawGT(){const o=makeCanvas.cG||(makeCanvas.cG=makeCanvas($('cG')));o.sync();const ctx=o.ctx,W=o.W,H=o.H;ctx.clearRect(0,0,W,H);
+  const Tm=2000,G=T=>gH-T*gS/1000;let y0=Math.min(0,G(0),G(Tm)),y1=Math.max(0,G(0),G(Tm));const pd=(y1-y0)*0.1+10;y0-=pd;y1+=pd;
+  const b={x:52,y:40,w:W-74,h:H-40-34},ys=niceStep(y1-y0,b.h,30);
+  const {X,Y}=axes(ctx,b,[0,Tm],[y0,y1],{xticks:[0,500,1000,1500,2000],yticks:ticks(y0,y1,ys),yfmt:v=>fr(v,0),xlabel:'T (K)',ylabel:'ΔG (kJ/mol)',ylabelDx:44});
+  title(ctx,'ΔG = ΔH − TΔS en fonction de T',8,8,INK);
+  ctx.save();ctx.fillStyle='rgba(29,158,117,.12)';ctx.fillRect(b.x,Y(0),b.w,b.y+b.h-Y(0));ctx.restore();
+  halo(ctx,'spontanée (ΔG < 0)',b.x+b.w-6,Math.min(b.y+b.h-10,Y(0)+12),GRD,FN,'right');
+  dashLine(ctx,b.x,Y(0),b.x+b.w,Y(0),'#7d8794',1.2,[2,0]);
+  poly(ctx,[[X(0),Y(G(0))],[X(Tm),Y(G(Tm))]],BL,2.6);
+  const ti=Tinv();if(gS!==0&&ti>0&&ti<=Tm){dashLine(ctx,X(ti),b.y,X(ti),b.y+b.h,OR,1.4);halo(ctx,'T = ΔH/ΔS = '+fr(ti,0)+' K',X(ti)+(ti>1300?-5:5),b.y+10,OR,FT,ti>1300?'right':'left');}
+  dot(ctx,X(gT),Y(G(gT)),6,INK,G(gT)<0?GR:RD);}
+function updGibbs(){$('gH').value=gH;$('gS').value=gS;$('gT').value=gT;
+  $('gHv').textContent=kj(gH);$('gSv').textContent=sg(gS,1)+' J/(mol·K)';$('gTv').textContent=fr(gT,0)+' K ('+fr(gT-273.15,0)+' °C)';
+  const P=GP[gp];$('gEq').innerHTML=P.e?eqTxt(P.e)+(P.fus?' (à 0 °C)':''):'réaction imaginaire : choisis ΔH et ΔS';
+  drawQuad();drawGT();
+  const TS=gT*gS/1000,G=gH-TS,ti=Tinv();let s='';
+  s+=stat('ΔH',kj(gH),'');s+=stat('ΔS',sg(gS,1)+' J/(mol·K)','= '+sg(gS/1000,4)+' kJ/(mol·K)');
+  s+=stat('T·ΔS',sg(TS,1)+' kJ/mol',fr(gT,0)+' K × '+sg(gS/1000,4)+' kJ/(mol·K)');
+  s+=stat('ΔG',kj(G),G<0?'&lt; 0 : spontanée à cette T':G>0?'&gt; 0 : non spontanée à cette T':'= 0 : équilibre');
+  s+=stat('Cas',caseOf(),gH*gS>0?'basculement à T = ΔH/ΔS':'pas de température de basculement');
+  if(gH*gS>0)s+=stat('T = ΔH/ΔS',fr(ti,1)+' K',fr(gH,1)+' × 1000 / '+fr(gS,1)+' = '+fr(ti-273.15,0)+' °C ; estimation (ΔH, ΔS supposés constants)');
+  setHTML('stGibbs',s);
+  let nt='';
+  if(gH*gS>0)nt+=note('warn','Piège des unités : sans convertir les kJ en J, tu trouverais T = '+fr(gH,1)+'/'+fr(gS,1)+' = '+num(gH/gS,3)+' K. Absurde : il faut ΔH en J/mol (×1000) quand ΔS est en J/(mol·K).');
+  if(P.fus)nt+=note('info2','À 273 K, ΔG = 0 : la glace et l\'eau liquide coexistent, c\'est la température de fusion. Au-dessus, la fusion est spontanée ; en dessous, c\'est la solidification.');
+  if(gp===2)nt+=note('info2','ΔG &lt; 0 à toute température, et pourtant une solution de H₂O₂ se conserve des semaines : la réaction est lente. Dans l\'organisme, l\'enzyme catalase la rend quasi instantanée. Spontanée ne veut pas dire rapide.');
+  if(gp===1)nt+=note('info2','Spontanée à basse température, mais alors très lente : l\'industrie travaille vers 700 K avec un catalyseur, et compense par une haute pression.');
+  if(P.e&&!P.fus)nt+=note('info2','ΔS° = Σ ν·S°(produits) − Σ ν·S°(réactifs). Les entropies molaires des corps simples ne sont pas nulles (O₂ : 205,14 J/(mol·K)). Une réaction qui diminue le nombre de moles de gaz a en général ΔS &lt; 0.');
+  if(gT>1500||(gH*gS>0&&ti>1500))nt+=note('warn','À très haute température, l\'hypothèse « ΔH et ΔS constants » devient grossière : le résultat n\'est qu\'une estimation.');
+  setHTML('nGibbs',nt);
+  if(P.e&&!P.fus){let t='<table class="t"><tr><th>Espèce</th><th class="nt">ν</th><th class="nt">ΔH°<sub>f</sub> (kJ/mol)</th><th class="nt">S° (J·mol⁻¹·K⁻¹)</th></tr>';
+    for(const sp in P.e)t+='<tr><td><b>'+SP[sp].tx+'</b></td><td>'+(P.e[sp]<0?'−':'+')+(cf(P.e[sp]).trim()||'1')+'</td><td>'+fr(SP[sp].H,1)+'</td><td>'+String(SP[sp].S).replace('.',',')+'</td></tr>';
+    setHTML('tGibbs',t+'</table>');}else setHTML('tGibbs',P.fus?'<p class="hint">Fusion de la glace : ΔH = 6,01 kJ/mol (valeur tabulée usuelle) ; ΔS = ΔH/T<sub>fusion</sub> = 6010/273,15 = 22,0 J/(mol·K).</p>':'');
+  setHTML('lgG','<span><i class="box" style="background:rgba(29,158,117,.25)"></i>ΔG &lt; 0 (spontanée)</span><span><i style="background:'+BL+'"></i>ΔG(T)</span><span style="color:'+OR+'"><i class="dash" style="background:'+OR+'"></i>température de basculement</span>');}
+segBtns('sG',v=>{setPreset(+v);updGibbs();});
+$('gH').oninput=e=>{gH=+e.target.value;setPreset(5);updGibbs();};
+$('gS').oninput=e=>{gS=+e.target.value;setPreset(5);updGibbs();};
+$('gT').oninput=e=>{gT=+e.target.value;updGibbs();};
+setPreset(0);
+
+/* ---------- mode calorimétrie ---------- */
+let cal='mix',met='Cu',m1=200,T1=100,m2=300,T2=20,mw=100,dT=6.0,nr=0.050;
+function mixRes(){const C1=m1*CM[met],C2=m2*CM.eau,Tf=(C1*T1+C2*T2)/(C1+C2);return {C1,C2,Tf,q1:C1*(Tf-T1),q2:C2*(Tf-T2)};}
+function tcol(T){const f=Math.max(0,Math.min(1,(T-5)/145));return 'rgb('+Math.round(120+135*f)+','+Math.round(160-90*f)+','+Math.round(220-170*f)+')';}
+function thermo(ctx,x,y,h,T,lab,c){const f=Math.max(0,Math.min(1,T/150));ctx.save();ctx.fillStyle='#fff';ctx.strokeStyle='#7d8794';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.roundRect?ctx.roundRect(x-5,y,10,h,5):ctx.rect(x-5,y,10,h);ctx.fill();ctx.stroke();ctx.beginPath();ctx.arc(x,y+h+6,9,0,7);ctx.fillStyle=c;ctx.fill();ctx.stroke();
+  ctx.fillStyle=c;ctx.fillRect(x-2.5,y+h*(1-f),5,h*f+4);ctx.restore();halo(ctx,lab,x,y-10,INK,FT,'center');}
+function drawCalo(){const o=makeCanvas.cC||(makeCanvas.cC=makeCanvas($('cC')));o.sync();const ctx=o.ctx,W=o.W,H=o.H;ctx.clearRect(0,0,W,H);
+  if(cal==='mix'){const r=mixRes();title(ctx,'Avant',8,8,INK);title(ctx,W<560?'Après':'Après (équilibre thermique)',W/2+8,8,INK);
+    dashLine(ctx,W/2,8,W/2,H-8,'#e3e7ed',1,[2,0]);
+    const bw=Math.min(W/2-30,200),bx=(W/2-bw)/2,by=H*0.42,bh=H*0.42;
+    /* avant : bloc et bécher séparés */
+    const blk=Math.min(46,bw*0.28);ctx.fillStyle=tcol(T1);ctx.fillRect(bx,by-blk-24,blk,blk);halo(ctx,MET[met],bx+blk/2,by-blk-34,INK,FN,'center');
+    halo(ctx,fr(T1,0)+' °C',bx+blk+6,by-blk/2-24,RDD,FT,'left');
+    ctx.fillStyle='rgba(55,138,221,.22)';ctx.fillRect(bx,by+bh*0.25,bw,bh*0.75);ctx.strokeStyle='#7d8794';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx,by+bh);ctx.lineTo(bx+bw,by+bh);ctx.lineTo(bx+bw,by);ctx.stroke();
+    halo(ctx,'eau '+fr(T2,0)+' °C',bx+bw/2,by+bh*0.62,BLD,FT,'center');
+    /* après */
+    const ax=W/2+bx;ctx.fillStyle='rgba(55,138,221,.22)';ctx.fillRect(ax,by+bh*0.25,bw,bh*0.75);ctx.beginPath();ctx.moveTo(ax,by);ctx.lineTo(ax,by+bh);ctx.lineTo(ax+bw,by+bh);ctx.lineTo(ax+bw,by);ctx.stroke();
+    ctx.fillStyle=tcol(r.Tf);ctx.fillRect(ax+bw/2-blk/2,by+bh-blk-3,blk,blk);
+    thermo(ctx,ax+bw-14,by-34,bh*0.75,r.Tf,fr(r.Tf,1)+' °C',RD);
+    arrow(ctx,ax+bw/2,by+bh-blk-8,ax+bw/2,by+bh*0.3,OR,2);halo(ctx,'q = '+num(-r.q1,4)+' J',ax+bw/2-6,by+bh*0.28-10,OR,FT,'center');}
+  else{const Ti=20,Tf=Ti+dT;title(ctx,'Réaction dans un calorimètre isolé',8,8,INK);
+    const bw=Math.min(W*0.5,260),bx=W*0.12,by=H*0.25,bh=H*0.62;
+    ctx.fillStyle='rgba(55,138,221,.22)';ctx.fillRect(bx,by+bh*0.2,bw,bh*0.8);ctx.strokeStyle='#7d8794';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx,by+bh);ctx.lineTo(bx+bw,by+bh);ctx.lineTo(bx+bw,by);ctx.stroke();
+    ctx.save();ctx.strokeStyle='#c3c9d1';ctx.lineWidth=6;ctx.strokeRect(bx-8,by-8,bw+16,bh+16);ctx.restore();
+    halo(ctx,'réaction + eau',bx+bw/2,by+bh*0.6,BLD,FT,'center');
+    if(dT!==0){const up=dT>0;for(let i=0;i<3;i++){const x=bx+bw*(0.25+0.25*i);arrow(ctx,x,by+bh*(up?0.85:0.4),x,by+bh*(up?0.42:0.85),up?RD:BL,2);}
+      halo(ctx,up?'la réaction cède de la chaleur à l\'eau':'la réaction prend de la chaleur à l\'eau',bx+bw/2,by+bh*0.3,up?RDD:BLD,FN,'center');}
+    const tx=Math.min(W-40,bx+bw+60);thermo(ctx,tx-24,by,bh*0.7,Ti,fr(Ti,0)+' °C',BL);thermo(ctx,tx+12,by,bh*0.7,Tf,fr(Tf,1)+' °C',dT>=0?RD:BL);
+    halo(ctx,'avant  après',tx-6,by+bh*0.7+26,'#5f6b7a',FN,'center');}}
+function updCalo(){$('pMix').hidden=cal!=='mix';$('pRx').hidden=cal!=='rx';
+  $('m1v').textContent=fr(m1,0)+' g';$('T1v').textContent=fr(T1,0)+' °C';$('m2v').textContent=fr(m2,0)+' g';$('T2v').textContent=fr(T2,0)+' °C';
+  $('mwv').textContent=fr(mw,0)+' g';$('dTv').textContent=sg(dT,1)+' K';$('nrv').textContent=fr(nr,3)+' mol';
+  drawCalo();let s='',nt='';
+  if(cal==='mix'){const r=mixRes();
+    s+=stat('<span class="nt">θ</span> finale',fr(r.Tf,2)+' °C','(m₁c₁θ₁ + m₂c₂θ₂)/(m₁c₁ + m₂c₂)');
+    s+=stat('<span class="nt">q</span> reçue par l\'eau',sg(r.q2,0)+' J',fr(m2,0)+' × 4,18 × '+fr(r.Tf-T2,2)+' K');
+    s+=stat('<span class="nt">q</span> du '+MET[met],sg(r.q1,0)+' J',fr(m1,0)+' × '+fr(CM[met],3).replace(/0$/,'')+' × ('+fr(r.Tf-T1,2)+') K');
+    s+=stat('Somme',fr(r.q1+r.q2,0)+' J','isolé : rien ne se perd');
+    s+=stat('Capacités <span class="nt">m·c</span>',fr(r.C1,0)+' / '+fr(r.C2,0)+' J/K',MET[met]+' / eau');
+    if(r.Tf>=100)nt+=note('warn','θ finale ≥ 100 °C : l\'eau bouillirait. Le modèle sans changement d\'état ne vaut plus.');
+    nt+=note('info2','Le signe de q dit le sens : q &gt; 0, le corps reçoit de la chaleur ; q &lt; 0, il en cède. L\'eau a une grande capacité thermique massique (4,18 J/(g·K)) : elle se réchauffe peu.');}
+  else{const q=mw*CM.eau*dT,Hr=-q/(nr*1000);
+    s+=stat('<span class="nt">q</span> reçue par l\'eau',sg(q,0)+' J','m·c·ΔT = '+fr(mw,0)+' × 4,18 × '+sg(dT,1));
+    s+=stat('<span class="nt">q</span> de la réaction',sg(-q,0)+' J','= −q(eau)');
+    s+=stat('ΔH de la réaction',dT===0?'0 kJ/mol':kj(Hr),'par mole de réactif limitant (coefficient 1) : −q(eau)/n = '+sg(-q/1000,3)+' kJ / '+fr(nr,3)+' mol');
+    s+=stat('Bilan',dT>0?'exothermique':dT<0?'endothermique':'athermique',dT>0?'l\'eau se réchauffe':dT<0?'l\'eau se refroidit':'');
+    nt+=note('info2','À pression constante, la chaleur échangée est ΔH. Attention au signe : l\'eau reçoit q, la réaction a donc fourni −q. ΔT en kelvins ou en °C : même nombre.');}
+  setHTML('stCalo',s);setHTML('nCalo',nt);}
+segBtns('sCal',v=>{cal=v;updCalo();});segBtns('sMet',v=>{met=v;updCalo();});
+$('m1').oninput=e=>{m1=+e.target.value;updCalo();};$('T1').oninput=e=>{T1=+e.target.value;updCalo();};
+$('m2').oninput=e=>{m2=+e.target.value;updCalo();};$('T2').oninput=e=>{T2=+e.target.value;updCalo();};
+$('mw').oninput=e=>{mw=+e.target.value;updCalo();};$('dT').oninput=e=>{dT=+e.target.value/10;updCalo();};$('nr').oninput=e=>{nr=+e.target.value/1000*5;updCalo();};
+
+/* ---------- modes ---------- */
+const PAN={hess:'pHess',form:'pForm',gibbs:'pGibbs',calo:'pCalo'};
+function update(){for(const m in PAN)$(PAN[m]).hidden=m!==mode;if(mode==='hess')updHess();else if(mode==='form')updForm();else if(mode==='gibbs')updGibbs();else updCalo();}
+segBtns('sMode',v=>{mode=v;update();});
+addEventListener('resize',()=>update());
+resetPz();update();
+window.__sim={set(o){if(o.mode){mode=o.mode;selectSeg('sMode',mode);}
+  if(o.pz!=null){pz=o.pz;selectSeg('sPz',String(pz));resetPz();}if(o.SG)SG=o.SG.slice();if(o.MU)MU=o.MU.slice();
+  if(o.rx!=null){rx=o.rx;selectSeg('sRx',String(rx));}
+  if(o.gp!=null)setPreset(o.gp);if(o.gH!=null)gH=o.gH;if(o.gS!=null)gS=o.gS;if(o.gT!=null)gT=o.gT;
+  if(o.cal){cal=o.cal;selectSeg('sCal',cal);}if(o.met){met=o.met;selectSeg('sMet',met);}
+  for(const kk of ['m1','T1','m2','T2','mw'])if(o[kk]!=null){({m1:()=>m1=o.m1,T1:()=>T1=o.T1,m2:()=>m2=o.m2,T2:()=>T2=o.T2,mw:()=>mw=o.mw})[kk]();$(kk).value=o[kk];}
+  if(o.dT!=null){dT=o.dT;$('dT').value=Math.round(dT*10);}if(o.nr!=null){nr=o.nr;$('nr').value=Math.round(nr*200);}
+  update();},get:()=>({mode,pz,SG,MU,ok:hessState().ok,H:hessState().H,rx,gp,gH,gS,gT,cal,met,m1,T1,m2,T2,mw,dT,nr})};
+
+})();
+</script>
+<script src="../../kit/sfa-nav.js"></script></body>
+</html>

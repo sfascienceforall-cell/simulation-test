@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tendances du tableau périodique · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+.hint{font:500 .84rem var(--f-ui);color:var(--muted)}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:14px}
+.box h2{font:800 15px var(--f-ui);margin:0 0 8px}
+.box ul{margin:0;padding-left:18px}.box li{margin:4px 0}
+.box.warn{border-left:4px solid #BA7517}
+.box.keep{border-left:4px solid var(--green)}
+details.defi{border-top:1px solid var(--line);padding:9px 0}details.defi:first-of-type{border-top:0}
+details.defi summary{cursor:pointer;font-weight:700;color:var(--ink2)}
+details.defi div{margin-top:6px;color:var(--ink2);background:var(--bg);border-radius:8px;padding:8px 12px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.note{font:500 .8rem/1.45 var(--f-ui);color:var(--muted);margin-top:8px}
+sub,sup{font-size:.72em;line-height:0}
+.pt-wrap{border:1px solid var(--line);border-radius:10px;background:#fff;padding:10px 10px 12px}
+.pt-top{display:flex;align-items:center;gap:8px;margin:0 0 6px 22px;font:700 12px var(--f-ui);color:var(--ink2)}
+.pt-top .ar{flex:1;height:2px;background:#5b6470;position:relative}
+.pt-top .ar:after{content:"";position:absolute;right:-1px;top:-5px;border:6px solid transparent;border-left:9px solid #5b6470;border-right:0}
+.pt-body{display:grid;grid-template-columns:16px minmax(0,1fr);gap:6px}
+.pt-left{display:flex;flex-direction:column;align-items:center;gap:6px}
+.pt-left .ar{flex:1;width:2px;background:#5b6470;position:relative;min-height:40px}
+.pt-left .ar:after{content:"";position:absolute;bottom:-1px;left:-5px;border:6px solid transparent;border-top:9px solid #5b6470;border-bottom:0}
+.pt-left span:not(.ar){writing-mode:vertical-rl;transform:rotate(180deg);font:700 12px var(--f-ui);color:var(--ink2);white-space:nowrap}
+.pt{display:grid;grid-template-columns:repeat(18,minmax(0,1fr));gap:2px}
+.pt .gap{grid-column:1/-1;height:6px}
+.el{aspect-ratio:1/1.08;border:0;border-radius:4px;padding:1px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;font-family:var(--f-ui);color:#0f1b2d;min-width:0;overflow:hidden;position:relative;line-height:1}
+.el .z{font:600 8px var(--f-ui);opacity:.75}
+.el .s{font:800 13px var(--f-ui)}
+.el .v{font:600 8px var(--f-ui);margin-top:1px;font-variant-numeric:tabular-nums}
+.el.sel{outline:2.5px solid #BA7517;outline-offset:-1px;z-index:2}
+.el.cmp{box-shadow:inset 0 0 0 2px #0f1b2d}
+.el.hl{outline:2.5px solid #a32d2d;outline-offset:-1px;z-index:2}
+.el.nd{background-image:repeating-linear-gradient(135deg,transparent 0 4px,rgba(0,0,0,.06) 4px 6px)}
+.fl{font:700 9px var(--f-ui);color:var(--muted);display:flex;align-items:center;justify-content:flex-end;padding-right:3px;grid-column:span 2}
+@media (max-width:700px){.el .z,.el .v{display:none}.el .s{font-size:9px}.pt{gap:1px}.el{border-radius:2px}.pt-wrap{padding:6px}}
+.legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;font:600 .8rem var(--f-ui);color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px}
+.grad{width:150px;height:12px;border-radius:3px;display:inline-block;vertical-align:middle}
+.det{font:600 .9rem/1.6 var(--f-ui);color:var(--ink2)}
+.cmpsel{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.bars{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.bar{display:grid;grid-template-columns:86px minmax(0,1fr) 92px;gap:8px;align-items:center;font:700 .85rem var(--f-ui)}
+.bar .t{height:16px;background:#eef1f5;border-radius:4px;overflow:hidden}
+.bar .t i{display:block;height:100%;background:#256abf;border-radius:0 4px 4px 0}
+.bar .n{text-align:right;font-variant-numeric:tabular-nums}
+.ions svg{width:100%;height:auto;display:block}
+.ions svg text{font-family:Mulish,system-ui,sans-serif}
+.mini{display:inline-flex;gap:0;vertical-align:middle;margin:0 2px}
+.mini b{width:22px;height:22px;border:1.5px solid #5b6470;margin-left:-1.5px;display:inline-flex;align-items:center;justify-content:center;font:800 13px var(--f-ui);background:#fff}
+.mini b:first-child{margin-left:0}
+.mini .u{color:#185fa5}.mini .d{color:#a32d2d}
+
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a class="on" href="../">Simulations de chimie</a><a href="../exercices/">Exercices de chimie</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations de physique</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="../">Simulations de chimie</a>›<a href="../#atome">Atome et liaison chimique</a>›<b>Tendances du tableau périodique</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Chimie générale · Atome et liaison</span><span class="sfa-chip free">Gratuit</span></div><h1>Tendances du tableau périodique</h1><p>Colore le tableau selon le rayon, l'énergie d'ionisation ou l'électronégativité, et comprends d'où viennent les tendances.</p></div>
+<section class="sfa-sim">
+<div class="tabs" role="tablist">
+  <button class="btn on" id="tabT" role="tab" aria-selected="true">Tableau et tendances</button>
+  <button class="btn" id="tabI" role="tab" aria-selected="false">Atomes et ions</button>
+</div>
+
+<div id="paneT">
+<div class="row" style="display:flex;flex-wrap:wrap;align-items:center">
+  <span class="pill">Carte</span>
+  <button class="btn on" data-p="bloc">Blocs s, p, d, f</button>
+  <button class="btn" data-p="r">Rayon atomique</button>
+  <button class="btn" data-p="ie">Énergie de 1ʳᵉ ionisation</button>
+  <button class="btn" data-p="en">Électronégativité</button>
+</div>
+<div class="pt-wrap">
+  <div class="pt-top"><span id="arT">période</span><span class="ar"></span></div>
+  <div class="pt-body"><div class="pt-left"><span id="arL">groupe</span><span class="ar"></span></div><div class="pt" id="pt" aria-label="Tableau périodique, éléments 1 à 86"></div></div>
+  <div class="legend" id="leg"></div>
+</div>
+<div class="fml" id="fml"></div>
+<div class="info" id="det"></div>
+
+<h3 style="font:800 14px var(--f-ui);margin:16px 0 6px">Comparateur (2 à 4 éléments)</h3>
+<div class="cmpsel" id="cmpsel"></div>
+<div class="row"><button class="btn" id="addSel">Ajouter l'élément cliqué</button><span class="hint">Le classement suit la carte choisie (le rayon si la carte des blocs est affichée).</span></div>
+<div id="rank"></div>
+
+<h3 style="font:800 14px var(--f-ui);margin:16px 0 6px">Anomalies de l'énergie d'ionisation</h3>
+<div class="row" style="display:flex;flex-wrap:wrap">
+  <button class="btn" data-a="4,5">Be &gt; B</button><button class="btn" data-a="7,8">N &gt; O</button>
+  <button class="btn" data-a="12,13">Mg &gt; Al</button><button class="btn" data-a="15,16">P &gt; S</button>
+</div>
+<div id="anom"></div>
+<p class="note">Valeurs tabulées usuelles : rayons covalents (Cordero et al., 2008), énergies de première ionisation (NIST), électronégativités de Pauling (CRC Handbook). « n.d. » : valeur non définie ou trop incertaine pour être affichée. Le rayon d'un atome dépend de sa définition (covalent, métallique, de van der Waals) : compare des rayons de même définition. Tableau organisé selon Klechkowski : La à Yb dans la ligne f, Lu dans le groupe 3 ; d'autres tableaux placent La dans le groupe 3 (et Lu dans la ligne f). Les deux dispositions existent.</p>
+</div>
+
+<div id="paneI" hidden>
+<div class="fml">Un <b>cation</b> est plus petit que son atome : il a perdu ses électrons externes (souvent toute une couche) et les électrons restants sont plus attirés par le même noyau. Un <b>anion</b> est plus grand : les électrons ajoutés se repoussent et l'écran augmente, pour la même charge du noyau.</div>
+<div class="ions" id="pairs" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px"></div>
+<h3 style="font:800 14px var(--f-ui);margin:16px 0 6px">Séries isoélectroniques</h3>
+<div class="row" style="display:flex;flex-wrap:wrap"><button class="btn on" data-s="10">10 électrons : O²⁻ … Al³⁺</button><button class="btn" data-s="18">18 électrons : S²⁻ … Ca²⁺</button></div>
+<div class="ions" id="iso" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center"></div>
+<div class="info" id="isoTxt" style="margin-top:8px"></div>
+<p class="note">Valeurs tabulées usuelles : rayons ioniques de Shannon (1976), coordinence 6 ; rayons des atomes : rayons covalents (Cordero et al., 2008). Ces deux définitions ne mesurent pas exactement la même chose : retiens l'ordre de grandeur et le sens de la variation, pas les décimales.</p>
+</div>
+</section>
+
+<div class="box keep"><h2>Ce qu'il faut retenir</h2><ul>
+<li>Dans une période (→), la charge nucléaire effective Z<sub>eff</sub> ressentie par les électrons externes augmente : le rayon diminue, l'énergie d'ionisation et l'électronégativité augmentent.</li>
+<li>Dans un groupe (↓), on ajoute une couche : les électrons externes sont plus loin et mieux écrantés. Le rayon augmente, l'énergie d'ionisation et l'électronégativité diminuent.</li>
+<li>Le fluor est l'élément le plus électronégatif (3,98) ; les métaux alcalins du bas du tableau sont les moins électronégatifs.</li>
+<li>Cation plus petit que l'atome, anion plus grand. À nombre d'électrons égal, plus Z est grand, plus l'ion est petit.</li>
+</ul></div>
+<div class="box warn"><h2>Pièges classiques</h2><ul>
+<li>L'énergie d'ionisation n'augmente pas régulièrement : Be &gt; B et N &gt; O (et Mg &gt; Al, P &gt; S).</li>
+<li>He, Ne et Ar n'ont pas d'électronégativité de Pauling : ils ne forment pas de liaison. Ce n'est pas « zéro », c'est « non défini ».</li>
+<li>Comparer un rayon covalent et un rayon ionique comme s'ils étaient mesurés de la même façon.</li>
+<li>Croire qu'un anion est plus petit parce qu'il « gagne » quelque chose : il gagne des électrons, pas des protons.</li>
+</ul></div>
+<div class="box"><h2>Défis</h2>
+<details class="defi"><summary>Classe Na, Mg et K par rayon croissant.</summary><div>Mg &lt; Na &lt; K. Mg est à droite de Na dans la même période (Z<sub>eff</sub> plus grande) ; K est sous Na (une couche de plus). Vérifie avec le comparateur.</div></details>
+<details class="defi"><summary>Pourquoi l'oxygène s'ionise-t-il plus facilement que l'azote ?</summary><div>En 2p⁴, deux électrons partagent une même case : ils se repoussent, et en retirer un est plus facile. L'azote a trois électrons 2p seuls dans leur case (sous-couche demi-remplie), plus stable.</div></details>
+<details class="defi"><summary>Dans la série O²⁻, F⁻, Na⁺, Mg²⁺, Al³⁺, quel ion est le plus petit ?</summary><div>Al³⁺ : les cinq ions ont 10 électrons, mais Al a le plus de protons (Z = 13). Il attire le plus fort le même nuage électronique.</div></details>
+</div>
+
+<script>
+/* Symboles et noms français des éléments 1 à 86 (nomenclature IUPAC, noms français usuels). */
+const SYM=['','H','He','Li','Be','B','C','N','O','F','Ne','Na','Mg','Al','Si','P','S','Cl','Ar','K','Ca','Sc','Ti','V','Cr','Mn','Fe','Co','Ni','Cu','Zn','Ga','Ge','As','Se','Br','Kr','Rb','Sr','Y','Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd','In','Sn','Sb','Te','I','Xe','Cs','Ba','La','Ce','Pr','Nd','Pm','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu','Hf','Ta','W','Re','Os','Ir','Pt','Au','Hg','Tl','Pb','Bi','Po','At','Rn'];
+const NOM=['','hydrogène','hélium','lithium','béryllium','bore','carbone','azote','oxygène','fluor','néon','sodium','magnésium','aluminium','silicium','phosphore','soufre','chlore','argon','potassium','calcium','scandium','titane','vanadium','chrome','manganèse','fer','cobalt','nickel','cuivre','zinc','gallium','germanium','arsenic','sélénium','brome','krypton','rubidium','strontium','yttrium','zirconium','niobium','molybdène','technétium','ruthénium','rhodium','palladium','argent','cadmium','indium','étain','antimoine','tellure','iode','xénon','césium','baryum','lanthane','cérium','praséodyme','néodyme','prométhium','samarium','europium','gadolinium','terbium','dysprosium','holmium','erbium','thulium','ytterbium','lutécium','hafnium','tantale','tungstène','rhénium','osmium','iridium','platine','or','mercure','thallium','plomb','bismuth','polonium','astate','radon'];
+/* Moteur de configuration : règle de Klechkowski (n + l croissant, puis n croissant). */
+const LL='spdf';
+const ORDER=(()=>{const a=[];for(let n=1;n<=7;n++)for(let l=0;l<n&&l<4;l++)a.push([n,l]);
+  a.sort((x,y)=>(x[0]+x[1])-(y[0]+y[1])||x[0]-y[0]);return a.filter(([n,l])=>n+l<=8);})();
+const sk=(n,l)=>n+LL[l];
+const capa=l=>2*(2*l+1);
+function klech(N){const c={};let r=N;for(const [n,l] of ORDER){if(r<=0)break;const m=Math.min(r,capa(l));c[sk(n,l)]=m;r-=m;}return c;}
+/* Configurations réelles (état fondamental mesuré) qui s'écartent de Klechkowski pour Z ≤ 86.
+   PROG : les cinq exceptions habituellement demandées (Cr, Cu, Mo, Ag, Au). */
+const EXC={24:{'4s':1,'3d':5},29:{'4s':1,'3d':10},41:{'5s':1,'4d':4},42:{'5s':1,'4d':5},44:{'5s':1,'4d':7},45:{'5s':1,'4d':8},
+  46:{'5s':0,'4d':10},47:{'5s':1,'4d':10},57:{'4f':0,'5d':1},58:{'4f':1,'5d':1},64:{'4f':7,'5d':1},78:{'6s':1,'5d':9},79:{'6s':1,'5d':10}};
+const PROG=[24,29,42,47,79];
+function real(Z){const c=klech(Z);if(EXC[Z])Object.assign(c,EXC[Z]);return c;}
+/* Ordre d'arrachement des électrons d'un cation : np, puis ns de la couche externe, puis (n−1)d, puis (n−2)f. */
+const rk=(n,l)=>l<=1?n+0.1*l:l===2?n+0.8:n+1.7;
+function pickRemove(c){let best=null,bk=-1;for(const k in c){if(c[k]>0){const v=rk(+k[0],LL.indexOf(k[1]));if(v>bk){bk=v;best=k;}}}return best;}
+function cation(c,q){c={...c};for(let i=0;i<q;i++){const b=pickRemove(c);if(!b)break;c[b]--;}return c;}
+function config(Z,q){return q>0?cation(real(Z),q):q<0?klech(Z-q):real(Z);}
+const nE=c=>Object.values(c).reduce((a,b)=>a+b,0);
+/* Position dans le tableau, déduite de la configuration de Klechkowski de l'atome neutre. */
+function position(Z){const c=klech(Z);let per=0,last=null;
+  for(const [n,l] of ORDER){const k=sk(n,l);if(c[k]){per=Math.max(per,n);last=[n,l];}}
+  const [ln,ll]=last;const bloc=LL[ll];let grp=null;
+  const s=c[per+'s']||0;
+  if(Z===2)grp=18;else if(bloc==='s')grp=s;else if(bloc==='p')grp=12+c[sk(ln,1)];else if(bloc==='d')grp=s+c[sk(ln,2)];
+  return {per,bloc,grp};}
+
+/* lancé après le kit SFA (qui ajoute ses classes aux boutons au chargement) */
+addEventListener('DOMContentLoaded',()=>{
+const $=id=>document.getElementById(id);
+const fr=(v,d)=>v.toFixed(d).replace('.',',');
+/* ===== Données (index = Z ; index 0 inutilisé) — vérifiées par le professeur (01/11/2026), voir VALEURS-REFERENCE.md =====
+   R  : rayon covalent en pm — Cordero et al., Dalton Trans. 2008 (Mn, Fe, Co : valeur « bas spin »).
+        null (n.d.) : gaz nobles (pas de rayon covalent comparable) et At (estimation).
+   IE : énergie de première ionisation en kJ/mol — NIST ASD (1 eV = 96,485 kJ/mol), comme les tables usuelles récentes.
+        null (n.d.) : Tc et Pm (radioactifs, valeurs selon les tables).
+   EN : électronégativité de Pauling — tables usuelles (CRC Handbook). H, C, N, O, F, S, Cl = VALEURS-REFERENCE.
+        null (n.d.) : He, Ne, Ar, Rn ; Pm, Eu, Tb, Yb (pas de valeur fiable) ; Pb (dépend du degré d'oxydation :
+        1,87 pour Pb(II), 2,33 pour Pb(IV)) ; Po, At (estimations). EN1 : valeurs tabulées à une seule décimale. */
+const R=[0,31,null,128,96,84,76,71,66,57,null,166,141,121,111,107,105,102,null,203,176,170,160,153,139,139,132,126,124,132,122,122,120,119,120,120,null,220,195,190,175,164,154,147,146,142,139,145,144,142,139,139,138,139,null,244,215,207,204,203,201,199,198,198,196,194,192,192,189,190,187,187,175,170,162,151,144,141,136,136,132,145,146,148,140,null,null];
+const IE=[0.0,1312.0,2372.3,520.2,899.5,800.6,1086.5,1402.3,1313.9,1681.0,2080.7,495.8,737.7,577.5,786.5,1011.8,999.6,1251.2,1520.6,418.8,589.8,633.1,658.8,650.9,652.9,717.3,762.5,760.4,737.1,745.5,906.4,578.8,762.0,944.5,941.0,1139.9,1350.8,403.0,549.5,600.0,640.1,652.1,684.3,null,710.2,719.7,804.4,731.0,867.8,558.3,708.6,830.6,869.3,1008.4,1170.4,375.7,502.9,538.1,534.4,527.0,533.1,null,544.5,547.1,593.4,565.8,573.0,581.0,589.3,596.7,603.4,523.5,658.5,728.4,758.8,755.8,814.2,865.2,864.4,890.1,1007.1,589.4,715.6,703.0,812.1,899.0,1037.0];
+const EN=[0.00,2.20,null,0.98,1.57,2.04,2.55,3.04,3.44,3.98,null,0.93,1.31,1.61,1.90,2.19,2.58,3.16,null,0.82,1.00,1.36,1.54,1.63,1.66,1.55,1.83,1.88,1.91,1.90,1.65,1.81,2.01,2.18,2.55,2.96,3.00,0.82,0.95,1.22,1.33,1.60,2.16,1.90,2.20,2.28,2.20,1.93,1.69,1.78,1.96,2.05,2.10,2.66,2.60,0.79,0.89,1.10,1.12,1.13,1.14,null,1.17,null,1.20,null,1.22,1.23,1.24,1.25,null,1.27,1.30,1.50,2.36,1.90,2.20,2.20,2.28,2.54,2.00,1.62,null,2.02,null,null,null];
+const EN1=[41,43,44,52,54,72,73,75,76];
+/* Rayons ioniques (pm), Shannon 1976, coordinence 6 */
+const ION={'Na+':102,'Mg2+':72,'Al3+':53.5,'O2-':140,'F-':133,'Cl-':181,'S2-':184,'K+':138,'Ca2+':100};
+
+const P={bloc:{n:'Blocs'},
+  r:{n:'Rayon covalent',u:'pm',v:z=>R[z],d:0,top:'le rayon diminue',left:'le rayon augmente',big:'plus grand rayon'},
+  ie:{n:'Énergie de 1ʳᵉ ionisation',u:'kJ/mol',v:z=>IE[z],d:0,top:"l'énergie d'ionisation augmente",left:"l'énergie d'ionisation diminue",big:"plus grande énergie d'ionisation"},
+  en:{n:'Électronégativité (Pauling)',u:'',v:z=>EN[z],d:2,top:"l'électronégativité augmente",left:"l'électronégativité diminue",big:'plus électronégatif'}};
+const BC={s:'#fde3c8',p:'#d6ecdc',d:'#d9e5f8',f:'#eadff5'};
+const RAMP=['#cde2fb','#b7d3f6','#9ec5f4','#86b6ef','#6da7ec','#5598e7','#3987e5','#2a78d6','#256abf','#1c5cab','#184f95','#104281','#0d366b'];
+const hex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+function ramp(t){t=Math.max(0,Math.min(1,t))*(RAMP.length-1);const i=Math.min(RAMP.length-2,Math.floor(t)),f=t-i,a=hex(RAMP[i]),b=hex(RAMP[i+1]);
+  return 'rgb('+a.map((x,k)=>Math.round(x+(b[k]-x)*f)).join(',')+')';}
+const dec=(p,z)=>p==='en'&&EN1.includes(z)?1:P[p].d;
+const fmt=(p,z)=>{const v=P[p].v(z);return v==null?'n.d.':fr(v,dec(p,z))+(P[p].u?' '+P[p].u:'');};
+const POS=[null];for(let z=1;z<=86;z++)POS.push(position(z));
+
+let prop='bloc',sel=26,hl=[],cmp=[11,17,19,9];
+
+/* ===== tableau ===== */
+function cellPos(z){const p=POS[z];if(p.bloc==='f')return [8,3+(z-57)];return [p.per,p.grp];}
+function buildTable(){let h='';
+  for(let z=1;z<=86;z++){const [r,c]=cellPos(z);
+    h+=`<button class="el" data-z="${z}" style="grid-row:${r};grid-column:${c}" aria-label="${NOM[z]}"><span class="z">${z}</span><span class="s">${SYM[z]}</span><span class="v"></span></button>`;}
+  h+='<div class="gap" style="grid-row:7"></div><div class="fl" style="grid-row:8;grid-column:1/3">La–Yb</div>';
+  $('pt').innerHTML=h;}
+function paint(){const vals=[];if(prop!=='bloc')for(let z=1;z<=86;z++){const v=P[prop].v(z);if(v!=null)vals.push(v);}
+  const mn=Math.min(...vals),mx=Math.max(...vals);
+  document.querySelectorAll('.el').forEach(b=>{const z=+b.dataset.z;let bg,col='#0f1b2d',txt='';
+    b.classList.remove('nd');
+    if(prop==='bloc'){bg=BC[POS[z].bloc];}
+    else{const v=P[prop].v(z);if(v==null){bg='#e6e8ec';col='#5f6b7a';txt='n.d.';b.classList.add('nd');}
+      else{const t=(v-mn)/(mx-mn);bg=ramp(t);col=t>0.5?'#fff':'#0f1b2d';txt=fr(v,dec(prop,z));}}
+    b.style.background=bg;b.style.color=col;b.querySelector('.v').textContent=txt;
+    b.classList.toggle('sel',z===sel);b.classList.toggle('cmp',cmp.includes(z));b.classList.toggle('hl',hl.includes(z));
+    b.title=SYM[z]+' · '+NOM[z]+(prop!=='bloc'?' · '+fmt(prop,z):'');});
+  // légende et flèches
+  if(prop==='bloc'){$('leg').innerHTML=Object.entries(BC).map(([k,c])=>`<span><i style="background:${c}"></i>bloc ${k}</span>`).join('')+'<span>Contour noir : dans le comparateur · contour orange : élément cliqué</span>';
+    $('arT').textContent='période : Z croissant';$('arL').textContent='dans un groupe : n croissant';}
+  else{$('leg').innerHTML=`<span>${P[prop].n}</span><span>${fr(mn,P[prop].d)}</span><span class="grad" style="background:linear-gradient(90deg,${RAMP[0]},${RAMP[6]},${RAMP[12]})"></span><span>${fr(mx,P[prop].d)} ${P[prop].u}</span>`+
+      '<span><i style="background:#e6e8ec"></i>n.d. : '+(prop==='en'?'pas de valeur fiable (gaz nobles He, Ne, Ar, Rn, et quelques éléments lourds)':prop==='r'?'gaz nobles et At : pas de rayon covalent comparable':'Tc et Pm : valeur non retenue')+'</span>';
+    $('arT').textContent=P[prop].top;$('arL').textContent=P[prop].left;}
+  explain();detail();rank();}
+$('pt').addEventListener('click',e=>{const b=e.target.closest('.el');if(!b)return;sel=+b.dataset.z;paint();});
+document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>setProp(b.dataset.p));
+function setProp(p){prop=p;document.querySelectorAll('[data-p]').forEach(x=>x.classList.toggle('on',x.dataset.p===p));paint();}
+
+const EXPL={bloc:'Le bloc indique la dernière sous-couche remplie selon Klechkowski : s (groupes 1 et 2, plus He), p (groupes 13 à 18), d (groupes 3 à 12), f (La à Yb, ligne du bas). La période est le nombre n de la couche la plus externe. Choisis une propriété pour voir les tendances.',
+  r:'<b>Dans une période (→)</b> : Z augmente, mais les électrons ajoutés vont dans la même couche et se font mal écran entre eux. La <b>charge nucléaire effective Z<sub>eff</sub></b> ressentie par les électrons externes augmente : le nuage est plus attiré, <b>le rayon diminue</b>.<br><b>Dans un groupe (↓)</b> : on ajoute une couche (n augmente). Les électrons externes sont plus loin du noyau et mieux écrantés : <b>le rayon augmente</b>.',
+  ie:"L'énergie de première ionisation est l'énergie à fournir pour arracher un électron à l'atome gazeux : X(g) → X⁺(g) + e⁻.<br><b>Dans une période (→)</b> : Z<sub>eff</sub> augmente et l'électron est plus proche : <b>l'énergie d'ionisation augmente</b> (maximum pour les gaz nobles).<br><b>Dans un groupe (↓)</b> : une couche de plus, l'électron est plus loin et mieux écranté : <b>elle diminue</b>. Exceptions : Be &gt; B, N &gt; O (voir plus bas).",
+  en:"L'électronégativité mesure la tendance d'un atome à attirer vers lui les électrons d'une liaison. Elle suit les mêmes raisons que l'énergie d'ionisation : <b>elle augmente dans une période (→)</b> avec Z<sub>eff</sub> et <b>diminue dans un groupe (↓)</b> avec le nombre de couches. F est le plus électronégatif (3,98). He, Ne et Ar ne forment pas de liaisons : <b>pas de valeur de Pauling</b> (case grise, n.d.). Kr et Xe ont une valeur tirée de leurs rares composés fluorés (KrF₂, XeF₂…). Pour Pb, la valeur dépend du degré d'oxydation (1,87 ou 2,33 selon les tables) : elle n'est pas affichée."};
+function explain(){$('fml').innerHTML=EXPL[prop];}
+function abbr(z){const c=real(z);const G=[[54,'Xe'],[36,'Kr'],[18,'Ar'],[10,'Ne'],[2,'He']];const sup=n=>String(n).split('').map(d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[d]).join('');
+  for(const [g,s] of G){if(g>=z)continue;const core=klech(g);const rest=ORDER.map(([n,l])=>sk(n,l)).filter(k=>c[k]>0&&!(k in core));return '['+s+'] '+rest.map(k=>k+sup(c[k])).join(' ');}
+  return ORDER.map(([n,l])=>sk(n,l)).filter(k=>c[k]>0).map(k=>k+sup(c[k])).join(' ');}
+function detail(){const z=sel,p=POS[z];
+  $('det').innerHTML=`<b style="color:#0f1b2d">${SYM[z]} · ${NOM[z]}</b> (Z = ${z}) &nbsp;|&nbsp; ${abbr(z)} &nbsp;|&nbsp; période ${p.per}, ${p.grp?'groupe '+p.grp+(z===71?' (lanthanide)':''):'lanthanide'}, bloc ${p.bloc}<br>`+
+   `rayon covalent : <b>${fmt('r',z)}</b> &nbsp;|&nbsp; énergie de 1ʳᵉ ionisation : <b>${fmt('ie',z)}</b> &nbsp;|&nbsp; électronégativité : <b>${fmt('en',z)}</b>`;}
+
+/* ===== comparateur ===== */
+function cmpSelects(){const opt=(v,allowNone)=>(allowNone?'<option value="0">—</option>':'')+SYM.slice(1).map((s,i)=>`<option value="${i+1}"${i+1===v?' selected':''}>${s} · ${NOM[i+1]}</option>`).join('');
+  $('cmpsel').innerHTML=[0,1,2,3].map(i=>`<select data-i="${i}" aria-label="Élément ${i+1}">${opt(cmp[i]||0,i>=2)}</select>`).join('');
+  if(!cmp[2])$('cmpsel').querySelector('[data-i="2"]').value='0';if(!cmp[3])$('cmpsel').querySelector('[data-i="3"]').value='0';}
+$('cmpsel').addEventListener('change',e=>{const i=+e.target.dataset.i;cmp[i]=+e.target.value;paint();});
+$('addSel').onclick=()=>{if(cmp.includes(sel))return;let i=cmp.findIndex((v,k)=>k>=2&&!v);if(i<0){cmp.shift();cmp.push(sel);}else cmp[i]=sel;cmpSelects();paint();};
+const ANOM={'4,5':1,'7,8':1,'12,13':1,'15,16':1};
+function reason(a,b,p){const A=POS[a],B=POS[b],what=p==='r'?'rayon':p==='ie'?"énergie d'ionisation":'électronégativité';
+  if(p==='ie'&&ANOM[[Math.min(a,b),Math.max(a,b)].join(',')])return `${SYM[Math.min(a,b)]} et ${SYM[Math.max(a,b)]} : anomalie, voir l'explication plus bas.`;
+  const va=P[p].v(a),vb=P[p].v(b);if(va==null||vb==null||a===b)return null;
+  if(va===vb&&(A.per===B.per||(A.grp&&A.grp===B.grp)))return `${SYM[a]} et ${SYM[b]} : valeurs tabulées égales (${fmt(p,a)}).`;
+  const contra=(hi,lo)=>`${SYM[hi]} et ${SYM[lo]} : ${A.per===B.per?'même période '+A.per:'même groupe '+A.grp}, mais les valeurs tabulées vont <b>à l'inverse de la tendance générale</b>. Les tendances sont des règles générales : elles ont des exceptions, surtout dans les blocs d et f et juste après eux.`;
+  if(A.per===B.per){const r=a<b?b:a,l=a<b?a:b,ok=p==='r'?P[p].v(r)<P[p].v(l):P[p].v(r)>P[p].v(l);
+    if(!ok)return contra(l,r);return `${SYM[l]} et ${SYM[r]} : même période ${A.per}. ${SYM[r]} est plus à droite (Z<sub>eff</sub> plus grande) : ${p==='r'?'rayon plus petit':what+' plus grande'}.`;}
+  if(A.grp&&A.grp===B.grp){const lo=a<b?b:a,hi=a<b?a:b,ok=p==='r'?P[p].v(lo)>P[p].v(hi):P[p].v(lo)<P[p].v(hi);
+    if(!ok)return contra(hi,lo);return `${SYM[hi]} et ${SYM[lo]} : même groupe ${A.grp}. ${SYM[lo]} a une couche de plus : ${p==='r'?'rayon plus grand':what+' plus petite'}.`;}
+  return null;}
+function rank(){const p=prop==='bloc'?'r':prop,list=[...new Set(cmp.filter(Boolean))];
+  if(list.length<2){$('rank').innerHTML='<p class="hint">Choisis au moins deux éléments différents.</p>';return;}
+  const def=list.filter(z=>P[p].v(z)!=null).sort((a,b)=>P[p].v(b)-P[p].v(a)),nd=list.filter(z=>P[p].v(z)==null);
+  const mx=Math.max(...def.map(z=>P[p].v(z)),1e-9);
+  let h=`<div class="info" style="margin-top:8px">Classement par <b>${P[p].n[0].toLowerCase()+P[p].n.slice(1)}</b>, du plus grand au plus petit : <b style="color:#0f1b2d">${def.map(z=>SYM[z]).join(' &gt; ')}</b>`+(nd.length?` · non défini : ${nd.map(z=>SYM[z]).join(', ')}`:'')+'</div><div class="bars">';
+  def.forEach(z=>{h+=`<div class="bar"><span>${SYM[z]} <small style="color:var(--muted);font-weight:600">${NOM[z]}</small></span><span class="t"><i style="width:${(P[p].v(z)/mx*100).toFixed(1)}%"></i></span><span class="n">${fmt(p,z)}</span></div>`;});
+  nd.forEach(z=>{h+=`<div class="bar"><span>${SYM[z]}</span><span class="t"></span><span class="n">non défini</span></div>`;});
+  h+='</div>';const rs=[];for(let i=0;i<list.length;i++)for(let j=i+1;j<list.length;j++){const r=reason(list[i],list[j],p);if(r)rs.push(r);}
+  h+=rs.length?'<ul class="note" style="padding-left:18px">'+rs.map(r=>'<li>'+r+'</li>').join('')+'</ul>':'<p class="note">Ces éléments ne sont ni dans la même période ni dans le même groupe : la tendance seule ne suffit pas toujours, lis les valeurs.</p>';
+  $('rank').innerHTML=h;}
+
+/* ===== anomalies ===== */
+const box=(u,d)=>`<b>${u?'<span class="u">↑</span>':''}${d?'<span class="d">↓</span>':''}</b>`;
+const AN={'4,5':`<b>Be (2s²) : ${fr(IE[4],1)} kJ/mol &gt; B (2s² 2p¹) : ${fr(IE[5],1)} kJ/mol.</b> L'électron arraché à B est un électron 2p : il est d'énergie plus haute que les 2s et en partie écranté par eux. Il part plus facilement que l'électron 2s de Be, malgré un Z plus grand.<br>Be : 2s <span class="mini">${box(1,1)}</span> 2p <span class="mini">${box()}${box()}${box()}</span> &nbsp; B : 2s <span class="mini">${box(1,1)}</span> 2p <span class="mini">${box(1)}${box()}${box()}</span>`,
+  '7,8':`<b>N (2p³) : ${fr(IE[7],1)} kJ/mol &gt; O (2p⁴) : ${fr(IE[8],1)} kJ/mol.</b> Dans O, deux électrons 2p partagent la même case : leur répulsion facilite le départ de l'un d'eux. N a trois électrons seuls dans leur case (sous-couche à moitié remplie, plus stable).<br>N : 2p <span class="mini">${box(1)}${box(1)}${box(1)}</span> &nbsp; O : 2p <span class="mini">${box(1,1)}${box(1)}${box(1)}</span>`,
+  '12,13':`<b>Mg (3s²) : ${fr(IE[12],1)} kJ/mol &gt; Al (3s² 3p¹) : ${fr(IE[13],1)} kJ/mol.</b> Même raison que Be &gt; B, une période plus bas : l'électron 3p de Al part plus facilement que l'électron 3s de Mg.`,
+  '15,16':`<b>P (3p³) : ${fr(IE[15],1)} kJ/mol &gt; S (3p⁴) : ${fr(IE[16],1)} kJ/mol.</b> Même raison que N &gt; O : dans S, un électron 3p est apparié et repoussé par son voisin de case.`};
+document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const on=!b.classList.contains('on');document.querySelectorAll('[data-a]').forEach(x=>x.classList.remove('on'));
+  if(on){b.classList.add('on');hl=b.dataset.a.split(',').map(Number);$('anom').innerHTML='<div class="fml">'+AN[b.dataset.a]+'</div>';prop='ie';setProp('ie');}
+  else{hl=[];$('anom').innerHTML='';paint();}});
+
+/* ===== onglet ions ===== */
+const K=0.27;// px par pm
+function circ(cx,cy,r,fill,stroke,dash){return `<circle cx="${cx}" cy="${cy}" r="${r*K}" fill="${fill}" stroke="${stroke}" stroke-width="2"${dash?' stroke-dasharray="4 3"':''}/>`;}
+const PAIRS=[[11,'Na+','Na⁺','cation'],[12,'Mg2+','Mg²⁺','cation'],[17,'Cl-','Cl⁻','anion'],[8,'O2-','O²⁻','anion']];
+$('pairs').innerHTML=PAIRS.map(([z,k,lab,t])=>{const ra=R[z],ri=ION[k],cy=62;const col=t==='cation'?'#256abf':'#BA7517';
+  return `<div class="pt-wrap" style="padding:8px"><svg viewBox="0 0 240 140" role="img" aria-label="${SYM[z]} et ${lab}">`+
+   circ(62,cy,ra,'#eef1f5','#8a95a3')+circ(178,cy,ri,t==='cation'?'#dbe7fa':'#fdeccb',col)+
+   `<text x="62" y="${cy+5}" text-anchor="middle" font-weight="800" font-size="15" fill="#0f1b2d">${SYM[z]}</text>`+
+   `<text x="178" y="${cy+5}" text-anchor="middle" font-weight="800" font-size="15" fill="#0f1b2d">${lab}</text>`+
+   `<text x="62" y="128" text-anchor="middle" font-weight="700" font-size="12" fill="#5f6b7a">atome : ${R[z]} pm</text>`+
+   `<text x="178" y="128" text-anchor="middle" font-weight="700" font-size="12" fill="${col}">${t} : ${fr(ri,ri%1?1:0)} pm</text></svg>`+
+   `<p class="note" style="margin:2px 4px 0">${t==='cation'?`${lab} a perdu ses électrons ${POS[z].per}s : la couche n = ${POS[z].per} disparaît. Plus petit.`:`${lab} a gagné ${k==='Cl-'?'1 électron':'2 électrons'} pour le même noyau (Z = ${z}). Plus grand.`}</p></div>`;}).join('');
+const SER={10:[['O2-','O²⁻',8],['F-','F⁻',9],['Na+','Na⁺',11],['Mg2+','Mg²⁺',12],['Al3+','Al³⁺',13]],18:[['S2-','S²⁻',16],['Cl-','Cl⁻',17],['K+','K⁺',19],['Ca2+','Ca²⁺',20]]};
+function iso(n){document.querySelectorAll('[data-s]').forEach(b=>b.classList.toggle('on',+b.dataset.s===n));
+  $('iso').innerHTML=SER[n].map(([k,lab,z])=>{const r=ION[k],an=k.endsWith('-');return `<svg viewBox="0 0 112 150" style="width:112px" role="img" aria-label="${lab}">`+
+    circ(56,62,r,an?'#fdeccb':'#dbe7fa',an?'#BA7517':'#256abf')+`<text x="56" y="67" text-anchor="middle" font-weight="800" font-size="15" fill="#0f1b2d">${lab}</text>`+
+    `<text x="56" y="128" text-anchor="middle" font-weight="700" font-size="12" fill="#5f6b7a">Z = ${z}</text><text x="56" y="144" text-anchor="middle" font-weight="800" font-size="12" fill="#0f1b2d">${fr(r,r%1?1:0)} pm</text></svg>`;}).join('');
+  $('isoTxt').innerHTML=`Tous ces ions ont <b>${n} électrons</b> (configuration ${n===10?'[He] 2s² 2p⁶, celle du néon':'[Ne] 3s² 3p⁶, celle de l\'argon'}). Seul Z change : plus le noyau a de protons, plus il attire ce même nuage. <b>Le rayon diminue quand Z augmente</b> : ${SER[n].map(s=>s[1]).join(' &gt; ')}.`;}
+document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>iso(+b.dataset.s));iso(10);
+
+function tab(w){$('paneT').hidden=w!=='T';$('paneI').hidden=w!=='I';$('tabT').classList.toggle('on',w==='T');$('tabI').classList.toggle('on',w==='I');
+  $('tabT').setAttribute('aria-selected',w==='T');$('tabI').setAttribute('aria-selected',w==='I');}
+$('tabT').onclick=()=>tab('T');$('tabI').onclick=()=>tab('I');
+window.__pt={setProp,setCmp:a=>{cmp=a;cmpSelects();paint();},sel:z=>{sel=z;paint();},data:{R,IE,EN,ION},tab};
+buildTable();cmpSelects();paint();
+});
+</script>
+
+</main>
+<aside class="sfa-side">
+  <div class="sfa-list"><h2>Atome et liaison chimique<span>3 simulations</span></h2><ol><li><a href="../configuration-electronique/"><i>01</i>Configuration électronique et nombres quantiques</a></li><li><a class="on" aria-current="page" href="../tendances-periodiques/"><i>02</i>Tendances du tableau périodique</a></li><li><a href="../lewis-vsepr/"><i>03</i>Lewis, VSEPR et polarité</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de chimie</footer>
+<script src="../../kit/sfa-nav.js"></script></body>
+</html>

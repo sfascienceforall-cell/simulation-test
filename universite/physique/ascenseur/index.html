@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poids apparent dans un ascenseur · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+/* Ascenseur 3D : cabine vitrée dans sa cage, la caméra suit la cabine. Lecture de la phase en haut à gauche, écran de la balance en haut à droite. */
+.t-stage{position:relative;width:100%;height:66vh;min-height:470px;background:#fff;border:1px solid var(--rule);border-radius:4px;overflow:hidden;
+  box-shadow:0 1px 2px rgba(12,31,46,.05),0 8px 24px -16px rgba(12,31,46,.18);touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.t-stage:active{cursor:grabbing}
+.t-stage canvas.gl{display:block;width:100%!important;height:100%!important;border:0!important;box-shadow:none!important;border-radius:0!important;background:#fff}
+.t-lab{position:absolute;left:0;top:0;font:700 13px Mulish,system-ui,sans-serif;white-space:nowrap;pointer-events:none;padding:1px 6px;border-radius:3px;
+  background:rgba(255,255,255,.9);opacity:0;will-change:transform}
+.t-hud{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.95);border:1px solid var(--rule);border-radius:4px;padding:9px 13px;
+  font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#13233a;pointer-events:none;width:min(350px,calc(100% - 24px))}
+.t-hud .ph{font:800 15px/1.35 Mulish,system-ui,sans-serif}
+.t-hud .tx{color:#13233a;font-weight:600;margin-top:2px}
+.t-hud .eq{font:700 13px/1.4 Mulish,system-ui,sans-serif;color:#5b6b7b;margin-top:4px;white-space:nowrap}
+.t-hud b{font-weight:800}
+.t-bal{position:absolute;right:12px;top:12px;width:196px;background:#13233a;border-radius:6px;padding:8px 12px 9px;pointer-events:none;color:#cfe3f5;
+  box-shadow:0 6px 18px -10px rgba(12,31,46,.5)}
+.t-bal .h{font:700 11px Mulish,system-ui,sans-serif;color:#8fb3d3;display:flex;justify-content:space-between}
+.t-bal .h span:first-child{letter-spacing:.06em;text-transform:uppercase}
+.t-bal .kg{font:800 32px/1.1 Mulish,system-ui,sans-serif;color:#fff;font-variant-numeric:tabular-nums;margin-top:2px;white-space:nowrap}
+.t-bal .kg small{font-size:17px;font-weight:700;color:#cfe3f5;margin-left:4px}
+.t-bal .n{font:800 15px Mulish,system-ui,sans-serif;color:#8cc4f5;font-variant-numeric:tabular-nums;white-space:nowrap}
+.t-bal .d{font:700 12px Mulish,system-ui,sans-serif;margin-top:3px;white-space:nowrap}
+.t-flr{position:absolute;left:12px;bottom:10px;font:800 13px Mulish,system-ui,sans-serif;color:#13233a;background:rgba(255,255,255,.94);border:1px solid var(--rule);
+  padding:4px 10px;border-radius:4px;pointer-events:none;white-space:nowrap;font-variant-numeric:tabular-nums}
+.t-flr span{color:#5b6b7b;font-weight:700}
+.t-slow{position:absolute;left:50%;top:12px;transform:translateX(-50%);font:700 12px Mulish,system-ui,sans-serif;color:#fff;background:#a32d2d;padding:3px 10px;border-radius:3px;pointer-events:none;white-space:nowrap}
+.t-hint{position:absolute;right:12px;bottom:10px;font:600 12px Mulish,system-ui,sans-serif;color:#8a95a3;pointer-events:none;text-align:right}
+.t-err{position:absolute;inset:0;display:grid;place-items:center;color:#a32d2d;font:600 14px Mulish,system-ui,sans-serif;padding:20px;text-align:center}
+.t-graph{position:relative;margin-top:10px;background:#fff;border:1px solid var(--rule);border-radius:4px;padding:6px 6px 2px}
+.t-graph canvas{display:block;width:100%!important;height:250px!important;border:0!important;box-shadow:none!important;border-radius:0!important;background:#fff!important}
+body .row .val{font:700 13px Mulish,system-ui,sans-serif!important;white-space:nowrap;min-width:92px}
+body .row .pill{min-width:170px}
+body .info{font:600 13px/1.8 Mulish,system-ui,sans-serif!important}
+body .info b{font-weight:800}
+.btn.dang{color:#a32d2d!important;border-color:#e9b3b2!important}
+.btn.dang.on{background:#a32d2d!important;border-color:#a32d2d!important;color:#fff!important}
+.btn.flo{min-width:46px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font:600 .82rem Mulish,system-ui,sans-serif;color:#5b6b7b;margin:10px 0 2px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+@media (max-width:640px){
+  .t-stage{height:64vh;min-height:520px}
+  .t-hint{display:none}
+  .t-hud{top:auto;bottom:10px;left:10px;width:auto;right:10px;font-size:12px;padding:6px 9px}
+  .t-hud .ph{font-size:13px}
+  .t-hud .eq{font-size:12px}
+  .t-bal{width:140px;right:10px;top:10px;padding:6px 9px 7px}
+  .t-bal .kg{font-size:23px}.t-bal .kg small{font-size:13px}
+.t-bal .h span+span{display:none}
+  .t-bal .n{font-size:13px}.t-bal .d{font-size:11px}
+  .t-flr{left:10px;top:10px;bottom:auto;font-size:12px;padding:3px 8px}
+  .t-slow{left:10px;top:42px;transform:none;font-size:11px}
+  .t-lab{font-size:12px;padding:1px 4px}
+  .t-graph canvas{height:230px!important}
+  body .row .pill{min-width:0;flex:1 1 100%}
+  body .row input[type=range]{flex:1}
+}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH2">Dynamique</a>›<b>Poids apparent dans un ascenseur</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Dynamique</span><span class="sfa-chip free">Gratuit</span></div><h1>Poids apparent dans un ascenseur</h1><p>La balance sous tes pieds n&#x27;indique pas ton poids quand l&#x27;ascenseur accélère</p></div>
+<section class="sfa-sim">
+
+
+
+<div id="stage" class="t-stage" aria-label="Ascenseur en 3D : glisse pour tourner la vue, molette pour zoomer">
+  <div class="t-hud" id="hud"></div>
+  <div class="t-bal" id="bal">
+    <div class="h"><span>Balance</span><span id="balM">m = 60 kg</span></div>
+    <div class="kg" id="balKg">60,0<small>kg</small></div>
+    <div class="n" id="balN">N = 589 N</div>
+    <div class="d" id="balD"></div>
+  </div>
+  <div class="t-flr" id="flr"></div>
+  <div class="t-slow" id="slowTag" hidden>Ralenti ×0,15</div>
+  <div class="t-hint">Glisse pour tourner la vue · molette pour zoomer</div>
+  <div class="t-lab" id="lP" style="color:#3d4a57">P̄</div>
+  <div class="t-lab" id="lN" style="color:#185fa5">N̄</div>
+  <div class="t-lab" id="lA" style="color:#9a6420">ā</div>
+  <div class="t-lab" id="lV" style="color:#0F6E56">v̄</div>
+</div>
+
+<div class="t-graph"><canvas id="gr"></canvas></div>
+
+<div class="legend">
+  <span><i style="background:#3d4a57"></i>Poids P̄ = m·ḡ</span>
+  <span><i style="background:#378ADD"></i>Réaction de la balance N̄</span>
+  <span><i style="background:#BA7517"></i>Accélération ā de la cabine</span>
+  <span><i style="background:#1D9E75"></i>Vitesse v̄ de la cabine</span>
+</div>
+
+<div class="fml" id="fml">Sur toi agissent deux forces : ton <b style="color:#3d4a57">poids P = m·g</b> (vers le bas) et la <b style="color:#185fa5">réaction N de la balance</b> (vers le haut). Tu as la même <b style="color:#9a6420">accélération a</b> que la cabine (comptée positive vers le haut), donc <b>N − m·g = m·a</b>, soit <b style="color:#185fa5">N = m(g + a)</b>. La balance mesure N et affiche N/g : c'est ta <b>masse apparente</b>. Seul le signe de <b style="color:#9a6420">a</b> compte, pas le sens de la <b style="color:#0F6E56">vitesse</b>.</div>
+
+<div class="row">
+  <span class="pill">Commande</span>
+  <button class="btn on" id="bAuto">Boutons d'étage</button>
+  <button class="btn" id="bMan">Manuel (tu règles a)</button>
+</div>
+<div class="row" id="rowFloors">
+  <span class="pill">Aller à l'étage</span>
+  <button class="btn flo" data-f="0">RDC</button>
+  <button class="btn flo" data-f="1">1</button>
+  <button class="btn flo" data-f="2">2</button>
+  <button class="btn flo" data-f="3">3</button>
+  <button class="btn flo" data-f="4">4</button>
+  <button class="btn flo" data-f="5">5</button>
+  <button class="btn flo" data-f="6">6</button>
+</div>
+<div class="row">
+  <span class="pill" style="color:#9a6420">A &nbsp;accélération du moteur</span>
+  <input type="range" id="sA" min="0.5" max="2" value="1.2" step="0.1" style="accent-color:#BA7517;--pc:#BA7517">
+  <span class="val" id="sAv" style="color:#9a6420">1,2 m/s²</span>
+</div>
+<div class="row">
+  <span class="pill" style="color:#9a6420">a &nbsp;accélération (manuel)</span>
+  <input type="range" id="sM" min="-9.81" max="9.81" value="0" step="0.01" style="accent-color:#BA7517;--pc:#BA7517">
+  <span class="val" id="sMv" style="color:#9a6420">0,00 m/s²</span>
+</div>
+<div class="row">
+  <span class="pill" style="color:#3d4a57">m &nbsp;ta masse</span>
+  <input type="range" id="sm" min="30" max="120" value="60" step="1" style="accent-color:#3d4a57;--pc:#3d4a57">
+  <span class="val" id="smv" style="color:#3d4a57">60 kg</span>
+</div>
+<div class="row">
+  <button class="btn" id="bStop">Freiner jusqu'à l'arrêt</button>
+  <button class="btn dang" id="bCut">Couper le câble</button>
+  <button class="btn" id="bFix" disabled>Réparer le câble</button>
+  <button class="btn" id="bPause">Pause</button>
+  <button class="btn" id="bView">Recentrer la vue</button>
+</div>
+
+<div class="info" id="info"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const box=$('stage');
+if(!window.THREE){box.insertAdjacentHTML('beforeend','<div class="t-err">Impossible de charger la 3D (three.js). Vérifie la connexion internet.</div>');return;}
+
+// ---------- paramètres physiques (SI) ----------
+const g=9.81;
+const HF=3.5, NF=6, YTOP=NF*HF;        // hauteur d'un étage (m), dernier étage, altitude du dernier étage
+const VMAX=2.0;                          // vitesse de croisière des trajets (m/s)
+const VMAN=3.0;                          // vitesse maximale du moteur en manuel (m/s)
+const VTRIP=3.0;                         // le limiteur de vitesse déclenche les freins de sécurité à 3 m/s
+const AB=0.6*g;                          // décélération des freins de sécurité (parachute progressif) ≈ 0,6 g
+const AEND=2.0;                          // freinage automatique de fin de course en manuel (m/s²)
+const YLOW=-0.75;                        // plus bas point admis (au-dessus des amortisseurs de la fosse)
+let m=60, A=1.2, aCmd=0;
+const S={y:0,v:0,a:0,t:0,mode:'auto',target:null,goal:null,cable:'ok',brake:false,halted:false,flag:'',cutY:0,wait:0};
+let demo=true, demoI=0; const DEMO=[4,1,6,0];
+let paused=false;
+const hist=[]; const TW=20;               // fenêtre du graphe : 20 s
+
+// ---------- scène ----------
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.domElement.className='gl';
+box.prepend(renderer.domElement);
+const scene=new THREE.Scene(); scene.background=new THREE.Color('#ffffff');
+scene.fog=new THREE.Fog('#ffffff',14,34);
+const cam=new THREE.PerspectiveCamera(38,1,0.05,120);
+scene.add(new THREE.HemisphereLight('#ffffff','#a8b3bf',0.68));
+const sun=new THREE.DirectionalLight('#ffffff',0.6); sun.castShadow=true;
+sun.shadow.mapSize.set(1024,1024); Object.assign(sun.shadow.camera,{left:-4,right:4,top:5,bottom:-5,near:1,far:30}); scene.add(sun); scene.add(sun.target);
+const mat=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.65,metalness:0},o));
+const steel=mat('#8794a3',{roughness:.45,metalness:.2}), alu=mat('#cdd5dd',{roughness:.35,metalness:.15});
+function boxM(w,h,d,m_,x,y,z,parent){const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m_);b.position.set(x,y,z);b.castShadow=b.receiveShadow=true;(parent||scene).add(b);return b;}
+
+// cage : poteaux d'acier, mur du fond, paliers à gauche avec leurs portes, fosse et machinerie
+const CX=1.18, CZ=1.02;
+[[-CX,-CZ],[CX,-CZ],[-CX,CZ],[CX,CZ]].forEach(([x,z])=>boxM(0.09,YTOP+5.4,0.09,steel,x,(YTOP+5.4)/2-1.4,z));
+boxM(2.45,YTOP+5.4,0.12,mat('#eef1f4'),0,(YTOP+5.4)/2-1.4,-CZ-0.07);
+for(let f=0;f<=NF;f++){const yf=f*HF;
+  boxM(2.45,0.07,0.07,steel,0,yf-0.2,-CZ);
+  boxM(0.07,0.07,2.1,steel,CX,yf-0.2,0);
+  // palier (dalle de l'étage) à gauche de la cage
+  boxM(4.6,0.28,4.4,mat('#e6eaef'),-CX-2.32,yf-0.14,0);
+  boxM(4.6,0.03,0.05,mat('#c8d0d9'),-CX-2.32,yf+0.005,2.18);
+  // portes palières
+  [-0.27,0.27].forEach(dz=>boxM(0.05,2.15,0.52,alu,-CX-0.06,yf+1.08,dz));
+  boxM(0.07,0.12,1.2,steel,-CX-0.06,yf+2.2,0);
+  // numéro de l'étage
+  const c=document.createElement('canvas');c.width=256;c.height=96;const x=c.getContext('2d');
+  x.font='800 60px Mulish,system-ui,sans-serif';x.fillStyle='#8a95a3';x.textAlign='center';x.textBaseline='middle';
+  x.fillText(f===0?'RDC':(f===1?'1er':f+'e'),128,50);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthWrite:false}));
+  sp.scale.set(1.1,0.41,1);sp.position.set(-CX-1.5,yf+2.55,1.4);scene.add(sp);}
+// rails de guidage
+const RX=1.02; [-RX,RX].forEach(x=>boxM(0.05,YTOP+5.2,0.09,steel,x,(YTOP+5.2)/2-1.3,0));
+// fosse et amortisseurs
+boxM(2.45,0.1,2.1,mat('#d7dde4'),0,-1.45,0);
+[-0.45,0.45].forEach(x=>{boxM(0.22,0.5,0.22,mat('#e3a44a',{roughness:.5}),x,-1.15,0);});
+// machinerie en haut : poulie motrice
+const YM=YTOP+3.3;
+boxM(2.45,0.18,2.1,mat('#d7dde4'),0,YM+0.55,0);
+const sheave=new THREE.Mesh(new THREE.CylinderGeometry(0.32,0.32,0.16,32),mat('#5b6b7b',{metalness:.5,roughness:.4}));
+sheave.rotation.x=Math.PI/2; sheave.position.set(0,YM,-0.32); sheave.castShadow=true; scene.add(sheave);
+const spoke=boxM(0.6,0.05,0.17,mat('#e3a44a'),0,0,0,sheave); spoke.rotation.x=-Math.PI/2;
+boxM(0.7,0.42,0.5,mat('#378ADD',{roughness:.5}),0.55,YM,-0.32);
+
+// ---------- cabine (tout ce qui monte est dans « cab », origine = plancher) ----------
+const cab=new THREE.Group(); scene.add(cab);
+const W2=0.88, D2=0.78, HC=2.5;
+boxM(2*W2,0.12,2*D2,mat('#3f4c5a',{roughness:.8}),0,-0.06,0,cab);                         // plancher
+boxM(2*W2,0.1,2*D2,mat('#e9edf1'),0,HC+0.05,0,cab);                                        // plafond
+const lamp=new THREE.Mesh(new THREE.PlaneGeometry(1.0,0.5),new THREE.MeshBasicMaterial({color:'#fffbe8'}));lamp.rotation.x=Math.PI/2;lamp.position.y=HC-0.005;cab.add(lamp);
+const glass=new THREE.MeshStandardMaterial({color:'#cfe6f7',transparent:true,opacity:.16,roughness:.05,metalness:.1,depthWrite:false,side:THREE.DoubleSide});
+const gl1=new THREE.Mesh(new THREE.PlaneGeometry(2*W2,HC),glass); gl1.position.set(0,HC/2,-D2); cab.add(gl1);       // fond
+const gl2=gl1.clone(); gl2.position.z=D2; cab.add(gl2);                                                           // devant
+const gl3=new THREE.Mesh(new THREE.PlaneGeometry(2*D2,HC),glass); gl3.rotation.y=Math.PI/2; gl3.position.set(W2,HC/2,0); cab.add(gl3);
+// côté gauche : portes en inox
+[-0.38,0.38].forEach(dz=>boxM(0.04,HC-0.05,0.74,alu,-W2,HC/2,dz,cab));
+// montants du cadre
+[[-W2,-D2],[W2,-D2],[-W2,D2],[W2,D2]].forEach(([x,z])=>boxM(0.05,HC,0.05,alu,x,HC/2,z,cab));
+[[0,-D2],[0,D2]].forEach(([x,z])=>{boxM(2*W2,0.05,0.05,alu,x,0.02,z,cab);boxM(2*W2,0.05,0.05,alu,x,HC,z,cab);});
+[-W2,W2].forEach(x=>{boxM(0.05,0.05,2*D2,alu,x,0.02,0,cab);boxM(0.05,0.05,2*D2,alu,x,HC,0,cab);});
+// main courante au fond
+const rail=new THREE.Mesh(new THREE.CylinderGeometry(0.018,0.018,1.5,10),alu);rail.rotation.z=Math.PI/2;rail.position.set(0,0.95,-D2+0.07);cab.add(rail);
+// étrier sur le toit + attache du câble
+boxM(0.08,0.35,0.08,steel,-0.6,HC+0.27,0,cab); boxM(0.08,0.35,0.08,steel,0.6,HC+0.27,0,cab); boxM(1.28,0.08,0.1,steel,0,HC+0.45,0,cab);
+// patins de freins de sécurité contre les rails
+const shoeM=mat('#5b6b7b',{metalness:.4,roughness:.4});
+const shoes=[]; [-1,1].forEach(sd=>[0.15,HC-0.05].forEach(h=>{shoes.push(boxM(0.1,0.22,0.16,shoeM,sd*(RX-0.06),h,0,cab));}));
+// balance (pèse-personne) avec son petit écran
+const scaleG=new THREE.Group(); cab.add(scaleG);
+boxM(0.42,0.06,0.36,mat('#f4f6f8',{roughness:.35}),0,0.03,0.02,scaleG);
+const lcdC=document.createElement('canvas');lcdC.width=128;lcdC.height=48;const lcdX=lcdC.getContext('2d');const lcdT=new THREE.CanvasTexture(lcdC);
+const lcd=new THREE.Mesh(new THREE.PlaneGeometry(0.16,0.06),new THREE.MeshBasicMaterial({map:lcdT}));lcd.rotation.x=-Math.PI/2;lcd.position.set(0,0.0615,0.15);scaleG.add(lcd);
+function drawLcd(kg){lcdX.fillStyle='#13233a';lcdX.fillRect(0,0,128,48);lcdX.fillStyle='#8cc4f5';lcdX.font='800 30px Mulish,system-ui,sans-serif';lcdX.textAlign='center';lcdX.textBaseline='middle';
+  lcdX.fillText(kg.toFixed(1).replace('.',','),64,26);lcdT.needsUpdate=true;}
+
+// câble : une partie suit la cabine, l'autre reste pendue à la poulie quand il est coupé
+const cableM=new THREE.MeshStandardMaterial({color:'#3d4a57',metalness:.5,roughness:.4});
+const cable=new THREE.Mesh(new THREE.CylinderGeometry(0.022,0.022,1,8),cableM); scene.add(cable);
+const stub=new THREE.Mesh(new THREE.CylinderGeometry(0.022,0.022,0.35,8),cableM); stub.position.set(0,HC+0.65,0); stub.visible=false; cab.add(stub);
+// étincelles des freins
+const NSP=60, spGeo=new THREE.BufferGeometry(); spGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(NSP*3),3));
+const sparks=new THREE.Points(spGeo,new THREE.PointsMaterial({color:'#ff9a2e',size:0.05,transparent:true,opacity:.95,depthWrite:false})); sparks.frustumCulled=false; scene.add(sparks);
+
+// ---------- personnage articulé (face à la caméra) ----------
+const person=new THREE.Group(); cab.add(person); person.position.y=0.06+0.085; person.rotation.y=-Math.PI/2;
+const body=new THREE.Group(); person.add(body);
+const M=c=>mat(c,{roughness:.6});
+const cShirt=M('#e3a44a'), cPants=M('#d9c8a6'), cSkin=M('#f0c9a0'), cShoe=M('#1f2a36'), cHair=M('#3a2a1e');
+function seg(len,r1,r2,m_){const g_=new THREE.Group();const mesh=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,len,14),m_);
+  mesh.position.y=-len/2;mesh.castShadow=true;g_.add(mesh);
+  const j=new THREE.Mesh(new THREE.SphereGeometry(Math.max(r1,r2)*1.02,14,10),m_);j.castShadow=true;g_.add(j);return g_;}
+const hips=new THREE.Group(); hips.position.y=0.92; body.add(hips);
+const pelvis=new THREE.Mesh(new THREE.CylinderGeometry(0.15,0.14,0.16,16),cPants); pelvis.castShadow=true; hips.add(pelvis);
+function leg(side){const thigh=seg(0.46,0.075,0.062,cPants);thigh.position.set(0,-0.04,side*0.095);hips.add(thigh);
+  const shin=seg(0.44,0.058,0.048,cPants);shin.position.y=-0.46;thigh.add(shin);
+  const foot=new THREE.Mesh(new THREE.BoxGeometry(0.22,0.07,0.1),cShoe);foot.position.set(0.05,-0.47,0);foot.castShadow=true;shin.add(foot);
+  return {thigh,shin,foot};}
+const LL=leg(-1), LR=leg(1);
+const spine=new THREE.Group(); spine.position.y=0.06; hips.add(spine);
+const chest=new THREE.Mesh(new THREE.CylinderGeometry(0.17,0.15,0.5,18),cShirt); chest.position.y=0.27; chest.castShadow=true; spine.add(chest);
+const shoulders=new THREE.Mesh(new THREE.SphereGeometry(0.175,18,12),cShirt); shoulders.scale.set(1,0.45,1.15); shoulders.position.y=0.5; spine.add(shoulders);
+const neck=new THREE.Group(); neck.position.y=0.56; spine.add(neck);
+const head=new THREE.Mesh(new THREE.SphereGeometry(0.12,22,16),cSkin); head.position.y=0.14; head.castShadow=true; neck.add(head);
+const hair=new THREE.Mesh(new THREE.SphereGeometry(0.125,22,16,0,Math.PI*2,0,Math.PI*0.5),cHair); hair.position.y=0.15; hair.rotation.z=0.25; neck.add(hair);
+const eyeM=new THREE.MeshBasicMaterial({color:'#1f2a36'});
+[-1,1].forEach(sd=>{const e=new THREE.Mesh(new THREE.SphereGeometry(0.016,8,6),eyeM);e.position.set(0.108,0.16,sd*0.042);neck.add(e);});
+function arm(side){const up=seg(0.3,0.05,0.045,cShirt);up.position.set(0,0.47,side*0.215);spine.add(up);
+  const fore=seg(0.28,0.042,0.036,cSkin);fore.position.y=-0.3;up.add(fore);
+  const hand=new THREE.Mesh(new THREE.SphereGeometry(0.045,12,8),cSkin);hand.position.y=-0.3;hand.castShadow=true;fore.add(hand);
+  return {up,fore};}
+const AL=arm(-1), AR=arm(1);
+const pose={knee:0.06,armOut:0.12,armFwd:0.05,elbow:0.2,head:0};
+function applyPose(t){
+  const k=pose.knee;
+  [LL,LR].forEach((L,i)=>{const sd=i?1:-1;L.thigh.rotation.set(-sd*0.1,0,k*0.9);L.shin.rotation.set(0,0,-k*1.8);L.foot.rotation.set(0,0,k*0.9);});
+  hips.position.y=0.92-0.9*(1-Math.cos(k))*0.55;
+  spine.rotation.z=-k*0.3;
+  [AL,AR].forEach((A_,i)=>{const sd=i?1:-1;A_.up.rotation.set(-sd*pose.armOut,0,pose.armFwd);A_.fore.rotation.set(0,0,pose.elbow);});
+  neck.rotation.set(0,0,pose.head);
+}
+
+// ---------- flèches 3D, toujours visibles ----------
+function arrow(col){const g_=new THREE.Group();const m_=new THREE.MeshBasicMaterial({color:col,depthTest:false,transparent:true});
+  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,1,10),m_), hd=new THREE.Mesh(new THREE.ConeGeometry(0.08,0.19,16),m_);
+  g_.add(shaft,hd);shaft.renderOrder=hd.renderOrder=10;g_.userData={shaft,hd};scene.add(g_);return g_;}
+const UP=new THREE.Vector3(0,1,0);
+function setArrow(a,o,v){const L=v.length();a.visible=L>0.035;if(!a.visible)return;
+  const d=v.clone().normalize(),hl=Math.min(0.19,L*0.5);a.position.copy(o);a.quaternion.setFromUnitVectors(UP,d);
+  a.userData.shaft.scale.set(1,L-hl,1);a.userData.shaft.position.set(0,(L-hl)/2,0);a.userData.hd.position.set(0,L-hl/2,0);}
+const aP=arrow('#3d4a57'), aN=arrow('#378ADD'), aA=arrow('#BA7517'), aV=arrow('#1D9E75');
+// petits points d'application
+const dotM=new THREE.MeshBasicMaterial({color:'#13233a',depthTest:false}); const dotG=new THREE.Mesh(new THREE.SphereGeometry(0.03,10,8),dotM); dotG.renderOrder=11; scene.add(dotG);
+
+// ---------- caméra en orbite qui suit la cabine ----------
+const V0={th:0.42,ph:1.4,r:6.4};
+let orb={...V0}, goal=null;
+let drag=null;
+box.addEventListener('pointerdown',e=>{box.setPointerCapture(e.pointerId);drag={x:e.clientX,y:e.clientY};goal=null;});
+box.addEventListener('pointermove',e=>{if(!drag)return;orb.th-=(e.clientX-drag.x)*0.008;orb.ph=Math.max(0.35,Math.min(1.75,orb.ph-(e.clientY-drag.y)*0.008));drag={x:e.clientX,y:e.clientY};});
+const end=()=>drag=null; box.addEventListener('pointerup',end); box.addEventListener('pointercancel',end);
+box.addEventListener('wheel',e=>{e.preventDefault();orb.r=Math.max(4,Math.min(16,orb.r*Math.exp(e.deltaY*0.0012)));},{passive:false});
+const tgt=new THREE.Vector3(0,1.35,0);
+function placeCam(){const k=Math.max(1,0.98/cam.aspect),r=orb.r*k;
+  cam.position.set(tgt.x+r*Math.sin(orb.ph)*Math.sin(orb.th),tgt.y+r*Math.cos(orb.ph),tgt.z+r*Math.sin(orb.ph)*Math.cos(orb.th));cam.lookAt(tgt);}
+$('bView').onclick=()=>goal={...V0};
+
+// ---------- commandes ----------
+const fx=(v,n=2)=>v.toFixed(n).replace('.',',').replace('-','−');
+const sgn=(v,n=2)=>(v>=0?'+':'−')+Math.abs(v).toFixed(n).replace('.',',');
+function setMode(md){S.mode=md;$('bAuto').classList.toggle('on',md==='auto');$('bMan').classList.toggle('on',md==='man');
+  if(md==='man'){S.target=null;S.goal=null;} markFloors();}
+function markFloors(){document.querySelectorAll('.flo').forEach(b=>b.classList.toggle('on',S.mode==='auto'&&S.target===+b.dataset.f));}
+function goFloor(f){if(S.cable!=='ok')return;S.target=f;S.goal=f*HF;S.wait=0;setMode('auto');}
+document.querySelectorAll('.flo').forEach(b=>b.onclick=()=>{demo=false;goFloor(+b.dataset.f);});
+$('bAuto').onclick=()=>{demo=false;if(S.cable!=='ok')return;setMode('auto');if(Math.abs(S.v)>1e-3)stopHere();};
+$('bMan').onclick=()=>{demo=false;if(S.cable!=='ok')return;setMode('man');};
+function stopHere(){ // freine avec l'accélération A jusqu'à l'arrêt : on vise le point d'arrêt v·|v|/(2A)
+  setMode('auto');S.target=null;S.goal=Math.max(0,Math.min(YTOP,S.y+S.v*Math.abs(S.v)/(2*A)));markFloors();}
+$('bStop').onclick=()=>{demo=false;if(S.cable!=='ok')return;aCmd=0;$('sM').value=0;$('sMv').textContent=fx(0)+' m/s²';stopHere();};
+$('sA').addEventListener('input',()=>{A=+$('sA').value;$('sAv').textContent=fx(A,1)+' m/s²';});
+$('sM').addEventListener('input',()=>{demo=false;aCmd=+$('sM').value;if(Math.abs(aCmd)<0.08)aCmd=0;$('sMv').textContent=fx(aCmd)+' m/s²';
+  if(S.cable==='ok'&&S.mode!=='man')setMode('man');});
+$('sm').addEventListener('input',()=>{m=+$('sm').value;$('smv').textContent=m+' kg';$('balM').textContent='m = '+m+' kg';});
+$('bCut').onclick=()=>{if(S.cable!=='ok')return;demo=false;S.cable='cut';S.brake=false;S.halted=false;S.cutY=S.y+HC+0.48;S.target=null;S.goal=null;markFloors();
+  $('bCut').classList.add('on');$('bCut').disabled=true;$('bFix').disabled=false;};
+$('bFix').onclick=()=>{S.cable='ok';S.brake=false;S.halted=false;S.v=0;S.a=0;$('bCut').classList.remove('on');$('bCut').disabled=false;$('bFix').disabled=true;
+  aCmd=0;$('sM').value=0;$('sMv').textContent=fx(0)+' m/s²';setMode('auto');S.target=null;S.goal=null;};
+$('bPause').onclick=()=>{paused=!paused;$('bPause').textContent=paused?'Reprendre':'Pause';$('bPause').classList.toggle('on',paused);};
+
+// ---------- physique ----------
+function control(h){
+  S.flag='';
+  if(S.cable==='cut'){
+    if(S.halted){S.a=0;S.v=0;return;}
+    // le limiteur de vitesse déclenche les freins à VTRIP, ou plus tôt s'il le faut pour s'arrêter avant la fosse
+    if(!S.brake&&S.v<0&&(-S.v>=VTRIP||S.v*S.v/(2*AB)>=S.y-YLOW-0.05))S.brake=true;
+    S.a=S.brake?AB:-g;
+    return;}
+  if(S.mode==='auto'){
+    if(S.goal===null){S.a=0;S.v=0;return;}
+    const yt=S.goal;
+    const d=yt-S.y, s=Math.sign(d)||1, vt=S.v*s, ad=Math.abs(d);
+    if(ad<0.002&&Math.abs(S.v)<0.03){S.y=yt;S.v=0;S.a=0;S.goal=null;S.target=null;S.wait=0;markFloors();return;}
+    if(vt<0){S.a=s*A;return;}                                     // part dans le mauvais sens : on freine puis on repart
+    const ds=vt*vt/(2*A);
+    if(ds>=ad-1e-4){const req=vt*vt/(2*Math.max(ad,1e-4));S.a=-s*(req>1.3*A?A:req);return;}   // freinage
+    if(vt<VMAX-1e-6){S.a=s*Math.min(A,(VMAX-vt)/h);return;}       // démarrage
+    S.a=0; return;}                                                // vitesse constante
+  // manuel
+  let a=aCmd;
+  if((S.v>=VMAN-1e-6&&a>0)||(S.v<=-VMAN+1e-6&&a<0)){a=0;S.flag='vmax';}
+  if(S.v>1e-6){const d=YTOP-S.y;if(S.v*S.v/(2*AEND)>=d-1e-4){a=-S.v*S.v/(2*Math.max(d,1e-4));S.flag='fin';}}
+  else if(S.v<-1e-6){const d=S.y;if(S.v*S.v/(2*AEND)>=d-1e-4){a=S.v*S.v/(2*Math.max(d,1e-4));S.flag='fin';}}
+  else{if(S.y>=YTOP-1e-3&&a>0){a=0;S.flag='fin';}if(S.y<=1e-3&&a<0){a=0;S.flag='fin';}}
+  S.a=a;
+}
+function step(h){
+  control(h);
+  const v0=S.v; S.v+=S.a*h;
+  if(S.cable==='cut'&&S.brake&&v0<0&&S.v>=0){S.v=0;S.halted=true;}          // les freins ont arrêté la cabine
+  if(S.mode==='man'&&S.cable==='ok'){S.v=Math.max(-VMAN,Math.min(VMAN,S.v));
+    if((v0>0&&S.v<0)||(v0<0&&S.v>0)){if(S.flag==='fin')S.v=0;}}
+  S.y+=S.v*h; S.t+=h;
+  if(S.y<YLOW){S.y=YLOW;S.v=0;}
+  if(S.y>YTOP+0.01&&S.cable==='ok'){S.y=YTOP;S.v=Math.min(S.v,0);}
+  if(S.mode==='man'&&S.cable==='ok'){if(S.y<0){S.y=0;S.v=Math.max(S.v,0);}if(S.y>YTOP){S.y=YTOP;S.v=Math.min(S.v,0);}}
+}
+const Nof=()=>Math.max(0,m*(g+S.a));
+
+// ---------- phase en cours, en mots ----------
+function phase(){
+  const a=S.a, v=S.v, ea=0.03, ev=0.02;
+  if(S.cable==='cut'){
+    if(S.halted)return{c:'#0F6E56',t:'Cabine bloquée par les freins',x:'À l\'arrêt : N = P. Clique sur « Réparer le câble ».'};
+    if(!S.brake)return{c:'#a32d2d',t:'Câble coupé : chute libre',x:'a = −g : la balance ne te porte plus, N = 0. C\'est l\'impesanteur.'};
+    return{c:'#185fa5',t:'Freins de sécurité !',x:'La cabine freine fort en descendant : ā vers le haut, la balance indique beaucoup plus.'};}
+  if(a<=-g+0.01)return{c:'#a32d2d',t:(v>ev?'▲ ':v<-ev?'▼ ':'')+'a = −g, comme en chute libre',x:'La balance ne te porte plus : N = 0. Impesanteur.'};
+  if(Math.abs(a)<ea){
+    if(Math.abs(v)<ev)return{c:'#13233a',t:'À l\'arrêt',x:'a = 0 : N = P. La balance indique ta vraie masse.'};
+    return v>0?{c:'#0F6E56',t:'▲ Montée à vitesse constante',x:'a = 0 : N = P, comme à l\'arrêt. La vitesse ne change rien.'+(S.flag==='vmax'?' (vitesse max du moteur)':'')}
+              :{c:'#0F6E56',t:'▼ Descente à vitesse constante',x:'a = 0 : N = P, comme à l\'arrêt. La vitesse ne change rien.'+(S.flag==='vmax'?' (vitesse max du moteur)':'')};}
+  const fin=S.flag==='fin'?' (fin de course)':'';
+  if(a>0){ if(v<-ev)return{c:'#185fa5',t:'▼ Freinage en descendant'+fin,x:'ā vers le haut : la balance indique plus que ta masse.'};
+           return{c:'#185fa5',t:'▲ Démarrage vers le haut',x:'ā vers le haut : la balance indique plus que ta masse.'};}
+  if(v>ev)return{c:'#a32d2d',t:'▲ Freinage en montant'+fin,x:'ā vers le bas : la balance indique moins que ta masse.'};
+  return{c:'#a32d2d',t:'▼ Démarrage vers le bas',x:'ā vers le bas : la balance indique moins que ta masse.'};
+}
+
+// ---------- étiquettes HTML projetées (side −1 : à gauche du point, +1 : à droite, 0 : centrée) ----------
+function lab(el,v,side,dy=0){const p=v.clone().project(cam);const W=box.clientWidth,H=box.clientHeight;
+  let x=(p.x+1)/2*W,y=(1-p.y)/2*H+dy;const w=el.offsetWidth,hh=el.offsetHeight;
+  let l=side<0?x-10-w:side>0?x+10:x-w/2; l=Math.max(4,Math.min(W-w-4,l)); let tp=Math.max(4,Math.min(H-hh-4,y-hh/2));
+  el.style.opacity=p.z<1?1:0; el.style.transform=`translate(${l}px,${tp}px)`;}
+
+// ---------- graphe a(t), v(t), N(t) ----------
+const gr=$('gr'), gx=gr.getContext('2d'); let GW=0,GH=0;
+function sizeG(){const r=gr.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);GW=r.width;GH=r.height;gr.width=Math.round(GW*d);gr.height=Math.round(GH*d);gx.setTransform(d,0,0,d,0,0);}
+function niceStep(lim){const c=[0.5,1,2,2.5,5,10,20,50,100,200,250,500,1000];for(const s of c)if(lim/s<=2.6)return s;return 1000;}
+function halo(t,x,y,col,font,align='left',base='middle'){gx.font=font;gx.textAlign=align;gx.textBaseline=base;gx.lineJoin='round';
+  gx.strokeStyle='rgba(255,255,255,.95)';gx.lineWidth=4;gx.strokeText(t,x,y);gx.fillStyle=col;gx.fillText(t,x,y);}
+function drawGraph(){
+  if(!GW)return; gx.clearRect(0,0,GW,GH);
+  const L=GW<500?46:60, R=GW<500?8:14, T=4, B=20, gap=8, sh=(GH-T-B-2*gap)/3, pw=GW-L-R;
+  const t1=S.t, t0=t1-TW, X=t=>L+(t-t0)/TW*pw;
+  const pts=hist.filter(p=>p.t>=t0-0.1);
+  let ma=0,mv=0,mn=0;pts.forEach(p=>{ma=Math.max(ma,Math.abs(p.a));mv=Math.max(mv,Math.abs(p.v));mn=Math.max(mn,p.N/(p.m*g));});
+  const mg=m*g;
+  const strips=[
+    {k:'a',lab:'a (m/s²)',col:'#BA7517',dk:'#9a6420',lo:-Math.max(2.5,ma*1.12),hi:Math.max(2.5,ma*1.12),val:p=>p.a,cur:sgn(S.a)+' m/s²'},
+    {k:'v',lab:'v (m/s)',col:'#1D9E75',dk:'#0F6E56',lo:-Math.max(2.5,mv*1.12),hi:Math.max(2.5,mv*1.12),val:p=>p.v,cur:sgn(S.v)+' m/s'},
+    {k:'N',lab:'N (newtons)',col:'#378ADD',dk:'#185fa5',lo:0,hi:Math.max(1.5,mn*1.12)*mg,val:p=>p.N*mg/(p.m*g),cur:Math.round(Nof())+' N'}];
+  strips.forEach((s,i)=>{
+    const y0=T+i*(sh+gap), Y=v=>y0+sh-(v-s.lo)/(s.hi-s.lo)*sh;
+    gx.fillStyle='#f7f9fb';gx.fillRect(L,y0,pw,sh);
+    // graduations
+    gx.font='700 11px Mulish,system-ui,sans-serif';gx.textAlign='right';gx.textBaseline='middle';
+    if(s.k!=='N'){const st=niceStep(s.hi);for(let v=-Math.floor(s.hi/st)*st;v<=s.hi+1e-9;v+=st){const yy=Y(v);
+        gx.strokeStyle=Math.abs(v)<1e-9?'#c3cbd5':'#e6eaef';gx.lineWidth=1;gx.beginPath();gx.moveTo(L,yy);gx.lineTo(L+pw,yy);gx.stroke();
+        if(yy>y0+6&&yy<y0+sh-4||Math.abs(v)<1e-9){gx.fillStyle='#8a95a3';gx.fillText((v>0?'+':'')+String(+v.toFixed(1)).replace('.',',').replace('-','−'),L-6,yy);}}}
+    else{[0,mg,2*mg].forEach((v,j)=>{if(v>s.hi||Y(v)<y0+7)return;const yy=Y(v);gx.strokeStyle=j===1?'#3d4a57':'#e6eaef';gx.setLineDash(j===1?[5,4]:[]);gx.lineWidth=j===1?1.2:1;
+        gx.beginPath();gx.moveTo(L,yy);gx.lineTo(L+pw,yy);gx.stroke();gx.setLineDash([]);
+        gx.fillStyle=j===1?'#3d4a57':'#8a95a3';gx.fillText(j===0?'0':(j===1?'mg':'2mg'),L-6,Math.max(y0+6,yy));});
+    }
+    // courbe
+    gx.save();gx.beginPath();gx.rect(L,y0-1,pw,sh+2);gx.clip();
+    gx.strokeStyle=s.col;gx.lineWidth=2.2;gx.lineJoin='round';gx.beginPath();
+    pts.forEach((p,j)=>{const xx=X(p.t),yy=Y(s.val(p));j?gx.lineTo(xx,yy):gx.moveTo(xx,yy);});gx.stroke();
+    if(pts.length){const p=pts[pts.length-1];gx.fillStyle=s.col;gx.beginPath();gx.arc(X(p.t),Y(s.val(p)),3.5,0,7);gx.fill();}
+    gx.restore();
+    halo(s.lab,L+8,y0+10,s.dk,'800 12px Mulish,system-ui,sans-serif');
+    halo(s.cur,L+pw-8,y0+10,s.dk,'800 12px Mulish,system-ui,sans-serif','right');
+    if(s.k==='N'&&mg<s.hi){const yy=Y(mg);halo('P = mg = '+Math.round(mg)+' N',L+pw*0.42,yy-8>y0+20?yy-8:yy+9,'#3d4a57','700 11px Mulish,system-ui,sans-serif','center');}
+  });
+  // axe du temps
+  gx.fillStyle='#8a95a3';gx.font='700 11px Mulish,system-ui,sans-serif';gx.textBaseline='top';
+  for(let k=0;k<=TW;k+=5){const xx=L+(TW-k)/TW*pw;gx.textAlign=k===0?'right':'center';gx.fillText(k===0?(GW<500?'0 s':'maintenant'):'−'+k+' s',xx,GH-B+5);}
+}
+
+// ---------- taille ----------
+function size(){const w=box.clientWidth,h=box.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
+new ResizeObserver(()=>{size();sizeG();}).observe(box); new ResizeObserver(sizeG).observe(gr); size(); sizeG();
+
+// ---------- boucle ----------
+let tPrev=performance.now(), tA=0, lcdT0=-1;
+const slowNow=()=>S.cable==='cut'&&!S.halted;
+function advance(T){const n=Math.ceil(T/0.004);for(let i=0;i<n;i++){simStep(T/n);}}
+function simStep(h){
+  if(S.mode==='auto'&&S.cable==='ok'&&S.goal===null&&demo){S.wait+=h;if(S.wait>1.6){S.wait=0;goFloor(DEMO[demoI++%DEMO.length]);demo=true;}}
+  step(h);
+  const last=hist[hist.length-1];
+  if(!last||S.t-last.t>=0.02||Math.abs(S.a-last.a)>0.05){hist.push({t:S.t,a:S.a,v:S.v,N:Nof(),m});}
+  while(hist.length&&hist[0].t<S.t-TW-1)hist.shift();
+}
+function frame(t){
+  const dt=Math.min(0.05,(t-tPrev)/1000);tPrev=t;
+  const ts=slowNow()?0.15:1;
+  if(!paused){const n=10;for(let i=0;i<n;i++)simStep(dt*ts/n);}
+  $('slowTag').hidden=!slowNow();
+  render(dt);
+  requestAnimationFrame(frame);
+}
+function render(dt){
+  tA+=dt;
+  cab.position.y=S.y;
+  // la caméra suit la cabine
+  tgt.y+=((S.y+1.35)-tgt.y)*Math.min(1,dt*6);
+  if(goal){['th','ph','r'].forEach(k=>orb[k]+=(goal[k]-orb[k])*0.12);if(Math.abs(goal.th-orb.th)<1e-3&&Math.abs(goal.ph-orb.ph)<1e-3&&Math.abs(goal.r-orb.r)<1e-2)goal=null;}
+  placeCam();
+  sun.position.set(3,tgt.y+7,5); sun.target.position.set(0,tgt.y-1,0);
+  // poulie
+  sheave.rotation.y=-S.y/0.32;
+  // câble
+  const roof=S.y+HC+0.49;
+  if(S.cable==='ok'){const top=YM-0.32, L=Math.max(0.05,top-roof);cable.scale.set(1,L,1);cable.position.set(0,roof+L/2,0);stub.visible=false;}
+  else{const top=YM-0.32, low=Math.min(top-0.3,S.cutY+0.4), L=top-low;cable.scale.set(1,L,1);cable.position.set(Math.sin(tA*3)*0.03,low+L/2,0);stub.visible=true;}
+  // freins
+  const br=S.cable==='cut'&&S.brake; shoes.forEach(s_=>s_.material=br?BRK:shoeM);
+  const pa=spGeo.attributes.position.array;
+  for(let i=0;i<NSP;i++){if(br&&!S.halted){const sd=i%2?1:-1,h_=i%4<2?0.15:HC-0.05;pa[3*i]=sd*RX+(Math.random()-0.5)*0.2;pa[3*i+1]=S.y+h_+Math.random()*0.5;pa[3*i+2]=(Math.random()-0.5)*0.3;}else{pa[3*i+1]=-99;}}
+  spGeo.attributes.position.needsUpdate=true;
+
+  // personnage : genoux qui plient quand N augmente, bras qui flottent quand N diminue
+  const N=Nof(), r=N/(m*g);
+  person.scale.set(Math.sqrt(m/65),1,Math.sqrt(m/65));
+  const tp={knee:0.06+0.32*Math.min(1,Math.max(0,r-1)),armOut:0.12+1.15*Math.pow(Math.max(0,1-r),1.3),armFwd:0.05+0.5*Math.max(0,1-r),elbow:0.2+0.2*Math.max(0,r-1),head:0.25*Math.max(0,r-1)-0.15*Math.max(0,1-r)};
+  const kk=Math.min(1,dt*(slowNow()?2.5:7));
+  for(const k in tp)pose[k]+=(tp[k]-pose[k])*kk;
+  applyPose(tA);
+  if(Math.floor(tA*10)!==lcdT0){lcdT0=Math.floor(tA*10);drawLcd(N/g);}
+
+  // vecteurs : forces à la même échelle (P mesure 0,75 m), accélération et vitesse sur les côtés de la cabine
+  const Sf=0.75/(m*g), y0=S.y+0.06;
+  const com=new THREE.Vector3(-0.14,y0+0.085+hips.position.y+0.06,0.05), feet=new THREE.Vector3(0.14,y0+0.005,0.06);
+  setArrow(aP,com,new THREE.Vector3(0,-m*g*Sf,0)); setArrow(aN,feet,new THREE.Vector3(0,N*Sf,0));
+  dotG.position.copy(com);
+  const oA=new THREE.Vector3(1.5,S.y+1.6,0), oV=new THREE.Vector3(-1.5,S.y+1.6,0);
+  setArrow(aA,oA,new THREE.Vector3(0,S.a*0.1,0)); setArrow(aV,oV,new THREE.Vector3(0,S.v*0.3,0));
+  $('lP').textContent='P̄ = '+Math.round(m*g)+' N';
+  $('lN').textContent='N̄ = '+Math.round(N)+' N';
+  $('lA').textContent=Math.abs(S.a)<0.005?'a = 0':'ā = '+fx(Math.abs(S.a))+' m/s² '+(S.a>0?'↑':'↓');
+  $('lV').textContent=Math.abs(S.v)<0.005?'v = 0':'v̄ = '+fx(Math.abs(S.v))+' m/s '+(S.v>0?'↑':'↓');
+  lab($('lP'),com.clone().add(new THREE.Vector3(0,-m*g*Sf*0.55,0)),-1);
+  lab($('lN'),feet.clone().add(new THREE.Vector3(0,Math.max(0.12,N*Sf*0.8),0)),1);
+  lab($('lA'),oA.clone().add(new THREE.Vector3(0,S.a*0.05,0)),1);
+  lab($('lV'),oV.clone().add(new THREE.Vector3(0,S.v*0.15,0)),-1);
+
+  // panneaux
+  const ph=phase();
+  $('hud').innerHTML=`<div class="ph" style="color:${ph.c}">${ph.t}</div><div class="tx">${ph.x}</div>
+    <div class="eq"><b style="color:#185fa5">N</b> = m(g + a) = ${m} × (9,81 ${S.a<0?'−':'+'} ${fx(Math.abs(S.a))}) = <b style="color:#185fa5">${Math.round(N)} N</b></div>`;
+  const kg=N/g, dk=kg-m;
+  $('balKg').innerHTML=fx(kg,1)+'<small>kg</small>'; $('balN').textContent='N = '+Math.round(N)+' N';
+  $('balD').innerHTML=Math.abs(dk)<0.05?'<span style="color:#9fe0c4">= ta masse</span>':(dk>0?`<span style="color:#8cc4f5">+${fx(dk,1)} kg : plus lourd</span>`:`<span style="color:#f2a3a2">−${fx(-dk,1)} kg : plus léger</span>`);
+  const fl=Math.round(S.y/HF), between=Math.abs(S.y-fl*HF)>0.02;
+  $('flr').innerHTML=(S.v>0.02?'▲ ':S.v<-0.02?'▼ ':'')+(fl<=0?'RDC':'Étage '+fl)+` <span>· ${fx(Math.max(0,S.y),1)} m</span>`;
+  $('info').innerHTML=`m = ${m} kg &nbsp;|&nbsp; <b style="color:#3d4a57">P = m·g = ${Math.round(m*g)} N</b> &nbsp;|&nbsp; <b style="color:#9a6420">a = ${sgn(S.a)} m/s²</b> &nbsp;|&nbsp; <b style="color:#0F6E56">v = ${sgn(S.v)} m/s</b> &nbsp;|&nbsp; <b style="color:#185fa5">N = ${Math.round(N)} N</b> &nbsp;|&nbsp; masse apparente N/g = <b>${fx(kg,1)} kg</b> (${fx(N/(m*g),2)} × ta masse)`
+    +(S.cable==='cut'?' &nbsp;|&nbsp; limiteur de vitesse : freins à '+fx(VTRIP,1)+' m/s, décélération 0,6 g = '+fx(AB,1)+' m/s²':'');
+  drawGraph();
+  renderer.render(scene,cam);
+}
+const BRK=mat('#E24B4A',{emissive:'#a32d2d',emissiveIntensity:.6,roughness:.4});
+drawLcd(m);
+goFloor(DEMO[demoI++]);
+requestAnimationFrame(frame);
+window.__t={S,advance,get N(){return Nof();},setA(v){$('sM').value=v;$('sM').dispatchEvent(new Event('input'));},render:()=>render(0.016),
+  set m(v){$('sm').value=v;$('sm').dispatchEvent(new Event('input'));}};
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Dynamique : forces et lois de Newton<span>11 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/diagramme-forces/"><i>01</i>Diagramme de forces et 2ᵉ loi</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/inertie/"><i>02</i>1re loi : le principe d&#x27;inertie</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/referentiels-inertiels/"><i>03</i>Équivalence des référentiels inertiels</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/chariot-poulie/"><i>04</i>2e loi : F = m·a</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ascenseur/"><i>05</i>Poids apparent dans un ascenseur</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/action-reaction/"><i>06</i>Action et réaction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/action-reaction-exemples/"><i>07</i>Action-réaction : la fusée et d&#x27;autres exemples</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/plan_incline/"><i>08</i>Plan incliné</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/frottement-coef/"><i>09</i>Coefficient de frottement</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/tourniquet/"><i>10</i>Forces sur un tourniquet</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/impulsion/"><i>11</i>Impulsion</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

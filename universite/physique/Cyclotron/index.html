@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cyclotron · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+/* Cyclotron 3D : scène plein cadre ; lecture en haut à gauche, tension U(t) en haut à droite. */
+.t-stage{position:relative;width:100%;height:68vh;min-height:460px;background:#fff;border:1px solid var(--rule);border-radius:4px;overflow:hidden;
+  box-shadow:0 1px 2px rgba(12,31,46,.05),0 8px 24px -16px rgba(12,31,46,.18);touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.t-stage:active{cursor:grabbing}
+.t-stage canvas.gl{display:block;width:100%!important;height:100%!important;border:0!important;box-shadow:none!important;border-radius:0!important;background:#fff}
+.t-lab{position:absolute;left:0;top:0;font:700 13px Mulish,system-ui,sans-serif;white-space:nowrap;pointer-events:none;padding:1px 6px;border-radius:3px;
+  background:rgba(255,255,255,.88);opacity:0;will-change:transform}
+.t-lab.sg{display:flex;align-items:center;gap:6px;padding:2px 8px 2px 3px;border:1px solid #e3e7ed;color:#13233a;font-weight:700}
+.t-lab.sg i{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;color:#fff;font:800 17px/1 Mulish,system-ui,sans-serif;font-style:normal}
+.t-lab.big{font-size:14px}
+.t-hud{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.95);border:1px solid var(--rule);border-radius:4px;padding:9px 13px;
+  font:600 13px/1.5 Mulish,system-ui,sans-serif;color:#13233a;pointer-events:none;max-width:min(330px,calc(100% - 24px))}
+.t-hud .big{font:700 15px/1.45 Mulish,system-ui,sans-serif;white-space:nowrap}
+.t-hud .sub{color:#5b6b7b;font-size:12px;font-weight:600}
+.t-hud b{font-weight:800}
+.t-scope{position:absolute;right:12px;top:12px;width:236px;background:rgba(255,255,255,.95);border:1px solid var(--rule);border-radius:4px;padding:7px 9px 6px;pointer-events:none}
+.t-scope .h{font:700 12px Mulish,system-ui,sans-serif;color:#13233a;display:flex;justify-content:space-between;gap:8px}
+.t-scope .h span{color:#5b6b7b;font-weight:700}
+.t-scope canvas{display:block;width:100%!important;height:74px!important;border:0!important;box-shadow:none!important;border-radius:0!important;margin-top:3px;background:transparent!important}
+.t-scope .f{font:600 11px Mulish,system-ui,sans-serif;color:#0F6E56}
+.t-slow{position:absolute;left:12px;bottom:10px;font:700 12px Mulish,system-ui,sans-serif;color:#9a6420;background:rgba(255,255,255,.92);padding:3px 8px;border-radius:3px;pointer-events:none}
+.t-hint{position:absolute;right:12px;bottom:10px;font:600 12px Mulish,system-ui,sans-serif;color:#8a95a3;pointer-events:none;text-align:right}
+.t-done{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);font:700 13px Mulish,system-ui,sans-serif;color:#fff;background:#0F6E56;padding:5px 12px;border-radius:3px;pointer-events:none;width:max-content;max-width:calc(100% - 24px);text-align:center}
+.t-err{position:absolute;inset:0;display:grid;place-items:center;color:#a32d2d;font:600 14px Mulish,system-ui,sans-serif;padding:20px;text-align:center}
+body .row .val{font:700 13px Mulish,system-ui,sans-serif!important;white-space:nowrap;min-width:84px}
+body .row .pill{min-width:150px}
+body .info{font:600 13px/1.8 Mulish,system-ui,sans-serif!important}
+body .info b{font-weight:800}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font:600 .82rem Mulish,system-ui,sans-serif;color:#5b6b7b;margin:10px 0 2px}
+.legend i{display:inline-block;width:18px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.legend i.dot{width:10px;height:10px;border-radius:50%}
+@media (max-width:640px){
+  .t-stage{height:60vh;min-height:430px}
+  .t-hint{display:none}
+  .t-hud{top:auto;bottom:34px;font-size:12px;padding:6px 9px}
+  .t-hud .big{font-size:13px}
+  .t-scope{width:150px;padding:5px 7px 4px}
+  .t-scope canvas{height:48px!important}
+  .t-scope .h span,.t-scope .f{display:none}
+  .t-lab{font-size:12px}
+  .t-done{bottom:auto;top:104px;font-size:12px}
+  body .row .pill{min-width:0;flex:1 1 100%}
+  body .row input[type=range]{flex:1}
+}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH11">Magnétisme</a>›<b>Cyclotron</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Magnétisme</span><span class="sfa-chip free">Gratuit</span></div><h1>Cyclotron</h1><p>Accélération d&#x27;une particule chargée dans un champ magnétique</p></div>
+<section class="sfa-sim">
+
+
+
+<div id="stage" class="t-stage" aria-label="Cyclotron en 3D : glisse pour tourner la vue, molette ou pincement pour zoomer">
+  <div class="t-hud" id="hud"></div>
+  <div class="t-scope" id="scope">
+    <div class="h">U(t) entre les dees <span id="scT"></span></div>
+    <canvas id="scv"></canvas>
+    <div class="f" id="scF"></div>
+  </div>
+  <div class="t-lab sg" id="lD1"><i>+</i>dee 1</div>
+  <div class="t-lab sg" id="lD2"><i>−</i>dee 2</div>
+  <div class="t-lab big" id="lV" style="color:#0F6E56">v̄</div>
+  <div class="t-lab big" id="lF" style="color:#9a6420">F̄ = q v̄ × B̄</div>
+  <div class="t-lab big" id="lB" style="color:#5b52c4">B̄</div>
+  <div class="t-lab" id="lE" style="color:#3d4a57">Ē (espace accélérateur)</div>
+  <div class="t-lab" id="lN" style="color:#5b6b7b">pôle nord</div>
+  <div class="t-lab" id="lS" style="color:#5b6b7b">pôle sud</div>
+  <div class="t-lab" id="lX" style="color:#0F6E56">faisceau éjecté</div>
+  <div class="t-lab" id="lK" style="color:#a32d2d">+ qU</div>
+  <div class="t-slow" id="slowTag"></div>
+  <div class="t-done" id="doneTag" hidden></div>
+  <div class="t-hint">Glisse pour tourner la vue · molette pour zoomer</div>
+</div>
+
+<div class="legend">
+  <span><i style="background:#1D9E75"></i>Vitesse v̄</span>
+  <span><i style="background:#BA7517"></i>Force de Lorentz F̄ = q v̄ × B̄</span>
+  <span><i style="background:#7F77DD"></i>Champ magnétique B̄</span>
+  <span><i class="dot" style="background:#E24B4A"></i>dee au potentiel +</span>
+  <span><i class="dot" style="background:#378ADD"></i>dee au potentiel −</span>
+</div>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill">Particule</span>
+  <button class="btn on" id="pP">Proton</button>
+  <button class="btn" id="pD">Deutéron</button>
+  <button class="btn" id="pA">Particule α</button>
+</div>
+<div class="row">
+  <span class="pill" style="color:#5b52c4">B &nbsp;champ magnétique</span>
+  <input type="range" id="sB" min="0.5" max="1.5" value="1" step="0.05" style="accent-color:#7F77DD;">
+  <span class="val" id="sBv" style="color:#5b52c4">1,00 T</span>
+</div>
+<div class="row">
+  <span class="pill" style="color:#a32d2d">U &nbsp;tension entre les dees</span>
+  <input type="range" id="sU" min="20" max="200" value="60" step="5" style="accent-color:#E24B4A;">
+  <span class="val" id="sUv" style="color:#a32d2d">60 kV</span>
+</div>
+<div class="row">
+  <span class="pill">Vitesse d'animation</span>
+  <input type="range" id="sS" min="0.25" max="4" value="1" step="0.25" style="accent-color:#5b6b7b;">
+  <span class="val" id="sSv">1 tour/s</span>
+</div>
+<div class="row">
+  <button class="btn" id="bPause">Pause</button>
+  <button class="btn" id="bReset">Recommencer</button>
+  <button class="btn on" id="v3d">Vue 3D</button>
+  <button class="btn" id="vTop">Vue de dessus</button>
+</div>
+
+<div class="info" id="info"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const box=$('stage');
+if(!window.THREE){box.insertAdjacentHTML('beforeend','<div class="t-err">Impossible de charger la 3D (three.js). Vérifie la connexion internet.</div>');return;}
+
+// ---------- constantes physiques (SI) ----------
+const e=1.602176634e-19, u=1.66053907e-27, c0=2.99792458e8;
+const PARTS={
+  pP:{nom:'proton',sym:'p',m:1.67262192e-27,Z:1},
+  pD:{nom:'deutéron',sym:'d',m:3.3435837e-27,Z:1},
+  pA:{nom:'particule α',sym:'α',m:6.6446573e-27,Z:2}};
+const R=0.30;               // rayon des dees (m)
+const REXIT=0.296;           // la particule sort du champ quand elle atteint ce rayon (m)
+const GAP=0.024;            // largeur de l'espace accélérateur (m), dessin
+const SC=10;                // 1 m = 10 unités de scène
+let part=PARTS.pP, B=1.0, U=60e3, rate=1, paused=false;
+
+// ---------- état du mouvement ----------
+// Modèle : champ B uniforme vertical (vers le haut) dans tout l'entrefer ; l'espace accélérateur est mince :
+// la particule y gagne qU en un temps négligeable. Entre deux passages : demi-cercle de rayon r = mv/(|q|B),
+// parcouru en T/2 = πm/(|q|B). Tension U(t) = U·cos(ωt) avec ω = |q|B/m : chaque passage tombe sur un maximum.
+let S; // état
+function q(){return part.Z*e;}
+function omega(){return q()*B/part.m;}
+function period(){return 2*Math.PI/omega();}
+function reset(){
+  S={t:0,n:0,half:0,th:0,s:1,zc:0,r:0,v:0,Ek:0,state:'run',exitP:null,exitD:null,tx:0,kicks:[],flash:-1};
+  // Les centres des demi-cercles alternent et tendent vers une position limite : on place la source
+  // pour que cette position limite soit le centre des dees (orbites finales centrées).
+  const r1=Math.sqrt(2*q()*U/part.m)*part.m/(q()*B); let zs=0,c1=0,c2=0;
+  for(let k=1;k<=4001;k++){const sk=k%2?1:-1,rk=r1*Math.sqrt(k),zc=zs+sk*rk;zs=zc+sk*rk;c1=c2;c2=zc;}
+  S.z0=-(c1+c2)/2; src.position.set(0,0,S.z0*SC);
+  kick(S.z0);
+  traceN=0; lastT=null; addTrace(pos(),true); traceDirty=true;
+  beamGrp.visible=false; $('doneTag').hidden=true;
+}
+function kick(zs){ // passage dans l'espace accélérateur : Ec += qU, nouvelle orbite
+  S.n++; S.Ek=S.n*q()*U; S.v=Math.sqrt(2*S.Ek/part.m); S.r=part.m*S.v/(q()*B);
+  S.s=(S.n%2)?1:-1;            // impair : vers le dee 1 (x>0), pair : vers le dee 2 (x<0)
+  S.zc=zs+S.s*S.r; S.th=0; S.half=0; S.kicks.push(S.t); if(S.kicks.length>60)S.kicks.shift(); S.flash=S.t;
+}
+function pos(){ // position (m) dans le plan y = 0
+  if(S.state==='out')return {x:S.exitP.x+S.exitD.x*S.tx,z:S.exitP.z+S.exitD.z*S.tx};
+  return {x:S.s*S.r*Math.sin(S.th),z:S.zc-S.s*S.r*Math.cos(S.th)};
+}
+function vdir(){if(S.state==='out')return S.exitD;return {x:S.s*Math.cos(S.th),z:S.s*Math.sin(S.th)};}
+function advance(dt){ // dt en secondes physiques
+  const w=omega(), T=period();
+  while(dt>0){
+    if(S.state==='out'){S.t+=dt;S.tx=Math.min(0.32,S.tx+S.v*dt);return;}
+    const left=T/2-S.half, h=Math.min(dt,left,0.035/w);
+    S.half+=h;S.t+=h;dt-=h;S.th=w*S.half;
+    const p=pos();
+    if(Math.hypot(p.x,p.z)>=REXIT){ // bord du champ : la particule sort en ligne droite
+      const d=vdir();S.state='out';S.exitP=p;S.exitD=d;S.tx=0;addTrace(p,true);showBeam();continue;}
+    addTrace(p);
+    if(S.half>=T/2*(1-1e-9)){const zs=S.zc+S.s*S.r; kick(zs);}
+  }
+}
+
+// ---------- scène ----------
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+renderer.domElement.className='gl';
+box.prepend(renderer.domElement);
+const scene=new THREE.Scene(); scene.background=new THREE.Color('#ffffff');
+const cam=new THREE.PerspectiveCamera(38,1,0.05,100);
+scene.add(new THREE.HemisphereLight('#ffffff','#a9b3bf',0.75));
+const sun=new THREE.DirectionalLight('#ffffff',0.55); sun.position.set(3,8,6); scene.add(sun);
+const fill=new THREE.DirectionalLight('#ffffff',0.25); fill.position.set(-5,2,-4); scene.add(fill);
+const mat=(c,o={})=>new THREE.MeshStandardMaterial(Object.assign({color:c,roughness:.55,metalness:.15},o));
+
+const Rs=R*SC, Hd=0.36, G2=GAP*SC/2; // rayon, hauteur des dees, demi-largeur de l'espace (scène)
+// pôles de l'aimant (vue éclatée : écartés pour laisser voir les dees)
+const PR=Rs+0.45, PY=1.45, PT=0.42;
+function poleGrad(top){ // dégradé radial doux sur la face du pôle
+  const cv=document.createElement('canvas');cv.width=cv.height=256;const g=cv.getContext('2d');
+  const gr=g.createRadialGradient(128,128,10,128,128,128);gr.addColorStop(0,top?'#eef1f5':'#dde3ea');gr.addColorStop(1,top?'#cfd6de':'#aeb8c4');
+  g.fillStyle=gr;g.fillRect(0,0,256,256);const t=new THREE.CanvasTexture(cv);return t;}
+const poleBot=new THREE.Mesh(new THREE.CylinderGeometry(PR,PR,PT,96),[mat('#9aa5b1',{roughness:.6}),mat('#ffffff',{map:poleGrad(false),roughness:.7}),mat('#8d98a5')]);
+poleBot.position.y=-PY; scene.add(poleBot);
+const poleTop=new THREE.Mesh(new THREE.CylinderGeometry(PR,PR,PT,96),mat('#b9c2cc',{transparent:true,opacity:.16,depthWrite:false}));
+poleTop.position.y=PY; scene.add(poleTop);
+function ring(r,y,col,op){const pts=[];for(let i=0;i<=128;i++){const a=i/128*Math.PI*2;pts.push(new THREE.Vector3(r*Math.cos(a),y,r*Math.sin(a)));}
+  const l=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:col,transparent:true,opacity:op}));scene.add(l);return l;}
+ring(PR,PY-PT/2,'#7d8996',.75);ring(PR,PY+PT/2,'#7d8996',.45);ring(PR,-PY+PT/2,'#6f7b88',.6);
+// cales verticales (culasse) suggérées par deux montants
+[[-1,0],[1,0]].forEach(([sx])=>{const m=new THREE.Mesh(new THREE.BoxGeometry(0.35,2*PY+PT,0.9),mat('#c3cad3',{transparent:true,opacity:.18,depthWrite:false}));m.position.set(sx*(PR+0.35),0,0);m.visible=false;scene.add(m);});
+
+// dees : boîtes en D (fond, couvercle transparent, paroi courbe), côté plat ouvert face à l'espace
+const COPPER=new THREE.Color('#c99560'), RED=new THREE.Color('#E24B4A'), BLUE=new THREE.Color('#378ADD');
+function makeDee(side){ // side = +1 : dee 1 (x > 0), -1 : dee 2 (x < 0)
+  const g=new THREE.Group(); g.position.x=side*G2;
+  const t0=side>0?0:Math.PI; // CylinderGeometry : x = r sin(θ)
+  const mBot=mat('#c99560',{roughness:.42,metalness:.35}), mWall=mat('#c99560',{roughness:.45,metalness:.3,transparent:true,opacity:.42,side:THREE.DoubleSide,depthWrite:false});
+  const mLid=mat('#d8ab7c',{roughness:.3,metalness:.2,transparent:true,opacity:.13,depthWrite:false});
+  const bot=new THREE.Mesh(new THREE.CylinderGeometry(Rs,Rs,0.04,96,1,false,t0,Math.PI),mBot); bot.position.y=-Hd/2; g.add(bot);
+  const lid=new THREE.Mesh(new THREE.CylinderGeometry(Rs,Rs,0.03,96,1,false,t0,Math.PI),mLid); lid.position.y=Hd/2; g.add(lid);
+  const wall=new THREE.Mesh(new THREE.CylinderGeometry(Rs,Rs,Hd,96,1,true,t0,Math.PI),mWall); g.add(wall);
+  // arêtes nettes
+  const pts=[];const arc=y=>{for(let i=0;i<=64;i++){const a=t0+i/64*Math.PI;pts.push(new THREE.Vector3(Rs*Math.sin(a),y,Rs*Math.cos(a)));}};
+  const segs=[];
+  [-Hd/2,Hd/2].forEach(y=>{const a=[];for(let i=0;i<=64;i++){const th=t0+i/64*Math.PI;a.push(new THREE.Vector3(Rs*Math.sin(th),y,Rs*Math.cos(th)));}
+    for(let i=0;i<64;i++)segs.push(a[i],a[i+1]); segs.push(new THREE.Vector3(0,y,Rs),new THREE.Vector3(0,y,-Rs));});
+  segs.push(new THREE.Vector3(0,-Hd/2,Rs),new THREE.Vector3(0,Hd/2,Rs),new THREE.Vector3(0,-Hd/2,-Rs),new THREE.Vector3(0,Hd/2,-Rs));
+  const mEdge=new THREE.LineBasicMaterial({color:'#8a5a2b'});
+  const edges=new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(segs),mEdge); g.add(edges);
+  scene.add(g);
+  return {g,mBot,mWall,mLid,mEdge};
+}
+const D1=makeDee(1), D2=makeDee(-1);
+function tintDee(D,v){ // v ∈ [-1,1] : potentiel relatif (+ rouge, − bleu)
+  const k=Math.min(1,Math.abs(v))*0.62, col=COPPER.clone().lerp(v>0?RED:BLUE,k);
+  D.mBot.color.copy(col); D.mWall.color.copy(col); D.mLid.color.copy(col);
+  D.mEdge.color.copy(new THREE.Color('#8a5a2b').lerp(v>0?new THREE.Color('#a32d2d'):new THREE.Color('#185fa5'),Math.min(1,Math.abs(v))));
+}
+// lueur de l'espace accélérateur au moment d'un passage
+const gapGlow=new THREE.Mesh(new THREE.PlaneGeometry(GAP*SC*0.9,2*Rs),new THREE.MeshBasicMaterial({color:'#F2C46B',transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide}));
+gapGlow.rotation.x=-Math.PI/2; gapGlow.position.y=-Hd/2+0.03; scene.add(gapGlow);
+
+// ---------- flèches 3D ----------
+const UP=new THREE.Vector3(0,1,0);
+function arrow(col,rad=0.03,head=0.09,op=1,top=true){
+  const g=new THREE.Group();
+  const m=new THREE.MeshBasicMaterial({color:col,transparent:op<1||top,opacity:op,depthTest:!top});
+  const sh=new THREE.Mesh(new THREE.CylinderGeometry(rad,rad,1,12),m), hd=new THREE.Mesh(new THREE.ConeGeometry(head,head*2.4,18),m);
+  g.add(sh,hd); if(top){sh.renderOrder=hd.renderOrder=10;} g.userData={sh,hd,hl:head*2.4,m}; scene.add(g); return g;}
+function setArrow(a,o,v){const L=v.length(); a.visible=L>0.02; if(!a.visible)return;
+  const d=v.clone().normalize(), hl=Math.min(a.userData.hl,L*0.5);
+  a.position.copy(o); a.quaternion.setFromUnitVectors(UP,d);
+  a.userData.sh.scale.set(1,L-hl,1); a.userData.sh.position.set(0,(L-hl)/2,0); a.userData.hd.position.set(0,L-hl/2,0);}
+// champ B : quelques flèches discrètes entre les pôles
+const bArrows=[], bPos=[];
+for(let i=0;i<8;i++){const a=i/8*Math.PI*2+Math.PI/8; bPos.push(new THREE.Vector3((Rs+0.24)*Math.cos(a),0,(Rs+0.24)*Math.sin(a)));}
+for(let i=0;i<4;i++){const a=i/4*Math.PI*2+Math.PI/4; bPos.push(new THREE.Vector3(1.75*Math.cos(a),0,1.75*Math.sin(a)));}
+bPos.forEach((p,i)=>{const a=arrow('#7F77DD',i<8?0.018:0.012,i<8?0.06:0.045,i<8?0.6:0.38,false);
+  setArrow(a,new THREE.Vector3(p.x,-PY+PT/2+0.04,p.z),new THREE.Vector3(0,2*PY-PT-0.1,0));bArrows.push(a);});
+// champ É dans l'espace accélérateur
+const eArrows=[];for(let i=0;i<5;i++){const a=arrow('#3d4a57',0.012,0.035,0.85,false);eArrows.push(a);}
+const aV=arrow('#1D9E75',0.032,0.09), aF=arrow('#BA7517',0.032,0.09);
+// particule
+const pMesh=new THREE.Mesh(new THREE.SphereGeometry(0.1,24,16),new THREE.MeshStandardMaterial({color:'#E24B4A',emissive:'#6a1515',roughness:.35}));
+pMesh.renderOrder=11; scene.add(pMesh);
+const halo=new THREE.Mesh(new THREE.SphereGeometry(0.17,20,14),new THREE.MeshBasicMaterial({color:'#E24B4A',transparent:true,opacity:.18,depthWrite:false}));
+scene.add(halo);
+// source d'ions au centre
+let src=null; src=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.035,Hd*0.9,12),mat('#5b6b7b')); scene.add(src);
+
+// trace (spirale) : tampon préalloué, couleurs selon l'énergie
+const TMAX=260000;
+const tPos=new Float32Array(TMAX*3), tCol=new Float32Array(TMAX*3);
+const tGeo=new THREE.BufferGeometry();
+tGeo.setAttribute('position',new THREE.BufferAttribute(tPos,3)); tGeo.setAttribute('color',new THREE.BufferAttribute(tCol,3));
+const tLine=new THREE.Line(tGeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.8})); tLine.frustumCulled=false; scene.add(tLine);
+let traceN=0, traceDirty=false, lastT=null;
+const cA=new THREE.Color('#9ccfe0'), cB=new THREE.Color('#2d4258');
+function addTrace(p,force){
+  if(traceN>=TMAX)return;
+  const x=p.x*SC,z=p.z*SC;
+  if(!force&&lastT&&Math.hypot(x-lastT.x,z-lastT.z)<0.018&&traceN>0)return;
+  lastT={x,z};
+  const k=Math.min(1,S?S.Ek/Emax():0), col=cA.clone().lerp(cB,Math.pow(k,0.6));
+  tPos[3*traceN]=x;tPos[3*traceN+1]=0;tPos[3*traceN+2]=z;
+  tCol[3*traceN]=col.r;tCol[3*traceN+1]=col.g;tCol[3*traceN+2]=col.b;traceN++;traceDirty=true;
+}
+function Emax(){return q()*q()*B*B*R*R/(2*part.m);}
+
+// faisceau éjecté
+const beamGrp=new THREE.Group(); scene.add(beamGrp);
+const beamM=new THREE.MeshBasicMaterial({color:'#1D9E75',transparent:true,opacity:.35,depthWrite:false});
+const beam=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.035,1,12),beamM); beamGrp.add(beam);
+const pulses=[];for(let i=0;i<6;i++){const s=new THREE.Mesh(new THREE.SphereGeometry(0.055,14,10),new THREE.MeshBasicMaterial({color:'#E24B4A'}));beamGrp.add(s);pulses.push(s);}
+const BEAML=3.2;
+function showBeam(){const p=new THREE.Vector3(S.exitP.x*SC,0,S.exitP.z*SC), d=new THREE.Vector3(S.exitD.x,0,S.exitD.z);
+  beam.position.copy(p.clone().add(d.clone().multiplyScalar(BEAML/2))); beam.quaternion.setFromUnitVectors(UP,d); beam.scale.set(1,BEAML,1);
+  beamGrp.visible=true; beamGrp.userData={p,d};
+  $('doneTag').hidden=false;
+  $('doneTag').textContent='Éjectée : Ec = '+fx(S.Ek/e/1e6,2)+' MeV après '+S.n+' passages (q²B²R²/2m = '+fx(Emax()/e/1e6,2)+' MeV)';
+}
+
+// ---------- caméra en orbite ----------
+let orb={th:0.62,ph:1.0,r:11.5}, goal=null;
+const views={v3d:{th:0.62,ph:1.0,r:11.5},vTop:{th:0,ph:0.02,r:14.2}};
+function setView(k){goal={...views[k]};$('v3d').classList.toggle('on',k==='v3d');$('vTop').classList.toggle('on',k==='vTop');}
+$('v3d').onclick=()=>setView('v3d'); $('vTop').onclick=()=>setView('vTop');
+const ptrs=new Map(); let pinch0=null;
+box.addEventListener('pointerdown',ev=>{box.setPointerCapture(ev.pointerId);ptrs.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});goal=null;
+  if(ptrs.size===2){const [a,b]=[...ptrs.values()];pinch0={d:Math.hypot(a.x-b.x,a.y-b.y),r:orb.r};}});
+box.addEventListener('pointermove',ev=>{const p=ptrs.get(ev.pointerId);if(!p)return;
+  if(ptrs.size===1){orb.th-=(ev.clientX-p.x)*0.008;orb.ph=Math.max(0.02,Math.min(1.45,orb.ph-(ev.clientY-p.y)*0.008));
+    $('v3d').classList.remove('on');$('vTop').classList.remove('on');}
+  p.x=ev.clientX;p.y=ev.clientY;
+  if(ptrs.size===2&&pinch0){const [a,b]=[...ptrs.values()];const d=Math.hypot(a.x-b.x,a.y-b.y)||1;orb.r=Math.max(6,Math.min(22,pinch0.r*pinch0.d/d));}});
+const end=ev=>{ptrs.delete(ev.pointerId);if(ptrs.size<2)pinch0=null;};
+box.addEventListener('pointerup',end); box.addEventListener('pointercancel',end);
+box.addEventListener('wheel',ev=>{ev.preventDefault();orb.r=Math.max(6,Math.min(22,orb.r*Math.exp(ev.deltaY*0.0012)));},{passive:false});
+const tgt=new THREE.Vector3(0,0,0);
+function placeCam(){
+  // distance qui fait tenir l'appareil (≈ 4 unités de demi-largeur, 3,4 de demi-hauteur) puis zoom de l'utilisateur
+  const asp=cam.aspect, tf=Math.tan(cam.fov*Math.PI/360), fit=Math.max(3.9/(tf*asp),3.7/tf), th=orb.th, r=fit*orb.r/11.5;
+  cam.position.set(tgt.x+r*Math.sin(orb.ph)*Math.sin(th),tgt.y+r*Math.cos(orb.ph),tgt.z+r*Math.sin(orb.ph)*Math.cos(th));
+  cam.up.set(0,1,0); if(orb.ph<0.06)cam.up.set(-Math.sin(th),0,-Math.cos(th)); cam.lookAt(tgt);}
+
+// ---------- contrôles ----------
+const fx=(v,n=2)=>v.toFixed(n).replace('.',',');
+function sci(v,n=2){const ex=Math.floor(Math.log10(Math.abs(v)));const m=v/Math.pow(10,ex);
+  const sup={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+  return fx(m,n)+'·10'+String(ex).split('').map(ch=>sup[ch]).join('');}
+$('sB').addEventListener('input',()=>{B=+$('sB').value;$('sBv').textContent=fx(B)+' T';reset();});
+$('sU').addEventListener('input',()=>{U=+$('sU').value*1e3;$('sUv').textContent=$('sU').value+' kV';reset();});
+$('sS').addEventListener('input',()=>{rate=+$('sS').value;$('sSv').textContent=fx(rate,rate%1?2:0).replace(/,?0+$/,'').replace(/,$/,'')+(rate>1?' tours/s':' tour/s');});
+Object.keys(PARTS).forEach(k=>$(k).onclick=()=>{part=PARTS[k];Object.keys(PARTS).forEach(j=>$(j).classList.toggle('on',j===k));reset();});
+$('bPause').onclick=()=>{paused=!paused;$('bPause').textContent=paused?'Lecture':'Pause';$('bPause').classList.toggle('on',paused);};
+$('bReset').onclick=reset;
+
+// ---------- étiquettes HTML : placement glouton sans chevauchement ----------
+const labs={};['lD1','lD2','lV','lF','lB','lE','lN','lS','lX','lK'].forEach(id=>labs[id]=$(id));
+const sizeCache=new Map();
+function lsize(el){const key=el.id+'|'+el.textContent+'|'+innerWidth;let s=sizeCache.get(key);
+  if(!s){s={w:el.offsetWidth,h:el.offsetHeight};sizeCache.set(key,s);}return s;}
+function proj(v){const p=v.clone().project(cam);return {x:(p.x+1)/2*box.clientWidth,y:(1-p.y)/2*box.clientHeight,ok:p.z<1};}
+function overlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
+function rectOf(el){const r=el.getBoundingClientRect(),s=box.getBoundingClientRect();return {x:r.left-s.left-4,y:r.top-s.top-4,w:r.width+8,h:r.height+8};}
+function placeAll(list,obst){
+  const W=box.clientWidth,H=box.clientHeight,placed=[...obst];
+  Object.values(labs).forEach(el=>el._used=false);
+  for(const L of list){
+    const el=labs[L.id]; if(!L.p||!L.p.ok){continue;}
+    const {w,h}=lsize(el); let best=null;
+    for(const [dx,dy] of L.c){
+      const x=L.p.x+dx-w/2,y=L.p.y+dy-h/2,r={x:x-3,y:y-3,w:w+6,h:h+6};
+      if(x<4||y<4||x+w>W-4||y+h>H-4)continue;
+      if(placed.some(o=>overlap(o,r)))continue;
+      best={x,y,r};break;}
+    if(best){el._used=true;el.style.transform=`translate(${best.x}px,${best.y}px)`;placed.push(best.r);}
+  }
+  Object.values(labs).forEach(el=>el.style.opacity=el._used?1:0);
+}
+function ringC(base){const out=[];for(const rad of base)for(let i=0;i<12;i++){const a=i/12*Math.PI*2;out.push([rad*Math.cos(a),rad*Math.sin(a)]);}return out;}
+function tipC(dx,dy,w,h){ // candidats : dans l'axe de la flèche au-delà de la pointe, puis autour
+  const n=Math.hypot(dx,dy)||1,ux=dx/n,uy=dy/n,out=[];
+  for(const k of [1,1.5,2.2]){const d=(w/2*Math.abs(ux)+h/2*Math.abs(uy)+8)*k;out.push([ux*d,uy*d]);
+    out.push([ux*d-uy*(h/2+10),uy*d+ux*(h/2+10)]);out.push([ux*d+uy*(h/2+10),uy*d-ux*(h/2+10)]);}
+  return out;}
+function segObst(a,b,pad=7){const o=[];for(let i=0;i<=6;i++){const t=i/6;o.push({x:a.x+(b.x-a.x)*t-pad,y:a.y+(b.y-a.y)*t-pad,w:2*pad,h:2*pad});}return o;}
+
+function size(){const w=box.clientWidth,h=box.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();sizeScope();}
+// oscilloscope
+const scv=$('scv'),sctx=scv.getContext('2d');let SW=0,SH=0;
+function sizeScope(){const r=scv.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);SW=r.width;SH=r.height;scv.width=Math.round(SW*d);scv.height=Math.round(SH*d);sctx.setTransform(d,0,0,d,0,0);}
+new ResizeObserver(size).observe(box); size();
+
+function drawScope(){
+  if(!SW)return; const L0=22, PW=SW-L0, T=period(), span=2.5*T, t1=S.t, t0=t1-span*0.8, mid=SH/2, A=SH/2-6;
+  const X=t=>L0+(t-t0)/span*PW;
+  sctx.clearRect(0,0,SW,SH);
+  sctx.strokeStyle='#d3d9e2';sctx.lineWidth=1;sctx.beginPath();sctx.moveTo(L0,mid);sctx.lineTo(SW,mid);sctx.stroke();
+  // courbe colorée selon le signe : V(dee 1) − V(dee 2)
+  const w=omega();
+  for(let i=0;i<PW;i+=1){const ta=t0+i/PW*span,tb=t0+(i+1)/PW*span,ya=-Math.cos(w*ta),yb=-Math.cos(w*tb);
+    sctx.strokeStyle=(ya+yb)>0?'#E24B4A':'#378ADD';sctx.lineWidth=2;sctx.beginPath();sctx.moveTo(L0+i,mid-ya*A);sctx.lineTo(L0+i+1,mid-yb*A);sctx.stroke();}
+  // passages de la particule
+  sctx.fillStyle='#1D9E75';
+  S.kicks.forEach((tk,i)=>{if(tk<t0||tk>t1)return;const y=mid+Math.cos(w*tk)*A;sctx.beginPath();sctx.arc(X(tk),y,3.2,0,7);sctx.fill();});
+  sctx.strokeStyle='#13233a';sctx.lineWidth=1.2;sctx.setLineDash([3,3]);sctx.beginPath();sctx.moveTo(X(t1),2);sctx.lineTo(X(t1),SH-2);sctx.stroke();sctx.setLineDash([]);
+  sctx.font='700 10px Mulish,system-ui,sans-serif';sctx.fillStyle='#8a95a3';sctx.textBaseline='middle';sctx.fillText('+U',0,mid-A);sctx.fillText('−U',0,mid+A);sctx.fillText('0',6,mid);
+}
+
+// ---------- boucle ----------
+let tPrev=performance.now();
+reset();
+function loop(now){
+  const dtR=Math.min(0.05,(now-tPrev)/1000); tPrev=now;
+  const T=period();
+  if(!paused) advance(dtR*rate*T);   // ralenti : « rate » tours par seconde réelle
+  if(goal){['th','ph','r'].forEach(k=>orb[k]+=(goal[k]-orb[k])*0.12);if(Math.abs(goal.ph-orb.ph)<1e-3&&Math.abs(goal.th-orb.th)<1e-3&&Math.abs(goal.r-orb.r)<1e-3)goal=null;}
+  placeCam();
+
+  // polarité : V(dee 1) − V(dee 2) = −U cos(ωt)  (au départ, dee 2 est + et pousse la particule vers le dee 1)
+  const ph=-Math.cos(omega()*S.t);
+  tintDee(D1,ph); tintDee(D2,-ph);
+  const fl=S.flash>=0?Math.max(0,1-(S.t-S.flash)/(0.12*T)):0;
+  gapGlow.material.opacity=S.state==='out'?0:0.55*fl;
+
+  // particule, vecteurs
+  const p=pos(), P3=new THREE.Vector3(p.x*SC,0,p.z*SC), d=vdir(), V3=new THREE.Vector3(d.x,0,d.z);
+  pMesh.position.copy(P3); halo.position.copy(P3);
+  setArrow(aV,P3,V3.clone().multiplyScalar(1.2));
+  const F3=S.state==='out'?new THREE.Vector3():new THREE.Vector3(-V3.z,0,V3.x).multiplyScalar(0.95); // q v × B, B = +y : (−vz, 0, vx)
+  setArrow(aF,P3,F3);
+  // champ électrique dans l'espace : de + vers −, intensité ∝ |U(t)|
+  eArrows.forEach((a,i)=>{const z=(-0.8+i*0.4)*Rs, dir=ph>0?-1:1, L=GAP*SC*0.85*Math.abs(ph);
+    a.visible=S.state!=='out';if(!a.visible)return;setArrow(a,new THREE.Vector3(-dir*L/2,0.02,z),new THREE.Vector3(dir*L,0,0));});
+  if(beamGrp.visible){const {p:bp,d:bd}=beamGrp.userData;const ph2=(S.t/T)%1;
+    pulses.forEach((s,i)=>{const k=((i+ph2)/pulses.length);s.position.copy(bp.clone().add(bd.clone().multiplyScalar(k*BEAML)));});
+    pMesh.visible=halo.visible=false;}
+  else pMesh.visible=halo.visible=true;
+  if(traceDirty){tGeo.setDrawRange(0,traceN);tGeo.attributes.position.needsUpdate=true;tGeo.attributes.color.needsUpdate=true;traceDirty=false;}
+
+  renderer.render(scene,cam);
+
+  // ---------- étiquettes ----------
+  const pp=proj(P3), vt=proj(P3.clone().add(V3.clone().multiplyScalar(1.2))), ft=proj(P3.clone().add(F3));
+  const obst=[rectOf($('hud')),rectOf($('scope')),rectOf($('slowTag'))];
+  if(!$('doneTag').hidden)obst.push(rectOf($('doneTag')));
+  if(getComputedStyle(document.querySelector('.t-hint')).display!=='none')obst.push(rectOf(document.querySelector('.t-hint')));
+  obst.push({x:pp.x-10,y:pp.y-10,w:20,h:20});
+  if(aV.visible)obst.push(...segObst(pp,vt)); if(aF.visible)obst.push(...segObst(pp,ft));
+  const sgn=x=>x>0?'+':'−';
+  const d1=labs.lD1, d2=labs.lD2;
+  d1.firstChild.textContent=sgn(ph); d1.firstChild.style.background=ph>0?'#E24B4A':'#378ADD'; d1.style.borderColor=ph>0?'#f3b4b3':'#b5d4f4';
+  d2.firstChild.textContent=sgn(-ph); d2.firstChild.style.background=ph>0?'#378ADD':'#E24B4A'; d2.style.borderColor=ph>0?'#b5d4f4':'#f3b4b3';
+  const Rl=Rs*0.62, aL=(Math.PI*0.28);
+  const list=[
+    {id:'lV',p:aV.visible?vt:null,c:tipC(vt.x-pp.x,vt.y-pp.y,lsize(labs.lV).w,lsize(labs.lV).h)},
+    {id:'lF',p:aF.visible?ft:null,c:tipC(ft.x-pp.x,ft.y-pp.y,lsize(labs.lF).w,lsize(labs.lF).h)},
+    {id:'lD1',p:proj(new THREE.Vector3(G2+Rl*Math.sin(Math.PI/2+aL),Hd/2,Rl*Math.cos(Math.PI/2+aL))),c:[[0,0],...ringC([30,55,80])]},
+    {id:'lD2',p:proj(new THREE.Vector3(-G2-Rl*Math.sin(Math.PI/2+aL),Hd/2,Rl*Math.cos(Math.PI/2+aL))),c:[[0,0],...ringC([30,55,80])]},
+    {id:'lB',p:proj(bPos[1].clone().setY(PY*0.55)),c:[[18,0],[-18,0],[18,-16],[-18,-16],[18,16],[-18,16],[30,0],[-30,0]]},
+    {id:'lX',p:beamGrp.visible?proj(beamGrp.userData.p.clone().add(beamGrp.userData.d.clone().multiplyScalar(BEAML*0.75))):null,c:[[0,-18],[0,18],...ringC([30,50])]},
+    {id:'lK',p:(fl>0&&S.state!=='out')?proj(new THREE.Vector3(0,Hd/2,p.z*SC)):null,c:[[0,-22],[0,22],[40,0],[-40,0],...ringC([45])]},
+    {id:'lN',p:proj(new THREE.Vector3(0,-PY-PT/2,PR)),c:[[0,14],[0,22],[60,10],[-60,10]]},
+    {id:'lS',p:proj(new THREE.Vector3(-PR*0.62,PY+PT/2,-PR*0.62)),c:[[0,-14],[0,-24],[60,-14],[-60,-14]]},
+    {id:'lE',p:S.state!=='out'?proj(new THREE.Vector3(0,0,-0.8*Rs)):null,c:[[0,-20],[0,20],...ringC([40,60])]},
+  ];
+  labs.lK.textContent='+ qU = +'+fx(part.Z*U/1e3,0)+' keV';
+  placeAll(list,obst);
+
+  // ---------- lecture ----------
+  const f=1/T, Ek=S.Ek, v=S.v, r=S.state==='out'?S.r:S.r, tours=S.n/2;
+  const EmaxMeV=Emax()/e/1e6;
+  $('hud').innerHTML=`<div class="big">r = <span style="color:#13233a">m·v</span> / (|q|·<b style="color:#5b52c4">B</b>) = <b>${fx(r*100,1)} cm</b></div>
+    <div class="big">E<sub>c</sub> = ${S.n} × qU = <b style="color:#a32d2d">${fx(Ek/e/1e6,2)} MeV</b></div>
+    <div class="sub">chaque demi-tour dure ${fx(T/2*1e9,1)} ns, quelle que soit v</div>`;
+  $('scT').textContent='T = '+fx(T*1e9,1)+' ns';
+  $('scF').textContent='f = '+fx(f/1e6,2)+' MHz : la même du 1er au dernier tour';
+  $('slowTag').textContent='Ralenti : 1 tour = '+fx(T*1e9,1)+' ns → '+fx(1/rate,2).replace(/,?0+$/,'')+' s';
+  $('info').innerHTML=`<b>${part.nom}</b> (q = ${part.Z>1?part.Z+'e':'e'}, m = ${sci(part.m)} kg) &nbsp;|&nbsp; r = <b>${fx(r*100,1)} cm</b> &nbsp;|&nbsp; v = <b style="color:#0F6E56">${sci(v)} m/s</b> (${fx(v/c0*100,1)} % de c) &nbsp;|&nbsp; E<sub>c</sub> = <b style="color:#a32d2d">${fx(Ek/e/1e6,2)} MeV</b> &nbsp;|&nbsp; tours : <b>${fx(tours,1)}</b> &nbsp;|&nbsp; f = <b style="color:#5b52c4">${fx(f/1e6,2)} MHz</b> (constante) &nbsp;|&nbsp; E<sub>c</sub> max = q²B²R²/(2m) = <b>${fx(EmaxMeV,2)} MeV</b> pour R = ${R*100} cm`;
+  drawScope();
+  requestAnimationFrame(loop);
+}
+$('fml').innerHTML='<b style="color:#BA7517">F̄ = q v̄ × B̄</b> ⊥ v̄ : dans un dee, la vitesse garde sa valeur et la particule décrit un demi-cercle de rayon <b>r = m v / (|q| B)</b>. '
+  +'Durée d’un tour : <b style="color:#5b52c4">T = 2π m / (|q| B)</b>, <b>indépendante de v</b> : la tension alternative garde la même fréquence f = 1/T. '
+  +'À chaque passage dans l’espace accélérateur : <b style="color:#a32d2d">ΔE<sub>c</sub> = q U</b>. Au bord (r = R) : <b>E<sub>c</sub> = q² B² R² / (2m)</b>.';
+setView('v3d');
+requestAnimationFrame(loop);
+window.__t={get S(){return S},period,Emax,set rate(v){rate=v},advance,reset};
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Magnétisme et forces électromagnétiques<span>5 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/regle-main-droite/"><i>01</i>Règle de la main droite</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/aimants-laplace/"><i>02</i>Aimants, courants et force de Laplace</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/forces-magn-tique-sur-fils-/"><i>03</i>Forces entre fils parallèles</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Cyclotron/"><i>04</i>Cyclotron</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/loi-de-lenz/"><i>05</i>Loi de Lenz : induction</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

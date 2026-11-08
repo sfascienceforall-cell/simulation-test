@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuration électronique et nombres quantiques · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+.hint{font:500 .84rem var(--f-ui);color:var(--muted)}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:14px}
+.box h2{font:800 15px var(--f-ui);margin:0 0 8px}
+.box ul{margin:0;padding-left:18px}.box li{margin:4px 0}
+.box.warn{border-left:4px solid #BA7517}
+.box.keep{border-left:4px solid var(--green)}
+details.defi{border-top:1px solid var(--line);padding:9px 0}details.defi:first-of-type{border-top:0}
+details.defi summary{cursor:pointer;font-weight:700;color:var(--ink2)}
+details.defi div{margin-top:6px;color:var(--ink2);background:var(--bg);border-radius:8px;padding:8px 12px}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.note{font:500 .8rem/1.45 var(--f-ui);color:var(--muted);margin-top:8px}
+sub,sup{font-size:.72em;line-height:0}
+.ce-stage{display:grid;grid-template-columns:250px minmax(0,1fr);gap:14px;border:1px solid var(--line);border-radius:10px;padding:12px;background:#fff}
+@media (max-width:700px){.ce-stage{grid-template-columns:minmax(0,1fr)}}
+.ce-stage h3{font:800 12px var(--f-ui);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
+#kl{width:100%;max-width:250px;height:auto;display:block;margin:0 auto}
+#kl text{font:700 12px Mulish,system-ui,sans-serif}
+.subs{display:flex;flex-wrap:wrap;gap:12px 14px;align-items:flex-end;min-height:60px}
+.sub{display:flex;flex-direction:column;align-items:center;gap:3px}
+.sub .bx{display:flex}
+.sub .lb{font:800 12px var(--f-ui);color:var(--ink2)}
+.sub .lb small{font-weight:600;color:var(--faint)}
+.sub.cur .lb{color:#a32d2d}
+.sub.empty .bx{opacity:.55}
+.case{width:30px;height:32px;border:1.5px solid #5b6470;margin-left:-1.5px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:1px;font:800 17px/1 var(--f-ui);padding:0}
+.case:first-child{margin-left:0}
+.case:hover{background:#f3f6fb}
+.case.sel{background:#fff4d6;outline:2px solid #BA7517;outline-offset:-3px;position:relative}
+.case .u{color:#185fa5}.case .d{color:#a32d2d}
+.case.new{animation:pop .35s ease-out}
+@keyframes pop{0%{background:#fff0c2}100%{background:#fff}}
+@media (max-width:520px){.case{width:25px;height:29px;font-size:15px}.subs{gap:10px 10px}}
+.cap{font:600 .85rem/1.45 var(--f-ui);color:var(--ink2);margin-top:10px;min-height:2.6em;background:var(--bg);border-radius:8px;padding:8px 10px}
+.cfg{font:700 1.02rem/1.7 var(--f-ui);word-break:break-word}
+.exc{display:inline-block;background:#fff4d6;color:#7a4b00;font:800 11px var(--f-ui);padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:middle}
+.qtab{width:100%;border-collapse:collapse;font:600 .86rem var(--f-ui);margin:6px 0}
+.qtab th,.qtab td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top}
+.qtab th{font-weight:800;color:var(--muted);font-size:.78rem}
+.qwrap{overflow-x:auto}
+.chk{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:8px 0}
+.chk label{font:700 .86rem var(--f-ui);color:var(--ink2);display:flex;gap:6px;align-items:center}
+.verdict{font:700 .9rem/1.5 var(--f-ui);padding:8px 12px;border-radius:8px;margin-top:6px}
+.verdict.ok{background:#e6f3ee;color:#1f5a45}.verdict.ko{background:#fbeaea;color:#8a2424}
+.zrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.zrow input[type=range]{flex:1;min-width:140px}
+.zbig{font:800 1.05rem var(--f-ui);min-width:150px}
+.qbtns{display:flex;flex-wrap:wrap;gap:6px}
+.qbtns .btn{padding:6px 10px!important}
+
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a class="on" href="../">Simulations de chimie</a><a href="../exercices/">Exercices de chimie</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations de physique</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="../">Simulations de chimie</a>›<a href="../#atome">Atome et liaison chimique</a>›<b>Configuration électronique et nombres quantiques</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Chimie générale · Atome et liaison</span><span class="sfa-chip free">Gratuit</span></div><h1>Configuration électronique et nombres quantiques</h1><p>Remplis les cases quantiques électron par électron : Klechkowski, Pauli et Hund, puis les ions et les exceptions.</p></div>
+<section class="sfa-sim">
+<div class="tabs" role="tablist">
+  <button class="btn on" id="tabC" role="tab" aria-selected="true">Configuration</button>
+  <button class="btn" id="tabQ" role="tab" aria-selected="false">Nombres quantiques</button>
+</div>
+
+<div id="paneC">
+<div class="row zrow">
+  <span class="pill">Élément</span>
+  <select id="Zsel" aria-label="Choisir un élément"></select>
+</div>
+<div class="row zrow">
+  <span class="pill">Z</span>
+  <button class="btn" id="zm" aria-label="Élément précédent">−</button>
+  <input type="range" id="Z" min="1" max="86" value="26" step="1" style="accent-color:#1e3f8f" aria-label="Numéro atomique Z">
+  <button class="btn" id="zp" aria-label="Élément suivant">+</button>
+</div>
+<div class="row zrow">
+  <span class="pill">Charge</span>
+  <div class="qbtns" id="qb"></div>
+</div>
+<div class="row zrow">
+  <span class="pill">Exemples</span>
+  <div class="qbtns" id="ex"></div>
+</div>
+
+<div class="ce-stage">
+  <div><h3>Ordre de Klechkowski</h3>
+    <svg id="kl" viewBox="0 0 250 262" role="img" aria-label="Diagramme des diagonales de Klechkowski"></svg>
+    <p class="note">On suit les flèches : n + l croissant, puis n croissant à n + l égal. C'est une règle empirique (un modèle).</p>
+  </div>
+  <div><h3>Cases quantiques <span id="ordLbl" style="text-transform:none;letter-spacing:0;font-weight:600"></span></h3>
+    <div class="subs" id="subs" aria-live="polite"></div>
+    <div class="cap" id="cap"></div>
+  </div>
+</div>
+
+<div class="row">
+  <button class="btn" id="bAnim">Animer le remplissage</button>
+  <button class="btn" id="bStep">Électron suivant</button>
+  <button class="btn" id="bAll">Tout afficher</button>
+  <button class="btn" id="bOrd">Écrire par n croissant</button>
+</div>
+
+<div class="fml" id="fml"></div>
+<div class="info" id="info"></div>
+<p class="note">Clique sur une case pour lire ses quatre nombres quantiques. Convention de la simulation : les cases vont de mℓ = −l (à gauche) à mℓ = +l, et le premier électron d'une case a ms = +½ (flèche ↑). D'autres cours prennent l'ordre inverse : seule compte la règle (spins parallèles avant d'apparier). La simulation écrit une configuration ; elle ne dit pas si l'ion existe (Na²⁺ ou He⁻, par exemple, n'existent pas dans les conditions usuelles).</p>
+</div>
+
+<div id="paneQ" hidden>
+<div class="fml">Quatre nombres décrivent un électron : <b>n</b> (couche, n = 1, 2, 3…), <b>l</b> (sous-couche, 0 ≤ l ≤ n − 1), <b>mℓ</b> (orbitale, −l ≤ mℓ ≤ +l) et <b>ms</b> (spin, +½ ou −½).<br>Principe de Pauli : deux électrons d'un même atome n'ont jamais les quatre mêmes nombres, donc 2 électrons au plus par case.</div>
+<div class="qwrap"><table class="qtab" id="qt"></table></div>
+<h3 style="font:800 14px var(--f-ui);margin:14px 0 4px">Teste un quadruplet</h3>
+<div class="chk">
+  <label>n <select id="qn"></select></label>
+  <label>l <select id="ql"></select></label>
+  <label>mℓ <select id="qm"></select></label>
+  <label>ms <select id="qs"><option value="1">+½</option><option value="-1">−½</option></select></label>
+</div>
+<div class="verdict" id="qv"></div>
+</div>
+</section>
+
+<div class="box keep"><h2>Ce qu'il faut retenir</h2><ul>
+<li>Une case = une orbitale = un trio (n, l, mℓ). Elle contient au plus 2 électrons de spins opposés (Pauli).</li>
+<li>Nombre d'orbitales : s 1, p 3, d 5, f 7. Électrons au maximum : 2, 6, 10, 14. Une couche n contient n² orbitales et au plus 2n² électrons.</li>
+<li>Klechkowski : on remplit par n + l croissant, puis n croissant (4s avant 3d, 6s avant 4f).</li>
+<li>Hund : dans une sous-couche, on occupe d'abord toutes les cases avec des spins parallèles, puis on apparie.</li>
+<li>Cr, Mo : (n−1)d⁵ ns¹ ; Cu, Ag, Au : (n−1)d¹⁰ ns¹. Ce sont les exceptions à connaître.</li>
+</ul></div>
+<div class="box warn"><h2>Pièges classiques</h2><ul>
+<li>Fe²⁺ n'est pas [Ar] 4s² 3d⁴ : un cation de transition perd d'abord ses électrons ns. Fe²⁺ = [Ar] 3d⁶.</li>
+<li>Apparier trop tôt : en 2p⁴ (oxygène), il reste 2 électrons célibataires, pas 0.</li>
+<li>Confondre l'ordre de remplissage et l'ordre d'écriture : [Ar] 4s² 3d⁶ et [Ar] 3d⁶ 4s² décrivent le même atome.</li>
+<li>Oublier que l ne peut pas valoir n : il n'existe ni 1p, ni 2d, ni 3f.</li>
+</ul></div>
+<div class="box"><h2>Défis</h2>
+<details class="defi"><summary>Combien d'électrons célibataires dans Fe, puis dans Fe³⁺ ?</summary><div>Fe : 3d⁶ → 4 célibataires (une case appariée, quatre cases à un électron). Fe³⁺ = [Ar] 3d⁵ → 5 célibataires : chaque case d contient un électron. Vérifie avec le compteur sous la formule.</div></details>
+<details class="defi"><summary>Quel cation de charge 3+ a exactement la même configuration que Mn²⁺ ?</summary><div>Mn²⁺ = [Ar] 3d⁵ (23 électrons). Il faut Z − 3 = 23, donc Z = 26 : Fe³⁺ = [Ar] 3d⁵.</div></details>
+<details class="defi"><summary>Donne les quatre nombres quantiques du 8ᵉ électron de l'oxygène (convention de la simulation).</summary><div>Le 8ᵉ électron est le 4ᵉ de 2p : les trois premières cases ont chacune un ↑, le 4ᵉ s'apparie dans la première case. n = 2, l = 1, mℓ = −1, ms = −½. Avec la convention inverse, on trouverait mℓ = +1 : vérifie toujours la convention de ton cours.</div></details>
+</div>
+
+<script>
+/* Symboles et noms français des éléments 1 à 86 (nomenclature IUPAC, noms français usuels). */
+const SYM=['','H','He','Li','Be','B','C','N','O','F','Ne','Na','Mg','Al','Si','P','S','Cl','Ar','K','Ca','Sc','Ti','V','Cr','Mn','Fe','Co','Ni','Cu','Zn','Ga','Ge','As','Se','Br','Kr','Rb','Sr','Y','Zr','Nb','Mo','Tc','Ru','Rh','Pd','Ag','Cd','In','Sn','Sb','Te','I','Xe','Cs','Ba','La','Ce','Pr','Nd','Pm','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb','Lu','Hf','Ta','W','Re','Os','Ir','Pt','Au','Hg','Tl','Pb','Bi','Po','At','Rn'];
+const NOM=['','hydrogène','hélium','lithium','béryllium','bore','carbone','azote','oxygène','fluor','néon','sodium','magnésium','aluminium','silicium','phosphore','soufre','chlore','argon','potassium','calcium','scandium','titane','vanadium','chrome','manganèse','fer','cobalt','nickel','cuivre','zinc','gallium','germanium','arsenic','sélénium','brome','krypton','rubidium','strontium','yttrium','zirconium','niobium','molybdène','technétium','ruthénium','rhodium','palladium','argent','cadmium','indium','étain','antimoine','tellure','iode','xénon','césium','baryum','lanthane','cérium','praséodyme','néodyme','prométhium','samarium','europium','gadolinium','terbium','dysprosium','holmium','erbium','thulium','ytterbium','lutécium','hafnium','tantale','tungstène','rhénium','osmium','iridium','platine','or','mercure','thallium','plomb','bismuth','polonium','astate','radon'];
+/* Moteur de configuration : règle de Klechkowski (n + l croissant, puis n croissant). */
+const LL='spdf';
+const ORDER=(()=>{const a=[];for(let n=1;n<=7;n++)for(let l=0;l<n&&l<4;l++)a.push([n,l]);
+  a.sort((x,y)=>(x[0]+x[1])-(y[0]+y[1])||x[0]-y[0]);return a.filter(([n,l])=>n+l<=8);})();
+const sk=(n,l)=>n+LL[l];
+const capa=l=>2*(2*l+1);
+function klech(N){const c={};let r=N;for(const [n,l] of ORDER){if(r<=0)break;const m=Math.min(r,capa(l));c[sk(n,l)]=m;r-=m;}return c;}
+/* Configurations réelles (état fondamental mesuré) qui s'écartent de Klechkowski pour Z ≤ 86.
+   PROG : les cinq exceptions habituellement demandées (Cr, Cu, Mo, Ag, Au). */
+const EXC={24:{'4s':1,'3d':5},29:{'4s':1,'3d':10},41:{'5s':1,'4d':4},42:{'5s':1,'4d':5},44:{'5s':1,'4d':7},45:{'5s':1,'4d':8},
+  46:{'5s':0,'4d':10},47:{'5s':1,'4d':10},57:{'4f':0,'5d':1},58:{'4f':1,'5d':1},64:{'4f':7,'5d':1},78:{'6s':1,'5d':9},79:{'6s':1,'5d':10}};
+const PROG=[24,29,42,47,79];
+function real(Z){const c=klech(Z);if(EXC[Z])Object.assign(c,EXC[Z]);return c;}
+/* Ordre d'arrachement des électrons d'un cation : np, puis ns de la couche externe, puis (n−1)d, puis (n−2)f. */
+const rk=(n,l)=>l<=1?n+0.1*l:l===2?n+0.8:n+1.7;
+function pickRemove(c){let best=null,bk=-1;for(const k in c){if(c[k]>0){const v=rk(+k[0],LL.indexOf(k[1]));if(v>bk){bk=v;best=k;}}}return best;}
+function cation(c,q){c={...c};for(let i=0;i<q;i++){const b=pickRemove(c);if(!b)break;c[b]--;}return c;}
+function config(Z,q){return q>0?cation(real(Z),q):q<0?klech(Z-q):real(Z);}
+const nE=c=>Object.values(c).reduce((a,b)=>a+b,0);
+/* Position dans le tableau, déduite de la configuration de Klechkowski de l'atome neutre. */
+function position(Z){const c=klech(Z);let per=0,last=null;
+  for(const [n,l] of ORDER){const k=sk(n,l);if(c[k]){per=Math.max(per,n);last=[n,l];}}
+  const [ln,ll]=last;const bloc=LL[ll];let grp=null;
+  const s=c[per+'s']||0;
+  if(Z===2)grp=18;else if(bloc==='s')grp=s;else if(bloc==='p')grp=12+c[sk(ln,1)];else if(bloc==='d')grp=s+c[sk(ln,2)];
+  return {per,bloc,grp};}
+
+/* lancé après le kit SFA (qui ajoute ses classes aux boutons au chargement) */
+addEventListener('DOMContentLoaded',()=>{
+const $=id=>document.getElementById(id);
+const SUPD='⁰¹²³⁴⁵⁶⁷⁸⁹';
+const sup=n=>String(n).split('').map(d=>SUPD[d]).join('');
+const chg=q=>q===0?'':(Math.abs(q)===1?'':sup(Math.abs(q)))+(q>0?'⁺':'⁻');
+const GAS=[[86,'Rn'],[54,'Xe'],[36,'Kr'],[18,'Ar'],[10,'Ne'],[2,'He']];
+const ALLK=ORDER.map(([n,l])=>sk(n,l));
+const keysBy=ord=>ord==='n'?[...ALLK].sort((a,b)=>(+a[0])-(+b[0])||LL.indexOf(a[1])-LL.indexOf(b[1])):ALLK;
+function terms(c,ord){return keysBy(ord).filter(k=>c[k]>0).map(k=>k+sup(c[k]));}
+function full(c,ord){return terms(c,ord).join(' ')||'aucun électron';}
+function abbr(c,ord){const N=nE(c);
+  for(const [g,s] of GAS){if(g>=N)continue;const core=klech(g);
+    if(Object.keys(core).every(k=>c[k]===core[k])){const rest={...c};for(const k in core)delete rest[k];return '['+s+'] '+terms(rest,ord).join(' ');}}
+  return full(c,ord);}
+const unpaired=c=>Object.entries(c).reduce((a,[k,v])=>{const m=(capa(LL.indexOf(k[1])))/2;return a+Math.min(v,m)-Math.max(0,v-m);},0);
+/* accès pour les tests */
+window.__cfg=(Z,q)=>{const c=config(Z,q||0);return {occ:c,full:full(c,'fill'),abbr:abbr(c,'fill'),klech:klech(Z),pos:position(Z)};};
+
+/* ---------- état ---------- */
+let Z=26,q=0,ord='fill',ev=[],step=0,timer=null,sel=null;
+function buildEvents(){
+  const out=[],N0=q<0?Z-q:Z;let r=N0;
+  for(const [n,l] of ORDER){if(r<=0)break;const m=Math.min(r,capa(l));for(let i=0;i<m;i++)out.push({t:'add',k:sk(n,l),i:out.length+1});r-=m;}
+  if(q>=0){const K=klech(Z),R=real(Z);
+    if(EXC[Z]){const src=[],dst=[];for(const k in R){const d=R[k]-(K[k]||0);for(let i=0;i<-d;i++)src.push(k);for(let i=0;i<d;i++)dst.push(k);}
+      src.forEach((s,i)=>out.push({t:'move',k:s,to:dst[i]}));}
+    let c={...R};for(let i=0;i<q;i++){const b=pickRemove(c);if(!b)break;c[b]--;out.push({t:'rem',k:b});}}
+  return out;}
+function stateAt(n){const c={};for(let i=0;i<n;i++){const e=ev[i];
+  if(e.t==='add')c[e.k]=(c[e.k]||0)+1;else if(e.t==='move'){c[e.k]--;c[e.to]=(c[e.to]||0)+1;}else c[e.k]--;}return c;}
+function shownKeys(){const s=new Set();ev.forEach(e=>{s.add(e.k);if(e.to)s.add(e.to);});return keysBy(ord).filter(k=>s.has(k));}
+
+/* ---------- diagramme de Klechkowski ---------- */
+const KX=l=>34+l*58,KY=n=>18+(n-1)*34;
+function drawKl(c,cur){const svg=$('kl');let h='<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#9aa6b5"/></marker></defs>';
+  for(let s=1;s<=8;s++){const pts=ORDER.filter(([n,l])=>n+l===s);if(!pts.length)continue;
+    const a=pts[0],b=pts[pts.length-1];// a : plus petit n (l max), b : plus grand n
+    const x1=KX(a[1])+20,y1=KY(a[0])-14,x2=KX(b[1])-19,y2=KY(b[0])+13;
+    h+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#c3ccd8" stroke-width="1.6" marker-end="url(#ah)"/>`;}
+  for(const [n,l] of ORDER){const k=sk(n,l),v=c[k]||0,f=v>=capa(l),isC=k===cur;
+    const fill=f?'#dcefe7':v>0?'#fff1c9':'#fff',st=isC?'#a32d2d':f?'#2e6b55':v>0?'#BA7517':'#d3d9e2';
+    h+=`<rect x="${KX(l)-17}" y="${KY(n)-12}" width="34" height="24" rx="6" fill="${fill}" stroke="${st}" stroke-width="${isC?2.4:1.3}"/>`+
+       `<text x="${KX(l)}" y="${KY(n)+4.5}" text-anchor="middle" fill="${v>0||isC?'#0f1b2d':'#8a95a3'}">${k}${v?'<tspan font-size="9" dy="-6">'+v+'</tspan>':''}</text>`;}
+  svg.innerHTML=h;}
+
+/* ---------- cases ---------- */
+function drawBoxes(c,last){const host=$('subs');let h='';
+  for(const k of shownKeys()){const l=LL.indexOf(k[1]),m=2*l+1,v=c[k]||0;
+    h+=`<div class="sub${v===0?' empty':''}${last&&last.k===k?' cur':''}"><div class="bx">`;
+    for(let j=0;j<m;j++){const up=j<Math.min(v,m),dn=j<v-m,isSel=sel&&sel.k===k&&sel.j===j;
+      const isNew=last&&last.k===k&&last.j===j;
+      h+=`<button class="case${isSel?' sel':''}${isNew?' new':''}" data-k="${k}" data-j="${j}" aria-label="case ${k}, mℓ = ${j-l}">${up?'<span class="u">↑</span>':''}${dn?'<span class="d">↓</span>':''}</button>`;}
+    h+=`</div><div class="lb">${k}${v?'<small>'+sup(v)+'</small>':''}</div></div>`;}
+  host.innerHTML=h;}
+$('subs').addEventListener('click',e=>{const b=e.target.closest('.case');if(!b)return;sel={k:b.dataset.k,j:+b.dataset.j};render();});
+
+/* ---------- textes ---------- */
+function caption(i){if(i===0)return 'Aucun électron placé. Lance l\'animation ou avance électron par électron.';
+  const e=ev[i-1],c=stateAt(i);
+  if(e.t==='add'){const l=LL.indexOf(e.k[1]),m=2*l+1,v=c[e.k];let t=`Électron n° ${e.i} → <b>${e.k}</b>. `;
+    if(e.i>Z)t=`Électron gagné n° ${e.i-Z} (anion) → <b>${e.k}</b>. `;
+    if(v<=m)t+=l===0?'Case vide : spin ↑.':(v===1?'Nouvelle sous-couche : première case, spin ↑.':'Règle de Hund : on prend une case encore vide, spin parallèle ↑.');
+    else t+='Toutes les cases ont un électron : celui-ci s\'apparie, spin opposé ↓ (Pauli : 2 électrons au plus par case).';
+    if(v===capa(l))t+=` ${e.k} est pleine (${capa(l)} électrons) : on passe à la sous-couche suivante sur la diagonale.`;
+    return t;}
+  if(e.t==='move'){const why=PROG.includes(Z)?(e.to.endsWith('d')&&(c[e.to]===5||c[e.to]===10)?` : la sous-couche ${e.to} ${c[e.to]===5?'demi-remplie':'pleine'} rend l'atome plus stable`:''):' (exception observée, rarement demandée)';
+    return `Exception : un électron passe de <b>${e.k}</b> à <b>${e.to}</b>${why}. On obtient la configuration réelle.`;}
+  return `Ion ${SYM[Z]}${chg(q)} : on retire un électron de <b>${e.k}</b>. On vide d'abord la couche la plus externe : les électrons ns partent avant les (n − 1)d.`;}
+
+function render(){const c=stateAt(step),last=step?ev[step-1]:null;
+  let lk=null;if(last){const k=last.t==='move'?last.to:last.k,l=LL.indexOf(k[1]),m=2*l+1,v=c[k]||0;
+    lk={k,j:last.t==='rem'?-1:(v<=m?v-1:v-m-1)};}
+  drawKl(c,last?(last.t==='move'?last.to:last.k):null);drawBoxes(c,lk);
+  $('cap').innerHTML=caption(step);
+  const done=step>=ev.length;
+  const fc=config(Z,q),N=nE(fc),nm=SYM[Z]+chg(q);
+  let f=`<b>${nm}</b> (${NOM[Z]}, Z = ${Z}${q?', '+N+' électrons':''})`+(done?'':' · <span style="color:#a32d2d">animation : étape '+step+' / '+ev.length+'</span>')+'<br>';
+  f+=`Configuration complète : <span class="cfg">${full(fc,ord)}</span><br>Configuration abrégée : <span class="cfg">${abbr(fc,ord)}</span>`;
+  if(EXC[Z]&&q===0){const K=klech(Z),prog=PROG.includes(Z);
+    f+=`<br>Selon Klechkowski : ${abbr(K,ord)} &nbsp;→&nbsp; configuration réelle : <b>${abbr(fc,ord)}</b><span class="exc">exception${prog?'':' hors liste'}</span>`;
+    f+='<br><span style="font-size:.88rem;font-weight:600">'+(prog?(Z===24||Z===42?'Une sous-couche d demi-remplie (d⁵) avec ns¹ est plus stable que d⁴ ns².':'Une sous-couche d pleine (d¹⁰) avec ns¹ est plus stable que d⁹ ns².')+' (explication usuelle, simplifiée). Exception à connaître.'
+      :'La configuration mesurée (spectroscopie) diffère de celle de Klechkowski. Ce cas n\'est pas dans la liste habituelle (Cr, Cu, Mo, Ag, Au) et ne s\'explique pas par une règle simple : en examen, vérifie ce qu\'attend ton énoncé.')+'</span>';}
+  if(q>0&&position(Z).bloc==='d'){f+=`<br><span style="font-size:.88rem;font-weight:600">Cation d'un élément du bloc d : les électrons ${position(Z).per}s partent avant les ${position(Z).per-1}d.</span>`;}
+  for(const [g,s] of GAS)if(N===g&&Object.entries(klech(g)).every(([k,v])=>fc[k]===v))f+=`<br><span style="font-size:.88rem;font-weight:600">${N} électrons en configuration de gaz noble : ${q?nm+' est isoélectronique de '+s+' ('+NOM[SYM.indexOf(s)]+')':'couche externe complète'}.</span>`;
+  setH('fml',f);
+  const p=position(Z),K=real(Z);let val;
+  if(p.bloc==='s'||p.bloc==='p'){const a=K[p.per+'s']||0,b=K[p.per+'p']||0;val=`${a+b} (${p.per}s${sup(a)}${b?' '+p.per+'p'+sup(b):''})`;}
+  else if(p.bloc==='d'){const a=K[p.per+'s']||0,b=K[(p.per-1)+'d']||0;val=`ns + (n − 1)d = ${a} + ${b} = ${a+b}`;}
+  else val='bloc f : pas de décompte simple';
+  let inf=`Électrons : <b>${N}</b> &nbsp;|&nbsp; électrons célibataires : <b>${unpaired(fc)}</b> &nbsp;|&nbsp; atome ${SYM[Z]} : période <b>${p.per}</b>, `+
+    (p.grp?`groupe <b>${p.grp}</b>`:'<b>lanthanide</b> (sans numéro de groupe 1 à 18)')+`, bloc <b>${p.bloc}</b>`+(Z===2?' (He est placé dans le groupe 18 : couche complète)':'')+
+    ` &nbsp;|&nbsp; électrons de valence de l'atome : <b>${val}</b>`;
+  if(Z===57)inf+=' &nbsp;|&nbsp; La est classé ici dans le bloc f (ordre de Klechkowski), alors que sa configuration réelle n\'a aucun électron 4f ([Xe] 5d¹ 6s²). Beaucoup de tableaux placent La dans le groupe 3 ; d\'autres y placent Lu : les deux dispositions existent.';
+  if(Z===71)inf+=' &nbsp;|&nbsp; Lu est un lanthanide placé ici dans le groupe 3 (sous Y) ; d\'autres tableaux mettent La à cette place : les deux dispositions existent.';
+  if(sel){const l=LL.indexOf(sel.k[1]),n=+sel.k[0],ml=sel.j-l,v=c[sel.k]||0,m=2*l+1;const ne=(sel.j<Math.min(v,m)?1:0)+(sel.j<v-m?1:0);
+    inf+=`<br><b style="color:#7a4b00">Case ${sel.k}, mℓ = ${fmtS(ml)}</b> : n = ${n}, l = ${l}, mℓ = ${fmtS(ml)} · `+(ne===0?'case vide (elle peut recevoir 2 électrons, ms = +½ puis −½)':ne===1?'1 électron : ms = +½ (↑)':'2 électrons : ms = +½ (↑) et ms = −½ (↓), seul ms diffère (Pauli)');}
+  setH('info',inf);
+  $('bAnim').textContent=timer?'Pause':(step>0&&step<ev.length?'Reprendre':'Animer le remplissage');
+  $('bAnim').classList.toggle('on',!!timer);
+  $('ordLbl').textContent=ord==='fill'?'· ordre de remplissage':'· ordre de n croissant';
+}
+const fmtS=v=>v>0?'+'+v:v<0?'−'+(-v):'0';
+const cache={};function setH(id,h){if(cache[id]!==h){$(id).innerHTML=h;cache[id]=h;}}
+
+/* ---------- contrôles ---------- */
+function stop(){if(timer){clearTimeout(timer);timer=null;}}
+function reset(showAll){stop();ev=buildEvents();step=showAll?ev.length:0;sel=null;render();}
+function tick(){if(step>=ev.length){stop();render();return;}step++;render();
+  const e=ev[step-1],d=e.t==='add'?Math.max(70,Math.min(420,6000/ev.length)):900;timer=setTimeout(tick,d);}
+$('bAnim').onclick=()=>{if(timer){stop();render();return;}if(step>=ev.length)step=0;timer=setTimeout(tick,10);render();};
+$('bStep').onclick=()=>{stop();if(step>=ev.length)step=0;step++;render();};
+$('bAll').onclick=()=>{stop();step=ev.length;render();};
+$('bOrd').onclick=()=>{ord=ord==='fill'?'n':'fill';$('bOrd').classList.toggle('on',ord==='n');render();};
+const zs=$('Zsel');zs.innerHTML=SYM.slice(1).map((s,i)=>`<option value="${i+1}">${i+1} · ${s} · ${NOM[i+1]}</option>`).join('');
+function qButtons(){$('qb').innerHTML=[-3,-2,-1,0,1,2,3,4].map(v=>`<button class="btn${v===q?' on':''}" data-q="${v}" ${v>Z?'disabled style="opacity:.4"':''}>${v===0?'atome neutre':(v>0?'+':'−')+Math.abs(v)}</button>`).join('');}
+function setZ(z,qq){Z=Math.max(1,Math.min(86,z));if(qq!=null)q=qq;if(q>Z)q=0;$('Z').value=Z;zs.value=Z;qButtons();reset(true);}
+$('Z').addEventListener('input',e=>setZ(+e.target.value));zs.onchange=e=>setZ(+e.target.value);
+$('zm').onclick=()=>setZ(Z-1);$('zp').onclick=()=>setZ(Z+1);
+$('qb').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.disabled)return;q=+b.dataset.q;qButtons();reset(true);});
+const EXS=[[24,0],[29,0],[42,0],[47,0],[79,0],[26,2],[26,3],[29,2],[30,2],[11,1],[17,-1],[8,-2]];
+$('ex').innerHTML=EXS.map(([z,qq])=>`<button class="btn" data-z="${z}" data-q="${qq}">${SYM[z]}${chg(qq)}</button>`).join('');
+$('ex').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setZ(+b.dataset.z,+b.dataset.q);});
+window.__set=(z,qq)=>setZ(z,qq);
+
+/* ---------- onglets ---------- */
+function tab(w){$('paneC').hidden=w!=='C';$('paneQ').hidden=w!=='Q';$('tabC').classList.toggle('on',w==='C');$('tabQ').classList.toggle('on',w==='Q');
+  $('tabC').setAttribute('aria-selected',w==='C');$('tabQ').setAttribute('aria-selected',w==='Q');}
+$('tabC').onclick=()=>tab('C');$('tabQ').onclick=()=>tab('Q');
+
+/* ---------- onglet nombres quantiques ---------- */
+let t='<tr><th>Couche n</th><th>Sous-couche</th><th>l</th><th>Valeurs de mℓ</th><th>Orbitales (cases)</th><th>Électrons max</th></tr>';
+for(let n=1;n<=4;n++){for(let l=0;l<n;l++){const ml=[];for(let m=-l;m<=l;m++)ml.push(fmtS(m));
+  t+=`<tr><td>${l===0?'<b>'+n+'</b>':''}</td><td><b>${n}${LL[l]}</b></td><td>${l}</td><td>${ml.join(' ; ')}</td><td>${2*l+1}</td><td>${2*(2*l+1)}</td></tr>`;}
+  t+=`<tr style="background:var(--bg)"><td colspan="4" style="color:var(--muted)">Total de la couche n = ${n}</td><td><b>n² = ${n*n}</b></td><td><b>2n² = ${2*n*n}</b></td></tr>`;}
+$('qt').innerHTML=t;
+const qn=$('qn'),ql=$('ql'),qm=$('qm');
+qn.innerHTML=[1,2,3,4,5,6,7].map(v=>`<option>${v}</option>`).join('');ql.innerHTML=[0,1,2,3,4].map(v=>`<option>${v}</option>`).join('');
+qm.innerHTML=[-4,-3,-2,-1,0,1,2,3,4].map(v=>`<option value="${v}">${fmtS(v)}</option>`).join('');qn.value=3;ql.value=2;qm.value=-1;
+function check(){const n=+qn.value,l=+ql.value,m=+qm.value,s=+$('qs').value,v=$('qv');
+  if(l>n-1){v.className='verdict ko';v.innerHTML=`Impossible : l doit valoir au plus n − 1 = ${n-1}. La sous-couche ${n}${LL[l]||'g'} n'existe pas.`;return;}
+  if(Math.abs(m)>l){v.className='verdict ko';v.innerHTML=`Impossible : mℓ doit être compris entre −l et +l, soit entre ${fmtS(-l)} et ${fmtS(l)}.`;return;}
+  v.className='verdict ok';v.innerHTML=`Possible : un électron de la sous-couche <b>${n}${LL[l]||'g'}</b> (${2*l+1} orbitale${l?'s':''}), dans la case mℓ = ${fmtS(m)}, spin ${s>0?'+½ (↑)':'−½ (↓)'}. `+
+    `Un seul électron de l'atome peut porter ce quadruplet (Pauli).${l===4?' Remarque : aucune sous-couche g n\'est occupée à l\'état fondamental des éléments connus.':''}`;}
+[qn,ql,qm,$('qs')].forEach(e=>e.onchange=check);check();
+
+setZ(26,0);
+});
+</script>
+
+</main>
+<aside class="sfa-side">
+  <div class="sfa-list"><h2>Atome et liaison chimique<span>3 simulations</span></h2><ol><li><a class="on" aria-current="page" href="../configuration-electronique/"><i>01</i>Configuration électronique et nombres quantiques</a></li><li><a href="../tendances-periodiques/"><i>02</i>Tendances du tableau périodique</a></li><li><a href="../lewis-vsepr/"><i>03</i>Lewis, VSEPR et polarité</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de chimie</footer>
+<script src="../../kit/sfa-nav.js"></script></body>
+</html>

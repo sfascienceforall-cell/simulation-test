@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Potentiel électrique : carte et équipotentielles · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+/* Carte du potentiel : un seul cadre, la carte 2D (canvas) ou le relief 3D (three.js) ; sonde en haut à gauche, légende en haut à droite. */
+.t-stage{position:relative;width:100%;height:64vh;min-height:430px;background:#fff;border:1px solid var(--rule);border-radius:4px;overflow:hidden;
+  box-shadow:0 1px 2px rgba(12,31,46,.05),0 8px 24px -16px rgba(12,31,46,.18);touch-action:none;user-select:none;-webkit-user-select:none}
+.t-stage canvas{position:absolute;left:0;top:0;display:block;width:100%!important;height:100%!important;border:0!important;box-shadow:none!important;border-radius:0!important;background:transparent!important}
+.p-hud{position:absolute;left:10px;top:10px;background:rgba(255,255,255,.94);border:1px solid #e3e7ed;border-radius:6px;padding:8px 12px;
+  font:600 13px/1.5 Mulish,system-ui,sans-serif;color:#13233a;pointer-events:none;box-shadow:0 2px 10px -6px rgba(19,35,58,.25);max-width:calc(100% - 110px)}
+.p-hud .t{font:800 11px Mulish,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#7F77DD}
+.p-hud .big{font:700 1.02rem Mulish,system-ui,sans-serif;white-space:nowrap}
+.p-hud .big b{font-weight:800}
+.p-hud .sub{color:#5d6876;font-size:12px;font-weight:600}
+.p-leg{position:absolute;right:10px;top:10px;background:rgba(255,255,255,.94);border:1px solid #e3e7ed;border-radius:6px;padding:7px 9px 8px;
+  font:700 11px Mulish,system-ui,sans-serif;color:#5d6876;pointer-events:none;box-shadow:0 2px 10px -6px rgba(19,35,58,.25)}
+.p-leg .hd{font:800 11px Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:5px;white-space:nowrap}
+.p-leg .bx{position:relative;height:150px;padding-left:20px;width:92px}
+.p-leg .bar{position:absolute;left:0;top:0;bottom:0;width:12px;border-radius:3px;border:1px solid #d3d9e2}
+.p-leg .tk{position:absolute;left:18px;transform:translateY(-50%);white-space:nowrap;font:700 11px Mulish,system-ui,sans-serif}
+.p-leg .tk:before{content:"";position:absolute;left:-6px;top:50%;width:4px;height:1px;background:#8a95a3}
+.p-leg .st{margin-top:6px;font:600 10.5px Mulish,system-ui,sans-serif;color:#8a95a3;white-space:nowrap}
+.p-hint{position:absolute;right:10px;bottom:8px;font:600 12px Mulish,system-ui,sans-serif;color:#8a95a3;pointer-events:none;text-align:right;
+  background:rgba(255,255,255,.85);padding:1px 6px;border-radius:4px}
+.p-mode{position:absolute;left:10px;bottom:8px;font:800 12px Mulish,system-ui,sans-serif;color:#185fa5;background:rgba(255,255,255,.92);padding:2px 8px;border-radius:4px;pointer-events:none}
+.p-lab{position:absolute;left:0;top:0;font:800 12px Mulish,system-ui,sans-serif;white-space:nowrap;pointer-events:none;padding:1px 6px;border-radius:5px;
+  background:rgba(255,255,255,.9);box-shadow:0 1px 3px rgba(19,35,58,.16);will-change:transform;display:none}
+.p-lab.lv{font:700 11px Mulish,system-ui,sans-serif;box-shadow:none;background:rgba(255,255,255,.82)}
+.p-err{position:absolute;inset:0;display:grid;place-items:center;color:#a32d2d;font:600 14px Mulish,system-ui,sans-serif;padding:20px;text-align:center;background:#fff}
+.val{white-space:nowrap}
+.hint{font:600 .8rem Mulish,system-ui,sans-serif;color:#8a95a3}
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font:600 .82rem Mulish,system-ui,sans-serif;color:#5d6876;margin:10px 0 2px}
+.legend i{display:inline-block;width:18px;height:4px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.legend i.dash{height:0;border-top:2px dashed #8a95a3;background:none}
+.legend i.grad{width:34px;height:10px;background:linear-gradient(90deg,#2f6fb5,#a9cbee,#fff,#f2a7a1,#c43d3c);border:1px solid #d3d9e2}
+.row.wrap{flex-wrap:wrap}
+@media (max-width:640px){.t-stage{height:62vh;min-height:420px}
+  .p-hint{display:none}.p-hud{font-size:12px;padding:6px 9px;max-width:calc(100% - 96px)}.p-hud .big{font-size:.92rem}
+  .p-leg{padding:6px 7px}.p-leg .bx{height:112px;padding-left:18px;width:80px}.p-leg .st{display:none}.p-lab{font-size:11px;padding:1px 5px}}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH8">Électrostatique</a>›<b>Potentiel électrique : carte et équipotentielles</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Électrostatique</span><span class="sfa-chip free">Gratuit</span></div><h1>Potentiel électrique : carte et équipotentielles</h1><p>Place des charges et lis le potentiel partout : relief, équipotentielles et lignes de champ</p></div>
+<section class="sfa-sim">
+
+
+
+<div id="stage" class="t-stage" aria-label="Carte du potentiel électrique : glisse les charges et la sonde">
+  <canvas id="cv"></canvas>
+  <div class="p-hud" id="hud"></div>
+  <div class="p-leg" id="leg"><div class="hd">V (volts)</div><div class="bx" id="legBox"><div class="bar" id="legBar"></div></div><div class="st" id="legSt"></div></div>
+  <div class="p-mode" id="modeTag" hidden>Relief : hauteur = V</div>
+  <div class="p-hint" id="hint">Glisse les charges et la sonde · touche une charge pour la régler</div>
+</div>
+
+<div class="legend">
+  <span><i class="grad"></i>V &lt; 0 bleu · V = 0 blanc · V &gt; 0 rouge</span>
+  <span><i style="background:#13233a;height:2px"></i><span id="legEq">Équipotentielle (tous les 50 V)</span></span>
+  <span><i class="dash"></i>V = 0</span>
+  <span><i style="background:#BA7517"></i>Champ E (lignes et vecteur)</span>
+  <span><i style="background:#7F77DD"></i>Sonde (charge test +)</span>
+</div>
+
+<div class="fml" id="fml"><b style="color:#7F77DD">V</b> = Σ k·<b style="color:#a32d2d">q<sub>i</sub></b>/r<sub>i</sub> &nbsp;avec k = 8,99·10⁹ N·m²/C² &nbsp;·&nbsp; V est un <b>scalaire</b> : on additionne des nombres (avec leur signe), pas des flèches &nbsp;·&nbsp; V = 0 à l'infini &nbsp;·&nbsp; <b style="color:#BA7517">E</b> = −grad V : <b style="color:#BA7517">E</b> est perpendiculaire aux équipotentielles et pointe vers les V décroissants (1 V/m = 1 N/C).</div>
+
+<div class="row wrap">
+  <span class="pill">Préréglage</span>
+  <button class="btn" data-pre="seule">Charge seule</button>
+  <button class="btn on" data-pre="dipole">Dipôle</button>
+  <button class="btn" data-pre="meme">Même signe</button>
+  <button class="btn" data-pre="cond">« Condensateur »</button>
+</div>
+<div class="row">
+  <span class="pill" id="qPill" style="min-width:150px;color:#a32d2d">q₁ &nbsp;charge choisie</span>
+  <input type="range" id="qs" min="-5" max="5" value="2" step="0.5" style="accent-color:#E24B4A;">
+  <span class="val" id="qsv" style="color:#a32d2d">+2,0 nC</span>
+</div>
+<div class="row wrap">
+  <button class="btn" id="addP">Ajouter une charge +</button>
+  <button class="btn" id="addN">Ajouter une charge −</button>
+  <button class="btn" id="del">Supprimer la charge choisie</button>
+</div>
+<div class="row wrap">
+  <button class="btn on" id="bEq">Équipotentielles</button>
+  <button class="btn" id="bFl">Lignes de champ</button>
+  <button class="btn" id="b3d">Vue 3D (relief)</button>
+  <button class="btn" id="bGo">Lâcher la sonde (charge +)</button>
+</div>
+<div class="row"><span class="hint" id="tip">Touche une charge pour la choisir, puis règle sa valeur. Touche un endroit vide pour y amener la sonde.</span></div>
+
+<div class="info" id="info"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const box=$('stage'),cv=$('cv'),ctx=cv.getContext('2d');
+const INK='#13233a',BLUE='#378ADD',BLUE_D='#185fa5',RED='#E24B4A',RED_D='#a32d2d',GREEN='#1D9E75',GREEN_D='#0F6E56',ORANGE='#BA7517',VIOLET='#7F77DD',GREY='#8a95a3',AX='#d3d9e2';
+const FT='Mulish,system-ui,sans-serif';
+const fx=(v,n=1)=>v.toFixed(n).replace('.',',');
+const SUB='₀₁₂₃₄₅₆₇₈₉';const sub=n=>String(n).split('').map(c=>SUB[c]).join('');
+const sp=n=>Math.round(Math.abs(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+const sV=v=>(Math.round(v)===0?'0':(v>0?'+':'−')+sp(v))+' V';         // « +1 250 V »
+const sQ=q=>(q>0?'+':'−')+fx(Math.abs(q))+' nC';
+function sE(E){if(E<1)return '≈ 0 V/m';if(E<1000)return sp(E)+' V/m';if(E<1e5)return fx(E/1000,E<1e4?2:1)+' kV/m';return fx(E/1e6,2)+' MV/m';}
+
+// ---------- physique : unités nC, cm, V ----------
+// V = k q / r avec k = 8,99·10⁹ : pour q en nC et r en cm, V = 899·q/r (volts) ; |E| = k q / r² = 89 900·q/r² (V/m)
+const KV=899, KE=89900, RMIN=0.25;
+let Q=[];            // charges {x,y (cm), q (nC)}
+let sel=0;
+const probe={x:1.5,y:3,run:false,trail:[],why:''};
+function Vat(x,y){let v=0;for(const c of Q){const r=Math.max(RMIN,Math.hypot(x-c.x,y-c.y));v+=KV*c.q/r;}return v;}
+function Eat(x,y){let ex=0,ey=0;for(const c of Q){const dx=x-c.x,dy=y-c.y;const r=Math.max(RMIN,Math.hypot(dx,dy));const f=KE*c.q/(r*r*r);ex+=f*dx;ey+=f*dy;}return [ex,ey];}
+
+// ---------- vue : monde (cm, y vers le haut) <-> écran (px CSS) ----------
+let W=0,H=0,dpr=1,S=30,CY=0;   // CY : centre vertical (abaissé sur téléphone, sous le panneau de la sonde)
+const X=x=>W/2+x*S, Y=y=>CY-y*S, wx=px=>(px-W/2)/S, wy=py=>(CY-py)/S;
+function fit(){const r=box.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);dpr=Math.min(2,devicePixelRatio||1);
+  cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);S=Math.min(W,H)/15.5;if(W>H*1.6)S=Math.min(S,W/26);CY=H>W?H/2+36:H/2;}
+
+// ---------- échelle des couleurs ----------
+let Vs=500,step=50;
+const NICE=[50,100,200,250,500,1000,2000,2500,5000,10000,20000];
+function autoScale(){// échelle : environ le 92e centile de |V| sur la carte, arrondi à une valeur ronde
+  if(!Q.length){Vs=500;step=50;return;}
+  const a=[];for(let j=0;j<24;j++)for(let i=0;i<36;i++){a.push(Math.abs(Vat(wx((i+.5)/36*W),wy((j+.5)/24*H))));}
+  a.sort((p,q)=>p-q);const p=a[Math.floor(a.length*.92)]*1.15;
+  Vs=NICE.find(n=>n>=p)||20000;step=Vs/10;}
+const CP=[[255,255,255],[242,167,161],[196,61,60],[150,30,32]], CN=[[255,255,255],[169,203,238],[47,111,181],[24,72,140]];
+const fT=t=>Math.sign(t)*Math.pow(Math.min(1,Math.abs(t)),0.72);     // légère compression : les faibles V restent visibles
+function col(v){let t=v/Vs;const big=Math.abs(t)>1;t=fT(t);const C=t>=0?CP:CN;let a=Math.abs(t);
+  if(big){const k=Math.min(1,(Math.abs(v/Vs)-1)/3);return mix(C[2],C[3],k);}
+  return a<.5?mix(C[0],C[1],a/.5):mix(C[1],C[2],(a-.5)/.5);}
+const mix=(p,q,k)=>[p[0]+(q[0]-p[0])*k,p[1]+(q[1]-p[1])*k,p[2]+(q[2]-p[2])*k];
+const css=c=>`rgb(${c[0]|0},${c[1]|0},${c[2]|0})`;
+
+// ---------- grille du potentiel + équipotentielles (calculées seulement quand les charges changent) ----------
+const CELL=3;
+let G=null;             // {nx,ny,v:Float32Array}
+const layer=document.createElement('canvas'), lctx=layer.getContext('2d');
+const tiny=document.createElement('canvas'), tctx=tiny.getContext('2d');
+let dirty=true, segs=[], cands=[], flines=[];
+let showEq=true, showFl=false, mode3d=false;
+function levels(){const L=[];for(let n=-10;n<=10;n++)L.push(n*step);return L;}
+function computeGrid(){const nx=Math.ceil(W/CELL)+2,ny=Math.ceil(H/CELL)+2;const v=new Float32Array(nx*ny);
+  for(let j=0;j<ny;j++){const y=wy(j*CELL);for(let i=0;i<nx;i++)v[j*nx+i]=Vat(wx(i*CELL),y);}G={nx,ny,v};}
+// toutes les équipotentielles en un seul passage : pour chaque case, seuls les niveaux compris entre min et max des 4 coins
+function marchAll(v,nx,ny){const A=[];for(let n=0;n<=20;n++)A.push([]);
+  for(let j=0;j<ny-1;j++)for(let i=0;i<nx-1;i++){
+    const a=v[j*nx+i],b=v[j*nx+i+1],c=v[(j+1)*nx+i+1],d=v[(j+1)*nx+i];
+    const lo=Math.max(-10,Math.ceil(Math.min(a,b,c,d)/step)),hi=Math.min(10,Math.floor(Math.max(a,b,c,d)/step));
+    for(let n=lo;n<=hi;n++){const L=n*step;let k=0;if(a>L)k|=1;if(b>L)k|=2;if(c>L)k|=4;if(d>L)k|=8;if(k===0||k===15)continue;
+      const out=A[n+10];
+      const T=[i+(L-a)/(b-a),j], R=[i+1,j+(L-b)/(c-b)], B=[i+(L-d)/(c-d),j+1], Lf=[i,j+(L-a)/(d-a)];
+      const P=(p,q)=>out.push(p[0],p[1],q[0],q[1]);
+      switch(k){case 1:case 14:P(Lf,T);break;case 2:case 13:P(T,R);break;case 3:case 12:P(Lf,R);break;case 4:case 11:P(R,B);break;
+        case 6:case 9:P(T,B);break;case 7:case 8:P(Lf,B);break;case 5:P(Lf,T);P(R,B);break;case 10:P(T,R);P(B,Lf);break;}}}
+  return A;}
+// table de couleurs (recalculée quand l'échelle change)
+let LUT=null,lutVs=0;const LN=4096;
+function lut(){if(lutVs===Vs)return;lutVs=Vs;LUT=new Uint8Array(LN*3);for(let k=0;k<LN;k++){const c=col((k/(LN-1)*8-4)*Vs);LUT[3*k]=c[0];LUT[3*k+1]=c[1];LUT[3*k+2]=c[2];}}
+// direction de « rayon d'étiquettes » pour chaque charge : celle qui s'éloigne le plus des autres charges
+function rayDirs(){return Q.map((c,ci)=>{let best=null,bs=-1e9;
+  for(let k=0;k<16;k++){const a=k*Math.PI/8,ux=Math.cos(a),uy=Math.sin(a);
+    let s=-Math.abs(a-Math.PI/4)*0.08-(uy<0?0.25:0);                // préférence : en haut à droite
+    for(let o=0;o<Q.length;o++){if(o===ci)continue;const dx=Q[o].x-c.x,dy=Q[o].y-c.y,d=Math.hypot(dx,dy)||1;
+      const cos=(dx*ux+dy*uy)/d;s-=Math.max(0,cos)*(2+8/d);}
+    if(s>bs){bs=s;best=[ux,uy];}}return best;});}
+function buildStatic(){
+  computeGrid();const {nx,ny,v}=G;
+  // couleurs
+  tiny.width=nx;tiny.height=ny;const im=tctx.createImageData(nx,ny);
+  lut();const D=im.data;for(let n=0;n<nx*ny;n++){let k=Math.round((v[n]/Vs+4)/8*(LN-1));k=k<0?0:k>=LN?LN-1:k;D[4*n]=LUT[3*k];D[4*n+1]=LUT[3*k+1];D[4*n+2]=LUT[3*k+2];D[4*n+3]=255;}
+  tctx.putImageData(im,0,0);
+  layer.width=cv.width;layer.height=cv.height;lctx.setTransform(dpr,0,0,dpr,0,0);
+  lctx.imageSmoothingEnabled=true;lctx.imageSmoothingQuality='high';
+  lctx.drawImage(tiny,-CELL/2,-CELL/2,nx*CELL,ny*CELL);
+  // équipotentielles
+  segs=[];cands=[];const dirs=rayDirs();
+  if(showEq&&Q.length){const ALL=marchAll(v,nx,ny);for(const L of levels()){const out=ALL[Math.round(L/step)+10];
+      const lv=Math.round(L/step);segs.push({L,lv,s:out});
+      // candidats d'étiquette : milieux de segments proches d'un « rayon » partant d'une charge
+      const cl=[];for(let n=0;n<out.length;n+=4){const px=(out[n]+out[n+2])/2*CELL,py=(out[n+1]+out[n+3])/2*CELL;
+        let dmin=1e9,near=1e9;Q.forEach((c,ci)=>{const cx=X(c.x),cy=Y(c.y),dx=px-cx,dy=py-cy;near=Math.min(near,Math.hypot(dx,dy));
+          const u=dirs[ci],t=dx*u[0]-dy*u[1];if(t>0){const d=Math.abs(-dx*u[1]-dy*u[0]);if(d<dmin)dmin=d;}});
+        if(near<24||px<30||py<12||px>W-30||py>H-12)continue;
+        const ang=Math.atan2(out[n+3]-out[n+1],out[n+2]-out[n]);cl.push({x:px,y:py,d:dmin,ang});}
+      cl.sort((a,b)=>a.d-b.d);cands.push({L,lv,c:cl});}
+    lctx.lineCap='round';lctx.lineJoin='round';
+    for(const g of segs){const zero=g.lv===0,major=g.lv%5===0;
+      lctx.beginPath();for(let n=0;n<g.s.length;n+=4){lctx.moveTo(g.s[n]*CELL,g.s[n+1]*CELL);lctx.lineTo(g.s[n+2]*CELL,g.s[n+3]*CELL);}
+      if(zero){lctx.setLineDash([6,5]);lctx.strokeStyle='rgba(70,82,98,.85)';lctx.lineWidth=1.6;}
+      else{lctx.setLineDash([]);lctx.strokeStyle=major?'rgba(19,35,58,.78)':'rgba(19,35,58,.46)';lctx.lineWidth=major?1.7:1.05;}
+      lctx.stroke();}
+    lctx.setLineDash([]);}
+  // lignes de champ
+  flines=showFl?traceAll():[];
+  if(showFl){lctx.strokeStyle='rgba(186,117,23,.9)';lctx.lineWidth=1.5;
+    for(const f of flines){lctx.beginPath();f.pts.forEach((p,k)=>k?lctx.lineTo(X(p[0]),Y(p[1])):lctx.moveTo(X(p[0]),Y(p[1])));lctx.stroke();
+      // flèches le long de la ligne
+      let acc=0;for(let k=1;k<f.pts.length;k++){const a=f.pts[k-1],b=f.pts[k];acc+=Math.hypot(X(b[0])-X(a[0]),Y(b[1])-Y(a[1]));
+        if(acc>110){acc=0;const x=X(b[0]),y=Y(b[1]);if(x<6||y<6||x>W-6||y>H-6)continue;
+          let ang=Math.atan2(Y(b[1])-Y(a[1]),X(b[0])-X(a[0]));if(f.rev)ang+=Math.PI;arrowHead(lctx,x,y,ang,7,'rgba(186,117,23,.95)');}}}}
+  dirty=false;labDirty=true;
+}
+function arrowHead(c,x,y,a,s,color){c.save();c.translate(x,y);c.rotate(a);c.fillStyle=color;c.beginPath();c.moveTo(s*.55,0);c.lineTo(-s*.65,-s*.48);c.lineTo(-s*.35,0);c.lineTo(-s*.65,s*.48);c.closePath();c.fill();c.restore();}
+
+// lignes de champ : RK2 le long de E (depuis les +) et contre E (depuis les − qui ne sont pas déjà reliées)
+function traceAll(){const out=[];if(!Q.length)return out;
+  const xm=wx(0)-3,xM=wx(W)+3,ym=wy(H)-3,yM=wy(0)+3;
+  const tot=Q.reduce((s,c)=>s+Math.abs(c.q),0),per=Math.max(4,Math.min(16,Math.round(40/Math.max(1,tot))*1));
+  function trace(x,y,dir){const pts=[[x,y]];let end=null;
+    for(let k=0;k<1400;k++){const[ex,ey]=Eat(x,y);const e=Math.hypot(ex,ey);if(e<1e-3)break;
+      let near=1e9;for(const c of Q)near=Math.min(near,Math.hypot(x-c.x,y-c.y));const h=Math.min(0.12,Math.max(0.03,near*0.06));
+      const mx=x+dir*ex/e*h/2,my=y+dir*ey/e*h/2;const[fx2,fy2]=Eat(mx,my);const e2=Math.hypot(fx2,fy2)||1;
+      x+=dir*fx2/e2*h;y+=dir*fy2/e2*h;pts.push([x,y]);
+      let hit=null;for(const c of Q){if(Math.sign(c.q)===-dir&&Math.hypot(x-c.x,y-c.y)<0.22){hit=c;break;}}
+      if(hit){pts.push([hit.x,hit.y]);end=hit;break;}
+      if(x<xm||x>xM||y<ym||y>yM)break;}
+    return {pts,end};}
+  for(const c of Q){if(c.q<=0)continue;const n=Math.max(4,Math.round(Math.abs(c.q)*per));
+    for(let k=0;k<n;k++){const a=(k+.5)/n*2*Math.PI;const r=trace(c.x+0.2*Math.cos(a),c.y+0.2*Math.sin(a),1);r.pts.unshift([c.x,c.y]);out.push({pts:r.pts,rev:false});}}
+  for(const c of Q){if(c.q>=0)continue;const n=Math.max(4,Math.round(Math.abs(c.q)*per));
+    for(let k=0;k<n;k++){const a=(k+.5)/n*2*Math.PI;const r=trace(c.x+0.2*Math.cos(a),c.y+0.2*Math.sin(a),-1);
+      if(r.end&&r.end.q>0)continue;r.pts.unshift([c.x,c.y]);out.push({pts:r.pts,rev:true});}}
+  return out;}
+
+// ---------- zones occupées par les panneaux HTML (les étiquettes les évitent) ----------
+function overlays(){const b=box.getBoundingClientRect();const R=[];
+  ['hud','leg','hint','modeTag'].forEach(id=>{const e=$(id);if(!e||e.hidden||e.offsetParent===null)return;const r=e.getBoundingClientRect();
+    R.push({x:r.left-b.left-4,y:r.top-b.top-4,w:r.width+8,h:r.height+8});});
+  R.push({x:6,y:H-34,w:110,h:30});   // barre d'échelle
+  return R;}
+const hitR=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
+
+// ---------- dessin 2D ----------
+let labDirty=true, labs=[], redraw=true, camKey='';
+function layoutLabels(){
+  const occ=overlays();
+  ctx.font='800 12px '+FT;
+  const placed=[];
+  // charges (disques)
+  Q.forEach(c=>placed.push({x:X(c.x)-15,y:Y(c.y)-15,w:30,h:30}));
+  // sonde et sa flèche
+  const px=X(probe.x),py=Y(probe.y);placed.push({x:px-12,y:py-12,w:24,h:24});
+  const ea=probeArrow();if(ea){placed.push(ea.lab);for(let d=10;d<=ea.L+12;d+=8)placed.push({x:px+ea.ux*d-6,y:py+ea.uy*d-6,w:12,h:12});}
+  labs=[];
+  // étiquettes des charges : q₁ = +2,0 nC, autour du disque
+  // la charge choisie d'abord ; texte complet, sinon court (q₃), sinon pas d'étiquette (jamais de chevauchement)
+  const ord=Q.map((c,i)=>i).sort((a,b)=>(b===sel)-(a===sel));
+  ord.forEach(i=>{const c=Q[i];const cx=X(c.x),cy=Y(c.y);
+    for(const t of ['q'+sub(i+1)+' = '+sQ(c.q),'q'+sub(i+1)]){const w=ctx.measureText(t).width+12,h=19;
+      const tries=[[0,28],[0,-28],[w/2+22,0],[-w/2-22,0],[w/2+14,24],[-w/2-14,24],[w/2+14,-24],[-w/2-14,-24],[0,46],[0,-46]];
+      let ok=null;for(const[dx,dy]of tries){const r={x:cx+dx-w/2,y:cy+dy-h/2,w,h};
+        if(r.x<4||r.y<4||r.x+r.w>W-4||r.y+r.h>H-4)continue;if(placed.some(p=>hitR(r,p))||occ.some(p=>hitR(r,p)))continue;ok=r;break;}
+      if(ok){placed.push(ok);labs.push({t,r:ok,c:c.q>0?RED_D:BLUE_D,font:'800 12px '+FT,pill:true});break;}}});
+  if(ea)labs.push({t:ea.t,r:ea.lab,c:'#8a5a12',font:'800 12px '+FT,pill:true});
+  // étiquettes des équipotentielles
+  if(showEq){ctx.font='700 11px '+FT;const byLv={};
+    // ordre : 0 V d'abord, puis |V| croissant
+    const order=cands.slice().sort((a,b)=>Math.abs(a.lv)-Math.abs(b.lv));
+    for(const g of order){const t=g.lv===0?'0 V':sV(g.L);const w=ctx.measureText(t).width+8,h=15;const mine=[];
+      const tryC=(cnd,maxD)=>{for(const k of cnd){if(k.d>maxD)break;const r={x:k.x-w/2,y:k.y-h/2,w,h};
+          if(r.x<3||r.y<3||r.x+r.w>W-3||r.y+r.h>H-3)continue;
+          if(mine.some(m=>Math.hypot(m.x-k.x,m.y-k.y)<200))continue;
+          const pad={x:r.x-3,y:r.y-2,w:r.w+6,h:r.h+4};
+          if(placed.some(p=>hitR(pad,p))||occ.some(p=>hitR(pad,p)))continue;
+          placed.push(pad);mine.push(k);labs.push({t,r,c:g.lv===0?'#465262':g.lv>0?RED_D:BLUE_D,font:'700 11px '+FT,pill:true,lvl:g.L,wxy:[wx(k.x),wy(k.y)]});
+          if(mine.length>=2)return;}};
+      tryC(g.c,7);
+      if(!mine.length&&g.lv%5===0){const alt=g.c.slice().sort((a,b)=>Math.abs(Math.sin(a.ang))-Math.abs(Math.sin(b.ang)));for(const k of alt)k.d2=k.d;tryC(alt.map(k=>({...k,d:0})),1);}
+    }}
+  labDirty=false;}
+function probeArrow(){const[ex,ey]=Eat(probe.x,probe.y);const e=Math.hypot(ex,ey);if(e<1||!Q.length)return null;
+  let L=Math.max(18,Math.min(78,18+30*Math.log10(e/300)));const ux=ex/e,uy=-ey/e;const x0=X(probe.x),y0=Y(probe.y);
+  // la flèche ne doit pas traverser une charge : on la raccourcit (minimum 16 px)
+  for(const c of Q){const cx=X(c.x)-x0,cy=Y(c.y)-y0,t=cx*ux+cy*uy;if(t>0&&Math.abs(cx*uy-cy*ux)<20)L=Math.max(16,Math.min(L,t-38));}
+  const x1=x0+ux*(L+11),y1=y0+uy*(L+11);
+  ctx.font='800 12px '+FT;const t='E';const w=ctx.measureText(t).width+12,h=19;
+  const k=Math.abs(ux)*w/2+Math.abs(uy)*h/2+4;const xm=x0+ux*(L/2+11),ym=y0+uy*(L/2+11);
+  const opts=[[x1+ux*k,y1+uy*k],[xm-uy*16,ym+ux*16],[xm+uy*16,ym-ux*16]];let lx,ly;
+  for(const o of opts){lx=Math.max(w/2+3,Math.min(W-w/2-3,o[0]));ly=Math.max(h/2+3,Math.min(H-h/2-3,o[1]));
+    if(!Q.some(c=>Math.abs(X(c.x)-lx)<w/2+14&&Math.abs(Y(c.y)-ly)<h/2+14))break;}
+  return {ux,uy,L,e,t,lab:{x:lx-w/2,y:ly-h/2,w,h}};}
+function drawCharge(c,i){const x=X(c.x),y=Y(c.y),r=13,pos=c.q>0;
+  ctx.save();ctx.shadowColor='rgba(19,35,58,.28)';ctx.shadowBlur=6;ctx.shadowOffsetY=2;
+  const g=ctx.createRadialGradient(x-4,y-5,2,x,y,r);
+  if(pos){g.addColorStop(0,'#ff9a93');g.addColorStop(.55,RED);g.addColorStop(1,RED_D);}else{g.addColorStop(0,'#9cc8f2');g.addColorStop(.55,BLUE);g.addColorStop(1,BLUE_D);}
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.restore();
+  ctx.lineWidth=1.5;ctx.strokeStyle='#fff';ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.stroke();
+  ctx.strokeStyle='#fff';ctx.lineWidth=2.6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x-5.5,y);ctx.lineTo(x+5.5,y);if(pos){ctx.moveTo(x,y-5.5);ctx.lineTo(x,y+5.5);}ctx.stroke();
+  if(i===sel){ctx.strokeStyle=INK;ctx.lineWidth=1.6;ctx.setLineDash([4,3]);ctx.beginPath();ctx.arc(x,y,r+5,0,7);ctx.stroke();ctx.setLineDash([]);}}
+function pill(l){ctx.font=l.font;ctx.fillStyle='rgba(255,255,255,.9)';const r=l.r;ctx.beginPath();
+  if(ctx.roundRect)ctx.roundRect(r.x,r.y,r.w,r.h,5);else ctx.rect(r.x,r.y,r.w,r.h);ctx.fill();
+  ctx.fillStyle=l.c;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(l.t,r.x+r.w/2,r.y+r.h/2+.5);}
+function draw2d(){
+  if(dirty)buildStatic();
+  if(labDirty)layoutLabels();
+  ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,cv.width,cv.height);ctx.drawImage(layer,0,0);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  // barre d'échelle
+  const sc=W<600?2:5;ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(14,H-14);ctx.lineTo(14+sc*S,H-14);
+  ctx.moveTo(14,H-18);ctx.lineTo(14,H-10);ctx.moveTo(14+sc*S,H-18);ctx.lineTo(14+sc*S,H-10);ctx.stroke();
+  ctx.font='700 12px '+FT;ctx.textAlign='center';ctx.textBaseline='bottom';ctx.lineWidth=4;ctx.strokeStyle='rgba(255,255,255,.95)';
+  ctx.strokeText(sc+' cm',14+sc*S/2,H-18);ctx.fillStyle=INK;ctx.fillText(sc+' cm',14+sc*S/2,H-18);
+  // traînée de la sonde lâchée
+  if(probe.trail.length>1){ctx.strokeStyle='rgba(127,119,221,.85)';ctx.lineWidth=2.2;ctx.setLineDash([2,5]);ctx.lineCap='round';ctx.beginPath();
+    probe.trail.forEach((p,k)=>k?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1])));ctx.stroke();ctx.setLineDash([]);}
+  Q.forEach(drawCharge);
+  // sonde + vecteur E
+  const px=X(probe.x),py=Y(probe.y),ea=probeArrow();
+  if(ea){const x1=px+ea.ux*(ea.L+11),y1=py+ea.uy*(ea.L+11);
+    ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(px+ea.ux*11,py+ea.uy*11);ctx.lineTo(x1-ea.ux*6,y1-ea.uy*6);ctx.stroke();
+    ctx.strokeStyle=ORANGE;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(px+ea.ux*11,py+ea.uy*11);ctx.lineTo(x1-ea.ux*6,y1-ea.uy*6);ctx.stroke();
+    arrowHead(ctx,x1,y1,Math.atan2(ea.uy,ea.ux),13,ORANGE);}
+  ctx.save();ctx.shadowColor='rgba(19,35,58,.3)';ctx.shadowBlur=5;ctx.shadowOffsetY=1.5;
+  const g=ctx.createRadialGradient(px-3,py-3,1,px,py,9);g.addColorStop(0,'#c9c5f4');g.addColorStop(1,VIOLET);
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(px,py,8.5,0,7);ctx.fill();ctx.restore();
+  ctx.strokeStyle='#fff';ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(px,py,8.5,0,7);ctx.stroke();
+  ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(px-4,py);ctx.lineTo(px+4,py);ctx.moveTo(px,py-4);ctx.lineTo(px,py+4);ctx.stroke();
+  ctx.strokeStyle='rgba(127,119,221,.55)';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(px,py,14,0,7);ctx.stroke();
+  // étiquettes (après les objets)
+  labs.forEach(pill);
+}
+
+// ---------- panneaux HTML ----------
+function legend(){const bx=$('legBox');bx.querySelectorAll('.tk').forEach(e=>e.remove());
+  const stops=[];for(let k=0;k<=40;k++){const v=Vs*(1-k/20);stops.push(css(col(v))+' '+(k/40*100).toFixed(1)+'%');}
+  $('legBar').style.background='linear-gradient(180deg,'+stops.join(',')+')';
+  [1,.5,0,-.5,-1].forEach(f=>{const d=document.createElement('div');d.className='tk';d.style.top=((1-f)/2*100)+'%';
+    d.style.color=f>0?RED_D:f<0?BLUE_D:'#465262';d.textContent=(f===1?'≥ ':f===-1?'≤ ':'')+sV(f*Vs);bx.appendChild(d);});
+  $('legSt').textContent='courbes tous les '+sp(step)+' V';
+  $('legEq').textContent='Équipotentielle (tous les '+sp(step)+' V ; trait épais tous les '+sp(5*step)+' V)';}
+let lastHud='';
+function hud(){
+  const v=Vat(probe.x,probe.y),[ex,ey]=Eat(probe.x,probe.y),e=Math.hypot(ex,ey);
+  const vc=v>0.5?RED_D:v<-0.5?BLUE_D:'#465262';
+  let note=probe.run?'La charge + glisse vers les V plus bas.':(probe.why||'E pointe vers les V décroissants.');
+  if(!probe.run&&!probe.why&&Q.length&&Math.abs(v)<0.04*Vs&&e>200)note='Ici V ≈ 0 mais E ≠ 0 !';
+  const h=`<div class="t">Sonde</div><div class="big">V = <b style="color:${vc}">${sV(v)}</b></div>`+
+    `<div class="big" style="font-size:.92rem">E = <b style="color:#8a5a12">${sE(e)}</b></div><div class="sub">${note}</div>`;
+  if(h!==lastHud){$('hud').innerHTML=h;lastHud=h;labDirty=true;}
+  // ligne de lecture : la somme des V (scalaires)
+  const terms=Q.map((c,i)=>{const r=Math.max(RMIN,Math.hypot(probe.x-c.x,probe.y-c.y));return {i,v:KV*c.q/r,r};});
+  let s='V = '+terms.map(t=>'V'+sub(t.i+1)).join(' + ')+' = ';
+  s+=terms.map(t=>`<b style="color:${t.v>=0?RED_D:BLUE_D}">(${sV(t.v)})</b>`).join(' + ')+` = <b style="color:${vc}">${sV(v)}</b>`;
+  const rr=terms.map(t=>'r'+sub(t.i+1)+' = '+fx(t.r)+' cm').join(' ; ');
+  $('info').innerHTML=(Q.length?s+'<br>'+rr+' &nbsp;·&nbsp; ':'Aucune charge : V = 0 partout. ')+
+    `<b style="color:#8a5a12">E = ${sE(e)}</b> (vecteur) &nbsp;·&nbsp; sonde en x = ${fx(probe.x)} cm ; y = ${fx(probe.y)} cm`;
+}
+function refreshSel(){redraw=true;const c=Q[sel];const s=$('qs'),pl=$('qPill'),o=$('qsv');
+  if(!c){s.disabled=true;pl.innerHTML='q &nbsp;charge choisie';o.textContent='—';$('del').disabled=true;return;}
+  s.disabled=false;$('del').disabled=false;s.value=c.q;const cl=c.q>0?RED_D:BLUE_D;
+  pl.innerHTML='q'+sub(sel+1)+' &nbsp;charge choisie';pl.style.color=cl;o.style.color=cl;o.textContent=sQ(c.q);
+  s.style.accentColor=c.q>0?RED:BLUE;s.style.setProperty('--pc',c.q>0?RED:BLUE);s._sv='';s.dispatchEvent(new Event('sfa'));}
+
+// ---------- préréglages ----------
+const PRE={seule:{Q:[[0,0,2]],p:[3,2]},dipole:{Q:[[-3.5,0,2],[3.5,0,-2]],p:[-2.6,1.3]},meme:{Q:[[-3,0,2],[3,0,2]],p:[0,2.5]},
+  cond:{Q:[[-3,-4,1],[-3,-2,1],[-3,0,1],[-3,2,1],[-3,4,1],[3,-4,-1],[3,-2,-1],[3,0,-1],[3,2,-1],[3,4,-1]],p:[-1.5,1]}};
+let preName='dipole';
+function preset(n){preName=n;const P=PRE[n];Q=P.Q.map(a=>({x:a[0],y:a[1],q:a[2]}));sel=0;probe.x=P.p[0];probe.y=P.p[1];probe.run=false;probe.trail=[];probe.why='';
+  if(H>W){Q.forEach(c=>{const t=c.x;c.x=-c.y*(n==='cond'?0.85:1);c.y=-t;});const t=probe.x;probe.x=-probe.y;probe.y=-t;}   // téléphone (portrait) : on tourne la figure d'un quart de tour
+  document.querySelectorAll('[data-pre]').forEach(b=>b.classList.toggle('on',b.dataset.pre===n));
+  structural();}
+function structural(){clampAll();autoScale();legend();dirty=true;refreshSel();need3d=true;}
+document.querySelectorAll('[data-pre]').forEach(b=>b.onclick=()=>preset(b.dataset.pre));
+function clampP(o){const m=16;o.x=Math.max(wx(m),Math.min(wx(W-m),o.x));o.y=Math.max(wy(H-m),Math.min(wy(m),o.y));}
+function clampAll(){Q.forEach(clampP);clampP(probe);}
+
+// ---------- réglages ----------
+$('qs').addEventListener('input',()=>{const c=Q[sel];if(!c)return;let v=+$('qs').value;if(v===0)v=c.q>0?-0.5:0.5;c.q=v;$('qs').value=v;
+  document.querySelectorAll('[data-pre]').forEach(b=>b.classList.remove('on'));structural();});
+function freeSpot(){for(let r=0;r<12;r+=0.5)for(let k=0;k<12;k++){const a=k/12*2*Math.PI+r;const x=r*Math.cos(a),y=r*Math.sin(a)*0.7;
+  if(X(x)<40||X(x)>W-40||Y(y)<40||Y(y)>H-40)continue;if(Q.every(c=>Math.hypot(c.x-x,c.y-y)>2.2)&&Math.hypot(probe.x-x,probe.y-y)>1.5)return [x,y];}return [0,0];}
+function add(q){if(Q.length>=12){$('tip').textContent='12 charges au maximum.';return;}const[x,y]=freeSpot();Q.push({x,y,q});sel=Q.length-1;
+  document.querySelectorAll('[data-pre]').forEach(b=>b.classList.remove('on'));structural();}
+$('addP').onclick=()=>add(1);$('addN').onclick=()=>add(-1);
+function delSel(){if(!Q[sel])return;Q.splice(sel,1);sel=Math.max(0,Math.min(sel,Q.length-1));
+  document.querySelectorAll('[data-pre]').forEach(b=>b.classList.remove('on'));structural();}
+$('del').onclick=delSel;
+addEventListener('keydown',e=>{if((e.key==='Delete'||e.key==='Backspace')&&document.activeElement.tagName!=='INPUT'){delSel();}});
+$('bEq').onclick=()=>{showEq=!showEq;$('bEq').classList.toggle('on',showEq);dirty=true;need3d=true;};
+$('bFl').onclick=()=>{showFl=!showFl;$('bFl').classList.toggle('on',showFl);dirty=true;need3d=true;};
+$('bGo').onclick=()=>release();
+function release(){if(!Q.length)return;probe.run=true;probe.why='';probe.trail=[[probe.x,probe.y]];probe.t=0;}
+
+// ---------- interaction 2D : glisser les charges et la sonde ----------
+let drag=null;
+function pick(px,py,touch){const R=touch?24:17;let best=null,bd=1e9;
+  Q.forEach((c,i)=>{const d=Math.hypot(X(c.x)-px,Y(c.y)-py);if(d<R&&d<bd){bd=d;best={k:'q',i};}});
+  const dp=Math.hypot(X(probe.x)-px,Y(probe.y)-py);if(dp<R+2&&dp<bd)best={k:'p'};return best;}
+function pos(e){const r=box.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];}
+box.addEventListener('pointerdown',e=>{if(mode3d)return;const[px,py]=pos(e);const t=e.pointerType!=='mouse';
+  let h=pick(px,py,t);
+  if(!h){probe.x=wx(px);probe.y=wy(py);clampP(probe);h={k:'p'};}
+  if(h.k==='q'){sel=h.i;refreshSel();}else{probe.run=false;probe.trail=[];probe.why='';}
+  drag={...h,ox:0,oy:0};if(h.k==='q'){drag.ox=X(Q[h.i].x)-px;drag.oy=Y(Q[h.i].y)-py;}
+  box.setPointerCapture(e.pointerId);labDirty=true;e.preventDefault();});
+box.addEventListener('pointermove',e=>{if(mode3d)return;const[px,py]=pos(e);
+  if(!drag){const h=pick(px,py,false);box.style.cursor=h?'grab':'crosshair';return;}
+  box.style.cursor='grabbing';
+  if(drag.k==='q'){const c=Q[drag.i];c.x=wx(px+drag.ox);c.y=wy(py+drag.oy);clampP(c);dirty=true;need3d=true;
+    document.querySelectorAll('[data-pre]').forEach(b=>b.classList.remove('on'));}
+  else{probe.x=wx(px);probe.y=wy(py);clampP(probe);}labDirty=true;});
+const end=()=>{drag=null;box.style.cursor='';};box.addEventListener('pointerup',end);box.addEventListener('pointercancel',end);
+
+// ---------- sonde lâchée : charge test + qui suit E (mouvement très freiné, comme une bille dans du miel) ----------
+function stepProbe(dt){if(!probe.run)return;const sp=150/S;               // ≈150 px/s à l'écran
+  let n=Math.ceil(dt*sp/0.04);const h=dt*sp/n;
+  for(let k=0;k<n;k++){const[ex,ey]=Eat(probe.x,probe.y);const e=Math.hypot(ex,ey);
+    if(e<2){probe.run=false;probe.why='Arrêt : E ≈ 0 ici (point d\'équilibre).';break;}
+    probe.x+=ex/e*h;probe.y+=ey/e*h;
+    const hit=Q.find(c=>c.q<0&&Math.hypot(probe.x-c.x,probe.y-c.y)<Math.max(0.9,40/S));
+    if(hit){probe.run=false;probe.why='Arrivée près d\'une charge − : V y est très bas.';break;}
+    if(X(probe.x)<10||X(probe.x)>W-10||Y(probe.y)<10||Y(probe.y)>H-10){clampP(probe);probe.run=false;probe.why='Elle file vers l\'infini, où V = 0.';break;}}
+  probe.t+=dt;if(probe.t>25){probe.run=false;}
+  const L=probe.trail[probe.trail.length-1];if(Math.hypot(L[0]-probe.x,L[1]-probe.y)>0.08)probe.trail.push([probe.x,probe.y]);labDirty=true;}
+
+// =================== 3D : relief z = V ===================
+let T3=null, need3d=true;
+function init3d(){if(T3)return T3;if(!window.THREE){box.insertAdjacentHTML('beforeend','<div class="p-err" id="err3">Impossible de charger la 3D (three.js). Vérifie la connexion internet.</div>');return null;}
+  const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+  renderer.outputEncoding=THREE.sRGBEncoding;renderer.setClearColor(0xffffff,1);
+  const el=renderer.domElement;el.style.display='none';box.insertBefore(el,cv.nextSibling);
+  const scene=new THREE.Scene();scene.background=new THREE.Color(0xffffff);
+  const cam=new THREE.PerspectiveCamera(38,1,0.1,400);
+  const lin=h=>new THREE.Color(h).convertSRGBToLinear();
+  scene.add(new THREE.HemisphereLight(lin('#ffffff'),lin('#b9c3d0'),0.6));
+  const sun=new THREE.DirectionalLight(0xffffff,0.85);sun.position.set(-8,30,14);scene.add(sun);
+  const fill=new THREE.DirectionalLight(0xffffff,0.18);fill.position.set(12,8,-10);scene.add(fill);
+  const surfMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.82,metalness:0,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1});
+  const surf=new THREE.Mesh(new THREE.BufferGeometry(),surfMat);scene.add(surf);
+  const eqMat=new THREE.LineBasicMaterial({color:lin('#13233a'),transparent:true,opacity:.55});
+  const eqMajMat=new THREE.LineBasicMaterial({color:lin('#13233a'),transparent:true,opacity:.9});
+  const zMat=new THREE.LineDashedMaterial({color:lin('#465262'),dashSize:.35,gapSize:.25});
+  const flMat=new THREE.LineBasicMaterial({color:lin('#BA7517')});
+  const trMat=new THREE.LineBasicMaterial({color:lin('#7F77DD')});
+  const grp=new THREE.Group();scene.add(grp);
+  const floor=new THREE.Group();scene.add(floor);
+  const sph=new THREE.SphereGeometry(1,32,20);
+  const mP=new THREE.MeshStandardMaterial({color:lin(RED),roughness:.35,metalness:.05,emissive:lin('#5a0d0c'),emissiveIntensity:.25});
+  const mN=new THREE.MeshStandardMaterial({color:lin(BLUE),roughness:.35,metalness:.05,emissive:lin('#0b2a4e'),emissiveIntensity:.25});
+  const mPr=new THREE.MeshStandardMaterial({color:lin(VIOLET),roughness:.3,metalness:.05,emissive:lin('#2c2770'),emissiveIntensity:.3});
+  const probeM=new THREE.Mesh(sph,mPr);scene.add(probeM);
+  const stem=new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(),new THREE.Vector3()]),new THREE.LineDashedMaterial({color:lin(VIOLET),dashSize:.25,gapSize:.2}));scene.add(stem);
+  const chM=[];
+  // étiquettes HTML
+  const mk=(cls)=>{const d=document.createElement('div');d.className='p-lab '+cls;box.appendChild(d);return d;};
+  const labC=[],labL=[];for(let i=0;i<12;i++)labC.push(mk(''));for(let i=0;i<24;i++)labL.push(mk('lv'));
+  const labP=mk('');labP.style.color='#4b44a8';labP.textContent='sonde';
+  T3={renderer,el,scene,cam,surf,grp,floor,chM,probeM,stem,labC,labL,labP,mP,mN,sph,eqMat,eqMajMat,zMat,flMat,trMat,orb:{th:-0.55,ph:0.98,r:1},goal:null,HM:5,bounds:null,trail:null};
+  // orbite
+  let od=null;
+  el.addEventListener('pointerdown',e=>{const[px,py]=pos(e);
+    // la sonde peut être attrapée et promenée sur le relief
+    const p=scr3(probeM.position);if(Math.hypot(p.x-px,p.y-py)<(e.pointerType==='mouse'?18:26)){od={probe:true};probe.run=false;probe.trail=[];probe.why='';}
+    else od={x:e.clientX,y:e.clientY};el.setPointerCapture(e.pointerId);e.preventDefault();});
+  el.addEventListener('pointermove',e=>{if(!od)return;
+    if(od.probe){const[px,py]=pos(e);const ray=new THREE.Raycaster();ray.setFromCamera({x:px/W*2-1,y:-(py/H*2-1)},cam);
+      const hit=ray.intersectObject(surf)[0];if(hit){probe.x=hit.point.x;probe.y=-hit.point.z;clampP(probe);}return;}
+    const o=T3.orb;o.th-=(e.clientX-od.x)*0.008;o.ph=Math.max(0.12,Math.min(1.45,o.ph-(e.clientY-od.y)*0.008));od.x=e.clientX;od.y=e.clientY;});
+  const oe=()=>od=null;el.addEventListener('pointerup',oe);el.addEventListener('pointercancel',oe);
+  el.addEventListener('wheel',e=>{e.preventDefault();T3.orb.r=Math.max(.55,Math.min(1.8,T3.orb.r*Math.exp(e.deltaY*0.0012)));},{passive:false});
+  return T3;}
+const hgt=v=>{const t=v/Vs,a=Math.abs(t);const s=a<.85?a:.85+.15*Math.tanh((a-.85)/.15);return Math.sign(t)*s*T3.HM;};   // écrêtage doux
+function build3d(){const t=T3;
+  const x0=wx(0),x1=wx(W),y0=wy(H),y1=wy(0),span=Math.max(x1-x0,y1-y0);t.HM=0.26*span;t.span=span;
+  const N=W<600?110:150;const nx=Math.round(N*(x1-x0)/span)+1,ny=Math.round(N*(y1-y0)/span)+1;
+  const v=new Float32Array(nx*ny),posA=new Float32Array(nx*ny*3),colA=new Float32Array(nx*ny*3);
+  for(let j=0;j<ny;j++)for(let i=0;i<nx;i++){const x=x0+(x1-x0)*i/(nx-1),y=y1-(y1-y0)*j/(ny-1);const n=j*nx+i;const V=Vat(x,y);v[n]=V;
+    posA[3*n]=x;posA[3*n+1]=hgt(V);posA[3*n+2]=-y;const c=col(V);const C=new THREE.Color(css(c)).convertSRGBToLinear();colA[3*n]=C.r;colA[3*n+1]=C.g;colA[3*n+2]=C.b;}
+  const idx=[];for(let j=0;j<ny-1;j++)for(let i=0;i<nx-1;i++){const a=j*nx+i,b=a+1,c=a+nx,d=c+1;idx.push(a,c,b,b,c,d);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(posA,3));g.setAttribute('color',new THREE.BufferAttribute(colA,3));
+  g.setIndex(idx);g.computeVertexNormals();t.surf.geometry.dispose();t.surf.geometry=g;
+  // nettoyage
+  while(t.grp.children.length){const o=t.grp.children.pop();o.geometry&&o.geometry.dispose();}
+  const gx=i=>x0+(x1-x0)*i/(nx-1),gy=j=>y1-(y1-y0)*j/(ny-1);
+  const lerpX=u=>x0+(x1-x0)*u/(nx-1),lerpY=w=>y1-(y1-y0)*w/(ny-1);
+  if(showEq){const ALL=marchAll(v,nx,ny);for(const L of levels()){const out=ALL[Math.round(L/step)+10];if(!out.length)continue;const h=hgt(L)+0.04*T3.HM/5;const p=new Float32Array(out.length/2*3);
+      for(let n=0,m=0;n<out.length;n+=2,m+=3){p[m]=lerpX(out[n]);p[m+1]=h;p[m+2]=-lerpY(out[n+1]);}
+      const gg=new THREE.BufferGeometry();gg.setAttribute('position',new THREE.BufferAttribute(p,3));const lv=Math.round(L/step);
+      const ls=new THREE.LineSegments(gg,lv===0?t.zMat:lv%5===0?t.eqMajMat:t.eqMat);if(lv===0)ls.computeLineDistances();t.grp.add(ls);}}
+  if(showFl){const add=r=>{if(r.length>1)t.grp.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(r),t.flMat));};
+    for(const f of flines){let run=[];   // découpe la ligne en morceaux qui restent sur le relief
+      f.pts.forEach((p,k)=>{const inn=p[0]>=x0&&p[0]<=x1&&p[1]>=y0&&p[1]<=y1;
+        if(!inn){add(run);run=[];return;}if(k%2&&k!==f.pts.length-1)return;
+        run.push(new THREE.Vector3(p[0],hgt(Vat(p[0],p[1]))+0.08*T3.HM/5,-p[1]));});add(run);}}
+  // charges : boules posées au sommet écrêté (pic +) ou au fond (puits −)
+  t.chM.forEach(m=>t.scene.remove(m));t.chM.length=0;
+  Q.forEach(c=>{const m=new THREE.Mesh(t.sph,c.q>0?t.mP:t.mN);const r=0.022*span;m.scale.setScalar(r);m.position.set(c.x,hgt(Vat(c.x,c.y))+(c.q>0?r*.6:-r*.6),-c.y);t.scene.add(m);t.chM.push(m);});
+  // sol de référence (plan V = 0, en filigrane)
+  while(t.floor.children.length){const o=t.floor.children.pop();o.geometry&&o.geometry.dispose();}
+  const fr=new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(x0,0,-y0),new THREE.Vector3(x1,0,-y0),new THREE.Vector3(x1,0,-y1),new THREE.Vector3(x0,0,-y1)]),
+    new THREE.LineBasicMaterial({color:new THREE.Color('#c3cad4').convertSRGBToLinear()}));t.floor.add(fr);
+  const fl=-T3.HM*1.12,gp=[];const st=span>20?5:2;
+  for(let x=Math.ceil(x0/st)*st;x<=x1;x+=st)gp.push(new THREE.Vector3(x,fl,-y0),new THREE.Vector3(x,fl,-y1));
+  for(let y=Math.ceil(y0/st)*st;y<=y1;y+=st)gp.push(new THREE.Vector3(x0,fl,-y),new THREE.Vector3(x1,fl,-y));
+  t.floor.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(gp),new THREE.LineBasicMaterial({color:new THREE.Color('#e3e7ed').convertSRGBToLinear()})));
+  need3d=false;}
+function scr3(v){const p=v.clone().project(T3.cam);return {x:(p.x+1)/2*W,y:(1-p.y)/2*H,ok:p.z<1&&p.z>-1};}
+function draw3d(){const t=T3;if(need3d)build3d();
+  t.renderer.setSize(W,H,false);t.cam.aspect=W/H;t.cam.updateProjectionMatrix();
+  const o=t.orb,k=Math.max(1,0.95/t.cam.aspect),r=o.r*t.span*(t.cam.aspect<1?1.0:1.45)*k;
+  t.cam.position.set(r*Math.sin(o.ph)*Math.sin(o.th),r*Math.cos(o.ph)+0.0,r*Math.sin(o.ph)*Math.cos(o.th));t.cam.lookAt(0,t.cam.aspect<1?t.HM*0.25:-t.HM*0.15,t.cam.aspect<1?-wy(H/2)*0:0);
+  // sonde
+  const hz=hgt(Vat(probe.x,probe.y));const pr=0.017*t.span;t.probeM.scale.setScalar(pr);t.probeM.position.set(probe.x,hz+pr*.9,-probe.y);
+  const sg=t.stem.geometry;sg.setFromPoints([new THREE.Vector3(probe.x,hz,-probe.y),new THREE.Vector3(probe.x,-t.HM*1.12,-probe.y)]);t.stem.computeLineDistances();
+  // traînée
+  if(t.trail){t.scene.remove(t.trail);t.trail.geometry.dispose();t.trail=null;}
+  if(probe.trail.length>1){const pts=probe.trail.map(p=>new THREE.Vector3(p[0],hgt(Vat(p[0],p[1]))+0.12*t.HM/5,-p[1]));t.trail=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),t.trMat);t.scene.add(t.trail);}
+  t.renderer.render(t.scene,t.cam);
+  // étiquettes projetées, sans chevauchement
+  const occ=overlays(),placed=[];
+  // une étiquette n'est montrée que si son point n'est pas caché par le relief (rayon caméra -> point, mis en cache)
+  const key=t.cam.position.toArray().map(v=>v.toFixed(3)).join()+'|'+t.surf.geometry.uuid;
+  if(t.visKey!==key){t.visKey=key;t.vis={};}
+  const rc=t.rc||(t.rc=new THREE.Raycaster());
+  const seen=(v,id)=>{if(id in t.vis)return t.vis[id];const d=v.clone().sub(t.cam.position);const L=d.length();rc.set(t.cam.position,d.normalize());rc.far=L-0.02*t.span;
+    const h=rc.intersectObject(t.surf,false);return t.vis[id]=!h.length;};
+  const put=(el,x,y)=>{const w=el.offsetWidth,h=el.offsetHeight;const R={x:x-w/2,y:y-h/2,w,h};
+    if(R.x<3||R.y<3||R.x+w>W-3||R.y+h>H-3||placed.some(p=>hitR(R,p))||occ.some(p=>hitR(R,p))){el.style.display='none';return false;}
+    placed.push(R);el.style.transform=`translate(${R.x}px,${R.y}px)`;return true;};
+  t.labC.forEach(e=>e.style.display='none');t.labL.forEach(e=>e.style.display='none');
+  const pp=scr3(t.probeM.position);t.labP.style.display='block';if(!(pp.ok&&put(t.labP,pp.x,pp.y-24)))t.labP.style.display='none';
+  Q.forEach((c,i)=>{const el=t.labC[i];el.style.display='block';el.textContent='q'+sub(i+1)+' = '+sQ(c.q);el.style.color=c.q>0?RED_D:BLUE_D;
+    // charge + : étiquette au-dessus de la boule (au sommet) ; charge − : au-dessus de l'ouverture du puits (plan V = 0), visible de partout
+    const A=c.q>0?t.chM[i].position.clone():new THREE.Vector3(c.x,0.04*t.HM,-c.y);const p=scr3(A);const dy=-24;
+    if(!(p.ok&&(c.q>0||seen(A,'q'+i+A.toArray().join()))&&(put(el,p.x,p.y+dy)||put(el,p.x,p.y-dy))))el.style.display='none';});
+  let n=0;labs.filter(l=>l.lvl!==undefined).forEach(l=>{if(n>=t.labL.length)return;const el=t.labL[n];el.style.display='block';el.textContent=l.t;el.style.color=l.c;
+    const V3=new THREE.Vector3(l.wxy[0],hgt(l.lvl),-l.wxy[1]);const p=scr3(V3);if(p.ok&&seen(V3,l.t+l.wxy.join())&&put(el,p.x,p.y))n++;else el.style.display='none';});
+}
+function set3d(on){if(on&&!init3d()){mode3d=false;return;}mode3d=on;$('b3d').classList.toggle('on',on);
+  if(T3){T3.el.style.display=on?'block':'none';if(!on){T3.labC.concat(T3.labL,[T3.labP]).forEach(e=>e.style.display='none');}}
+  cv.style.display=on?'none':'block';$('modeTag').hidden=!on;
+  $('hint').textContent=on?'Glisse pour tourner · molette pour zoomer · attrape la sonde':'Glisse les charges et la sonde · touche une charge pour la régler';
+  $('tip').textContent=on?'Relief : les + font des pics, les − des puits. Les équipotentielles sont les courbes de niveau. Lâche la sonde : elle descend la pente.':
+    'Touche une charge pour la choisir, puis règle sa valeur. Touche un endroit vide pour y amener la sonde.';
+  ['addP','addN'].forEach(id=>$(id).disabled=on);
+  dirty=true;need3d=true;labDirty=true;}
+$('b3d').onclick=()=>set3d(!mode3d);
+window.addEventListener('load',()=>{redraw=true;});
+
+// ---------- boucle ----------
+let last=performance.now(),sw=0,sh=0;
+function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;
+  const r=box.getBoundingClientRect();if(Math.abs(r.width-sw)>.5||Math.abs(r.height-sh)>.5){sw=r.width;sh=r.height;fit();clampAll();dirty=true;need3d=true;labDirty=true;}
+  stepProbe(dt);hud();
+  // on ne redessine que si quelque chose a changé (sinon l'image reste en cache)
+  if(mode3d){const ck=T3?JSON.stringify(T3.orb)+W+'x'+H:'';const ch=dirty||labDirty||need3d||probe.run||redraw||ck!==camKey;camKey=ck;
+    if(dirty){buildStatic();layoutLabels();}if(labDirty)layoutLabels();if(ch)draw3d();redraw=false;}
+  else if(dirty||labDirty||probe.run||redraw){draw2d();redraw=false;}
+  requestAnimationFrame(frame);}
+fit();sw=W;sh=H;preset('dipole');buildStatic();
+// au chargement : la sonde, posée près de la charge +, est lâchée et descend vers la charge −
+setTimeout(release,700);
+requestAnimationFrame(frame);
+window.__t={prof(){const r={};let t=performance.now();computeGrid();r.grid=performance.now()-t;t=performance.now();traceAll();r.fl=performance.now()-t;t=performance.now();buildStatic();r.static=performance.now()-t;t=performance.now();layoutLabels();r.lab=performance.now()-t;t=performance.now();draw2d();r.draw=performance.now()-t;return r;},get Q(){return Q},probe,preset,set3d,release,Vat,Eat,get Vs(){return Vs},get step(){return step},get labs(){return labs},get T3(){return T3},
+  setFl(v){showFl=v;$('bFl').classList.toggle('on',v);dirty=true;need3d=true;},setEq(v){showEq=v;$('bEq').classList.toggle('on',v);dirty=true;need3d=true;},
+  sel(i){sel=i;refreshSel();},setQ(i,q){Q[i].q=q;structural();},add,del:delSel};
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Électrostatique : charges et champs<span>7 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/forces-l-ctrostatique-/"><i>01</i>Forces électrostatiques</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/champ-l-ctrostatique-/"><i>02</i>Champ électrostatique</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/potentiel-carte/"><i>03</i>Potentiel électrique : carte et équipotentielles</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/potentiel-travail/"><i>04</i>Travail et différence de potentiel</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/potentiel-electronvolt/"><i>05</i>Accélérer une charge : l&#x27;électronvolt</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/charge-champ-uniforme/"><i>06</i>Une charge entre deux plaques</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Conducteur/"><i>07</i>Conducteur</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

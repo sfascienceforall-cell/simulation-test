@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aromaticité et règle de Hückel · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style id="sfa-chim">
+/* Compléments communs aux simulations de chimie SFA (mêmes cartes et même typo que le kit) */
+*{box-sizing:border-box}
+.sfa-card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-top:14px}
+.sfa-card h2{font:800 15px var(--f-ui);margin:0 0 8px;color:var(--ink)}
+.sfa-card ul{margin:0;padding-left:20px}.sfa-card li{margin:4px 0}
+.sfa-card.trap{border-left:4px solid #BA7517}
+.sfa-card.keep{border-left:4px solid var(--green)}
+.defi{border-top:1px solid var(--line);padding:10px 0}.defi:first-of-type{border-top:0}
+.defi p{margin:0 0 6px;font-weight:600}
+.defi details summary{cursor:pointer;font:800 13px var(--f-ui);color:var(--green);list-style:none}
+.defi details summary::-webkit-details-marker{display:none}
+.defi details summary::before{content:"+ ";}.defi details[open] summary::before{content:"− ";}
+.defi details div{margin-top:6px;color:var(--ink2);background:var(--bg);border-radius:8px;padding:8px 12px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.ctl .lab{font:700 .86rem var(--f-ui);color:var(--ink2);margin-right:2px}
+.hint{font:500 .84rem var(--f-ui);color:var(--muted)}
+.btn{background:var(--paper);border:1px solid var(--line2);border-radius:8px;color:var(--ink);font:800 .82rem var(--f-ui);padding:8px 12px;cursor:pointer;touch-action:manipulation}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.chem{font-family:var(--f-ui)}
+.big{font:800 1.6rem/1.1 var(--f-ui);color:var(--ink)}
+.ok{color:var(--green);font-weight:800}.warn{color:#a32d2d;font-weight:800}
+sub,sup{font-size:.72em;line-height:0}
+</style>
+<script>
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche (repris du kit SFA). */
+addEventListener('DOMContentLoaded',()=>{
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+});
+</script>
+<style>
+.box{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0;font-size:14px}
+.box h3{font:800 14px var(--f-ui);margin:0 0 6px}
+.box p{margin:4px 0}.box ul{margin:4px 0;padding-left:20px}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;margin:4px 0 10px}
+.gal .btn{text-align:left;display:flex;justify-content:space-between;gap:6px;align-items:center}
+.gal .btn small{font:600 11px var(--f-ui);opacity:.75}
+.gal .btn .ok{color:var(--green)}.gal .btn.on .ok{color:#9fe0c4}
+.work{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:14px;align-items:start}
+@media (max-width:760px){.work{grid-template-columns:minmax(0,1fr)}}
+#mol{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:10px;background:#fff;max-height:380px}
+.hit{cursor:pointer}
+.crit label{display:flex;gap:10px;align-items:flex-start;padding:7px 4px;border-top:1px solid var(--line);font-weight:600;cursor:pointer}
+.crit label:first-child{border-top:0}
+.crit input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:#2e6b55}
+.crit .mk{margin-left:auto;font-weight:800;white-space:nowrap}
+.count{font:800 1.35rem var(--f-ui);margin:8px 0}
+.vbtn{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+#fb{min-height:20px}
+#fb .good{color:var(--green);font-weight:800}#fb .bad{color:#a32d2d;font-weight:800}
+.res{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:2px 6px}
+.res .eq{font:800 24px var(--f-ui);color:var(--ink2)}
+.res svg{display:block;height:auto}
+#frost{width:100%;max-width:420px;height:auto;display:block;margin:0 auto}
+.legend2{font:600 12px var(--f-ui);color:var(--muted);margin-top:4px}
+</style>
+<link rel="stylesheet" href="../../kit/sfa-nav.css"></head>
+<body>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a class="on" href="../">Simulations de chimie</a><a href="../exercices/">Exercices de chimie</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations de physique</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="../">Simulations de chimie</a>›<a href="../#organique">Chimie organique</a>›<b>Aromaticité et règle de Hückel</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Chimie · Chimie organique</span><span class="sfa-chip free">Gratuit</span></div><h1>Aromaticité et règle de Hückel</h1><p>Treize molécules cycliques. Pour chacune, coche les critères, compte les électrons π en touchant les liaisons et les doublets qui participent, puis tranche : aromatique, antiaromatique ou non aromatique.</p></div>
+<section class="sfa-sim">
+  <div class="gal" id="gal"></div>
+  <p class="hint" id="score"></p>
+  <div class="work">
+    <div>
+      <svg id="mol" role="img" aria-label="Structure de la molécule"></svg>
+      <p class="legend2">Touche une double liaison du cycle ou un doublet libre pour l'ajouter au compte (vert), touche-le à nouveau pour le retirer. Chaque élément sélectionné apporte 2 électrons π.</p>
+      <p class="hint" id="molinfo"></p>
+    </div>
+    <div>
+      <div class="box crit" id="crit"></div>
+      <div class="count" id="count"></div>
+      <div><b style="font-size:14px">Verdict</b><div class="vbtn" id="vb"></div></div>
+      <div class="vbtn"><button class="btn" id="bCheck" style="background:var(--green)!important;color:#fff!important;border-color:var(--green)!important">Vérifier</button><button class="btn" id="bSol">Voir la solution</button><button class="btn" id="bReset">Recommencer</button></div>
+    </div>
+  </div>
+  <div class="box" id="fb" aria-live="polite"></div>
+  <details class="box" id="frostBox"><summary style="cursor:pointer;font:800 14px var(--f-ui)">Pour aller plus loin : diagramme des orbitales π (cercle de Frost)</summary><div id="frostIn"></div></details>
+  <div class="box"><h3>Structures limites du benzène</h3>
+    <div class="res" id="kek"></div>
+    <p>Les flèches courbes déplacent les trois doublets π d'une liaison à la voisine : on passe d'une structure de Kekulé à l'autre. Le signe ↔ relie des structures limites : ce n'est pas un équilibre, rien ne bascule. La molécule réelle est un hybride unique : ses six liaisons C–C sont identiques, intermédiaires entre une simple et une double. On la dessine souvent avec un cercle.</p>
+    <p class="hint">Énergie de résonance : le benzène est beaucoup plus stable que ne le prévoit une structure à trois doubles liaisons localisées (comparaison qualitative, aucune valeur donnée ici).</p>
+  </div>
+</section>
+
+<div class="sfa-card keep"><h2>Ce qu'il faut retenir</h2><ul>
+  <li>Une molécule est aromatique si elle est cyclique, plane, entièrement conjuguée (une orbitale p sur chaque atome du cycle) et possède 4n + 2 électrons π (2, 6, 10…) : c'est la règle de Hückel.</li>
+  <li>Mêmes trois premiers critères avec 4n électrons π (4, 8…) : antiaromatique, très instable. Si un critère structural manque : non aromatique.</li>
+  <li>On compte les électrons π : 2 par double liaison du cycle, 2 par doublet libre situé dans une orbitale p, 0 pour une orbitale p vide (C⁺).</li>
+  <li>Le doublet de N du pyrrole fait partie du sextet aromatique ; celui de la pyridine est dans le plan du cycle, hors du système π, et reste disponible pour capter H⁺ : la pyridine est basique (pKb = 8,82), le pyrrole presque pas.</li>
+  <li>Une molécule aromatique est particulièrement stable : elle préfère la substitution à l'addition.</li>
+</ul></div>
+
+<div class="sfa-card trap"><h2>Pièges classiques</h2><ul>
+  <li>Compter les doubles liaisons au lieu des électrons : le benzène a 3 doubles liaisons mais 6 électrons π.</li>
+  <li>Compter tous les doublets d'un hétéroatome : dans le furane, un seul des deux doublets de O est dans l'orbitale p.</li>
+  <li>Le cyclooctatétraène n'est pas antiaromatique : il se plie en baquet, n'est plus plan et devient non aromatique.</li>
+  <li>Écrire une double flèche d'équilibre entre les structures limites : on écrit toujours ↔.</li>
+</ul></div>
+
+<div class="sfa-card"><h2>Défis</h2>
+  <div class="defi"><p>1. Le cation cyclopentadiénylium (cation cyclopentadiényle), C₅H₅⁺, plan, serait-il aromatique ?</p>
+    <details><summary>Voir la réponse</summary><div>Non. Deux doubles liaisons (4 électrons π) et un C⁺ à orbitale p vide : 4 électrons π, de la forme 4n. S'il est plan, il est antiaromatique, donc très instable. Compare avec l'anion de la galerie, qui en a 6.</div></details></div>
+  <div class="defi"><p>2. Si l'on fixe H⁺ sur l'azote, la pyridine reste-t-elle aromatique ? Et le pyrrole ?</p>
+    <details><summary>Voir la réponse</summary><div>La pyridine oui : son doublet était dans le plan, il n'appartenait pas au système π ; le compte reste 6. Le pyrrole non : son doublet faisait partie des 6 électrons π ; s'il sert à lier H⁺, il ne reste que 4 électrons π et l'aromaticité est perdue. C'est pourquoi le pyrrole est si peu basique (quand on le force, il se protone d'ailleurs plutôt sur un carbone, ce qui détruit aussi l'aromaticité).</div></details></div>
+  <div class="defi"><p>3. Dans l'imidazole, quel azote capte H⁺ ?</p>
+    <details><summary>Voir la réponse</summary><div>L'azote sans H (de type pyridine) : son doublet est dans le plan et ne participe pas au système π. L'azote N–H (de type pyrrole) engage son doublet dans les 6 électrons π.</div></details></div>
+</div>
+</main>
+<aside class="sfa-side">
+  <div class="sfa-list"><h2>Chimie organique : stéréochimie et réactivité<span>5 simulations</span></h2><ol><li><a href="../stereochimie-3d/"><i>01</i>R/S, Fischer et E/Z</a></li><li><a href="../conformations/"><i>02</i>Newman et chaise</a></li><li><a href="../effets-electroniques/"><i>03</i>Effets électroniques en organique</a></li><li><a href="../substitution-elimination/"><i>04</i>SN1, SN2, E1, E2</a></li><li><a class="on" aria-current="page" href="../aromaticite/"><i>05</i>Aromaticité et règle de Hückel</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside>
+</div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de chimie</footer>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const D=Math.PI/180, INK='#0f1b2d', ARC='#c0392b', SEL='#2e6b55';
+
+/* ============ molécules ============
+   atomes : {x,y,el,lab,ch,h (H porté, dessiné),lp:[{o:angle relatif à la direction radiale, p:true si dans l'orbitale p}]}
+   liaisons : [i,j,ordre] (cycle). Le dessin est plan ; « plan » est une propriété réelle de la molécule (le COT ne l'est pas). */
+function ring(N,start){const A=[];for(let k=0;k<N;k++){const a=(start+360*k/N)*D;A.push({x:Math.cos(a),y:Math.sin(a),el:'C',lab:''});}
+  const B=[];for(let k=0;k<N;k++)B.push([k,(k+1)%N,1]);return {atoms:A,bonds:B};}
+function mk(N,start,dbl,mods,extra){const r=ring(N,start);dbl.forEach(([i,j])=>{const b=r.bonds.find(q=>(q[0]===i&&q[1]===j)||(q[0]===j&&q[1]===i));b[2]=2;});
+  for(const k in mods||{})Object.assign(r.atoms[k],mods[k]);return Object.assign(r,extra);}
+const MOLS=[
+ Object.assign(mk(6,-90,[[0,1],[2,3],[4,5]]),{id:'benzene',nom:'Benzène',f:'C₆H₆',plan:true,frost:6,
+   why:'Six carbones sp², chacun avec une orbitale p perpendiculaire au plan. Trois doubles liaisons : 6 électrons π, soit 4n + 2 avec n = 1. Aromatique : c\'est la molécule de référence.'}),
+ Object.assign(mk(4,-135,[[0,1],[2,3]]),{id:'cbd',nom:'Cyclobutadiène',f:'C₄H₄',plan:true,frost:4,
+   why:'Cyclique, plan (rectangulaire) et entièrement conjugué, mais 4 électrons π, soit 4n avec n = 1. Antiaromatique : la délocalisation le déstabilise. Il n\'existe qu\'à très basse température ou piégé.'}),
+ Object.assign(mk(8,-112.5,[[0,1],[2,3],[4,5],[6,7]]),{id:'cot',nom:'Cyclooctatétraène',f:'C₈H₈',plan:false,frost:8,ancien:'COT',
+   why:'8 électrons π (4n, n = 2) : plan, il serait antiaromatique. Il évite cette situation en se pliant en baquet. Les doubles liaisons voisines ne sont plus parallèles et ne se recouvrent presque plus : non aromatique. Il réagit comme un alcène ordinaire.'}),
+ Object.assign(mk(6,-90,[[0,1],[2,3],[4,5]],{0:{el:'N',lab:'N',lp:[{o:0,p:false}]}}),{id:'pyridine',nom:'Pyridine',f:'C₅H₅N',plan:true,
+   why:'Trois doubles liaisons (dont C=N) : 6 électrons π. Le doublet de N est dans une orbitale sp², dans le plan du cycle, perpendiculaire aux orbitales p : il ne compte pas. Aromatique, et ce doublet reste libre : la pyridine est une base (pKb = 8,82).'}),
+ Object.assign(mk(5,90,[[1,2],[3,4]],{0:{el:'N',lab:'N',h:true,lp:[{o:62,p:true}]}}),{id:'pyrrole',nom:'Pyrrole',f:'C₄H₅N',plan:true,
+   why:'Deux doubles liaisons (4 électrons) et le doublet de N : l\'azote est sp², son doublet occupe l\'orbitale p et entre dans le système π. Total 6 : aromatique. Ce doublet n\'est pas disponible pour H⁺ : le pyrrole n\'est presque pas basique.'}),
+ Object.assign(mk(5,90,[[1,2],[3,4]],{0:{el:'O',lab:'O',lp:[{o:-48,p:true},{o:48,p:false}]}}),{id:'furane',nom:'Furane',f:'C₄H₄O',plan:true,ancien:'furanne',
+   why:'Deux doubles liaisons (4 électrons) et un seul des deux doublets de O, celui de l\'orbitale p. L\'autre doublet est dans le plan (orbitale sp²) et ne compte pas. Total 6 : aromatique.'}),
+ Object.assign(mk(5,90,[[1,2],[3,4]],{0:{el:'S',lab:'S',lp:[{o:-48,p:true},{o:48,p:false}]}}),{id:'thiophene',nom:'Thiophène',f:'C₄H₄S',plan:true,
+   why:'Comme le furane : deux doubles liaisons et un seul doublet de S dans l\'orbitale p. 6 électrons π : aromatique.'}),
+ Object.assign(mk(5,90,[[0,4],[2,3]],{1:{el:'N',lab:'N',h:true,lp:[{o:62,p:true}]},4:{el:'N',lab:'N',lp:[{o:0,p:false}]}}),{id:'imidazole',nom:'Imidazole',f:'C₃H₄N₂',plan:true,
+   why:'Deux doubles liaisons (C=N et C=C) : 4 électrons. L\'azote N–H (type pyrrole) donne son doublet, dans l\'orbitale p : 2 de plus. L\'autre azote (type pyridine) a son doublet dans le plan : il ne compte pas, et c\'est lui qui est basique. Total 6 : aromatique.'}),
+ Object.assign(mk(3,-90,[[1,2]],{0:{ch:'+'}}),{id:'cp3',nom:'Cation cyclopropénylium',f:'C₃H₃⁺',plan:true,frost:3,ancien:'cation cyclopropényle',
+   why:'Une double liaison : 2 électrons π. Le C⁺ est sp² avec une orbitale p vide : il prolonge la conjugaison sans apporter d\'électron. 2 = 4n + 2 avec n = 0 : aromatique, malgré la forte tension du cycle à trois atomes.'}),
+ Object.assign(mk(5,-90,[[1,2],[3,4]],{0:{ch:'−',lp:[{o:-38,p:true}]}}),{id:'cp5',nom:'Anion cyclopentadiénure',f:'C₅H₅⁻',plan:true,frost:5,ancien:'anion cyclopentadiényle',
+   why:'Deux doubles liaisons (4 électrons) et le doublet du C⁻, sp², dans l\'orbitale p : 6 électrons π, aromatique. La charge est répartie sur les cinq carbones. C\'est pourquoi le cyclopentadiène perd facilement un H⁺ : il est inhabituellement acide pour un hydrocarbure.'}),
+ Object.assign(mk(7,-90,[[1,2],[3,4],[5,6]],{0:{ch:'+'}}),{id:'trop',nom:'Cation cycloheptatriénylium',f:'C₇H₇⁺',plan:true,frost:7,ancien:'cation tropylium',
+   why:'Trois doubles liaisons : 6 électrons π. Le C⁺ a une orbitale p vide qui complète la conjugaison sur les sept carbones. 6 = 4n + 2 : aromatique. Ses sels sont stables et isolables.'}),
+ Object.assign(mk(5,-90,[[1,2],[3,4]],{0:{lab:'CH₂',sp3:true}}),{id:'cpd',nom:'Cyclopenta-1,3-diène',f:'C₅H₆',plan:true,ancien:'cyclopentadiène',
+   why:'Le CH₂ est sp³ : il n\'a pas d\'orbitale p et coupe la conjugaison. Les 4 électrons π des deux doubles liaisons ne font pas le tour du cycle : non aromatique (c\'est un diène conjugué ordinaire). Arracher un H⁺ au CH₂ donne l\'anion cyclopentadiénure, aromatique.'}),
+ (()=>{const s=Math.sqrt(3)/2;const P=[[0,-1],[-s,-.5],[-s,.5],[0,1],[s,.5],[s,-.5],[2*s,-1],[3*s,-.5],[3*s,.5],[2*s,1]];
+   const atoms=P.map(([x,y])=>({x:x-s,y,el:'C',lab:''}));const bonds=[[0,1,2],[1,2,1],[2,3,2],[3,4,1],[4,5,2],[5,0,1],[5,6,1],[6,7,2],[7,8,1],[8,9,2],[9,4,1]];
+   return {atoms,bonds,id:'naph',nom:'Naphtalène',f:'C₁₀H₈',plan:true,ctr:[[-s,0],[s,0]],
+     why:'Deux cycles accolés, dix carbones sp², cinq doubles liaisons : 10 électrons π sur le pourtour, 4n + 2 avec n = 2. Aromatique. La règle de Hückel est établie pour un seul cycle ; on l\'étend ici au contour de la molécule.'};})()
+];
+/* propriétés déduites (vérifiées dans le test par une méthode indépendante) */
+MOLS.forEach(m=>{m.cyc=true;m.conj=!m.atoms.some(a=>a.sp3);
+  m.pi=2*m.bonds.filter(b=>b[2]===2).length+2*m.atoms.reduce((s,a)=>s+(a.lp||[]).filter(l=>l.p).length,0);
+  m.hu=m.pi%4===2;m.verdict=(m.cyc&&m.plan&&m.conj)?(m.hu?'aro':'anti'):'non';});
+const VERD={aro:'Aromatique',anti:'Antiaromatique',non:'Non aromatique'};
+const CRIT=[['cyc','Cyclique'],['plan','Plan'],['conj','Entièrement conjugué : chaque atome du cycle porte une orbitale p (aucun carbone sp³)'],['hu','Nombre d\'électrons π = 4n + 2 (n = 0, 1, 2…)']];
+
+const st={i:0,sel:new Set(),crit:{},verd:null,checked:false,done:new Set()};
+
+/* ============ dessin ============ */
+const SC=62;
+function center(m,b){if(m.ctr){const A=m.atoms[b[0]],B=m.atoms[b[1]],mx=(A.x+B.x)/2,my=(A.y+B.y)/2;let best=m.ctr[0],d=1e9;m.ctr.forEach(c=>{const dd=Math.hypot(c[0]-mx,c[1]-my);if(dd<d){d=dd;best=c;}});return best;}return [0,0];}
+function radial(m,a){const c=m.ctr?m.ctr[a.x<0?0:1]:[0,0];return Math.atan2(a.y-c[1],a.x-c[0]);}
+function lpXY(m,ai,k){const a=m.atoms[ai],ang=radial(m,a)+(a.lp[k].o)*D,r=(a.lab?17:10)+(a.h&&a.lp[k].o===0?0:0);
+  const cx=a.x*SC+Math.cos(ang)*r,cy=a.y*SC+Math.sin(ang)*r,px=-Math.sin(ang)*4,py=Math.cos(ang)*4;return {cx,cy,px,py};}
+function drawMol(m,o){o=o||{};const sel=o.sel||new Set();const show=o.show;let g='',hits='';
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;m.atoms.forEach(a=>{x0=Math.min(x0,a.x*SC);x1=Math.max(x1,a.x*SC);y0=Math.min(y0,a.y*SC);y1=Math.max(y1,a.y*SC);});
+  const pad=o.pad||(o.reveal?60:50);x0-=pad;y0-=pad;x1+=pad;y1+=pad;
+  const rad=a=>a.lab?(a.lab.length>1?17:10):0;
+  m.bonds.forEach((b,bi)=>{const A=m.atoms[b[0]],B=m.atoms[b[1]];let ax=A.x*SC,ay=A.y*SC,bx=B.x*SC,by=B.y*SC;const dx=bx-ax,dy=by-ay,L=Math.hypot(dx,dy);
+    const ux=dx/L,uy=dy/L;ax+=ux*rad(A);ay+=uy*rad(A);bx-=ux*rad(B);by-=uy*rad(B);
+    const line=(x1,y1,x2,y2,c,w)=>`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${c||INK}" stroke-width="${w||2.4}" stroke-linecap="round"/>`;
+    if(b[2]===2&&!o.noDouble){const c=center(m,b);const mx=(ax+bx)/2,my=(ay+by)/2;let nx=-uy,ny=ux;if((c[0]*SC-mx)*nx+(c[1]*SC-my)*ny<0){nx=-nx;ny=-ny;}
+      const on=sel.has('b'+bi);
+      if(on||show==='b'+bi)g+=`<line x1="${ax.toFixed(1)}" y1="${ay.toFixed(1)}" x2="${bx.toFixed(1)}" y2="${by.toFixed(1)}" stroke="${SEL}" stroke-opacity=".22" stroke-width="22" stroke-linecap="round"/>`;
+      g+=line(ax,ay,bx,by,on?SEL:INK)+line(ax+dx*.16+nx*7,ay+dy*.16+ny*7,bx-dx*.16+nx*7,by-dy*.16+ny*7,on?SEL:INK);
+      if(o.click){const w=14,pts=[[ax-ux*6+nx*w,ay-uy*6+ny*w],[bx+ux*6+nx*w,by+uy*6+ny*w],[bx+ux*6-nx*w,by+uy*6-ny*w],[ax-ux*6-nx*w,ay-uy*6-ny*w]];
+        hits+=`<polygon class="hit" data-item="b${bi}" points="${pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')}" fill="#000" fill-opacity="0"><title>double liaison</title></polygon>`;}}
+    else g+=line(ax,ay,bx,by);});
+  if(o.circle)g+=`<circle cx="0" cy="0" r="${SC*0.58}" fill="none" stroke="${INK}" stroke-width="2.4"/>`;
+  m.atoms.forEach((a,ai)=>{const X=a.x*SC,Y=a.y*SC,ra=radial(m,a);
+    if(a.lab)g+=`<text x="${X.toFixed(1)}" y="${(Y+6.5).toFixed(1)}" text-anchor="middle" font-family="Mulish,sans-serif" font-weight="800" font-size="19" fill="${INK}">${a.lab}</text>`;
+    if(a.h){const hx=X+Math.cos(ra)*36,hy=Y+Math.sin(ra)*36;g+=`<line x1="${(X+Math.cos(ra)*12).toFixed(1)}" y1="${(Y+Math.sin(ra)*12).toFixed(1)}" x2="${(hx-Math.cos(ra)*9).toFixed(1)}" y2="${(hy-Math.sin(ra)*9).toFixed(1)}" stroke="${INK}" stroke-width="2.4"/><text x="${hx.toFixed(1)}" y="${(hy+6).toFixed(1)}" text-anchor="middle" font-family="Mulish,sans-serif" font-weight="800" font-size="17" fill="${INK}">H</text>`;}
+    if(a.ch){const ang=ra+(a.lp&&a.lp.length?40:0)*D,cx=X+Math.cos(ang)*20,cy=Y+Math.sin(ang)*20,c=a.ch==='+'?'#a32d2d':'#185fa5';
+      g+=`<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="9" fill="#fff" stroke="${c}" stroke-width="1.6"/><text x="${cx.toFixed(1)}" y="${(cy+5).toFixed(1)}" text-anchor="middle" font-family="Mulish,sans-serif" font-weight="800" font-size="15" fill="${c}">${a.ch}</text>`;}
+    (a.lp||[]).forEach((l,k)=>{const q=lpXY(m,ai,k);const id='l'+ai+'-'+k;const on=sel.has(id);
+      let col=on?SEL:INK;if(o.reveal)col=l.p?SEL:'#8a95a3';
+      if(on)g+=`<circle cx="${q.cx.toFixed(1)}" cy="${q.cy.toFixed(1)}" r="11" fill="${SEL}" fill-opacity=".18" stroke="${SEL}" stroke-width="1.6"/>`;
+      g+=`<circle cx="${(q.cx+q.px).toFixed(1)}" cy="${(q.cy+q.py).toFixed(1)}" r="2.8" fill="${col}"/><circle cx="${(q.cx-q.px).toFixed(1)}" cy="${(q.cy-q.py).toFixed(1)}" r="2.8" fill="${col}"/>`;
+      if(o.reveal){const tx=q.cx+Math.cos(radial(m,a)+l.o*D)*20,ty=q.cy+Math.sin(radial(m,a)+l.o*D)*20;g+=`<text x="${tx.toFixed(1)}" y="${(ty+4).toFixed(1)}" text-anchor="middle" font-family="Mulish,sans-serif" font-weight="800" font-size="11" fill="${l.p?SEL:'#5f6b7a'}">${l.p?'p':'plan'}</text>`;}
+      if(o.click)hits+=`<circle class="hit" data-item="${id}" cx="${q.cx.toFixed(1)}" cy="${q.cy.toFixed(1)}" r="15" fill="#000" fill-opacity="0"><title>doublet libre</title></circle>`;});});
+  if(o.reveal)y1+=0;
+  return {svg:g+hits,vb:[x0,y0,x1-x0,y1-y0]};}
+
+/* ============ interface ============ */
+function cur(){return MOLS[st.i];}
+function renderGal(){$('gal').innerHTML=MOLS.map((m,i)=>`<button class="btn${i===st.i?' on':''}" data-i="${i}"><span>${m.nom}<br><small>${m.f}</small></span>${st.done.has(m.id)?'<span class="ok">✓</span>':''}</button>`).join('');
+  $('gal').querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{st.i=+b.dataset.i;resetWork();renderAll();});
+  $('score').textContent=`Molécules réussies : ${st.done.size} / ${MOLS.length}.`;}
+function resetWork(){st.sel=new Set();st.crit={};st.verd=null;st.checked=false;st.reveal=false;}
+function count(){const m=cur();return 2*[...st.sel].length;}
+function renderMol(){const m=cur();const r=drawMol(m,{sel:st.sel,click:true,reveal:st.reveal});const svg=$('mol');
+  svg.setAttribute('viewBox',r.vb.map(v=>v.toFixed(1)).join(' '));svg.innerHTML=r.svg;
+  svg.querySelectorAll('.hit').forEach(h=>h.addEventListener('click',()=>{const id=h.dataset.item;st.sel.has(id)?st.sel.delete(id):st.sel.add(id);st.checked=false;renderMol();renderCount();$('fb').innerHTML='';}));
+  $('molinfo').innerHTML=`<b>${m.nom}</b>${m.ancien?' ('+m.ancien+')':''}, ${m.f}.`+(m.id==='cot'?' Dessin plan pour le comptage ; la molécule réelle est pliée en baquet (voir la correction).':'')+(m.atoms.some(a=>a.ch==='+')?' Le C⁺ porte une orbitale p vide (aucun doublet à toucher).':'');}
+function renderCount(){$('count').textContent=`Électrons π comptés : ${count()}`;}
+function renderCrit(){$('crit').innerHTML='<b style="font-size:14px">Critères</b>'+CRIT.map(([k,t])=>{const m=cur();let mk='';
+    if(st.checked){const ok=!!st.crit[k]===m[k];mk=`<span class="mk ${ok?'ok':'warn'}">${ok?'juste':'faux'}</span>`;}
+    return `<label><input type="checkbox" data-c="${k}"${st.crit[k]?' checked':''}><span>${t}</span>${mk}</label>`;}).join('');
+  $('crit').querySelectorAll('[data-c]').forEach(c=>c.onchange=()=>{st.crit[c.dataset.c]=c.checked;st.checked=false;renderCrit();$('fb').innerHTML='';});
+  $('vb').innerHTML=Object.entries(VERD).map(([k,t])=>`<button class="btn${st.verd===k?' on':''}" data-v="${k}">${t}</button>`).join('');
+  $('vb').querySelectorAll('[data-v]').forEach(b=>b.onclick=()=>{st.verd=b.dataset.v;st.checked=false;renderCrit();$('fb').innerHTML='';});}
+/* le compte est juste si toutes les doubles liaisons du cycle sont prises et, pour chaque atome, autant de doublets que de doublets dans l'orbitale p */
+function evalSel(m,sel){const errs=[];
+  m.bonds.forEach((b,bi)=>{if(b[2]===2&&!sel.has('b'+bi))errs.push('une double liaison du cycle n\'est pas comptée');});
+  m.atoms.forEach((a,ai)=>{if(!a.lp)return;const need=a.lp.filter(l=>l.p).length,got=a.lp.filter((l,k)=>sel.has('l'+ai+'-'+k)).length;const nm=a.lab||'C⁻';
+    if(got>need)errs.push(need===0?`le doublet de ${nm} est dans le plan du cycle (orbitale sp²) : il ne compte pas`:`un seul doublet de ${nm} est dans l'orbitale p`);
+    if(got<need)errs.push(`un doublet de ${nm} est dans une orbitale p et participe au système π`);});
+  return [...new Set(errs)];}
+function verify(){const m=cur();st.checked=true;const errs=evalSel(m,st.sel);const n=count();
+  const critOk=CRIT.every(([k])=>!!st.crit[k]===m[k]);const vOk=st.verd===m.verdict;const allOk=!errs.length&&critOk&&vOk;
+  let h=allOk?'<p class="good">Tout est juste.</p>':'<p class="bad">Pas encore : regarde les points en rouge.</p>';
+  h+=`<p>Électrons π : tu en comptes <b>${n}</b>, la bonne réponse est <b>${m.pi}</b>.`+(errs.length?` <span class="bad">${errs.map(e=>e[0].toUpperCase()+e.slice(1)).join('. ')}.</span>`:' <span class="good">Bonne sélection.</span>')+'</p>';
+  if(st.verd)h+=`<p>Verdict : ${vOk?'<span class="good">juste</span>':'<span class="bad">faux</span>'}, ${m.nom.toLowerCase()} est <b>${VERD[m.verdict].toLowerCase()}</b>.</p>`;else h+='<p class="bad">Choisis un verdict.</p>';
+  h+=`<p>${m.why}</p>`;
+  if(m.id==='cot')h+=cotTub();
+  $('fb').innerHTML=h;if(allOk){st.done.add(m.id);st.reveal=true;}renderAll(true);}
+function cotTub(){/* vue de profil schématique du baquet */
+  const P=[[0,40],[40,10],[90,10],[130,40],[130,40]];
+  return `<svg viewBox="-10 -6 300 70" width="300" style="max-width:100%;display:block;margin:6px auto" role="img" aria-label="Cyclooctatétraène en baquet, vue de profil"><path d="M10 10L60 45L110 45L160 10" fill="none" stroke="${INK}" stroke-width="2.4"/><path d="M60 45L110 45" stroke="${INK}" stroke-width="2.4"/><path d="M14 4L64 39" stroke="${INK}" stroke-width="2.4"/><path d="M106 39L156 4" stroke="${INK}" stroke-width="2.4"/><text x="200" y="30" font-family="Mulish,sans-serif" font-size="12" font-weight="700" fill="#5f6b7a">baquet : non plan</text></svg><p class="hint">Vue de profil très simplifiée : les doubles liaisons (traits doublés) ne sont plus parallèles entre elles.</p>`;}
+function solution(){const m=cur();st.sel=new Set();m.bonds.forEach((b,bi)=>{if(b[2]===2)st.sel.add('b'+bi);});
+  m.atoms.forEach((a,ai)=>(a.lp||[]).forEach((l,k)=>{if(l.p)st.sel.add('l'+ai+'-'+k);}));
+  CRIT.forEach(([k])=>st.crit[k]=m[k]);st.verd=m.verdict;st.reveal=true;renderAll(true);verifyShow();}
+function verifyShow(){const m=cur();st.checked=true;$('fb').innerHTML=`<p>Solution : <b>${m.pi}</b> électrons π, <b>${VERD[m.verdict].toLowerCase()}</b>. Doublets en vert : dans l'orbitale p (comptés) ; en gris : dans le plan (non comptés).</p><p>${m.why}</p>`+(m.id==='cot'?cotTub():'');renderCrit();}
+
+/* ============ cercle de Frost ============ */
+function frost(m){const N=m.frost;if(!N)return '<p>Le cercle de Frost se dessine pour un cycle monocyclique d\'atomes identiques, entièrement conjugué. '+(m.id==='cpd'?'Le cyclopentadiène n\'est pas entièrement conjugué : pas de diagramme.':m.id==='naph'?'Le naphtalène a deux cycles : pas de cercle simple.':'Ici, l\'hétéroatome modifie les niveaux : on garde le simple compte de 6 électrons π.')+'</p>';
+  const R=90,cx=150,cy=120;const lv=[];for(let k=0;k<N;k++){const a=(90+360*k/N)*D;lv.push({x:cx+R*Math.cos(a),y:cy+R*Math.sin(a),e:-Math.cos(2*Math.PI*k/N)});}
+  const order=lv.map((l,i)=>i).sort((a,b)=>lv[a].e-lv[b].e||lv[a].x-lv[b].x);const groups=[];order.forEach(i=>{const g=groups.find(g=>Math.abs(lv[g[0]].e-lv[i].e)<1e-6);g?g.push(i):groups.push([i]);});
+  const occ=lv.map(()=>0);let e=m.pi;groups.forEach(g=>{for(let pass=0;pass<2;pass++)g.forEach(i=>{if(e>0){occ[i]++;e--;}});});
+  let s=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#c9d0d8" stroke-width="1.5"/>`;
+  s+=`<polygon points="${lv.map(l=>l.x.toFixed(1)+','+l.y.toFixed(1)).join(' ')}" fill="none" stroke="#c9d0d8" stroke-width="1.5"/>`;
+  s+=`<line x1="20" y1="${cy}" x2="280" y2="${cy}" stroke="#8a95a3" stroke-dasharray="5 4"/><text x="284" y="${cy+4}" font-family="Mulish,sans-serif" font-size="11.5" font-weight="700" fill="#5f6b7a">non liant</text>`;
+  s+=`<text x="284" y="${cy+R-4}" font-family="Mulish,sans-serif" font-size="11.5" font-weight="700" fill="#0F6E56">liantes</text><text x="284" y="${cy-R+12}" font-family="Mulish,sans-serif" font-size="11.5" font-weight="700" fill="#a32d2d">antiliantes</text>`;
+  lv.forEach((l,i)=>{s+=`<line x1="${(l.x-20).toFixed(1)}" y1="${l.y.toFixed(1)}" x2="${(l.x+20).toFixed(1)}" y2="${l.y.toFixed(1)}" stroke="${INK}" stroke-width="3"/>`;
+    const ar=(x,up)=>`<path d="M${x} ${l.y+(up?9:-13)}V${l.y+(up?-13:9)}" stroke="#185fa5" stroke-width="2"/><path d="M${x-4} ${l.y+(up?-8:4)}L${x} ${l.y+(up?-14:10)}L${x+4} ${l.y+(up?-8:4)}Z" fill="#185fa5"/>`;
+    if(occ[i]===1)s+=ar(l.x,true);if(occ[i]===2)s+=ar(l.x-6,true)+ar(l.x+6,false);});
+  const unp=occ.filter(o=>o===1).length;
+  s=`<svg id="frost" viewBox="0 0 360 240" role="img" aria-label="Cercle de Frost">${s}</svg>`;
+  let t=`<p>Polygone à ${N} sommets inscrit dans un cercle, pointe en bas : chaque sommet est le niveau d'énergie d'une orbitale moléculaire π. On place les ${m.pi} électrons π du bas vers le haut, un par orbitale de même énergie avant de les apparier (règle de Hund). Diagramme qualitatif, sans valeur numérique.</p>`;
+  t+=unp?`<p><b>${unp} électrons non appariés</b> dans des orbitales non liantes : situation très défavorable, typique d'un composé antiaromatique.`+(m.id==='cot'?' (C\'est ce qu\'aurait le cyclooctatétraène s\'il était plan ; il se plie pour l\'éviter.)':'')+'</p>':`<p>Toutes les orbitales liantes sont pleines, aucun électron non apparié : couche fermée, c'est la signature d'un composé aromatique.</p>`;
+  return s+t;}
+
+/* ============ structures limites du benzène ============ */
+function kekule(){const A=MOLS[0];const B=Object.assign({},A,{bonds:A.bonds.map(b=>[b[0],b[1],b[2]===2?1:2])});
+  const r1=drawMol(A,{pad:30}),r2=drawMol(B,{pad:30}),r3=drawMol(A,{pad:30,noDouble:true,circle:true});
+  /* flèches : chaque liaison π vers la liaison simple voisine (sens horaire) */
+  let ar='';const mid=(i,j)=>{const a=A.atoms[i],b=A.atoms[j];return [(a.x+b.x)/2*SC,(a.y+b.y)/2*SC];};
+  [[0,1,1,2],[2,3,3,4],[4,5,5,0]].forEach(([a,b,c,d])=>{let S=mid(a,b),E=mid(c,d);S=[S[0]*0.87,S[1]*0.87];E=[E[0]*0.84,E[1]*0.84];
+    const C=[(S[0]+E[0])/2*0.55,(S[1]+E[1])/2*0.55];const tx=E[0]-C[0],ty=E[1]-C[1],tl=Math.hypot(tx,ty),ux=tx/tl,uy=ty/tl,h=8,Es=[E[0]-ux*h*.6,E[1]-uy*h*.6];
+    ar+=`<path d="M${S[0].toFixed(1)} ${S[1].toFixed(1)}Q${C[0].toFixed(1)} ${C[1].toFixed(1)} ${Es[0].toFixed(1)} ${Es[1].toFixed(1)}" fill="none" stroke="${ARC}" stroke-width="1.8"/><path d="M${E[0].toFixed(1)} ${E[1].toFixed(1)}L${(E[0]-ux*h-uy*h*.45).toFixed(1)} ${(E[1]-uy*h+ux*h*.45).toFixed(1)}L${(E[0]-ux*h+uy*h*.45).toFixed(1)} ${(E[1]-uy*h-ux*h*.45).toFixed(1)}Z" fill="${ARC}"/>`;});
+  const sv=(r,extra,lab)=>`<svg viewBox="${r.vb.join(' ')}" width="150" role="img" aria-label="${lab}">${r.svg}${extra||''}</svg>`;
+  $('kek').innerHTML=sv(r1,ar,'structure de Kekulé 1')+'<span class="eq" aria-label="structures limites">↔</span>'+sv(r2,'','structure de Kekulé 2')+
+    `<span style="font:700 13px var(--f-ui);color:var(--muted);margin:0 8px">hybride :</span>`+sv(r3,'','hybride de résonance');}
+
+function renderAll(keep){renderGal();renderMol();renderCount();renderCrit();$('frostIn').innerHTML=frost(cur());if(!keep)$('fb').innerHTML='<p class="hint">Coche les critères, compte les électrons π, choisis un verdict puis appuie sur « Vérifier ».</p>';}
+$('bCheck').onclick=verify;$('bSol').onclick=solution;$('bReset').onclick=()=>{resetWork();renderAll();};
+kekule();renderAll();
+
+/* accès pour les tests */
+window.__aro={MOLS:()=>JSON.parse(JSON.stringify(MOLS)),
+  select:i=>{st.i=i;resetWork();renderAll();},
+  setCrit:(o)=>{Object.assign(st.crit,o);renderCrit();},
+  frostOcc:i=>{const m=MOLS[i];const d=document.createElement('div');d.innerHTML=frost(m);return d.textContent;},
+  text:id=>$(id).textContent};
+})();
+</script>
+<script src="../../kit/sfa-nav.js"></script></body>
+</html>

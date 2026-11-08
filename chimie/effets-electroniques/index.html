@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Effets électroniques en organique · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style id="sfa-chim">
+/* Compléments communs aux simulations de chimie SFA (mêmes cartes et même typo que le kit) */
+*{box-sizing:border-box}
+.sfa-card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-top:14px}
+.sfa-card h2{font:800 15px var(--f-ui);margin:0 0 8px;color:var(--ink)}
+.sfa-card ul{margin:0;padding-left:20px}.sfa-card li{margin:4px 0}
+.sfa-card.trap{border-left:4px solid #BA7517}
+.sfa-card.keep{border-left:4px solid var(--green)}
+.defi{border-top:1px solid var(--line);padding:10px 0}.defi:first-of-type{border-top:0}
+.defi p{margin:0 0 6px;font-weight:600}
+.defi details summary{cursor:pointer;font:800 13px var(--f-ui);color:var(--green);list-style:none}
+.defi details summary::-webkit-details-marker{display:none}
+.defi details summary::before{content:"+ ";}.defi details[open] summary::before{content:"− ";}
+.defi details div{margin-top:6px;color:var(--ink2);background:var(--bg);border-radius:8px;padding:8px 12px}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+.ctl .lab{font:700 .86rem var(--f-ui);color:var(--ink2);margin-right:2px}
+.hint{font:500 .84rem var(--f-ui);color:var(--muted)}
+.btn{background:var(--paper);border:1px solid var(--line2);border-radius:8px;color:var(--ink);font:800 .82rem var(--f-ui);padding:8px 12px;cursor:pointer;touch-action:manipulation}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.chem{font-family:var(--f-ui)}
+.big{font:800 1.6rem/1.1 var(--f-ui);color:var(--ink)}
+.ok{color:var(--green);font-weight:800}.warn{color:#a32d2d;font-weight:800}
+sub,sup{font-size:.72em;line-height:0}
+</style>
+<script>
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche (repris du kit SFA). */
+addEventListener('DOMContentLoaded',()=>{
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+});
+</script>
+<style>
+.res{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:2px 4px;margin:6px 0}
+.res svg{display:block;height:auto}
+.res .eq{font:800 22px var(--f-ui);color:var(--ink2);padding:0 2px}
+.box{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0;font-size:14px}
+.box h3{font:800 14px var(--f-ui);margin:0 0 6px}
+.box p{margin:4px 0}.box ul{margin:4px 0;padding-left:20px}
+.ladder{display:flex;flex-wrap:wrap;align-items:stretch;gap:6px;margin:8px 0}
+.ladder div{flex:1 1 90px;border:1px solid var(--line2);border-radius:8px;padding:6px 8px;background:#fff;font:700 12.5px/1.3 var(--f-ui);text-align:center;color:var(--ink2)}
+.ladder div.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.ladder div small{display:block;font-weight:600;opacity:.8}
+.axis{display:flex;justify-content:space-between;font:700 11.5px var(--f-ui);color:var(--muted)}
+.tag{display:inline-block;font:800 12px var(--f-ui);padding:3px 9px;border-radius:999px;margin:2px 4px 2px 0}
+.t-act{background:#dff3ea;color:#0F6E56}.t-des{background:#fde6e3;color:#a32d2d}.t-op{background:#e9effb;color:#24428a}.t-m{background:#f6ecd9;color:#7a5b00}
+.sig{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+@media (max-width:560px){.sig{grid-template-columns:minmax(0,1fr)}}
+.sig>div{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 8px;text-align:center;font-size:13px}
+.sig>div b{display:block;font:800 13px var(--f-ui)}
+.sig svg{max-width:100%;height:auto;display:block;margin:0 auto}
+#scene{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:10px;background:#fff}
+.legend2{font:600 12px var(--f-ui);color:var(--muted);margin-top:4px}
+.panel{display:none}.panel.on{display:block}
+</style>
+<link rel="stylesheet" href="../../kit/sfa-nav.css"></head>
+<body>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a class="on" href="../">Simulations de chimie</a><a href="../exercices/">Exercices de chimie</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations de physique</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="../">Simulations de chimie</a>›<a href="../#organique">Chimie organique</a>›<b>Effets électroniques en organique</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Chimie · Réactivité organique</span><span class="sfa-chip free">Gratuit</span></div><h1>Effets électroniques en organique</h1><p>Effet inductif et mésomérie : deux idées qui expliquent la stabilité des carbocations, la règle de Markovnikov, l'orientation sur le benzène et l'acidité.</p></div>
+<section class="sfa-sim">
+  <div class="tabs" role="tablist">
+    <button class="btn on" data-tab="a" role="tab">Carbocations</button>
+    <button class="btn" data-tab="b" role="tab">Markovnikov</button>
+    <button class="btn" data-tab="c" role="tab">Benzène substitué</button>
+    <button class="btn" data-tab="d" role="tab">Acidité</button>
+  </div>
+  <p class="legend2">Flèche courbe rouge : déplacement d'un doublet d'électrons, depuis un doublet libre ou une liaison, vers un atome ou une liaison. Le signe ↔ relie des structures limites : ce n'est pas un équilibre, la molécule réelle est un hybride des structures.</p>
+
+  <div class="panel on" id="pa">
+    <div class="ctl" id="ca"></div>
+    <div class="res" id="ra"></div>
+    <div class="box" id="ia"></div>
+    <div class="box"><h3>Échelle de stabilité des carbocations alkyles (qualitative)</h3><div class="axis"><span>moins stable</span><span>plus stable</span></div><div class="ladder" id="la"></div>
+      <h3 style="margin-top:12px">Hors échelle : stabilisés par mésomérie</h3><div class="ladder" id="lam"></div>
+      <p class="hint">Allylique et benzylique : ici primaires, mais stabilisés par mésomérie, donc nettement plus stables qu'un carbocation primaire ordinaire. Leur place exacte face aux secondaires et tertiaires dépend du composé : ils ne sont pas placés sur l'échelle.</p></div>
+  </div>
+
+  <div class="panel" id="pb">
+    <div class="ctl"><span class="lab">Alcène</span><button class="btn on" data-al="propene">Propène</button><button class="btn" data-al="methylpropene">2-Méthylpropène</button>
+      <span class="lab" style="margin-left:8px">Voie</span><button class="btn on" data-way="maj">Carbocation le plus stable</button><button class="btn" data-way="min">Voie défavorisée</button></div>
+    <svg id="scene" viewBox="70 12 450 236" role="img" aria-label="Mécanisme d'addition de HBr"></svg>
+    <div class="ctl"><button class="btn" id="st1">Étape 1 : H⁺ se fixe</button><button class="btn" id="st2">Étape 2 : Br⁻ se fixe</button><button class="btn" id="stR">Rejouer depuis le début</button></div>
+    <div class="box" id="ib"></div>
+  </div>
+
+  <div class="panel" id="pc">
+    <div class="ctl" id="cc"></div>
+    <div class="box" id="ic"></div>
+    <div class="box"><h3>Structures limites du cycle substitué</h3><div class="res" id="rc"></div><p class="hint" id="hc"></p></div>
+    <div class="box"><h3>Intermédiaire de Wheland (complexe σ) selon la position attaquée par E⁺</h3><div class="sig" id="sc"></div>
+      <p class="hint">La charge + de l'intermédiaire se répartit sur trois carbones (trois structures limites). Attaque en ortho ou para : l'un d'eux est C1, celui qui porte le substituant. Attaque en méta : jamais C1.</p></div>
+  </div>
+
+  <div class="panel" id="pd">
+    <div class="ctl" id="cd"></div>
+    <div class="res" id="rd"></div>
+    <div class="box" id="id"></div>
+    <div class="box" id="ld"></div>
+  </div>
+</section>
+
+<div class="sfa-card keep"><h2>Ce qu'il faut retenir</h2><ul>
+  <li>Effet inductif : polarisation transmise le long des liaisons σ, qui s'affaiblit vite avec la distance. Groupes alkyles : donneurs (+I) ; atomes électronégatifs : attracteurs (−I).</li>
+  <li>Mésomérie : délocalisation de doublets ou d'électrons π. Elle stabilise une charge en l'étalant sur plusieurs atomes.</li>
+  <li>Carbocations alkyles : méthyle &lt; primaire &lt; secondaire &lt; tertiaire (effet +I et hyperconjugaison). Allylique et benzylique : stabilisés en plus par mésomérie.</li>
+  <li>HBr sur un alcène dissymétrique : H se fixe de façon à former le carbocation le plus stable, Br se fixe ensuite sur ce carbone (règle de Markovnikov).</li>
+  <li>Une base conjuguée plus stable donne un acide plus fort (pKa plus petit).</li>
+</ul></div>
+
+<div class="sfa-card trap"><h2>Pièges classiques</h2><ul>
+  <li>Les halogènes sont désactivants, mais orientent en ortho et para : l'effet −I l'emporte pour la vitesse, la mésomérie (+M) décide de l'orientation.</li>
+  <li>La règle de Markovnikov n'est pas « H va sur le carbone le plus hydrogéné » par magie : c'est la conséquence de la stabilité du carbocation.</li>
+  <li>Structures limites : on ne déplace que des électrons, jamais des atomes. Une flèche part d'un doublet ou d'une liaison, jamais d'un atome ni d'une charge +.</li>
+  <li>Le phénol est plus acide qu'un alcool, mais bien moins qu'un acide carboxylique, et tous trois sont des acides faibles : ne confonds pas « plus acide » et « acide fort ».</li>
+</ul></div>
+
+<div class="sfa-card"><h2>Défis</h2>
+  <div class="defi"><p>1. Dans l'onglet Markovnikov, choisis le 2-méthylpropène. Quel carbocation se forme ? Quel produit obtiens-tu ?</p>
+    <details><summary>Voir la réponse</summary><div>H se fixe sur le CH₂ : il se forme un carbocation tertiaire, (CH₃)₃C⁺. Br⁻ s'y fixe : on obtient le 2-bromo-2-méthylpropane.</div></details></div>
+  <div class="defi"><p>2. Compare NH₂ et NO₂ dans l'onglet Benzène : dans les structures limites, où se trouvent les charges du cycle ?</p>
+    <details><summary>Voir la réponse</summary><div>Avec NH₂, le cycle porte une charge − en ortho et en para : il est enrichi, l'attaque d'un électrophile est facilitée en ortho et para. Avec NO₂, il porte une charge + en ortho et en para : il est appauvri, et la position méta est la moins défavorisée.</div></details></div>
+  <div class="defi"><p>3. Classe l'acide chloroacétique et l'acide dichloroacétique sans valeur numérique.</p>
+    <details><summary>Voir la réponse</summary><div>Deux chlores attirent davantage les électrons qu'un seul (effet −I additif) : l'anion dichloroacétate est plus stabilisé. L'acide dichloroacétique est donc le plus fort (pKa le plus petit).</div></details></div>
+</div>
+</main>
+<aside class="sfa-side">
+  <div class="sfa-list"><h2>Chimie organique : stéréochimie et réactivité<span>3 simulations</span></h2><ol><li><a href="../stereochimie-3d/"><i>01</i>R/S, Fischer et E/Z</a></li><li><a href="../conformations/"><i>02</i>Newman et chaise</a></li><li><a class="on" aria-current="page" href="../effets-electroniques/"><i>03</i>Effets électroniques en organique</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside>
+</div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de chimie</footer>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const D=Math.PI/180;
+const ARC='#c0392b',INK='#0f1b2d';
+
+/* ====================== moteur de dessin des formules ======================
+   atomes : {x,y,lab,anc,ch,chA,lp:[angles en degrés], col}   (lab vide : carbone du squelette)
+   liaisons : [a,b,ordre,côté]  (côté 'in' : 2e trait vers le centre du cycle {x:0,y:0})
+   flèches : {from:{lp:[id,angle]} | {bond:[a,b]}, to:{atom:id} | {bond:[a,b]}, bend}               */
+const vis=t=>t.replace(/[₀-₉⁺⁻]/g,'').length;
+function rad(a){if(!a.lab)return 0;return a.anc==='start'?9:Math.max(9,vis(a.lab)*4.6+3);}
+function draw(spec,o){o=o||{};const s=o.s||34;const P={};
+  for(const k in spec.atoms){const a=spec.atoms[k];P[k]=Object.assign({},a,{x:a.x*s,y:a.y*s});}
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const k in P){const a=P[k],r=rad(a)+22;x0=Math.min(x0,a.x-r-(a.anc==='start'?0:0));x1=Math.max(x1,a.x+r+(a.anc==='start'?vis(a.lab)*9:0));y0=Math.min(y0,a.y-r);y1=Math.max(y1,a.y+r);}
+  if(o.vb){[x0,y0,x1,y1]=[o.vb[0],o.vb[1],o.vb[0]+o.vb[2],o.vb[1]+o.vb[3]];}
+  const W=x1-x0,H=y1-y0;let g='';
+  const bondOf=(a,b)=>(spec.bonds||[]).find(q=>(q[0]===a&&q[1]===b)||(q[0]===b&&q[1]===a));
+  const cen={x:0,y:0};
+  const shorten=(A,B)=>{const dx=B.x-A.x,dy=B.y-A.y,L=Math.hypot(dx,dy)||1,ra=rad(A)?rad(A)+2:0,rb=rad(B)?rad(B)+2:0;
+    return [A.x+dx/L*ra,A.y+dy/L*ra,B.x-dx/L*rb,B.y-dy/L*rb];};
+  for(const q of spec.bonds||[]){const A=P[q[0]],B=P[q[1]];if(!A||!B)continue;const op=q[4]==null?1:q[4];if(op<=0.01)continue;
+    let [ax,ay,bx,by]=shorten(A,B);const dx=bx-ax,dy=by-ay,L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L;
+    const line=(x1,y1,x2,y2)=>`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${INK}" stroke-width="2" stroke-linecap="round" opacity="${op}"/>`;
+    if(q[2]===2&&q[3]==='in'){const mx=(ax+bx)/2,my=(ay+by)/2;let sg=((cen.x-mx)*nx+(cen.y-my)*ny)>0?1:-1;const off=5.5*sg;
+      g+=line(ax,ay,bx,by)+line(ax+dx*.17+nx*off,ay+dy*.17+ny*off,bx-dx*.17+nx*off,by-dy*.17+ny*off);}
+    else if(q[2]===2){g+=line(ax+nx*3.2,ay+ny*3.2,bx+nx*3.2,by+ny*3.2)+line(ax-nx*3.2,ay-ny*3.2,bx-nx*3.2,by-ny*3.2);}
+    else g+=line(ax,ay,bx,by);
+    if(q[5]==='I'){const t=0.55,px=ax+dx*t,py=ay+dy*t,ux=dx/L,uy=dy/L;   // flèche d'effet inductif (vers l'atome électronégatif B)
+      g+=`<path d="M${(px+ux*6).toFixed(1)} ${(py+uy*6).toFixed(1)}L${(px-ux*3+nx*5).toFixed(1)} ${(py-uy*3+ny*5).toFixed(1)}L${(px-ux*3-nx*5).toFixed(1)} ${(py-uy*3-ny*5).toFixed(1)}Z" fill="#185fa5"/>`;}}
+  for(const k in P){const a=P[k];const op=a.op==null?1:a.op;if(op<=0.01)continue;
+    if(a.lab){const fs=15;g+=`<text x="${(a.anc==='start'?a.x-5.5:a.x).toFixed(1)}" y="${(a.y+5.5).toFixed(1)}" text-anchor="${a.anc||'middle'}" font-family="Mulish,sans-serif" font-weight="800" font-size="${fs}" fill="${a.col||INK}" opacity="${op}">${a.lab}</text>`;}
+    const r0=rad(a)||5;
+    (a.lp||[]).forEach(an=>{const r=r0+5,cx=a.x+r*Math.cos(an*D),cy=a.y+r*Math.sin(an*D),px=-Math.sin(an*D)*2.9,py=Math.cos(an*D)*2.9;
+      g+=`<circle cx="${(cx+px).toFixed(1)}" cy="${(cy+py).toFixed(1)}" r="1.9" fill="${INK}" opacity="${op}"/><circle cx="${(cx-px).toFixed(1)}" cy="${(cy-py).toFixed(1)}" r="1.9" fill="${INK}" opacity="${op}"/>`;});
+    if(a.ch){const an=(a.chA==null?-45:a.chA)*D,r=r0+(a.lab?9:10),cx=a.x+r*Math.cos(an),cy=a.y+r*Math.sin(an);const c=a.chCol||(a.ch==='+'?'#a32d2d':'#185fa5');
+      g+=`<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="7" fill="#fff" stroke="${c}" stroke-width="1.4" opacity="${op}"/><text x="${cx.toFixed(1)}" y="${(cy+4.2).toFixed(1)}" text-anchor="middle" font-family="Mulish,sans-serif" font-weight="800" font-size="12" fill="${c}" opacity="${op}">${a.ch==='+'?'+':'−'}</text>`;}}
+  (spec.extra||[]).forEach(f=>g+=f(P,s));
+  for(const ar of spec.arrows||[]){const op=ar.op==null?1:ar.op;
+    let S;if(ar.from.lp){const A=P[ar.from.lp[0]],r=(rad(A)||5)+6,an=ar.from.lp[1]*D;S=[A.x+r*Math.cos(an),A.y+r*Math.sin(an)];}
+    else{const [a,b]=ar.from.bond,A=P[a],B=P[b];S=[(A.x+B.x)/2,(A.y+B.y)/2];const q=bondOf(a,b);
+      if(q&&q[2]===2&&q[3]==='in'){const L=Math.hypot(B.x-A.x,B.y-A.y),nx=-(B.y-A.y)/L,ny=(B.x-A.x)/L;const sg=((cen.x-S[0])*nx+(cen.y-S[1])*ny)>0?1:-1;S=[S[0]+nx*sg*3,S[1]+ny*sg*3];}}
+    let E;if(ar.to.atom){const A=P[ar.to.atom];const r=(rad(A)||4)+5;const dx=S[0]-A.x,dy=S[1]-A.y,L=Math.hypot(dx,dy)||1;
+      const ang=Math.atan2(dy,dx)+(ar.endRot||0)*D;E=[A.x+r*Math.cos(ang),A.y+r*Math.sin(ang)];}
+    else{const [a,b]=ar.to.bond,A=P[a],B=P[b];E=[(A.x+B.x)/2,(A.y+B.y)/2];}
+    const mx=(S[0]+E[0])/2,my=(S[1]+E[1])/2,dx=E[0]-S[0],dy=E[1]-S[1],L=Math.hypot(dx,dy)||1;const bend=ar.bend==null?0.6:ar.bend;
+    const C=[mx-dy/L*bend*Math.max(L,26)*0.5,my+dx/L*bend*Math.max(L,26)*0.5];
+    const tx=E[0]-C[0],ty=E[1]-C[1],tl=Math.hypot(tx,ty)||1,ux=tx/tl,uy=ty/tl,h=8;
+    const Es=[E[0]-ux*h*0.6,E[1]-uy*h*0.6];
+    g+=`<path d="M${S[0].toFixed(1)} ${S[1].toFixed(1)}Q${C[0].toFixed(1)} ${C[1].toFixed(1)} ${Es[0].toFixed(1)} ${Es[1].toFixed(1)}" fill="none" stroke="${ARC}" stroke-width="1.8" opacity="${op}"/>`+
+      `<path d="M${E[0].toFixed(1)} ${E[1].toFixed(1)}L${(E[0]-ux*h-uy*h*.45).toFixed(1)} ${(E[1]-uy*h+ux*h*.45).toFixed(1)}L${(E[0]-ux*h+uy*h*.45).toFixed(1)} ${(E[1]-uy*h-ux*h*.45).toFixed(1)}Z" fill="${ARC}" opacity="${op}"/>`;}
+  if(o.inner)return {g,vb:[x0,y0,W,H]};
+  const wpx=o.w||Math.round(W*(o.k||1));
+  return `<svg viewBox="${x0.toFixed(1)} ${y0.toFixed(1)} ${W.toFixed(1)} ${H.toFixed(1)}" width="${wpx}" style="max-width:100%" role="img" aria-label="${o.title||'structure'}">${g}${o.cap?`<text x="${(x0+W/2).toFixed(1)}" y="${(y1-4).toFixed(1)}" text-anchor="middle" font-family="Mulish,sans-serif" font-size="11.5" font-weight="700" fill="#5f6b7a">${o.cap}</text>`:''}</svg>`;}
+const resRow=list=>list.map((h,i)=>(i?'<span class="eq" aria-label="structures limites">↔</span>':'')+h).join('');
+
+/* ====================== cycles benzéniques ====================== */
+const VA=k=>-90+60*(k-1);   // angle du sommet k (C1 en haut, sens horaire)
+const RV=k=>({x:Math.cos(VA(k)*D),y:Math.sin(VA(k)*D)});
+function ring(dbl,mods){const at={},bonds=[];for(let k=1;k<=6;k++)at['c'+k]=Object.assign({lab:''},RV(k),(mods||{})[k]||{});
+  for(let k=1;k<=6;k++){const j=k%6+1;bonds.push(['c'+k,'c'+j,dbl.some(d=>(d[0]===k&&d[1]===j)||(d[0]===j&&d[1]===k))?2:1,'in']);}
+  return {atoms:at,bonds};}
+const carb=(k,sign,withLp)=>({[k]:{ch:sign,chA:VA(k)+28,lp:withLp?[VA(k)-24]:[]}});
+/* donneur par mésomérie : X porteur d'un doublet (OH, NH2, halogène, O⁻ du phénolate) */
+function donorSet(X){const S=[];
+  const mk=(dbl,xb,xstate,cmods,arrows)=>{const r=ring(dbl,cmods);r.atoms.X=Object.assign({x:0,y:-2.05},X.base,xstate);r.bonds.push(['X','c1',xb]);r.arrows=arrows;return r;};
+  S.push(mk([[1,2],[3,4],[5,6]],1,{lp:X.lpA,ch:X.chA_,chA:X.chAng},{},[{from:{lp:['X',X.lpA[0]]},to:{bond:['X','c1']},bend:0.9},{from:{bond:['c1','c2']},to:{atom:'c2'},bend:-0.7}]));
+  S.push(mk([[3,4],[5,6]],2,{lp:X.lpB,ch:X.chB_,chA:X.chAng},carb(2,'−',true),[{from:{lp:['c2',VA(2)-24]},to:{bond:['c2','c3']},bend:-0.9},{from:{bond:['c3','c4']},to:{atom:'c4'},bend:-0.7}]));
+  S.push(mk([[2,3],[5,6]],2,{lp:X.lpB,ch:X.chB_,chA:X.chAng},carb(4,'−',true),[{from:{lp:['c4',VA(4)-24]},to:{bond:['c4','c5']},bend:-0.9},{from:{bond:['c5','c6']},to:{atom:'c6'},bend:-0.7}]));
+  S.push(mk([[2,3],[4,5]],2,{lp:X.lpB,ch:X.chB_,chA:X.chAng},carb(6,'−',true),[]));
+  return S;}
+/* attracteur par mésomérie : Y(=O1)–R2 (CHO, COOH, NO2) ; ou CH2+ (benzyle) sans O1 */
+function acceptorSet(Y){const S=[];
+  const mk=(dbl,yb,cmods,o1,arrows,ych)=>{const r=ring(dbl,cmods);r.atoms.Y=Object.assign({x:0,y:-2.1},Y.y,ych||{});r.bonds.push(['Y','c1',yb]);
+    if(Y.o1){r.atoms.O1=Object.assign({x:-1.0,y:-2.8,lab:'O'},o1);r.bonds.push(['Y','O1',o1.b]);}
+    if(Y.r2){r.atoms.R2=Object.assign({x:1.0,y:-2.8},Y.r2);r.bonds.push(['Y','R2',1]);}
+    r.arrows=arrows;return r;};
+  const oA={b:2,lp:[-120,170]},oB={b:1,lp:[-130,170,-60],ch:'−',chA:105};
+  const a0=[{from:{bond:['c1','c2']},to:{bond:['c1','Y']},bend:0.8}];if(Y.o1)a0.push({from:{bond:['Y','O1']},to:{atom:'O1'},bend:0.8});
+  S.push(mk([[1,2],[3,4],[5,6]],1,{},oA,a0,Y.chA_?{ch:Y.chA_,chA:Y.chAngA}:{ch:Y.y.ch}));
+  S.push(mk([[3,4],[5,6]],2,carb(2,'+'),oB,[{from:{bond:['c3','c4']},to:{bond:['c2','c3']},bend:0.8}],Y.chB_!==undefined?{ch:Y.chB_}:{}));
+  S.push(mk([[2,3],[5,6]],2,carb(4,'+'),oB,[{from:{bond:['c5','c6']},to:{bond:['c4','c5']},bend:0.8}],Y.chB_!==undefined?{ch:Y.chB_}:{}));
+  S.push(mk([[2,3],[4,5]],2,carb(6,'+'),oB,[],Y.chB_!==undefined?{ch:Y.chB_}:{}));
+  return S;}
+const ACC={
+  CHO:{y:{lab:'C'},o1:true,r2:{lab:'H'}},
+  COOH:{y:{lab:'C'},o1:true,r2:{lab:'OH',anc:'start',lp:[-90,60]}},
+  NO2:{y:{lab:'N',ch:'+',chA:30},o1:true,r2:{lab:'O',ch:'−',chA:-70,lp:[-125,-15,60]}},
+  BENZ:{y:{lab:'CH₂',ch:'+',chA:0},o1:false,r2:null,chB_:null}
+};
+const DON={
+  OH:{base:{lab:'OH',anc:'start'},lpA:[180,-90],lpB:[-90],chB_:'+',chAng:-30},
+  NH2:{base:{lab:'NH₂',anc:'start'},lpA:[180],lpB:[],chB_:'+',chAng:-30},
+  Cl:{base:{lab:'Cl'},lpA:[180,-100,10],lpB:[-100,10],chB_:'+',chAng:-45},
+  Br:{base:{lab:'Br'},lpA:[180,-100,10],lpB:[-100,10],chB_:'+',chAng:-45},
+  Ominus:{base:{lab:'O'},lpA:[180,-100,10],chA_:'−',lpB:[180,-60],chB_:null,chAng:-45}
+};
+function sigma(sub,k,eff){const r=ring([],{});const cs=[k%6+1,(k+2)%6+1,(k+4)%6+1];
+  const xs={OH:{lab:'OH',anc:'start'},NH2:{lab:'NH₂',anc:'start'},CH3:{lab:'CH₃'},Cl:{lab:'Cl'},Br:{lab:'Br'},NO2:{lab:'NO₂'},COOH:{lab:'COOH'},CHO:{lab:'CHO'},H:{lab:'H'}}[sub];
+  r.atoms.X=Object.assign({x:0,y:-2.05},xs);r.bonds.push(['X','c1',1]);
+  const a=VA(k),v=RV(k);r.atoms.H=Object.assign({lab:'H',x:v.x+Math.cos((a-42)*D)*0.95,y:v.y+Math.sin((a-42)*D)*0.95});r.atoms.E=Object.assign({lab:'E',x:v.x+Math.cos((a+42)*D)*0.95,y:v.y+Math.sin((a+42)*D)*0.95,col:'#185fa5'});
+  r.bonds.push(['c'+k,'H',1],['c'+k,'E',1]);
+  r.extra=[(P,s)=>{const a0=VA(k%6+1),a1=VA((k+4)%6+1);let d='';const R=0.6*s;let sweep=((a1-a0)%360+360)%360;
+      for(let i=0;i<=30;i++){const t=(a0+sweep*i/30)*D;d+=(i?'L':'M')+(R*Math.cos(t)).toFixed(1)+' '+(R*Math.sin(t)).toFixed(1);}
+      let o=`<path d="${d}" fill="none" stroke="#13233a" stroke-width="1.6" stroke-dasharray="4 3"/>`;
+      cs.forEach(c=>{const v=RV(c),x=v.x*0.6*s,y=v.y*0.6*s;const isC1=c===1;const col=isC1?(eff>0?'#0F6E56':eff<0?'#a32d2d':'#5f6b7a'):'#a32d2d';
+        o+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isC1?7.5:6}" fill="${isC1&&eff?(eff>0?'#dff3ea':'#fde6e3'):'#fff'}" stroke="${col}" stroke-width="${isC1?2:1.2}"/><text x="${x.toFixed(1)}" y="${(y+4).toFixed(1)}" text-anchor="middle" font-family="Mulish,sans-serif" font-weight="800" font-size="${isC1?12:10.5}" fill="${col}">+</text>`;});
+      return o;}];
+  r.arrows=[];return {r,c1:cs.includes(1)};}
+
+/* ====================== (a) carbocations ====================== */
+const CAT={
+  methyle:{nom:'Méthyle',ex:'CH₃⁺',nR:0,nCH:0,rank:1},
+  primaire:{nom:'Primaire',ex:'éthyle, CH₃–CH₂⁺',nR:1,nCH:3,rank:2},
+  secondaire:{nom:'Secondaire',ex:'isopropyle, (CH₃)₂CH⁺',nR:2,nCH:6,rank:3},
+  tertiaire:{nom:'Tertiaire',ex:'tert-butyle, (CH₃)₃C⁺',nR:3,nCH:9,rank:4},
+  allyle:{nom:'Allylique',ex:'CH₂=CH–CH₂⁺',mes:2},
+  benzyle:{nom:'Benzylique',ex:'C₆H₅–CH₂⁺',mes:4}
+};
+let catSel='secondaire';
+function catStruct(n){const at={C:{x:0,y:0,lab:'C',ch:'+',chA:-30}},b=[];const sub=['CH₃','CH₃','CH₃'].map((l,i)=>i<n?l:'H');
+  [[0,-1.15],[1.0,0.62],[-1.0,0.62]].forEach((p,i)=>{at['s'+i]={x:p[0],y:p[1],lab:sub[i]};b.push(['C','s'+i,1]);});
+  return {atoms:at,bonds:b,arrows:[]};}
+function allylSet(){const base=()=>({atoms:{a:{x:-1.5,y:0.5,lab:'H₂C'},b:{x:0,y:-0.35,lab:'CH'},c:{x:1.5,y:0.5,lab:'CH₂'}},bonds:[]});
+  const A=base();A.bonds=[['a','b',2],['b','c',1]];A.atoms.c.ch='+';A.atoms.c.chA=-40;A.arrows=[{from:{bond:['a','b']},to:{bond:['b','c']},bend:0.9}];
+  const B=base();B.bonds=[['a','b',1],['b','c',2]];B.atoms.a.ch='+';B.atoms.a.chA=-140;B.arrows=[];return [A,B];}
+function renderA(){$('ca').innerHTML='<span class="lab">Carbocation</span>'+Object.entries(CAT).map(([k,v])=>`<button class="btn${k===catSel?' on':''}" data-cat="${k}">${v.nom}</button>`).join('');
+  $('ca').querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{catSel=b.dataset.cat;renderA();});
+  const c=CAT[catSel];let h=`<h3>Carbocation ${c.nom.toLowerCase()} : ${c.ex}</h3>`;
+  if(c.mes===undefined){$('ra').innerHTML=draw(catStruct(c.nR),{s:40,w:200,title:c.ex});
+    h+=`<p>Le carbone chargé + est hybridé sp² (plan) avec une orbitale p vide. Il lui manque des électrons : tout ce qui lui en donne le stabilise.</p><ul>`+
+      `<li>Groupes alkyles liés au C⁺ : <b>${c.nR}</b>. Chacun est donneur par effet inductif (+I).</li>`+
+      `<li>Liaisons C–H voisines qui peuvent recouvrir l'orbitale vide (hyperconjugaison) : <b>${c.nCH}</b>.</li></ul>`+
+      `<p>Plus il y a de groupes alkyles, plus la charge + est dispersée : ${c.rank===4?'le tertiaire est le plus stable des quatre.':c.rank===1?'le méthyle est le moins stable.':'stabilité intermédiaire.'}</p>`;}
+  else if(catSel==='allyle'){$('ra').innerHTML=resRow(allylSet().map((s,i)=>draw(s,{s:46,title:'structure limite '+(i+1)})));
+    h+=`<p>La double liaison voisine fournit ses électrons π à l'orbitale vide : la charge + est partagée entre les <b>2</b> carbones terminaux. Les deux structures limites sont équivalentes.</p><p>La flèche part de la liaison π et arrive sur la liaison C–C⁺, qui devient double.</p>`;}
+  else{$('ra').innerHTML=resRow(acceptorSet(ACC.BENZ).map((s,i)=>draw(s,{s:36,title:'structure limite '+(i+1)})));
+    h+=`<p>Le cycle fournit ses électrons π : la charge + se répartit sur <b>4</b> carbones, le CH₂ et les positions ortho, ortho et para du cycle.</p>`;}
+  $('ia').innerHTML=h;
+  const L=[['methyle','Méthyle'],['primaire','Primaire'],['secondaire','Secondaire'],['tertiaire','Tertiaire']];
+  $('la').innerHTML=L.map(([k,n])=>`<div class="${k===catSel?'on':''}">${n}<small>${CAT[k].nR} alkyle${CAT[k].nR>1?'s':''}</small></div>`).join('');
+  $('lam').innerHTML=`<div class="${catSel==='allyle'?'on':''}">Allylique<small>mésomérie, 2 C</small></div><div class="${catSel==='benzyle'?'on':''}">Benzylique<small>mésomérie, 4 C</small></div>`;}
+
+/* ====================== (b) Markovnikov : scène animée ====================== */
+/* chaque étape : positions (px), liaisons, charges, doublets et flèches de l'étape suivante */
+const SC={
+ propene:{nom:'propène (propylène)',lab:{C1:'H₂C',C2:'CH',C3:'CH₃'},
+  maj:{prod:'2-bromopropane (majoritaire)',cat:'secondaire',k:[
+   {C1:[170,150],C2:[240,110],C3:[310,150],H:[350,62],Br:[430,62],b:[['C1','C2',2],['C2','C3',1],['H','Br',1]],ch:{},lp:{Br:[-90,0,90]},ar:[{from:{bond:['C1','C2']},to:{atom:'H'},bend:-0.6},{from:{bond:['H','Br']},to:{atom:'Br'},bend:-0.9}]},
+   {C1:[170,150],C2:[240,110],C3:[310,150],H:[120,95],Br:[440,80],b:[['C1','C2',1],['C2','C3',1],['C1','H',1]],ch:{C2:['+',-60],Br:['−',-45]},lp:{Br:[-90,0,90,180]},ar:[{from:{lp:['Br',180]},to:{atom:'C2'},bend:0.5}]},
+   {C1:[170,150],C2:[240,110],C3:[310,150],H:[120,95],Br:[240,40],b:[['C1','C2',1],['C2','C3',1],['C1','H',1],['C2','Br',1]],ch:{},lp:{Br:[-90,0,180]},ar:[]}]},
+  min:{prod:'1-bromopropane (minoritaire)',cat:'primaire',k:[
+   {C1:[170,150],C2:[240,110],C3:[310,150],H:[350,62],Br:[430,62],b:[['C1','C2',2],['C2','C3',1],['H','Br',1]],ch:{},lp:{Br:[-90,0,90]},ar:[{from:{bond:['C1','C2']},to:{atom:'H'},bend:-0.6},{from:{bond:['H','Br']},to:{atom:'Br'},bend:-0.9}]},
+   {C1:[170,150],C2:[240,110],C3:[310,150],H:[240,45],Br:[440,80],b:[['C1','C2',1],['C2','C3',1],['C2','H',1]],ch:{C1:['+',-150],Br:['−',-45]},lp:{Br:[-90,0,90,180]},ar:[{from:{lp:['Br',90]},to:{atom:'C1'},bend:-0.5}]},
+   {C1:[170,150],C2:[240,110],C3:[310,150],H:[240,45],Br:[110,205],b:[['C1','C2',1],['C2','C3',1],['C2','H',1],['C1','Br',1]],ch:{},lp:{Br:[90,180,0]},ar:[]}]}},
+ methylpropene:{nom:'2-méthylpropène (isobutène)',lab:{C1:'H₂C',C2:'C',C3:'CH₃',C4:'CH₃'},
+  maj:{prod:'2-bromo-2-méthylpropane (majoritaire)',cat:'tertiaire',k:[
+   {C1:[170,150],C2:[240,110],C3:[310,150],C4:[240,40],H:[370,70],Br:[450,70],b:[['C1','C2',2],['C2','C3',1],['C2','C4',1],['H','Br',1]],ch:{},lp:{Br:[-90,0,90]},ar:[{from:{bond:['C1','C2']},to:{atom:'H'},bend:0.9},{from:{bond:['H','Br']},to:{atom:'Br'},bend:-0.9}]},
+   {C1:[170,150],C2:[240,110],C3:[310,150],C4:[240,40],H:[120,95],Br:[450,80],b:[['C1','C2',1],['C2','C3',1],['C2','C4',1],['C1','H',1]],ch:{C2:['+',-140],Br:['−',-45]},lp:{Br:[-90,0,90,180]},ar:[{from:{lp:['Br',180]},to:{atom:'C2'},bend:0.4}]},
+   {C1:[170,150],C2:[240,110],C3:[310,150],C4:[240,40],H:[120,95],Br:[320,80],b:[['C1','C2',1],['C2','C3',1],['C2','C4',1],['C1','H',1],['C2','Br',1]],ch:{},lp:{Br:[-90,0,90]},ar:[]}]},
+  min:{prod:'1-bromo-2-méthylpropane (minoritaire)',cat:'primaire',k:[
+   {C1:[170,150],C2:[240,110],C3:[310,150],C4:[240,40],H:[370,70],Br:[450,70],b:[['C1','C2',2],['C2','C3',1],['C2','C4',1],['H','Br',1]],ch:{},lp:{Br:[-90,0,90]},ar:[{from:{bond:['C1','C2']},to:{atom:'H'},bend:0.9},{from:{bond:['H','Br']},to:{atom:'Br'},bend:-0.9}]},
+   {C1:[170,150],C2:[240,110],C3:[310,150],C4:[240,40],H:[315,75],Br:[450,80],b:[['C1','C2',1],['C2','C3',1],['C2','C4',1],['C2','H',1]],ch:{C1:['+',-150],Br:['−',-45]},lp:{Br:[-90,0,90,180]},ar:[{from:{lp:['Br',90]},to:{atom:'C1'},bend:-0.5}]},
+   {C1:[170,150],C2:[240,110],C3:[310,150],C4:[240,40],H:[315,75],Br:[110,205],b:[['C1','C2',1],['C2','C3',1],['C2','C4',1],['C2','H',1],['C1','Br',1]],ch:{},lp:{Br:[90,180,0]},ar:[]}]}}
+};
+let alSel='propene',way='maj',stage=0,tr=null;
+function sceneSpec(st,p){const sc=SC[alSel],K=sc[way].k,A=K[st],B=K[Math.min(2,st+(p>0?1:0))];const at={};
+  const ids=Object.keys(A).filter(k=>Array.isArray(A[k])&&k!=='b'&&k!=='ar');
+  ids.forEach(id=>{const a=A[id],b=B[id];const x=(a[0]+(b[0]-a[0])*p)/1,y=(a[1]+(b[1]-a[1])*p)/1;
+    const S=p<0.5?A:B,op=p===0?1:1;at[id]={x,y,lab:sc.lab[id]||id,lp:(S.lp[id]||[]),op};
+    const c=S.ch[id];if(c){at[id].ch=c[0];at[id].chA=c[1];}});
+  const bonds=[];const key=q=>[q[0],q[1]].sort().join('-');
+  const mA=new Map(A.b.map(q=>[key(q),q])),mB=new Map(B.b.map(q=>[key(q),q]));
+  new Set([...mA.keys(),...mB.keys()]).forEach(k=>{const qa=mA.get(k),qb=mB.get(k);
+    if(qa&&qb)bonds.push([qa[0],qa[1],p<0.5?qa[2]:qb[2],null,1]);else if(qa)bonds.push([qa[0],qa[1],qa[2],null,1-p]);else bonds.push([qb[0],qb[1],qb[2],null,p]);});
+  return {atoms:at,bonds,arrows:p===0?A.ar:[]};}
+function drawScene(){const p=tr?Math.min(1,(performance.now()-tr.t0)/1300):0;const e=p<.5?2*p*p:1-2*(1-p)*(1-p);
+  const spec=sceneSpec(stage,tr?e:0);const r=draw(spec,{s:1,inner:true,vb:[70,12,450,236]});
+  const sc=SC[alSel],K=sc[way];let cap=['Réactifs : alcène + H–Br','Carbocation '+K.cat+' + Br⁻','Produit : '+K.prod][stage];
+  if(tr)cap=stage===0?'Étape 1 (lente) : la liaison π capte H⁺, Br part avec le doublet':'Étape 2 (rapide) : Br⁻ donne un doublet au carbocation';
+  $('scene').innerHTML=r.g+`<text x="295" y="236" text-anchor="middle" font-family="Mulish,sans-serif" font-weight="800" font-size="14" fill="#13233a">${cap}</text>`;
+  if(tr&&p>=1){stage=tr.to;tr=null;renderB();}}
+function renderB(){const sc=SC[alSel];const M=sc.maj,m=sc.min,K=sc[way];
+  document.querySelectorAll('[data-al]').forEach(b=>b.classList.toggle('on',b.dataset.al===alSel));
+  document.querySelectorAll('[data-way]').forEach(b=>b.classList.toggle('on',b.dataset.way===way));
+  $('st1').disabled=stage!==0||!!tr;$('st2').disabled=stage!==1||!!tr;
+  let h=`<h3>${sc.nom.replace(/^./,c=>c.toUpperCase())} + HBr</h3>`;
+  h+=`<p><b>Étape 1 (lente, elle décide de tout).</b> Les électrons π de la double liaison captent H⁺ ; la liaison H–Br se rompt et Br part avec le doublet. H peut se fixer sur l'un ou l'autre carbone de la double liaison :</p><ul>`+
+     `<li>sur le CH₂ : il se forme un carbocation <b>${M.cat}</b>, le plus stable ;</li><li>sur l'autre carbone : il se formerait un carbocation <b>${m.cat}</b>, moins stable, donc formé beaucoup plus lentement.</li></ul>`;
+  h+=`<p><b>Étape 2 (rapide).</b> Br⁻ donne un de ses doublets au carbone chargé +.</p>`;
+  const OLD={'2-bromopropane':'bromure d\'isopropyle','1-bromopropane':'bromure de propyle','2-bromo-2-méthylpropane':'bromure de tert-butyle','1-bromo-2-méthylpropane':'bromure d\'isobutyle'};
+  const nm=x=>{const n=x.replace(/ \((majoritaire|minoritaire)\)/,'');return n+' ('+OLD[n]+')';};
+  h+=`<p>Produit majoritaire : <b>${nm(M.prod)}</b>. ${way==='min'?`Tu regardes la voie défavorisée, qui donnerait le ${nm(m.prod)} : produit minoritaire.`:''}</p>`;
+  h+=`<p class="hint">Règle de Markovnikov : H se fixe sur le carbone le plus hydrogéné de la double liaison. C'est une conséquence : on passe par le carbocation le plus stable.</p>`;
+  $('ib').innerHTML=h;drawScene();}
+document.querySelectorAll('[data-al]').forEach(b=>b.onclick=()=>{alSel=b.dataset.al;stage=0;tr=null;renderB();});
+document.querySelectorAll('[data-way]').forEach(b=>b.onclick=()=>{way=b.dataset.way;stage=0;tr=null;renderB();});
+$('st1').onclick=()=>{if(stage===0&&!tr){tr={t0:performance.now(),to:1};renderB();}};
+$('st2').onclick=()=>{if(stage===1&&!tr){tr={t0:performance.now(),to:2};renderB();}};
+$('stR').onclick=()=>{stage=0;tr=null;renderB();};
+
+/* ====================== (c) benzène substitué ====================== */
+const SUB={
+  NH2:{lab:'NH₂',act:'activant fort',a:2,ori:'op',eff:'+M (doublet de N) bien plus fort que −I',res:'don',d:DON.NH2},
+  OH:{lab:'OH',act:'activant fort',a:2,ori:'op',eff:'+M (doublet de O) plus fort que −I',res:'don',d:DON.OH},
+  CH3:{lab:'CH₃',act:'activant faible',a:1,ori:'op',eff:'+I et hyperconjugaison, pas de doublet libre',res:null},
+  Cl:{lab:'Cl',act:'désactivant faible',a:-1,ori:'op',eff:'−I plus fort que +M, mais le doublet (+M) oriente en ortho et para',res:'don',d:DON.Cl},
+  Br:{lab:'Br',act:'désactivant faible',a:-1,ori:'op',eff:'−I plus fort que +M, mais le doublet (+M) oriente en ortho et para',res:'don',d:DON.Br},
+  CHO:{lab:'CHO',act:'désactivant',a:-2,ori:'m',eff:'−M et −I',res:'acc',d:ACC.CHO},
+  COOH:{lab:'COOH',act:'désactivant',a:-2,ori:'m',eff:'−M et −I',res:'acc',d:ACC.COOH},
+  NO2:{lab:'NO₂',act:'désactivant fort',a:-3,ori:'m',eff:'−M et −I, très forts',res:'acc',d:ACC.NO2}
+};
+let subSel='OH';
+function renderC(){$('cc').innerHTML='<span class="lab">Substituant</span>'+Object.entries(SUB).map(([k,v])=>`<button class="btn${k===subSel?' on':''}" data-sub="${k}">${v.lab}</button>`).join('');
+  $('cc').querySelectorAll('[data-sub]').forEach(b=>b.onclick=()=>{subSel=b.dataset.sub;renderC();});
+  const S=SUB[subSel];const act=S.a>0;
+  let h=`<h3>Ph–${S.lab} face à un électrophile E⁺</h3><p><span class="tag ${act?'t-act':'t-des'}">${S.act}</span><span class="tag ${S.ori==='op'?'t-op':'t-m'}">oriente en ${S.ori==='op'?'ortho et para':'méta'}</span></p>`;
+  h+=`<p>Effets : ${S.eff}.</p><p>${act?'Le cycle est plus riche en électrons que le benzène : il réagit plus vite que le benzène.':'Le cycle est plus pauvre en électrons que le benzène : il réagit plus lentement que le benzène.'}</p>`;
+  h+=`<p>Produits majoritaires : ${S.ori==='op'?'mélange ortho + para':'produit méta'}.</p>`;
+  $('ic').innerHTML=h;
+  if(S.res==='don'){$('rc').innerHTML=resRow(donorSet(S.d).map((s,i)=>draw(s,{s:34,title:'structure limite '+(i+1)})));
+    $('hc').textContent='Le doublet de '+S.lab.replace('₂','')+' entre dans le cycle : charge − en ortho, para, ortho. Ces positions attirent l\'électrophile.';}
+  else if(S.res==='acc'){$('rc').innerHTML=resRow(acceptorSet(S.d).map((s,i)=>draw(s,{s:34,title:'structure limite '+(i+1)})));
+    $('hc').textContent='Le groupe attire les électrons π du cycle : charge + en ortho, para, ortho. La position méta est la moins appauvrie.';}
+  else{$('rc').innerHTML=(()=>{const r=ring([[1,2],[3,4],[5,6]],{});r.atoms.X={x:0,y:-2.05,lab:'CH₃'};r.bonds.push(['X','c1',1]);r.arrows=[];return draw(r,{s:34,title:'méthylbenzène (toluène)'});})();
+    $('hc').textContent='Pas de doublet libre ni de liaison π sur CH₃ : pas de structure limite à dessiner pour le cycle. CH₃ donne un peu d\'électrons par effet inductif (+I) et par hyperconjugaison.';}
+  const eff=S.a>0?1:(S.ori==='op'?1:-1);
+  $('sc').innerHTML=[['ortho',2],['méta',3],['para',4]].map(([n,k])=>{const g=sigma(subSel,k,eff);
+    let v;if(!g.c1)v='Charge + jamais sur C1 : le substituant n\'intervient pas directement.';
+    else if(S.res==='don')v=`Charge + sur C1 : le doublet de ${S.lab.replace('₂','')} la stabilise (une structure de plus, où tous les atomes ont leur octet).`;
+    else if(subSel==='CH3')v='Charge + sur C1, qui porte CH₃ : carbocation tertiaire, plus stable.';
+    else v=`Charge + sur C1, juste à côté du groupe attracteur ${S.lab} : très défavorable.`;
+    const good=(S.ori==='op')===(k!==3);
+    return `<div><b>${n}${good?' : favorisée':' : défavorisée'}</b>${draw(g.r,{s:30,title:'complexe σ '+n})}<span>${v}</span></div>`;}).join('');}
+
+/* ====================== (d) acidité ====================== */
+/* pKa : seules les valeurs de VALEURS-REFERENCE sont affichées (acide acétique 4,76 ; phénol ≈ 10). Les autres : classement qualitatif. */
+const ACIDS={
+  acetique:{nom:'Acide acétique',iup:'acide éthanoïque',X:['H','H','H'],rank:0,pKa:'4,76'},
+  chloro:{nom:'Acide chloroacétique',iup:'acide chloroéthanoïque',X:['Cl','H','H'],rank:1},
+  fluoro:{nom:'Acide fluoroacétique',iup:'acide fluoroéthanoïque',X:['F','H','H'],rank:2},
+  dichloro:{nom:'Acide dichloroacétique',iup:'acide dichloroéthanoïque',X:['Cl','Cl','H'],rank:3},
+  trichloro:{nom:'Acide trichloroacétique',iup:'acide trichloroéthanoïque',X:['Cl','Cl','Cl'],rank:4},
+  phenol:{nom:'Phénol et éthanol',iup:'phénol, éthanol'}
+};
+const EN={F:'3,98',Cl:'3,16',H:'2,20'};
+let acSel='chloro';
+function acidStruct(X,base){const at={Ca:{x:0,y:0,lab:'C'},Cc:{x:1.15,y:0,lab:'C'},O1:{x:1.75,y:-1.0,lab:'O',lp:[-150,-30]},O2:{x:1.75,y:1.0,lab:base?'O':'OH',anc:base?undefined:'start',lp:base?[30,150,90]:[150,90]}};
+  const b=[['Ca','Cc',1],['Cc','O1',2],['Cc','O2',1]];if(base){at.O2.ch='−';at.O2.chA=-30;}
+  [[-1.0,0],[0,-1.05],[0,1.05]].forEach((p,i)=>{at['x'+i]={x:p[0],y:p[1],lab:X[i]};/* doublets des halogènes non dessinés ici */b.push(['Ca','x'+i,1,null,1,X[i]==='H'?null:'I']);});
+  return {atoms:at,bonds:b,arrows:[]};}
+function carboxylateSet(X){const A=acidStruct(X,true);A.arrows=[{from:{lp:['O2',30]},to:{bond:['Cc','O2']},bend:0.9},{from:{bond:['Cc','O1']},to:{atom:'O1'},bend:0.9}];
+  const B=acidStruct(X,true);B.bonds=B.bonds.map(q=>q[1]==='O1'?['Cc','O1',1]:q[1]==='O2'?['Cc','O2',2]:q);
+  B.atoms.O1.lp=[-150,-30,-90];B.atoms.O1.ch='−';B.atoms.O1.chA=30;B.atoms.O2.ch=null;B.atoms.O2.lp=[30,150];return [A,B];}
+function renderD(){$('cd').innerHTML='<span class="lab">Acide</span>'+Object.entries(ACIDS).map(([k,v])=>`<button class="btn${k===acSel?' on':''}" data-ac="${k}">${v.nom}</button>`).join('');
+  $('cd').querySelectorAll('[data-ac]').forEach(b=>b.onclick=()=>{acSel=b.dataset.ac;renderD();});
+  const a=ACIDS[acSel];let h='',lad='';
+  if(acSel!=='phenol'){const nX=a.X.filter(x=>x!=='H');
+    $('rd').innerHTML=draw(acidStruct(a.X,false),{s:36,title:a.nom,cap:'acide'})+'<span class="eq">→</span>'+resRow(carboxylateSet(a.X).map((s,i)=>draw(s,{s:36,title:'base conjuguée, structure limite '+(i+1),cap:'base conjuguée'})));
+    h=`<h3>${a.nom} (${a.iup})</h3>`;
+    h+=`<p>Dans l'ion carboxylate, la charge − est partagée entre les deux O (deux structures limites équivalentes) : c'est pourquoi les acides carboxyliques sont nettement plus acides que les alcools.</p>`;
+    if(nX.length)h+=`<p>Effet inductif attracteur (−I, flèches bleues) : ${nX.length} atome${nX.length>1?'s':''} de ${[...new Set(nX)].join(', ')} (électronégativité ${[...new Set(nX)].map(x=>x+' : '+EN[x]).join(', ')} ; C : 2,55) attire${nX.length>1?'nt':''} les électrons. La charge − de la base conjuguée est davantage dispersée : la base est plus stable, l'acide est plus fort que l'acide acétique.</p>`;
+    else h+=`<p>Pas d'atome électronégatif sur le carbone voisin : c'est la référence, pKa = 4,76.</p>`;
+    h+=`<p>pKa : ${a.pKa?'<b>'+a.pKa+'</b>':'plus petit que celui de l\'acide acétique (classement ci-dessous, sans valeur)'}.</p>`;
+    const order=Object.entries(ACIDS).filter(([k])=>k!=='phenol').sort((x,y)=>x[1].rank-y[1].rank);
+    lad=`<h3>Classement par force acide croissante (qualitatif)</h3><div class="axis"><span>acide le plus faible, pKa le plus grand</span><span>acide le plus fort</span></div><div class="ladder">`+
+      order.map(([k,v])=>`<div class="${k===acSel?'on':''}">${v.nom.replace('Acide ','')}<small>${v.pKa?'pKa = '+v.pKa:'pKa plus petit'}</small></div>`).join('')+`</div>`+
+      `<p class="hint">Doublets libres des halogènes non dessinés sur ces formules. F est plus électronégatif que Cl : un F agit plus qu'un Cl. Mais deux ou trois Cl agissent plus qu'un seul F : les effets −I s'additionnent.</p>`;}
+  else{const ph=donorSet(DON.Ominus);
+    $('rd').innerHTML='<div style="width:100%;text-align:center;font:800 13px Mulish,sans-serif;color:#5f6b7a">Ion phénolate : la charge − est délocalisée sur O et sur trois carbones du cycle</div>'+resRow(ph.map((s,i)=>draw(s,{s:32,title:'phénolate, structure limite '+(i+1)})))+
+      '<div style="width:100%;text-align:center;font:800 13px Mulish,sans-serif;color:#5f6b7a;margin-top:6px">Ion éthanolate : la charge − reste sur O</div>'+
+      draw({atoms:{a:{x:0,y:0,lab:'CH₃'},b:{x:1.2,y:-0.5,lab:'CH₂'},o:{x:2.4,y:0,lab:'O',lp:[-90,30,100],ch:'−',chA:-30}},bonds:[['a','b',1],['b','o',1]],arrows:[]},{s:38,title:'éthanolate'});
+    h=`<h3>Phénol contre éthanol</h3><p>Phénol : pKa ≈ 10. Sa base conjuguée, l'ion phénolate, est stabilisée par mésomérie : la charge − se répartit sur l'oxygène et sur les carbones ortho, para, ortho.</p>`+
+      `<p>Éthanol : moins acide que le phénol (pKa plus grand ; valeur non donnée ici). Dans l'éthanolate, la charge − reste localisée sur O, et le groupe éthyle, donneur (+I), la déstabilise un peu.</p>`+
+      `<p>Acide acétique : pKa = 4,76. Le carboxylate partage sa charge entre deux O, plus électronégatifs que C : plus stable encore que le phénolate.</p>`;
+    lad=`<h3>Classement par force acide croissante (qualitatif)</h3><div class="axis"><span>plus faible</span><span>plus fort</span></div><div class="ladder"><div>Éthanol<small>charge localisée</small></div><div class="on">Phénol<small>pKa ≈ 10</small></div><div>Acide acétique<small>pKa = 4,76</small></div></div>`;}
+  $('id').innerHTML=h;$('ld').innerHTML=lad;}
+
+/* ====================== onglets ====================== */
+let tab='a';
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('on',x===b));
+  ['a','b','c','d'].forEach(t=>$('p'+t).classList.toggle('on',t===tab));});
+function loop(){if(tr)drawScene();requestAnimationFrame(loop);}
+renderA();renderB();renderC();renderD();requestAnimationFrame(loop);
+
+/* accès pour les tests : toutes les séries de structures limites et toutes les étapes de mécanisme */
+window.__eff={SUB,ACIDS,CAT,
+  sets:()=>{const o={};o['allyle']=allylSet();o['benzyle']=acceptorSet(ACC.BENZ);for(const k in SUB){if(SUB[k].res==='don')o['don_'+k]=donorSet(SUB[k].d);if(SUB[k].res==='acc')o['acc_'+k]=acceptorSet(SUB[k].d);}
+    o['phenolate']=donorSet(DON.Ominus);o['carboxylate']=carboxylateSet(['Cl','H','H']);
+    const sv=[alSel,way];for(const al in SC)for(const w of ['maj','min']){alSel=al;way=w;o['mech_'+al+'_'+w]=SC[al][w].k.map((K,i)=>sceneSpec(i,0));}[alSel,way]=sv;return JSON.parse(JSON.stringify(o));},
+  sigma:(sub,k)=>sigma(sub,k,0).c1,
+  set:(t,v)=>{if(t==='a'){catSel=v;renderA();}if(t==='c'){subSel=v;renderC();}if(t==='d'){acSel=v;renderD();}if(t==='b'){alSel=v[0];way=v[1];stage=0;tr=null;renderB();}},
+  tab:t=>document.querySelector(`[data-tab="${t}"]`).click(),
+  text:id=>$(id).textContent};
+})();
+</script>
+<script src="../../kit/sfa-nav.js"></script></body>
+</html>

@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gaz parfaits et pressions partielles · SFA</title>
+<meta name="description" content="Simulation SFA : gaz parfait PV = nRT, pressions partielles de Dalton, distribution de Maxwell-Boltzmann, pression partielle d'O2 alvéolaire.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="../../kit/sfa-nav.css"></head>
+<body>
+<style id="sfa-chim">
+*{box-sizing:border-box;margin:0;padding:0}
+canvas.cv{display:block;width:100%;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.row{display:flex;align-items:center;flex-wrap:wrap}
+.row .pill{min-width:170px}
+.hint{font:500 .84rem/1.45 var(--f-ui);color:var(--muted)}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.tabs .btn{flex:1 1 auto}
+.panel[hidden]{display:none!important}
+.sub{font:800 13px var(--f-ui);color:var(--ink2);margin:14px 0 4px;letter-spacing:.01em}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font:600 .82rem var(--f-ui);color:var(--muted);margin:8px 0 2px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;vertical-align:-1px;margin-right:6px;border:1px solid rgba(0,0,0,.25)}
+.warn{background:#fff3f1;border:1px solid #f1c7bf;border-radius:10px;color:#8a2a1f;font:600 .86rem/1.5 var(--f-ui);padding:9px 13px;margin:10px 0}
+.note{background:#fff8e1;border:1px solid #f1d98c;border-radius:10px;color:#5a4300;font:600 .86rem/1.5 var(--f-ui);padding:9px 13px;margin:10px 0}
+.ok{background:#eef7f2;border:1px solid #bfe0cf;border-radius:10px;color:#1f5a44;font:600 .86rem/1.5 var(--f-ui);padding:9px 13px;margin:10px 0}
+.warn:empty,.note:empty,.ok:empty{display:none}
+.tw{max-width:100%;overflow:hidden}
+table.t{width:100%;border-collapse:collapse;font:600 12.5px/1.35 var(--f-ui);font-variant-numeric:tabular-nums;margin:8px 0;table-layout:fixed}
+table.t th,table.t td{padding:6px 5px;border-bottom:1px solid var(--line);text-align:right;overflow-wrap:anywhere}
+table.t th{font-weight:800;color:var(--ink2);background:var(--bg)}
+table.t td:first-child,table.t th:first-child{text-align:left}
+table.t tr.lim td{background:#fff3f1;color:#8a2a1f}
+@media (max-width:520px){table.t{font-size:11.5px}table.t th,table.t td{padding:5px 3px}}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 18px;margin-top:14px}
+.card h2{font:800 15px/1.3 var(--f-ui);margin:0 0 8px}
+.card ul{padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.card.keep{border-left:4px solid var(--green)}
+.card.trap{border-left:4px solid #E24B4A}
+.card.defis details{border-top:1px solid var(--line);padding:9px 0}
+.card.defis details:first-of-type{border-top:0}
+.card.defis summary{cursor:pointer;font-weight:700;color:var(--ink)}
+.card.defis details p{margin:8px 0 2px;color:var(--ink2)}
+.fml{overflow-wrap:anywhere}
+.info{overflow-wrap:anywhere}
+.big{font:800 1.05rem var(--f-ui);color:var(--ink)}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a class="on" href="../">Simulations de chimie</a><a href="../exercices/">Exercices de chimie</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations de physique</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="../">Simulations de chimie</a>›<a href="../">Chimie générale</a>›<b>Gaz parfaits et pressions partielles</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Chimie · Gaz</span><span class="sfa-chip free">Gratuit</span></div><h1>Gaz parfaits et pressions partielles</h1><p>PV = nRT au piston, loi de Dalton pour les mélanges, vitesses des molécules, et l'air qui arrive dans tes alvéoles.</p></div>
+<section class="sfa-sim">
+
+<div class="tabs" data-tabs="main" role="tablist">
+  <button class="btn" data-tab="pG" role="tab">Piston et Dalton</button>
+  <button class="btn" data-tab="pV" role="tab">Vitesses des molécules</button>
+  <button class="btn" data-tab="pA" role="tab">Alvéoles</button>
+</div>
+
+<!-- ============ piston ============ -->
+<div class="panel" id="pG">
+  <canvas class="cv" id="cvG" style="height:360px" aria-label="Cylindre à piston rempli de molécules de gaz"></canvas>
+  <div class="legend"><span><i style="background:#378ADD"></i>N₂</span><span><i style="background:#E24B4A"></i>O₂</span>
+    <span><i style="background:#3d3d3a"></i>CO₂</span><span><i style="background:#7fd0e8"></i>H₂O</span><span id="gUnit"></span></div>
+  <div class="row">
+    <span class="pill">Mélange</span>
+    <button class="btn" id="gPre1">N₂ seul</button><button class="btn" id="gPre2">Air sec (78 % N₂, 21 % O₂)</button><button class="btn" id="gPre3">N₂ + O₂ + CO₂</button>
+  </div>
+  <div class="row"><span class="pill" style="color:#185fa5">n(N₂)</span><input type="range" id="nN2" min="0" max="2" step="0.01" value="0.78" style="accent-color:#378ADD"><span class="val" id="nN2v" style="color:#185fa5"></span></div>
+  <div class="row"><span class="pill" style="color:#a32d2d">n(O₂)</span><input type="range" id="nO2" min="0" max="2" step="0.01" value="0.21" style="accent-color:#E24B4A"><span class="val" id="nO2v" style="color:#a32d2d"></span></div>
+  <div class="row"><span class="pill" style="color:#3d3d3a">n(CO₂)</span><input type="range" id="nCO2" min="0" max="2" step="0.01" value="0" style="accent-color:#3d3d3a"><span class="val" id="nCO2v" style="color:#3d3d3a"></span></div>
+  <div class="row"><span class="pill" style="color:#2a8aa8">n(H₂O) vapeur</span><input type="range" id="nH2O" min="0" max="2" step="0.01" value="0" style="accent-color:#2a8aa8"><span class="val" id="nH2Ov" style="color:#2a8aa8"></span></div>
+  <div class="row"><span class="pill" style="color:#BA7517">T &nbsp;température</span><input type="range" id="gT" min="200" max="600" step="1" value="298" style="accent-color:#BA7517"><span class="val" id="gTv" style="color:#BA7517"></span></div>
+  <div class="row"><span class="pill" style="color:#1D9E75">V &nbsp;volume</span><input type="range" id="gV" min="5" max="50" step="0.5" value="24.5" style="accent-color:#1D9E75"><span class="val" id="gVv" style="color:#0F6E56"></span></div>
+  <div class="row">
+    <span class="pill">Unités de P</span>
+    <button class="btn" data-u="atm">atm</button><button class="btn" data-u="kPa">kPa (SI)</button><button class="btn" data-u="mmHg">mmHg</button>
+  </div>
+  <div class="fml" id="gFml"></div>
+  <div class="tw"><table class="t" id="gTab"></table></div>
+  <div class="warn" id="gWarn"></div>
+  <p class="hint">Modèle du gaz parfait : molécules ponctuelles, sans interaction, jamais de liquéfaction ni de condensation (un gaz réel se condense quand sa pression partielle dépasse sa pression de vapeur saturante, ce qui arrive vite pour l'eau à basse température). Les vitesses dessinées suivent la distribution de Maxwell-Boltzmann : elles dépendent de T et de M, pas de n ni de V.</p>
+</div>
+
+<!-- ============ vitesses ============ -->
+<div class="panel" id="pV">
+  <div class="row">
+    <span class="pill">Comparer</span>
+    <button class="btn" data-vm="gas">2 gaz, même T</button><button class="btn" data-vm="temp">1 gaz, 2 températures</button>
+  </div>
+  <canvas class="cv" id="cvV" style="height:320px" aria-label="Distribution des vitesses de Maxwell-Boltzmann"></canvas>
+  <div class="row"><span class="pill" style="color:#185fa5">gaz A</span><select id="vA" aria-label="Gaz A"></select>
+    <span class="pill" id="vBl" style="color:#a32d2d;min-width:0">gaz B</span><select id="vB" aria-label="Gaz B"></select></div>
+  <div class="row"><span class="pill" style="color:#185fa5" id="vT1l">T</span><input type="range" id="vT1" min="100" max="1000" step="1" value="298" style="accent-color:#378ADD"><span class="val" id="vT1v" style="color:#185fa5"></span></div>
+  <div class="row" id="vT2r"><span class="pill" style="color:#a32d2d">T₂</span><input type="range" id="vT2" min="100" max="1000" step="1" value="600" style="accent-color:#E24B4A"><span class="val" id="vT2v" style="color:#a32d2d"></span></div>
+  <div class="tw"><table class="t" id="vTab"></table></div>
+  <div class="fml" id="vFml"></div>
+</div>
+
+<!-- ============ alvéoles ============ -->
+<div class="panel" id="pA">
+  <canvas class="cv" id="cvA" style="height:330px" aria-label="Pressions partielles de l'air sec, de l'air inspiré humidifié et de l'air alvéolaire"></canvas>
+  <div class="legend"><span><i style="background:#378ADD"></i>N₂ (et autres gaz)</span><span><i style="background:#E24B4A"></i>O₂</span><span><i style="background:#7fd0e8"></i>H₂O vapeur</span><span><i style="background:#3d3d3a"></i>CO₂</span></div>
+  <div class="row"><span class="pill" style="color:#185fa5">P atmosphérique</span><input type="range" id="aP" min="400" max="800" step="1" value="760" style="accent-color:#378ADD"><span class="val" id="aPv" style="color:#185fa5"></span></div>
+  <div class="row"><span class="pill" style="color:#a32d2d">fraction d'O₂ inspirée</span><input type="range" id="aF" min="0.21" max="1" step="0.01" value="0.21" style="accent-color:#E24B4A"><span class="val" id="aFv" style="color:#a32d2d"></span></div>
+  <div class="fml" id="aFml"></div>
+  <div class="warn" id="aTrap"></div>
+  <p class="hint">Valeurs usuelles approchées, au repos : P<sub>A</sub>(CO₂) ≈ 40 mmHg et quotient respiratoire QR ≈ 0,8. Modèle simplifié : elles restent fixes quand tu changes P ou la fraction d'O₂ (en altitude, on hyperventile, P<sub>A</sub>(CO₂) baisse et P<sub>A</sub>(O₂) est un peu plus haute que calculé). P baisse avec l'altitude : essaie 500 mmHg.</p>
+</div>
+
+<script>
+(()=>{
+/* ---------- outils communs SFA chimie ---------- */
+const $=id=>document.getElementById(id);
+const INK='#3d3d3a',BLUE='#378ADD',BLUE_D='#185fa5',GREEN='#1D9E75',GREEN_D='#0F6E56',RED='#E24B4A',RED_D='#a32d2d',
+      ORANGE='#BA7517',VIOLET='#7F77DD',GREY='#9aa0a6',AX='#c8ccd0',MUT='#5f6b7a',WATER='#d8eaf9';
+const F={t:'600 13px Mulish,system-ui,sans-serif',b:'800 13px Mulish,system-ui,sans-serif',s:'600 11.5px Mulish,system-ui,sans-serif',
+         l:'800 15px Mulish,system-ui,sans-serif'};
+const SUPD={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+/* nombre à d décimales, virgule décimale, vrai signe moins */
+const fr=(v,d)=>{const s=Math.abs(v).toFixed(d);const neg=v<0&&/[1-9]/.test(s);let [a,b]=s.split('.');
+  if(a.length>4)a=a.replace(/\B(?=(\d{3})+(?!\d))/g,' ');return (neg?'−':'')+a+(b!==undefined?','+b:'');};
+/* nombre à sig chiffres significatifs (notation scientifique hors de [10⁻³ ; 10⁶[) */
+function fs(v,sig){sig=sig||3;if(!isFinite(v))return '—';if(v===0)return '0';const a=Math.abs(v);
+  if(a>=1e-3&&a<1e6){const d=Math.max(0,sig-1-Math.floor(Math.log10(a)+1e-12));return fr(v,d);}
+  let e=Math.floor(Math.log10(a)),m=v/Math.pow(10,e);m=+m.toFixed(sig-1);if(Math.abs(m)>=10){m/=10;e++;}
+  return fr(m,sig-1)+'·10'+String(e).split('').map(c=>SUPD[c]).join('');}
+/* notation scientifique forcée */
+function fsci(v,sig){sig=sig||2;let e=Math.floor(Math.log10(Math.abs(v))),m=v/Math.pow(10,e);m=+m.toFixed(sig-1);if(Math.abs(m)>=10){m/=10;e++;}
+  return fr(m,sig-1)+'·10'+String(e).split('').map(c=>SUPD[c]).join('');}
+function mkCanvas(cv){const ctx=cv.getContext('2d');const o={cv,ctx,W:0,H:0};
+  o.sync=()=>{const r=cv.getBoundingClientRect();if(!r.width)return false;const dpr=window.devicePixelRatio||1;
+    const w=Math.round(r.width),h=Math.round(r.height);
+    if(w!==o.W||h!==o.H||cv.width!==Math.round(w*dpr)){o.W=w;o.H=h;cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}
+    ctx.setTransform(dpr,0,0,dpr,0,0);return true;};
+  return o;}
+/* texte avec halo blanc, recadré dans le canevas */
+function txt(o,t,x,y,col,font,al){const c=o.ctx;c.font=font||F.t;c.textAlign=al||'center';c.textBaseline='middle';
+  const w=c.measureText(t).width;let x0=al==='right'?x-w:al==='left'?x:x-w/2;const dx=Math.max(0,3-x0)-Math.max(0,x0+w-(o.W-3));
+  x+=dx;c.lineJoin='round';c.lineWidth=4;c.strokeStyle='rgba(255,255,255,.95)';c.strokeText(t,x,y);c.fillStyle=col;c.fillText(t,x,y);
+  c.textBaseline='alphabetic';return w;}
+function rrect(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function arrow(c,x1,y1,x2,y2,col,w){c.strokeStyle=col;c.fillStyle=col;c.lineWidth=w||2;c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();
+  const a=Math.atan2(y2-y1,x2-x1),s=6+(w||2);c.beginPath();c.moveTo(x2,y2);c.lineTo(x2-s*Math.cos(a-0.45),y2-s*Math.sin(a-0.45));
+  c.lineTo(x2-s*Math.cos(a+0.45),y2-s*Math.sin(a+0.45));c.closePath();c.fill();}
+/* générateur pseudo-aléatoire reproductible */
+function rng(seed){let s=seed>>>0||1;return ()=>{s^=s<<13;s>>>=0;s^=s>>17;s^=s<<5;s>>>=0;return s/4294967296;};}
+/* curseur : met à jour l'affichage <id>v et appelle cb */
+function bind(id,fmt,cb){const el=$(id),o=$(id+'v');const go=()=>{const v=parseFloat(el.value);if(o)o.textContent=fmt(v);cb(v);};
+  el.addEventListener('input',go);go();return go;}
+function setRange(id,v){const el=$(id);el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));}
+/* onglets : boutons data-tab="idPanneau" */
+function tabs(group,cb){const bs=[...document.querySelectorAll('[data-tabs="'+group+'"] [data-tab]')];
+  const show=id=>{bs.forEach(b=>{const on=b.dataset.tab===id;b.classList.toggle('on',on);b.setAttribute('aria-selected',on);
+    $(b.dataset.tab).hidden=!on;});if(cb)cb(id);};
+  bs.forEach(b=>b.addEventListener('click',()=>show(b.dataset.tab)));show(bs[0].dataset.tab);return show;}
+const visible=el=>!!(el&&el.offsetParent!==null);
+
+/* ---- constantes : VALEURS-REFERENCE.md ---- */
+const R_ATM=0.0821, R_SI=8.314, ATM_MMHG=760, ATM_PA=101325, T0=273.15, PVAP37=47, PVAP25=23.8;
+const AM={H:1.008,C:12.01,N:14.01,O:16.00};
+/* ---- valeurs usuelles des simulations (VALEURS-REFERENCE.md, dernière section) ---- */
+const PACO2=40;   /* valeur usuelle approchée, validée : P_A(CO₂) au repos, mmHg */
+const QR=0.8;     /* valeur usuelle approchée, validée : quotient respiratoire au repos */
+const GAS={N2:{u:'N₂',M:2*AM.N,col:BLUE},O2:{u:'O₂',M:2*AM.O,col:RED},CO2:{u:'CO₂',M:AM.C+2*AM.O,col:INK},
+           H2O:{u:'H₂O',M:2*AM.H+AM.O,col:'#7fd0e8'},H2:{u:'H₂',M:2*AM.H,col:GREEN}};
+const PIST=['N2','O2','CO2','H2O'];
+/* tirage normal (Box-Muller) */
+let rs=rng(2026);const gauss=()=>{let u=0,v=0;while(u===0)u=rs();v=rs();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);};
+
+/* =================== piston =================== */
+const G={n:{N2:0.78,O2:0.21,CO2:0,H2O:0},T:298,V:24.5,unit:'atm'};const oG=mkCanvas($('cvG'));
+const PER_MOL=30;   /* points dessinés par mole */
+const parts=[];     /* {g,x,y,vx,vy} ; x ∈ [0,1] (largeur), y ∈ [0,1] (hauteur du gaz), v en m/s */
+function sigma(g,T){return Math.sqrt(R_SI*T/(GAS[g].M/1000));}   /* écart-type d'une composante, m/s (M en kg/mol) */
+function syncParts(){PIST.forEach(g=>{const want=Math.round(G.n[g]*PER_MOL);let have=parts.filter(p=>p.g===g);
+  while(have.length<want){const s=sigma(g,G.T);const p={g,x:rs(),y:rs(),vx:gauss()*s,vy:gauss()*s};parts.push(p);have.push(p);}
+  while(have.length>want){const p=have.pop();parts.splice(parts.indexOf(p),1);}});}
+function rescaleT(T1,T2){const f=Math.sqrt(T2/T1);parts.forEach(p=>{p.vx*=f;p.vy*=f;});}
+function calcG(){const ntot=PIST.reduce((s,g)=>s+G.n[g],0);const P=ntot*R_ATM*G.T/G.V;
+  const rows=PIST.map(g=>({g,n:G.n[g],x:ntot>0?G.n[g]/ntot:0,P:G.n[g]*R_ATM*G.T/G.V}));
+  return {ntot,P,rows,PSI:ntot*R_SI*G.T/(G.V/1000)};}
+const conv=(Patm,u)=>u==='atm'?Patm:u==='kPa'?Patm*ATM_PA/1000:Patm*ATM_MMHG;
+const fP=(Patm,u)=>fs(conv(Patm,u||G.unit),3)+' '+(u||G.unit);
+function updG(){const r=calcG(),u=G.unit,Tk=G.T;
+  document.querySelectorAll('[data-u]').forEach(b=>b.classList.toggle('on',b.dataset.u===u));
+  let f;
+  if(u==='kPa')f='P = n·R·T / V = '+fs(r.ntot,3)+' mol × 8,314 J/(mol·K) × '+Tk+' K ÷ '+fsci(G.V/1000,3)+' m³ = <b style="color:#a32d2d"><span id="gP">'+fs(r.PSI/1000,3)+'</span> kPa</b> &nbsp;(R = 8,314 J/(mol·K), V en m³, P en Pa)';
+  else f='P = n·R·T / V = '+fs(r.ntot,3)+' mol × 0,0821 L·atm/(mol·K) × '+Tk+' K ÷ '+fs(G.V,3)+' L = <b style="color:#a32d2d">'+(u==='atm'?'<span id="gP">'+fs(r.P,3)+'</span> atm':fs(r.P,3)+' atm = <span id="gP">'+fs(r.P*ATM_MMHG,3)+'</span> mmHg')+'</b> &nbsp;(R = 0,0821 L·atm/(mol·K), V en L'+(u==='mmHg'?', 1 atm = 760 mmHg':'')+')';
+  f+='<br>Dalton : P<sub>i</sub> = x<sub>i</sub> · P = n<sub>i</sub>·R·T / V &nbsp;et&nbsp; P = Σ P<sub>i</sub>. Chaque gaz se comporte comme s\'il était seul dans le volume.';
+  if(Tk>T0)f+='<br><span style="font-size:.88em;color:#5f6b7a">Avec T en °C (faux) on trouverait '+fP(r.ntot*R_ATM*(Tk-T0)/G.V)+' : toujours en kelvins.</span>';
+  $('gFml').innerHTML=f;
+  let t='<tr><th>Gaz</th><th>n (mol)</th><th>x<sub>i</sub> = n<sub>i</sub>/n</th><th>P<sub>i</sub> ('+u+')</th></tr>';
+  r.rows.forEach(w=>{if(w.n>0)t+='<tr><td>'+GAS[w.g].u+'</td><td>'+fs(w.n,3)+'</td><td id="gx_'+w.g+'">'+fs(w.x,3)+'</td><td id="gP_'+w.g+'">'+fs(conv(w.P,u),3)+'</td></tr>';});
+  t+='<tr><td><b>Total</b></td><td><b>'+fs(r.ntot,3)+'</b></td><td><b>'+(r.ntot>0?'1':'—')+'</b></td><td><b>'+fs(conv(r.P,u),3)+'</b></td></tr>';
+  $('gTab').innerHTML=t;
+  const w=[];if(r.ntot===0)w.push('Aucune molécule : P = 0.');
+  if(r.P>10)w.push('P > 10 atm : un gaz réel s\'écarte du gaz parfait. Valeur indicative.');
+  if(G.n.H2O>0){const ph=r.rows[3].P*ATM_MMHG;
+    if((Tk<=298.15&&ph>PVAP25)||(Tk<=310.15&&ph>PVAP37))w.push('P(H₂O) = '+fs(ph,3)+' mmHg dépasse la pression de vapeur saturante ('+(Tk<=298.15?'23,8 mmHg à 25 °C':'47 mmHg à 37 °C')+') : en réalité une partie de l\'eau se condenserait. Le modèle la garde gazeuse.');
+    else w.push('H₂O est supposée entièrement gazeuse. En réalité elle condense si sa pression partielle dépasse la pression de vapeur saturante à cette température.');}
+  $('gWarn').innerHTML=w.join('<br>');
+  syncParts();}
+function drawG(dt){const o=oG;if(!o.sync())return;const c=o.ctx,W=o.W,H=o.H,r=calcG();c.clearRect(0,0,W,H);
+  const narrow=W<560,cw=narrow?W*0.56:Math.min(380,W*0.45),cx0=narrow?12:W*0.08,bot=H-18,hmax=H-78,h=hmax*G.V/50,topY=bot-h;
+  /* gaz */
+  c.fillStyle='#f6f9fc';c.fillRect(cx0,topY,cw,h);
+  /* mouvement : 1 m/s → K px/s ; rebonds élastiques */
+  const K=0.16;
+  parts.forEach(p=>{p.x+=p.vx*K*dt/cw;p.y+=p.vy*K*dt/h;
+    if(p.x<0){p.x=-p.x;p.vx=Math.abs(p.vx);}if(p.x>1){p.x=2-p.x;p.vx=-Math.abs(p.vx);}
+    if(p.y<0){p.y=-p.y;p.vy=Math.abs(p.vy);}if(p.y>1){p.y=Math.max(0,2-p.y);p.vy=-Math.abs(p.vy);}
+    c.fillStyle=GAS[p.g].col;c.beginPath();c.arc(cx0+4+p.x*(cw-8),bot-4-p.y*(h-8),3.6,0,7);c.fill();
+    if(p.g==='H2O'){c.strokeStyle='#2a8aa8';c.lineWidth=1;c.stroke();}});
+  /* cylindre et piston */
+  c.strokeStyle=INK;c.lineWidth=3;c.beginPath();c.moveTo(cx0-3,bot-hmax-30);c.lineTo(cx0-3,bot+2);c.lineTo(cx0+cw+3,bot+2);c.lineTo(cx0+cw+3,bot-hmax-30);c.stroke();
+  c.fillStyle='#8a95a3';c.fillRect(cx0,topY-12,cw,12);c.fillRect(cx0+cw/2-5,Math.max(4,topY-60),10,Math.min(48,topY-16));
+  txt(o,'V = '+fs(G.V,3)+' L',cx0+6,12,GREEN_D,F.b,'left');
+  txt(o,'T = '+G.T+' K',cx0+cw-6,12,ORANGE,F.b,'right');
+  /* barre des pressions partielles */
+  const bx=cx0+cw+(narrow?22:60),bw=narrow?34:48,bh=H-70,Pmax=Math.max(1,Math.ceil(r.P));
+  txt(o,'P = '+fP(r.P),Math.min(W-4,bx+bw/2),14,RED_D,F.b,narrow?'center':'left');
+  let y=bot;r.rows.forEach(w=>{if(w.P<=0)return;const hh=w.P/Pmax*bh;c.fillStyle=GAS[w.g].col;c.fillRect(bx,y-hh,bw,hh);
+    if(hh>14)txt(o,GAS[w.g].u+(narrow?'':' '+fs(conv(w.P,G.unit),3)),bx+bw+6,y-hh/2,INK,F.s,'left');y-=hh;});
+  c.strokeStyle=INK;c.lineWidth=1;c.strokeRect(bx,bot-bh,bw,bh);
+  txt(o,'0',bx-4,bot,MUT,F.s,'right');txt(o,fs(conv(Pmax,G.unit),3),bx-4,bot-bh,MUT,F.s,'right');
+  txt(o,'Dalton',bx+bw/2,bot-bh-10,MUT,F.s);
+}
+PIST.forEach(g=>bind('n'+g,v=>fs(v,3)+' mol',v=>{G.n[g]=v;updG();}));
+bind('gT',v=>v+' K ('+fr(v-T0,2)+' °C)',v=>{if(G.T)rescaleT(G.T,v);G.T=v;updG();});
+bind('gV',v=>fs(v,3)+' L',v=>{G.V=v;updG();});
+document.querySelectorAll('[data-u]').forEach(b=>b.addEventListener('click',()=>{G.unit=b.dataset.u;updG();}));
+const pre=(a,b,cc,d)=>{setRange('nN2',a);setRange('nO2',b);setRange('nCO2',cc);setRange('nH2O',d);};
+$('gPre1').onclick=()=>pre(1,0,0,0);$('gPre2').onclick=()=>pre(0.78,0.21,0,0);$('gPre3').onclick=()=>pre(0.6,0.3,0.3,0);
+$('gUnit').textContent='1 point ≈ '+fr(1/PER_MOL,3)+' mol';
+
+/* =================== vitesses =================== */
+const VV={mode:'gas',A:'N2',B:'H2',T1:298,T2:600};const oV=mkCanvas($('cvV'));
+['vA','vB'].forEach(id=>Object.entries(GAS).forEach(([k,g])=>{const o=document.createElement('option');o.value=k;o.textContent=g.u+' (M = '+fr(g.M,2)+' g/mol)';$(id).appendChild(o);}));
+$('vA').value='N2';$('vB').value='H2';
+const MB=(v,M,T)=>{const m=M/1000,a=m/(2*Math.PI*R_SI*T);return 4*Math.PI*Math.pow(a,1.5)*v*v*Math.exp(-m*v*v/(2*R_SI*T));};
+const speeds=(M,T)=>{const m=M/1000;return {vp:Math.sqrt(2*R_SI*T/m),vm:Math.sqrt(8*R_SI*T/(Math.PI*m)),vq:Math.sqrt(3*R_SI*T/m)};};
+function curves(){return VV.mode==='gas'?[{g:VV.A,T:VV.T1,col:BLUE_D,l:GAS[VV.A].u+' à '+VV.T1+' K'},{g:VV.B,T:VV.T1,col:RED_D,l:GAS[VV.B].u+' à '+VV.T1+' K'}]
+  :[{g:VV.A,T:VV.T1,col:BLUE_D,l:GAS[VV.A].u+' à '+VV.T1+' K'},{g:VV.A,T:VV.T2,col:RED_D,l:GAS[VV.A].u+' à '+VV.T2+' K'}];}
+function updV(){document.querySelectorAll('[data-vm]').forEach(b=>b.classList.toggle('on',b.dataset.vm===VV.mode));
+  const tm=VV.mode==='temp';$('vB').style.display=$('vBl').style.display=tm?'none':'';$('vT2r').style.display=tm?'':'none';
+  $('vT1l').textContent=tm?'T₁':'T';
+  let t='<tr><th>Courbe</th><th>v la plus probable</th><th>v moyenne</th><th>v quadratique</th></tr>';
+  curves().forEach((k,i)=>{const s=speeds(GAS[k.g].M,k.T);t+='<tr><td style="color:'+k.col+'">'+k.l+'</td><td id="vp'+i+'">'+fs(s.vp,3)+' m/s</td><td>'+fs(s.vm,3)+' m/s</td><td id="vq'+i+'">'+fs(s.vq,3)+' m/s</td></tr>';});
+  $('vTab').innerHTML=t;
+  $('vFml').innerHTML='v<sub>p</sub> = √(2RT/M) &nbsp;&lt;&nbsp; v<sub>moy</sub> = √(8RT/(πM)) &nbsp;&lt;&nbsp; v<sub>qm</sub> = √(3RT/M), avec R = 8,314 J/(mol·K), T en K et <b>M en kg/mol</b>.<br>'+
+   'Plus T est grand ou M petit, plus les molécules vont vite et plus la courbe s\'étale. L\'aire sous chaque courbe vaut 1 (toutes les molécules).';}
+function drawV(){const o=oV;if(!o.sync())return;const c=o.ctx,W=o.W,H=o.H;c.clearRect(0,0,W,H);
+  const cs=curves(),L=46,Rm=14,T=26,B=H-34,vmax=Math.max(...cs.map(k=>speeds(GAS[k.g].M,k.T).vq))*2.3;
+  let fmax=0;cs.forEach(k=>{const vp=speeds(GAS[k.g].M,k.T).vp;fmax=Math.max(fmax,MB(vp,GAS[k.g].M,k.T));});
+  const X=v=>L+v/vmax*(W-L-Rm),Y=f=>B-f/(fmax*1.1)*(B-T);
+  c.strokeStyle=AX;c.lineWidth=1;c.beginPath();c.moveTo(L,T);c.lineTo(L,B);c.lineTo(W-Rm,B);c.stroke();
+  const step=[100,200,500,1000,2000].find(s=>vmax/s<=(W<560?5:8));
+  for(let v=0;v<=vmax;v+=step){c.beginPath();c.moveTo(X(v),B);c.lineTo(X(v),B+4);c.stroke();txt(o,fr(v,0),X(v),B+13,MUT,F.s);}
+  txt(o,'vitesse v (m/s)',W-Rm,B+27,MUT,F.s,'right');
+  c.save();c.translate(14,(T+B)/2);c.rotate(-Math.PI/2);txt(o,'fraction de molécules',0,0,MUT,F.s);c.restore();
+  cs.forEach((k,i)=>{const M=GAS[k.g].M;c.strokeStyle=k.col;c.lineWidth=2.6;c.beginPath();
+    for(let j=0;j<=300;j++){const v=j/300*vmax,y=Y(MB(v,M,k.T));j?c.lineTo(X(v),y):c.moveTo(X(v),y);}c.stroke();
+    const s=speeds(M,k.T);c.setLineDash([4,4]);c.lineWidth=1.2;
+    [['p',s.vp],['moy',s.vm],['qm',s.vq]].forEach(([n,v])=>{c.beginPath();c.moveTo(X(v),B);c.lineTo(X(v),Y(MB(v,M,k.T)));c.stroke();});
+    c.setLineDash([]);const yl=T+8+i*18;c.fillStyle=k.col;c.fillRect(W-Rm-150,yl-2,16,4);txt(o,k.l,W-Rm-130,yl,k.col,F.s,'left');
+    txt(o,'vₚ',X(s.vp),Y(MB(s.vp,M,k.T))-10,k.col,F.s);});
+}
+document.querySelectorAll('[data-vm]').forEach(b=>b.addEventListener('click',()=>{VV.mode=b.dataset.vm;updV();}));
+$('vA').addEventListener('change',()=>{VV.A=$('vA').value;updV();});$('vB').addEventListener('change',()=>{VV.B=$('vB').value;updV();});
+bind('vT1',v=>v+' K ('+fr(v-T0,2)+' °C)',v=>{VV.T1=v;updV();});
+bind('vT2',v=>v+' K ('+fr(v-T0,2)+' °C)',v=>{VV.T2=v;updV();});
+
+/* =================== alvéoles =================== */
+const AL={P:760,F:0.21};const oA=mkCanvas($('cvA'));
+function calcA(){const dry={O2:AL.F*AL.P,N2:(1-AL.F)*AL.P,H2O:0,CO2:0};
+  const PI=AL.F*(AL.P-PVAP37),ins={O2:PI,N2:(1-AL.F)*(AL.P-PVAP37),H2O:PVAP37,CO2:0};
+  const corr=PACO2*(AL.F+(1-AL.F)/QR),PA=Math.max(0,PI-corr),alv={O2:PA,N2:AL.P-PVAP37-PACO2-PA,H2O:PVAP37,CO2:PACO2};
+  return {dry,ins,alv,PI,PA,corr,wrong:AL.F*AL.P};}
+function updA(){const r=calcA();
+  $('aFml').innerHTML='Air sec : P(O₂) = '+fr(AL.F,2)+' × '+AL.P+' = '+fs(r.dry.O2,3)+' mmHg<br>'+
+   'Air inspiré, humidifié à 37 °C : on retire d\'abord la vapeur d\'eau. P(O₂) = '+fr(AL.F,2)+' × ('+AL.P+' − 47) = <b style="color:#a32d2d"><span id="aPI">'+fs(r.PI,3)+'</span> mmHg</b><br>'+
+   'Alvéole (équation des gaz alvéolaires) : le CO₂ produit prend une partie de la place. P<sub>A</sub>(O₂) ≈ P<sub>I</sub>(O₂) − P<sub>A</sub>(CO₂) · [F + (1 − F)/QR] = '+fs(r.PI,3)+' − 40 × ['+fr(AL.F,2)+' + '+fr(1-AL.F,2)+'/0,8] ≈ <b><span id="aPA">'+fs(r.PA,3)+'</span> mmHg</b> (ordre de grandeur)'+
+   '<br><span style="font-size:.88em;color:#5f6b7a">À l\'air ambiant (F = 0,21), c\'est presque la forme courte P<sub>I</sub>(O₂) − 40/0,8 = '+fs(r.PI-PACO2/QR,3)+' mmHg. Sous O₂ pur (F = 1), on retire seulement 40 mmHg.</span>';
+  $('aTrap').innerHTML='Erreur classique : '+fr(AL.F,2)+' × '+AL.P+' = '+fs(r.wrong,3)+' mmHg. Elle oublie les 47 mmHg de vapeur d\'eau à 37 °C (écart de '+fs(r.wrong-r.PI,3)+' mmHg).';}
+function drawA(){const o=oA;if(!o.sync())return;const c=o.ctx,W=o.W,H=o.H,r=calcA();c.clearRect(0,0,W,H);
+  const cols=[['Air sec',r.dry],['Air inspiré humidifié (37 °C)',r.ins],['Alvéole (approx.)',r.alv]];
+  const narrow=W<560,top=44,bot=H-40,sc=(bot-top)/800,bw=narrow?W*0.2:Math.min(120,W*0.16),gap=(W-3*bw)/4;
+  const order=[['N2',BLUE],['O2',RED],['H2O','#7fd0e8'],['CO2',INK]];
+  c.strokeStyle=AX;c.lineWidth=1;[0,200,400,600,800].forEach(v=>{const y=bot-v*sc;c.beginPath();c.moveTo(gap*0.5,y);c.lineTo(W-6,y);c.stroke();txt(o,v+'',gap*0.5-3,y,MUT,F.s,'right');});
+  txt(o,'mmHg',gap*0.5-3,top-16,MUT,F.s,'right');
+  cols.forEach(([lab,d],i)=>{const x=gap+i*(bw+gap);let y=bot;
+    order.forEach(([k,col])=>{const v=d[k];if(v<=0)return;const hh=v*sc;c.fillStyle=col;c.fillRect(x,y-hh,bw,hh);
+      if(hh>15)txt(o,(narrow?'':(k==='N2'?'N₂ ':k==='O2'?'O₂ ':k==='H2O'?'H₂O ':'CO₂ '))+fs(v,3),x+bw/2,y-hh/2,INK,F.s);y-=hh;});
+    c.strokeStyle=INK;c.lineWidth=1.2;c.strokeRect(x,bot-AL.P*sc,bw,AL.P*sc);
+    const words=narrow&&lab.length>14?lab.replace(' (',' |(').split(' |'):[lab];
+    words.forEach((wd,j)=>txt(o,wd,x+bw/2,bot+13+j*13,INK,F.s));
+    txt(o,'O₂ : '+fs(d.O2,3),x+bw/2,bot-AL.P*sc-12,RED_D,F.b);});
+}
+bind('aP',v=>v+' mmHg',v=>{AL.P=v;updA();});
+bind('aF',v=>fr(v*100,0)+' %',v=>{AL.F=v;updA();});
+
+tabs('main');updV();
+let last=performance.now();
+function loop(now){const dt=Math.min(0.05,(now-last)/1000);last=now;
+  if(visible($('pG')))drawG(dt);if(visible($('pV')))drawV();if(visible($('pA')))drawA();requestAnimationFrame(loop);}
+requestAnimationFrame(loop);
+window.__MB=MB;window.__sim={G,VV,AL,parts,calcG,calcA,speeds,sigma,setRange,GAS,updV};
+})();
+</script>
+
+</section>
+<section class="card keep"><h2>Ce qu'il faut retenir</h2><ul><li>PV = nRT, toujours avec T en kelvins. R = 0,0821 L·atm/(mol·K) si V en L et P en atm ; R = 8,314 J/(mol·K) si V en m³ et P en Pa.</li><li>Loi de Dalton : P<sub>i</sub> = x<sub>i</sub> · P = n<sub>i</sub>RT/V, et la pression totale est la somme des pressions partielles.</li><li>Les vitesses moléculaires dépendent de T et de M seulement : v<sub>qm</sub> = √(3RT/M), avec M en kg/mol. Ajouter des moles ou changer V ne les change pas.</li><li>Dans les poumons, l'air est saturé de vapeur d'eau à 37 °C (47 mmHg) : on la retire de la pression totale avant d'appliquer la fraction d'O₂.</li></ul></section>
+<section class="card trap"><h2>Pièges classiques</h2><ul><li>Mettre T en °C : à 25 °C on se tromperait d'un facteur 12 (298 K contre 25).</li><li>Prendre R = 8,314 avec V en litres et P en atm : les unités de R doivent suivre celles de P et V.</li><li>Mettre M en g/mol dans √(3RT/M) : il faut des kg/mol, sinon la vitesse est √1000 ≈ 32 fois trop petite.</li><li>Calculer P(O₂) alvéolaire comme 0,21 × 760 = 160 mmHg : on oublie la vapeur d'eau (et le CO₂ alvéolaire).</li></ul></section>
+<section class="card defis"><h2>Défis</h2><details><summary>Piston : double T (en K) à V constant, puis double V à T constant. Que devient P ? Et la vitesse des molécules ?</summary><p>P double puis est divisée par 2. La vitesse augmente d'un facteur √2 quand T double ; elle ne change pas quand V change.</p></details><details><summary>Vitesses : compare H₂ et O₂ à la même température. Combien de fois H₂ est-il plus rapide ?</summary><p>v ∝ 1/√M : √(32,00/2,016) ≈ 3,98. H₂ va environ 4 fois plus vite qu'O₂ à la même température.</p></details><details><summary>Alvéoles : à P = 760 mmHg, quelle est la P(O₂) de l'air inspiré humidifié ? En altitude, à 500 mmHg ?</summary><p>0,21 × (760 − 47) ≈ 150 mmHg. À 500 mmHg : 0,21 × (500 − 47) ≈ 95 mmHg, et l'alvéolaire tombe vers 47 mmHg (95 − 40 × 1,2 ; approximation qui garde P<sub>A</sub>(CO₂) = 40 mmHg).</p></details></section>
+</main>
+<aside class="sfa-side">
+  <div class="sfa-list"><h2>Chimie générale : quantités, solutions, gaz<span>3 simulations</span></h2><ol><li><a href="../stoechiometrie-labo/"><i>01</i>Calculs de quantités au labo</a></li><li><a href="../proprietes-colligatives/"><i>02</i>Osmose, cryoscopie et loi de Henry</a></li><li><a class="on" aria-current="page" href="../gaz-pressions-partielles/"><i>03</i>Gaz parfaits et pressions partielles</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de chimie</footer>
+<script src="../../kit/sfa-nav.js"></script></body>
+</html>

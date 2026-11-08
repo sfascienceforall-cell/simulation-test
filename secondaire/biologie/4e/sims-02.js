@@ -128,45 +128,176 @@ SFA.sim({
 SFA.sim({
   id:"b4-c02-specialisees", ch:"c02", tag:"Comparaison · défi",
   titre:"Cellules spécialisées : qui a quoi ?",
-  resume:"Compare l'abondance des organites dans cinq types de cellules, puis devine une cellule d'après son profil.",
-  but:"Choisis une cellule : les barres montrent l'abondance relative de chaque organite. En mode « Devine », retrouve la cellule d'après le profil.",
+  resume:"Cinq cellules dessinées et vivantes (cœur, pancréas, foie, feuille, globule rouge) : leurs organites suivent leur fonction. Puis construis toi-même le profil d'une cellule.",
+  but:"Mode « Observer » : choisis une cellule, regarde-la fonctionner et touche une barre (ou un organite) pour le repérer. Mode « Construis » : glisse les barres pour donner à la cellule les organites que sa fonction exige, puis vérifie.",
   aRetenir:"Une cellule spécialisée possède en abondance les organites liés à sa fonction : muscle cardiaque → mitochondries ; cellule sécrétrice → réticulum rugueux et Golgi ; hépatocyte → réticulum lisse ; cellule foliaire → chloroplastes. Chez le globule rouge mature des mammifères, noyau et organites ont disparu.",
-  piege:"Une cellule spécialisée n'a pas de gènes en moins : toutes les cellules d'un organisme portent le même ADN, mais n'utilisent pas les mêmes gènes. Les niveaux affichés sont des abondances relatives (0 à 5), pas des comptages.",
+  piege:"Une cellule spécialisée n'a pas de gènes en moins : toutes les cellules d'un organisme portent le même ADN, mais n'utilisent pas les mêmes gènes. Les niveaux affichés (0 à 5) sont des abondances relatives, pas des comptages.",
   build:function(k, S){
-    var c = k.canvas(0, {ratio:.78});
-    var mode = k.seg("Mode", [["c","Comparer"],["d","Devine"]], "c");
-    var cell = k.select("Cellule", [["coeur","Cellule musculaire cardiaque"],["pancr","Cellule sécrétrice du pancréas"],["foie","Hépatocyte (foie)"],["feuille","Cellule foliaire (palissade)"],["gr","Globule rouge mature"]], "coeur");
-    var ro = k.readouts(["Organite le plus abondant", "Fonction de la cellule"]);
+    var P = S.draw.palette, c = k.canvas(0, {ratio:1.3}); B4.adapt(c, 1.3, 0.92, 480);
+    var mode = k.seg("Mode", [["o","Observer"],["b","Construis le profil (défi)"]], "o", function(v){ if (v === "b" && !st.built) nouveau(); });
+    var cell = k.select("Cellule", [["coeur","Cellule musculaire cardiaque"],["pancr","Cellule sécrétrice du pancréas"],["foie","Hépatocyte (foie)"],["feuille","Cellule foliaire (palissade)"],["gr","Globule rouge mature"]], "coeur", function(){ if (mode.value === "b") nouveau(cell.value); });
+    var ro = k.readouts(["Organite le plus abondant", "Organite repéré", "Score du défi"]);
     var nt = k.note("", "");
-    var orgs = ["Noyau", "Mitochondries", "Chloroplastes", "Réticulum rugueux", "Appareil de Golgi", "Réticulum lisse", "Lysosomes", "Grande vacuole"];
+    var ORG = [
+      ["Noyau", "contient l'ADN", "#1e3f8f"], ["Mitochondries", "respiration : fabriquent l'ATP", "#c26a0c"], ["Chloroplastes", "photosynthèse", "#24775a"],
+      ["Réticulum rugueux", "fabrique les protéines à exporter", "#0e7f96"], ["Appareil de Golgi", "trie et emballe les protéines", "#6236c4"],
+      ["Réticulum lisse", "lipides, détoxication, réserve de calcium", "#3d8fb0"], ["Lysosomes", "digestion des déchets", "#c43a7a"], ["Grande vacuole", "eau, réserves, turgescence", "#2f7fd1"]
+    ];
     var D = {
-      coeur:{n:"Cellule musculaire cardiaque", v:[2, 5, 0, 1, 1, 3, 1, 0], f:"Se contracte sans arrêt : consomme beaucoup d'ATP, donc énormément de mitochondries ; le réticulum lisse stocke le calcium de la contraction."},
-      pancr:{n:"Cellule sécrétrice du pancréas", v:[3, 3, 0, 5, 5, 1, 2, 0], f:"Fabrique et exporte des enzymes digestives : réticulum rugueux et Golgi très développés."},
-      foie:{n:"Hépatocyte (foie)", v:[3, 4, 0, 3, 3, 5, 3, 0], f:"Détoxifie, stocke le glucose, fabrique des lipides : réticulum lisse très abondant, nombreux lysosomes et mitochondries."},
-      feuille:{n:"Cellule foliaire (palissade)", v:[2, 2, 5, 1, 1, 1, 0, 4], f:"Fait la photosynthèse : chloroplastes en nombre ; grande vacuole centrale."},
-      gr:{n:"Globule rouge mature", v:[0, 0, 0, 0, 0, 0, 0, 0], f:"Transporte le dioxygène grâce à l'hémoglobine ; sans noyau ni organites (chez les mammifères), il fait de la place à l'hémoglobine."}
+      coeur:{n:"Cellule musculaire cardiaque", v:[2, 5, 0, 1, 1, 3, 1, 0], ar:2.1, f:"Se contracte sans arrêt : consomme énormément d'ATP, d'où les mitochondries serrées entre les myofibrilles ; le réticulum lisse (sarcoplasmique) stocke le calcium qui déclenche la contraction."},
+      pancr:{n:"Cellule sécrétrice du pancréas", v:[3, 3, 0, 5, 5, 1, 2, 0], ar:0.95, f:"Fabrique et exporte des enzymes digestives : réticulum rugueux et Golgi très développés, grains de sécrétion au pôle qui donne sur le canal."},
+      foie:{n:"Hépatocyte (foie)", v:[3, 4, 0, 3, 3, 5, 3, 0], ar:1.15, f:"Détoxifie le sang, stocke le glucose (glycogène), fabrique des lipides : réticulum lisse très abondant, nombreux lysosomes et mitochondries."},
+      feuille:{n:"Cellule foliaire (palissade)", v:[2, 2, 5, 1, 1, 1, 0, 4], ar:0.62, f:"Fait la photosynthèse : chloroplastes nombreux, plaqués contre la paroi autour d'une grande vacuole ; le cytoplasme circule (cyclose) et les entraîne."},
+      gr:{n:"Globule rouge mature", v:[0, 0, 0, 0, 0, 0, 0, 0], ar:1, f:"Transporte le dioxygène grâce à l'hémoglobine ; chez les mammifères il perd noyau et organites, ce qui laisse toute la place à l'hémoglobine."}
     };
-    var st = {q:"coeur", score:0, tot:0, shown:false};
-    k.button("Nouvelle cellule mystère", function(){ var ks = Object.keys(D); st.q = ks[Math.floor(Math.random() * ks.length)]; st.shown = false; mode.set("d"); }, true);
-    Object.keys(D).forEach(function(key){ k.button(D[key].n.split(" (")[0].replace("Cellule ", "").replace("musculaire cardiaque", "cardiaque").replace("sécrétrice du pancréas", "pancréas").replace("foliaire", "foliaire"), function(){ if (mode.value !== "d" || st.shown) return; st.shown = true; st.tot++; if (key === st.q) st.score++; st.last = key; }); });
-    k.draw(function(){
-      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, key = mode.value === "c" ? cell.value : st.q, d = D[key], L = 128, bw = W - L - 40;
-      var rowH = (H - 20) / 8;
-      for (var i = 0; i < 8; i++){
-        var y = 10 + i * rowH + rowH / 2;
-        B4.txt(c, orgs[i], 6, y, B4.pal.ink, 12, "left");
-        ctx.fillStyle = "#edf0f4"; ctx.fillRect(L, y - rowH * 0.32, bw, rowH * 0.64);
-        ctx.fillStyle = ["#1e3f8f", "#B45309", "#2e6b55", "#0e7490", "#5B21B6", "#0e7490", "#be185d", "#0e7490"][i]; ctx.fillRect(L, y - rowH * 0.32, bw * d.v[i] / 5, rowH * 0.64);
-        B4.txt(c, d.v[i] + "", L + bw + 14, y, B4.pal.ink, 12);
+    var st = {sel:-1, t:0, q:"coeur", lev:[0, 0, 0, 0, 0, 0, 0, 0], checked:false, score:0, tot:0, built:false, drag:-1, bars:null, hits:[], parts:[]}, rr = B4.rng(7);
+    function nouveau(key){ var ks = Object.keys(D).filter(function(x){ return x !== "gr" || Math.random() < 0.3; }); st.q = key || ks[Math.floor(Math.random() * ks.length)]; cell.set(st.q); st.lev = [1, 1, 1, 1, 1, 1, 1, 1]; st.checked = false; st.built = true; }
+    k.button("Nouvelle cellule à construire", function(){ mode.set("b"); nouveau(); }, true);
+    k.button("Vérifier mon profil", function(){ if (mode.value !== "b" || st.checked) return; st.checked = true; st.tot++; if (good() >= 6) st.score++; });
+    function levels(){ return mode.value === "b" ? st.lev : D[cell.value].v; }
+    function good(){ var t = D[st.q].v, n = 0; for (var i = 0; i < 8; i++) if (Math.abs(st.lev[i] - t[i]) <= (i === 0 ? 0 : 1) && (t[i] === 0) === (st.lev[i] === 0)) n++; return n; }
+    /* ---- emplacements des organites, en coordonnées 0..1 de la boîte de la cellule ---- */
+    var SH = {
+      coeur:{inside:function(u, v){ return u > 0.05 && u < 0.95 && v > 0.22 && v < 0.78; }, nuc:[0.5, 0.5, 0.075, 0.13]},
+      pancr:{inside:function(u, v){ var hw = 0.17 + 0.3 * (v - 0.1) / 0.85; return v > 0.1 && v < 0.95 && Math.abs(u - 0.5) < hw; }, nuc:[0.5, 0.76, 0.13, 0.12]},
+      foie:{inside:function(u, v){ var x = u - 0.5, y = v - 0.5; return Math.abs(y) < 0.41 && Math.abs(y) * 0.577 + Math.abs(x) < 0.45; }, nuc:[0.4, 0.42, 0.1, 0.09]},
+      feuille:{inside:function(u, v){ return u > 0.1 && u < 0.9 && v > 0.04 && v < 0.96; }, nuc:[0.2, 0.22, 0.08, 0.045]},
+      gr:{inside:function(u, v){ return Math.hypot(u - 0.5, v - 0.5) < 0.43; }, nuc:[0.5, 0.5, 0.12, 0.12]}
+    };
+    var slots = {};
+    Object.keys(SH).forEach(function(key){
+      var r = B4.rng(key.length * 31 + 5), out = [], sh = SH[key], n = SH[key].nuc;
+      for (var tries = 0; out.length < 70 && tries < 6000; tries++){
+        var u = r(), v = r(); if (!sh.inside(u, v)) continue;
+        if (Math.pow((u - n[0]) / (n[2] + 0.06), 2) + Math.pow((v - n[1]) / (n[3] + 0.06), 2) < 1) continue;
+        if (key === "feuille" && u > 0.24 && u < 0.76 && v > 0.12 && v < 0.88) continue;
+        if (key === "coeur"){ v = [0.31, 0.41, 0.59, 0.69][out.length % 4]; }
+        if (out.some(function(o){ return Math.hypot((o[0] - u) * 1.3, o[1] - v) < 0.06; })) continue;
+        out.push([u, v, r() * 3.1416]);
       }
-      var mx = d.v.indexOf(Math.max.apply(null, d.v));
-      if (mode.value === "c"){
-        ro.set(0, Math.max.apply(null, d.v) === 0 ? "aucun (cellule sans organites)" : orgs[mx]); ro.set(1, d.n);
-        nt.set("<b>" + d.n + ".</b> " + d.f, "");
+      slots[key] = out;
+    });
+    var CNT = {1:[0, 3, 6, 10, 16, 24], 2:[0, 2, 5, 9, 14, 20], 3:[0, 1, 2, 3, 4, 6], 4:[0, 1, 1, 2, 2, 3], 5:[0, 1, 2, 4, 6, 9], 6:[0, 1, 2, 4, 6, 9]};
+    /* ---- dessin des organites ---- */
+    function mito(x, y, s, rot, hl){ var ctx = c.ctx; ctx.save(); ctx.translate(x, y); ctx.rotate(rot); S.draw.rrect(c, -s, -s * 0.48, 2 * s, s * 0.96, s * 0.48); ctx.fillStyle = "#f6c87a"; ctx.fill(); ctx.strokeStyle = hl ? "#13233a" : "#a85d0c"; ctx.lineWidth = hl ? 2 : 1.2; ctx.stroke(); ctx.beginPath(); for (var i = -2; i <= 2; i++){ ctx.moveTo(i * s * 0.36, -s * 0.4); ctx.lineTo(i * s * 0.36 + s * 0.08, s * 0.15 * (i % 2 ? 1 : -1)); } ctx.strokeStyle = "#c26a0c"; ctx.lineWidth = 1; ctx.stroke(); ctx.restore(); }
+    function chloro(x, y, s, rot, hl){ var ctx = c.ctx; ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.beginPath(); ctx.ellipse(0, 0, s, s * 0.55, 0, 0, 6.2832); ctx.fillStyle = "#5dbb6e"; ctx.fill(); ctx.strokeStyle = hl ? "#13233a" : "#1d6b35"; ctx.lineWidth = hl ? 2 : 1.2; ctx.stroke(); ctx.fillStyle = "#257a3e"; for (var i = -1; i <= 1; i++){ ctx.fillRect(i * s * 0.45 - s * 0.12, -s * 0.25, s * 0.24, s * 0.5); } ctx.restore(); }
+    function rer(x, y, w, hl, curve){ var ctx = c.ctx; ctx.save(); ctx.strokeStyle = hl ? "#13233a" : "#0e7f96"; ctx.lineWidth = 2.6; for (var i = 0; i < 3; i++){ ctx.beginPath(); ctx.moveTo(x - w / 2, y + i * 5); ctx.quadraticCurveTo(x, y + i * 5 - (curve || 4), x + w / 2, y + i * 5); ctx.stroke(); } ctx.restore(); for (i = 0; i < 3; i++) for (var j = 0; j <= 5; j++) S.draw.dot(c, x - w / 2 + j * w / 5, y + i * 5 - 2.4 - (curve || 4) * 0.5 * (1 - Math.pow(j / 2.5 - 1, 2)), 1.1, "#334155"); }
+    function golgi(x, y, s, hl){ var ctx = c.ctx; ctx.save(); ctx.strokeStyle = hl ? "#13233a" : "#6236c4"; ctx.lineWidth = 3; ctx.lineCap = "round"; for (var i = 0; i < 4; i++){ ctx.beginPath(); ctx.arc(x, y + s * 1.2 + i * 4, s * (1.25 - i * 0.12), 3.75, 5.67); ctx.stroke(); } ctx.restore(); S.draw.dot(c, x + s * 1.1, y - s * 0.1, 2.6, "#8b68d6"); S.draw.dot(c, x - s * 1.05, y + s * 0.05, 2.2, "#8b68d6"); }
+    function rel(x, y, s, hl){ var ctx = c.ctx; ctx.save(); ctx.strokeStyle = hl ? "#13233a" : "#3d8fb0"; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(x - s, y); ctx.bezierCurveTo(x - s * 0.5, y - s * 0.8, x, y + s * 0.8, x + s * 0.3, y); ctx.bezierCurveTo(x + s * 0.6, y - s * 0.6, x + s * 0.8, y + s * 0.3, x + s, y - s * 0.1); ctx.stroke(); ctx.restore(); }
+    function lyso(x, y, r, hl){ B4.ell(c, x, y, r, r, "#f3a9c9", hl ? "#13233a" : "#a3245c", hl ? 2 : 1.2); S.draw.dot(c, x - r * 0.3, y, 1, "#a3245c"); S.draw.dot(c, x + r * 0.3, y + 1, 1, "#a3245c"); }
+    function nucleus(x, y, rx, ry, hl){ B4.ell(c, x, y, rx, ry, "#b9cdf2", hl ? "#13233a" : "#1e3f8f", hl ? 2.6 : 1.8); B4.ell(c, x - rx * 0.18, y - ry * 0.12, rx * 0.3, ry * 0.3, "#3c5fae"); var r = B4.rng(3); for (var i = 0; i < 8; i++) S.draw.dot(c, x + (r() - 0.5) * rx * 1.3, y + (r() - 0.5) * ry * 1.3, 1, "rgba(30,63,143,.6)"); }
+    /* ---- une cellule complète ---- */
+    function drawCell(key, lv, bx, by, bw, bh){
+      var ctx = c.ctx, t = st.t, sel = st.sel, s0 = Math.min(bw, bh), sl = slots[key], U = function(u){ return bx + u * bw; }, V = function(v){ return by + v * bh; };
+      st.hits = [];
+      function hit(i, x, y){ st.hits.push([i, x, y]); }
+      /* membrane / paroi */
+      ctx.save();
+      if (key === "coeur"){
+        var sq = 1 - 0.035 * Math.max(0, Math.sin(t * 5.5));
+        ctx.translate(U(0.5), V(0.5)); ctx.scale(sq, 1); ctx.translate(-U(0.5), -V(0.5));
+        S.draw.rrect(c, U(0.04), V(0.2), bw * 0.92, bh * 0.6, 10); ctx.fillStyle = "#fbe1dd"; ctx.fill(); ctx.strokeStyle = "#a33c4f"; ctx.lineWidth = 2.5; ctx.stroke();
+        ctx.save(); S.draw.rrect(c, U(0.04), V(0.2), bw * 0.92, bh * 0.6, 10); ctx.clip();
+        for (var x = 0.06; x < 0.95; x += 0.035){ ctx.fillStyle = "rgba(163,60,79,.16)"; ctx.fillRect(U(x), V(0.2), bw * 0.012, bh * 0.6); }
+        ctx.restore();
+        ctx.strokeStyle = "#7a2335"; ctx.lineWidth = 2; [0.04, 0.96].forEach(function(u){ ctx.beginPath(); for (var q = 0; q <= 8; q++) ctx.lineTo(U(u) + (q % 2 ? 4 : -4), V(0.2 + q * 0.075)); ctx.stroke(); });
+      } else if (key === "pancr"){
+        ctx.beginPath(); ctx.moveTo(U(0.33), V(0.1)); ctx.lineTo(U(0.67), V(0.1)); ctx.lineTo(U(0.97), V(0.95)); ctx.lineTo(U(0.03), V(0.95)); ctx.closePath(); ctx.fillStyle = "#fdf0e6"; ctx.fill(); ctx.strokeStyle = "#b5733f"; ctx.lineWidth = 2.5; ctx.stroke();
+        S.draw.rrect(c, U(0.3), V(0.0), bw * 0.4, bh * 0.08, 6); ctx.fillStyle = "#e6f1fb"; ctx.fill(); ctx.strokeStyle = "#8fb6d9"; ctx.lineWidth = 1; ctx.stroke();
+      } else if (key === "foie"){
+        ctx.beginPath(); for (var q = 0; q < 6; q++){ var a = q * Math.PI / 3; ctx.lineTo(U(0.5) + Math.cos(a) * bw * 0.46, V(0.5) + Math.sin(a) * bh * 0.46); } ctx.closePath(); ctx.fillStyle = "#f7ead8"; ctx.fill(); ctx.strokeStyle = "#9a6a3a"; ctx.lineWidth = 2.5; ctx.stroke();
+        S.draw.line(c, U(0.73), V(0.1), U(0.73), V(0.9), "rgba(110,160,60,.55)", 3, [4, 3]);
+      } else if (key === "feuille"){
+        S.draw.rrect(c, U(0.06), V(0.01), bw * 0.88, bh * 0.98, 10); ctx.fillStyle = "#bfe3b0"; ctx.fill(); ctx.strokeStyle = "#3f7a33"; ctx.lineWidth = 3; ctx.stroke();
+        S.draw.rrect(c, U(0.1), V(0.03), bw * 0.8, bh * 0.94, 8); ctx.fillStyle = "#effae8"; ctx.fill();
+        var vf = [0, 0.15, 0.3, 0.5, 0.75, 1][lv[7]], vw = 0.56 * Math.sqrt(vf), vh = 0.78 * Math.sqrt(vf);
+        if (vf > 0){ S.draw.rrect(c, U(0.5 - vw / 2), V(0.5 - vh / 2), bw * vw, bh * vh, 12); ctx.fillStyle = "rgba(186,222,250,.8)"; ctx.fill(); ctx.strokeStyle = sel === 7 ? "#13233a" : "#2f7fd1"; ctx.lineWidth = sel === 7 ? 2.5 : 1.5; ctx.stroke(); hit(7, U(0.5), V(0.5)); }
       } else {
-        ro.set(0, st.shown ? (Math.max.apply(null, d.v) === 0 ? "aucun" : orgs[mx]) : "?"); ro.set(1, st.shown ? d.n : "?");
-        nt.set(st.shown ? (st.last === st.q ? "Bravo ! " : "Raté : c'était " + d.n + ". ") + d.f + " Score : " + st.score + "/" + st.tot + "." : "Quelle cellule a ce profil d'organites ? Clique sur un des boutons. Score : " + st.score + "/" + st.tot + ".", st.shown ? (st.last === st.q ? "ok" : "warn") : "warn");
+        var gr0 = ctx.createRadialGradient(U(0.5), V(0.5), s0 * 0.05, U(0.5), V(0.5), s0 * 0.44); gr0.addColorStop(0, "#f6c3c3"); gr0.addColorStop(0.45, "#e98585"); gr0.addColorStop(1, "#c23b3b");
+        var pul = 1 + 0.015 * Math.sin(t * 2); ctx.beginPath(); ctx.arc(U(0.5), V(0.5), s0 * 0.44 * pul, 0, 6.2832); ctx.fillStyle = gr0; ctx.fill(); ctx.strokeStyle = "#8e2020"; ctx.lineWidth = 2; ctx.stroke();
       }
+      ctx.restore();
+      if (key !== "feuille" && lv[7] > 0){ var vr = s0 * 0.07 * lv[7]; B4.ell(c, U(0.5), V(0.5), vr, vr * 0.8, "rgba(186,222,250,.8)", sel === 7 ? "#13233a" : "#2f7fd1", 1.5); hit(7, U(0.5), V(0.5)); }
+      /* noyau */
+      var nu = SH[key].nuc;
+      if (lv[0] > 0){ var fz = [0, 0.6, 0.8, 1, 1.15, 1.3][lv[0]], nn = key === "foie" && lv[0] >= 3 ? 2 : 1;
+        for (var q2 = 0; q2 < nn; q2++){ nucleus(U(nu[0] + q2 * 0.2), V(nu[1] + q2 * 0.16), bw * nu[2] * fz, bh * nu[3] * fz, sel === 0); hit(0, U(nu[0] + q2 * 0.2), V(nu[1] + q2 * 0.16)); } }
+      /* organites dénombrables */
+      var used = 0, mk = Math.max(5, s0 * 0.042);
+      function take(n){ var out = sl.slice(used, used + n); used += n; return out; }
+      var arr;
+      arr = take(CNT[6][lv[5]]); arr.forEach(function(p){ rel(U(p[0]), V(p[1]), mk * 1.4, sel === 5); hit(5, U(p[0]), V(p[1])); });
+      if (key === "pancr"){
+        for (var i = 0; i < CNT[3][lv[3]]; i++){ var yy = 0.56 + i * 0.065, side = i % 2 ? 0.7 : 0.3; rer(U(side + (i % 2 ? 0.02 : -0.02) * i), V(yy + 0.02 * (i > 3)), bw * (0.16 + 0.02 * i), sel === 3); hit(3, U(side), V(yy)); }
+      } else { arr = take(CNT[3][lv[3]]); arr.forEach(function(p){ rer(U(p[0]), V(p[1]), mk * 3, sel === 3); hit(3, U(p[0]), V(p[1])); }); }
+      var gn = CNT[4][lv[4]];
+      for (i = 0; i < gn; i++){ var gp = key === "pancr" ? [0.5 + (i - (gn - 1) / 2) * 0.16, 0.5] : sl[used + i]; golgi(U(gp[0]), V(gp[1]), mk * (0.8 + lv[4] * 0.12), sel === 4); hit(4, U(gp[0]), V(gp[1])); }
+      used += gn;
+      arr = take(CNT[6][lv[6]]); arr.forEach(function(p){ lyso(U(p[0]), V(p[1]), mk * 0.55, sel === 6); hit(6, U(p[0]), V(p[1])); });
+      arr = take(CNT[1][lv[1]]); arr.forEach(function(p, j){ var rot = key === "coeur" ? 0 : p[2]; mito(U(p[0]), V(p[1]), mk * 0.95, rot, sel === 1); hit(1, U(p[0]), V(p[1]));
+        if (key === "coeur" && Math.sin(t * 5.5 + j) > 0.95) S.draw.glow(c, U(p[0]), V(p[1]), mk * 2, P.yellow, 0.7); });
+      if (key === "feuille"){
+        var nc = CNT[2][lv[2]];
+        for (i = 0; i < nc; i++){ var ph = (i / Math.max(1, nc) + t * 0.025) % 1, pu, pv, per = 2 * (0.62 + 0.84);
+          var d = ph * per; if (d < 0.62){ pu = 0.19 + d; pv = 0.08; } else if (d < 1.46){ pu = 0.81; pv = 0.08 + (d - 0.62); } else if (d < 2.08){ pu = 0.81 - (d - 1.46); pv = 0.92; } else { pu = 0.19; pv = 0.92 - (d - 2.08); }
+          chloro(U(pu), V(pv), mk * 1.1, (d < 0.62 || (d >= 1.46 && d < 2.08)) ? 0 : 1.5708, sel === 2); hit(2, U(pu), V(pv)); }
+      } else { arr = take(CNT[2][lv[2]]); arr.forEach(function(p){ chloro(U(p[0]), V(p[1]), mk, p[2], sel === 2); hit(2, U(p[0]), V(p[1])); }); }
+      /* animations propres à la fonction */
+      if (key === "pancr" && lv[3] > 0 && lv[4] > 0){
+        for (i = 0; i < 6 + lv[4]; i++){ var ph2 = (t * 0.22 + i / (6 + lv[4])) % 1, gx = 0.5 + Math.sin(i * 2.3) * 0.12 * (1 - ph2), gy = 0.5 - ph2 * 0.42; B4.ell(c, U(gx), V(gy), mk * 0.6, mk * 0.6, "#f2b33d", "#9a6a12", 1); }
+        S.draw.label(c, "enzymes exportées ↑", U(0.5), V(0.04), {color:"#1f4b9e", size:9.5});
+      }
+      if (key === "foie" && lv[5] > 0){ for (i = 0; i < 10; i++){ var ph3 = (t * 0.15 + i * 0.1) % 1; S.draw.dot(c, U(0.12 + ph3 * 0.6), V(0.25 + (i * 0.37 % 0.5)), 2.6, ph3 > 0.5 ? "#7cb85c" : "#c0321d"); } S.draw.label(c, "toxine → produit inoffensif", U(0.5), V(0.03), {color:"#5f6b7a", size:9.5}); }
+      if (key === "feuille" && lv[2] > 0){ for (i = 0; i < 4; i++){ var ph4 = (t * 0.3 + i * 0.25) % 1; B4.ell(c, U(0.96) + 6, V(0.85 - ph4 * 0.75), 3.2, 3.2, "rgba(130,190,240,.8)", "#2f7fd1", 1); } S.draw.text(c, "O₂", U(0.96) + 6, V(0.04), {size:10, color:P.blue}); }
+      if (key === "gr"){ for (i = 0; i < 8; i++){ var ph5 = (t * 0.35 + i / 8) % 1, ang = i * 0.785; var rad = s0 * (0.62 - 0.36 * ph5); S.draw.dot(c, U(0.5) + Math.cos(ang) * rad, V(0.5) + Math.sin(ang) * rad, 2.8, ph5 > 0.9 ? "#c0321d" : P.blue); } S.draw.label(c, "O₂ fixé par l'hémoglobine", U(0.5), V(0.5), {color:"#8e2020", size:9.5}); }
+      if (key === "coeur") S.draw.label(c, "contraction", U(0.5), V(0.12), {color:"#a33c4f", size:9.5});
+    }
+    /* ---- barres d'abondance ---- */
+    function bars(X0, y0, W0, h, lv, cols){
+      var ctx = c.ctx, per = 8 / cols, rowH = h / per, w = (W0 - (cols - 1) * 14) / cols, lw = Math.min(118, w * 0.48), bw = w - lw - 26, target = D[st.q].v, build = mode.value === "b";
+      st.bars = {X0:X0, cw:w + 14, lw:lw, w:bw, y0:y0, rh:rowH, per:per, cols:cols};
+      for (var i = 0; i < 8; i++){
+        var x0 = X0 + Math.floor(i / per) * (w + 14), y = y0 + (i % per) * rowH + rowH / 2, on = st.sel === i;
+        if (on){ S.draw.rrect(c, x0 - 4, y - rowH / 2 + 1, w + 4, rowH - 2, 6); ctx.fillStyle = "rgba(244,197,66,.22)"; ctx.fill(); }
+        S.draw.text(c, ORG[i][0], x0 + lw - 6, y, {size:lw < 100 ? 9.5 : 10.5, color:"#2c3a4e", align:"right", weight:on ? 800 : 600});
+        S.draw.rrect(c, x0 + lw, y - rowH * 0.28, bw, rowH * 0.56, 4); ctx.fillStyle = "#edf0f4"; ctx.fill();
+        for (var q = 1; q < 5; q++){ ctx.fillStyle = "#fff"; ctx.fillRect(x0 + lw + q * bw / 5 - 0.5, y - rowH * 0.28, 1, rowH * 0.56); }
+        if (lv[i] > 0){ S.draw.rrect(c, x0 + lw, y - rowH * 0.28, bw * lv[i] / 5, rowH * 0.56, 4); ctx.fillStyle = ORG[i][2]; ctx.fill(); }
+        if (build){ S.draw.dot(c, x0 + lw + bw * lv[i] / 5, y, 6.5, st.drag === i ? P.red : P.ink); }
+        if (build && st.checked){ var tx = x0 + lw + bw * target[i] / 5, okk = Math.abs(lv[i] - target[i]) <= (i === 0 ? 0 : 1) && (target[i] === 0) === (lv[i] === 0); S.draw.line(c, tx, y - rowH * 0.42, tx, y + rowH * 0.42, P.ink, 2.2); S.draw.text(c, okk ? "✓" : "✗", x0 + lw + bw + 14, y, {size:12, color:okk ? P.green : P.red}); }
+        else S.draw.text(c, String(lv[i]), x0 + lw + bw + 12, y, {size:11, color:"#2c3a4e"});
+      }
+    }
+    var lp = k.loop(function(dt){ st.t += dt; k.redraw(); }); lp.play();
+    c.pointer(function(type, p){
+      var b = st.bars;
+      if (type === "down"){
+        st.drag = -1;
+        if (b && p.y >= b.y0 && p.y <= b.y0 + b.per * b.rh && p.x >= b.X0){ var col = Math.min(b.cols - 1, Math.floor((p.x - b.X0) / b.cw)), i = col * b.per + Math.floor((p.y - b.y0) / b.rh); st.sel = i; st.bx = b.X0 + col * b.cw + b.lw; if (mode.value === "b" && p.x >= st.bx - 12) st.drag = i; }
+        else { var best = -1, bd = 26; st.hits.forEach(function(h){ var d = Math.hypot(p.x - h[1], p.y - h[2]); if (d < bd){ bd = d; best = h[0]; } }); if (best >= 0) st.sel = best; }
+      }
+      if ((type === "down" || type === "drag") && st.drag >= 0 && b && !st.checked){ st.lev[st.drag] = Math.max(0, Math.min(5, Math.round((p.x - st.bx) / b.w * 5))); }
+      if (type === "up") st.drag = -1;
+      k.redraw();
+    });
+    c.cv.style.touchAction = "pan-y";
+    k.draw(function(){
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, wide = W >= 480, key = mode.value === "b" ? st.q : cell.value, lv = levels(), d = D[key];
+      var dx, dy, dw, dh, bx, by, bw2, bh2;
+      if (wide){ dx = 10; dy = 26; dw = W - 20; dh = H * 0.6 - 34; bx = 8; by = H * 0.6 + 14; bw2 = W - 16; bh2 = H * 0.4 - 18; }
+      else { dx = 10; dy = 24; dw = W - 20; dh = H * 0.5 - 34; bx = 6; by = H * 0.5 + 8; bw2 = W - 12; bh2 = H * 0.5 - 14; }
+      var ar = d.ar, cw = Math.min(dw, dh * ar), ch = cw / ar;
+      ctx.fillStyle = "#f8fafc"; S.draw.rrect(c, dx - 4, dy - 4, dw + 8, dh + 8, 12); ctx.fill();
+      drawCell(key, lv, dx + (dw - cw) / 2, dy + (dh - ch) / 2, cw, ch);
+      var title = mode.value === "b" ? "À construire : " + d.n : d.n;
+      S.draw.text(c, title, dx, 11, {size:wide ? 12 : 11, color:P.ink, align:"left"});
+      S.draw.text(c, mode.value === "b" ? (st.checked ? "Abondance : ta réponse (barres) et la vraie valeur (trait)" : "Glisse les barres : abondance de 0 à 5") : "Abondance relative des organites (0 à 5)", bx, by - 12, {size:wide ? 10.5 : 9.5, color:"#5f6b7a", align:"left"});
+      bars(bx, by, bw2, bh2, lv, wide ? 2 : 1);
+      var mxv = Math.max.apply(null, lv), mx = lv.indexOf(mxv);
+      ro.set(0, mxv === 0 ? "aucun organite" : ORG[mx][0]); ro.set(1, st.sel >= 0 ? ORG[st.sel][0] + " : " + ORG[st.sel][1] : "touche une barre"); ro.set(2, st.tot ? st.score + " / " + st.tot : "—");
+      if (mode.value === "o") nt.set("<b>" + d.n + ".</b> " + d.f, "");
+      else if (!st.checked) nt.set("<b>Défi.</b> Donne à la " + d.n.charAt(0).toLowerCase() + d.n.slice(1) + " le profil d'organites qu'exige sa fonction : glisse chaque barre de 0 à 5, regarde la cellule changer, puis « Vérifier ». Réussi si au moins 6 organites sur 8 sont justes (à 1 niveau près ; le noyau et les absences doivent être exacts).", "warn");
+      else { var g = good(); nt.set((g >= 6 ? "<b>Réussi : " + g + " / 8.</b> " : "<b>" + g + " / 8 seulement.</b> Compare tes barres aux traits noirs. ") + d.f + " Score : " + st.score + " / " + st.tot + ".", g >= 6 ? "ok" : "warn"); }
     });
   }
 });

@@ -164,49 +164,156 @@ SFA.sim({
 });
 
 SFA.sim({
-  id:"b4-c10-adn", ch:"c10", tag:"Graphes · comptage",
+  id:"b4-c10-adn", ch:"c10", tag:"Cycle animé · comptage",
   titre:"Le cycle et la quantité d'ADN : courbe, histogramme, comptage",
-  resume:"Règle la durée de chaque phase : la courbe d'ADN, la répartition d'une population et l'indice mitotique s'ajustent.",
-  but:"Choisis la durée de G1, S, G2 et M. Observe la quantité d'ADN au cours du temps, puis compte 200 cellules sur une « lame » pour retrouver les durées.",
-  aRetenir:"La quantité d'ADN par noyau passe de 2C à 4C pendant la phase S (réplication), reste à 4C en G2 et en mitose, puis retombe à 2C après la division. Dans une population de cellules non synchronisées, la proportion de cellules dans une phase est proportionnelle à la durée de cette phase : indice mitotique = durée de M ÷ durée du cycle.",
-  piege:"Ce n'est pas la mitose qui double l'ADN : c'est la phase S. La mitose est la phase la plus courte (≈ 1 h sur un cycle de 24 h), d'où peu de cellules en mitose sur une lame. Un comptage de 200 cellules donne une estimation avec une marge d'erreur.",
+  resume:"Une cellule fait le tour de son cycle : ses chromosomes se dupliquent en phase S puis se séparent en mitose ; la courbe d'ADN suit. Puis compte les mitoses sur une lame pour retrouver la durée de M.",
+  but:"Règle la durée de chaque phase. Glisse sur la roue ou sur la courbe (ou lance l'animation) pour suivre la cellule et sa quantité d'ADN. Sur la lame, touche les cellules en mitose, puis « Corriger » : ton comptage donne l'indice mitotique et la durée de M.",
+  aRetenir:"La quantité d'ADN par noyau passe de 2C à 4C pendant la phase S (réplication : chaque chromosome forme deux chromatides), reste à 4C en G2 et en mitose, puis retombe à 2C quand les chromatides se séparent dans les deux cellules filles. Dans une population non synchronisée, la proportion de cellules dans une phase est proportionnelle à sa durée : indice mitotique = durée de M ÷ durée du cycle.",
+  piege:"Ce n'est pas la mitose qui double l'ADN : c'est la phase S. La mitose est la phase la plus courte, d'où peu de cellules en mitose sur une lame. Modèle simplifié : 2n = 4 chromosomes ; on suppose les cellules réparties uniformément dans le cycle.",
   build:function(k, S){
-    var c1 = k.canvas(190), c2 = k.canvas(190), c3 = k.canvas(120);
-    var g1 = k.slider("Durée de G1", 4, 16, 1, 10, "h");
-    var s = k.slider("Durée de S", 4, 12, 1, 8, "h");
-    var g2 = k.slider("Durée de G2", 2, 8, 1, 4, "h");
-    var m = k.slider("Durée de M (mitose)", 0.5, 2, 0.5, 1, "h");
-    var ro = k.readouts(["Durée du cycle", "Cellules en G1", "Cellules en mitose (indice mitotique)", "Estimation de M par comptage"]);
-    var nt = k.note("", "");
-    var st = {cnt:null};
-    k.button("Compter 200 cellules sur la lame", function(){ var T = g1.value + s.value + g2.value + m.value, d = [g1.value, s.value, g2.value, m.value], cnt = [0, 0, 0, 0]; for (var i = 0; i < 200; i++){ var u = Math.random() * T, q = 0; while (q < 3 && u >= d[q]){ u -= d[q]; q++; } cnt[q]++; } st.cnt = cnt; }, true);
-    k.button("Effacer le comptage", function(){ st.cnt = null; });
-    k.draw(function(){
-      var d = [g1.value, s.value, g2.value, m.value], T = d[0] + d[1] + d[2] + d[3], fr = d.map(function(x){ return x / T; });
-      c1.clear(); var ax = S.draw.axes(c1, {x0:0, x1:T, y0:0, y1:5, xl:"temps (h)", stepX:T > 30 ? 10 : 5, stepY:1, l:50});
-      function dna(t){ if (t < d[0]) return 2; if (t < d[0] + d[1]) return 2 + 2 * (t - d[0]) / d[1]; if (t < d[0] + d[1] + d[2] + d[3] - 1e-9) return 4; return 2; }
-      S.draw.fn(c1, ax, function(t){ return dna(t); }, B4.pal.acc, 3);
-      var cum = 0, nm = ["G1", "S", "G2", "M"], cols = ["#cbd5e1", "#fde68a", "#bbf7d0", "#fecaca"];
-      for (var i = 0; i < 4; i++){ var xa = ax.X(cum), xb = ax.X(cum + d[i]); c1.ctx.fillStyle = cols[i]; c1.ctx.globalAlpha = 0.5; c1.ctx.fillRect(xa, ax.T, xb - xa, ax.B - ax.T); c1.ctx.globalAlpha = 1; B4.txt(c1, nm[i], (xa + xb) / 2, ax.T + 10 + (i === 3 ? 14 : 0), B4.pal.ink, 12); cum += d[i]; }
-      B4.txt(c1, "ADN par noyau (en C)", ax.L + 6, ax.Y(0.6), "#5f6b7a", 12, "left");
-      S.draw.fn(c1, ax, function(t){ return dna(t); }, B4.pal.acc, 3);
-      /* histogramme d'ADN d'une population */
-      c2.clear(); var bx = S.draw.axes(c2, {x0:1.5, x1:4.5, y0:0, y1:1, xl:"ADN par cellule (C)", stepX:0.5, stepY:0.25, l:50});
-      function dens(x){ var gs = function(mu){ return Math.exp(-Math.pow((x - mu) / 0.09, 2) / 2) / (0.09 * 2.5066); }; return fr[0] * gs(2) + (fr[2] + fr[3]) * gs(4) + fr[1] * (x > 2 && x < 4 ? 0.5 : 0); }
-      var ctx2 = c2.ctx; ctx2.save(); ctx2.beginPath(); ctx2.moveTo(bx.X(1.5), bx.B);
-      var maxd = 0; for (x = 1.5; x <= 4.5; x += 0.01) maxd = Math.max(maxd, dens(x));
-      for (var x = 1.5; x <= 4.5; x += 0.01) ctx2.lineTo(bx.X(x), bx.Y(dens(x) / Math.max(1.2, maxd) * 0.95)); ctx2.lineTo(bx.X(4.5), bx.B); ctx2.closePath(); ctx2.fillStyle = "rgba(30,63,143,.25)"; ctx2.fill(); ctx2.strokeStyle = B4.pal.acc; ctx2.lineWidth = 2.4; ctx2.stroke(); ctx2.restore();
-      B4.txt(c2, "G1 : " + S.fmt(fr[0] * 100, 0) + " %", bx.X(2), bx.Y(0.95) - 8, B4.pal.ink, 12); B4.txt(c2, "S : " + S.fmt(fr[1] * 100, 0) + " %", bx.X(3), bx.Y(0.3), B4.pal.ink, 12);  B4.txt(c2, "G2 + M : " + S.fmt((fr[2] + fr[3]) * 100, 0) + " %", bx.X(4), bx.Y(0.95) - 8, B4.pal.ink, 12);
-      /* comptage */
-      c3.clear(); var cnt = st.cnt, estM = null;
-      B4.txt(c3, cnt ? "Comptage de 200 cellules (trait noir : proportion réelle)" : "Clique sur « Compter 200 cellules sur la lame »", 10, 12, "#5f6b7a", 12, "left");
-      if (cnt){
-        var w = (c3.W - 40) / 4;
-        for (i = 0; i < 4; i++){ var h = cnt[i] / 200 * 80; c3.ctx.fillStyle = ["#94a3b8", "#f59e0b", "#22c55e", "#ef4444"][i]; c3.ctx.fillRect(20 + i * w + 10, 105 - h, w - 20, h); S.draw.line(c3, 20 + i * w + 6, 105 - fr[i] * 80, 20 + i * w + w - 6, 105 - fr[i] * 80, "#13233a", 2); B4.txt(c3, nm[i] + " : " + cnt[i], 20 + i * w + w / 2, 115, B4.pal.ink, 12); }
-        estM = cnt[3] / 200 * T;
+    var P = S.draw.palette, c = k.canvas(0, {ratio:1.0}); B4.adapt(c, 1.12, 0.78, 480);
+    var c2 = k.canvas(0, {ratio:0.8}); B4.adapt(c2, 1.16, 0.62, 480);
+    var g1 = k.slider("Durée de G1", 4, 16, 1, 10, "h", function(){ newSlide(); });
+    var s = k.slider("Durée de S", 4, 12, 1, 8, "h", function(){ newSlide(); });
+    var g2 = k.slider("Durée de G2", 2, 8, 1, 4, "h", function(){ newSlide(); });
+    var m = k.slider("Durée de M (mitose)", 0.5, 3, 0.5, 2, "h", function(){ newSlide(); });
+    var ro = k.readouts(["Durée du cycle", "Phase · ADN par noyau", "Indice mitotique réel", "Ton estimation de M"]);
+    var nt = k.note("", ""), nd = k.note("", "");
+    var st = {t:3, play:true, drag:null, geo:{}, cells:[], marked:{}, checked:false, score:0, tot:0, seed:1};
+    var COL = [["#2f5fb3", "#7fa7e6"], ["#c0392b", "#ec8f84"]];
+    function D(){ return [g1.value, s.value, g2.value, m.value]; }
+    function T(){ var d = D(); return d[0] + d[1] + d[2] + d[3]; }
+    function phase(t){ var d = D(), a = 0; for (var i = 0; i < 4; i++){ if (t < a + d[i] || i === 3) return {i:i, u:Math.max(0, Math.min(1, (t - a) / d[i]))}; a += d[i]; } }
+    function dna(t){ var p = phase(t); return p.i === 0 ? 2 : p.i === 1 ? 2 + 2 * p.u : (p.i === 3 && p.u >= 0.999) ? 2 : 4; }
+    function newSlide(){ st.seed++; var r = B4.rng(st.seed * 97 + 13), tt = T(); st.cells = []; st.marked = {}; st.checked = false;
+      for (var i = 0; i < 100; i++) st.cells.push({t:r() * tt, a:r() * 6.28, jx:r() - 0.5, jy:r() - 0.5}); }
+    newSlide();
+    k.button("▶ / ❚❚ Animation", function(){ st.play = !st.play; }, true);
+    k.button("Nouvelle lame", function(){ newSlide(); });
+    k.button("Corriger mon comptage", function(){ if (st.checked) return; st.checked = true; st.tot++; var e = est(); if (e.miss === 0 && e.wrong === 0) st.score++; });
+    function est(){ var tm = 0, mk = 0, ok = 0, wrong = 0; st.cells.forEach(function(cl, i){ var isM = phase(cl.t).i === 3; if (isM) tm++; if (st.marked[i]){ mk++; if (isM) ok++; else wrong++; } }); return {tm:tm, mk:mk, ok:ok, wrong:wrong, miss:tm - ok}; }
+    var lp = k.loop(function(dt){ if (st.play && !st.drag) st.t = (st.t + dt * T() / 14) % T(); k.redraw(); }); lp.play();
+    /* ---------- chromosomes ---------- */
+    function chromo(x, y, len, ang, col, dup, cond, sep){
+      var ctx = c.ctx; ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.lineCap = "round";
+      var w = 2 + 4.5 * cond, gap = dup ? 3 + 2 * cond + (sep || 0) : 0;
+      for (var q = 0; q < (dup ? 2 : 1); q++){
+        var off = dup ? (q ? gap / 2 : -gap / 2) : 0;
+        ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath();
+        for (var z = 0; z <= 16; z++){ var u = z / 16 - 0.5, wig = (1 - cond) * Math.sin(z * 1.7 + q) * len * 0.12; var xx = off + wig + (dup && !sep ? Math.sign(off) * (1 - Math.abs(u) * 2) * -1.2 * cond : 0), yy = u * len * (0.55 + 0.45 * cond); z ? ctx.lineTo(xx, yy) : ctx.moveTo(xx, yy); }
+        ctx.stroke();
       }
-      ro.set(0, S.fmt(T, 1) + " h"); ro.set(1, S.fmt(fr[0] * 100, 0) + " %"); ro.set(2, S.fmt(fr[3] * 100, 1) + " %"); ro.set(3, cnt ? S.fmt(estM, 1) + " h (réel : " + S.fmt(d[3], 1) + " h)" : "—");
-      nt.set(cnt ? "Sur 200 cellules, " + cnt[3] + " en mitose : durée de M ≈ " + cnt[3] + " ÷ 200 × " + S.fmt(T, 1) + " h = " + S.fmt(estM, 1) + " h. L'estimation varie d'un comptage à l'autre : plus on compte de cellules, plus elle est précise." : "Plus une phase dure longtemps, plus on y trouve de cellules. À T = " + S.fmt(T, 1) + " h, la mitose (" + S.fmt(d[3], 1) + " h) ne représente que " + S.fmt(fr[3] * 100, 1) + " % des cellules.", "");
+      if (dup && !sep && cond > 0.3){ ctx.fillStyle = "#13233a"; ctx.beginPath(); ctx.arc(0, -len * 0.08, 2.2, 0, 6.2832); ctx.fill(); }
+      ctx.restore();
+    }
+    function cellView(cx, cy, R, t){
+      var ctx = c.ctx, p = phase(t), i = p.i, u = p.u;
+      var CH = [[0, 1.0, 0], [0, 1.0, 1], [1, 0.62, 0], [1, 0.62, 1]];   /* [paire, longueur, homologue] */
+      if (i < 3){
+        B4.ell(c, cx, cy, R, R * 0.9, "#fdf0ea", "#c97b63", 2.5);
+        B4.ell(c, cx, cy, R * 0.55, R * 0.5, "#e7eefb", "#5a7bc0", 2);
+        CH.forEach(function(ch, j){ var a = j * 1.57 + 0.5, x = cx + Math.cos(a) * R * 0.26, y = cy + Math.sin(a) * R * 0.22, dup = i >= 2 || (i === 1 && u > (j + 0.5) / 4);
+          chromo(x, y, R * 0.58 * ch[1], a + 0.6, COL[ch[0]][ch[2]], dup, 0.12, 0); });
+        if (i === 1){ S.draw.label(c, "réplication de l'ADN", cx, cy - R - 10, {color:"#8a6d1a", size:10}); }
+      } else {
+        var pinch = u > 0.75 ? (u - 0.75) / 0.25 : 0, el = u > 0.3 ? 1 + 0.25 * Math.min(1, (u - 0.3) / 0.45) : 1;
+        ctx.save(); ctx.beginPath(); var rx = R * el, ry = R * 0.9 * (1 - 0.0 * pinch);
+        for (var z = 0; z <= 60; z++){ var a2 = z / 60 * 6.2832, xx = Math.cos(a2) * rx, yy = Math.sin(a2) * ry * (1 - 0.78 * pinch * Math.pow(Math.cos(a2 * 0), 2) * Math.exp(-Math.pow(xx / (R * 0.35), 2))); z ? ctx.lineTo(cx + xx, cy + yy) : ctx.moveTo(cx + xx, cy + yy); }
+        ctx.closePath(); ctx.fillStyle = "#fdf0ea"; ctx.fill(); ctx.strokeStyle = "#c97b63"; ctx.lineWidth = 2.5; ctx.stroke(); ctx.restore();
+        if (u < 0.3){ var fade = 1 - u / 0.3; ctx.save(); ctx.globalAlpha = fade; B4.ell(c, cx, cy, R * 0.55, R * 0.5, "rgba(231,238,251,.8)", "#5a7bc0", 2); ctx.restore(); }
+        var cond = Math.min(1, u / 0.25);
+        if (u >= 0.3){ ctx.save(); ctx.strokeStyle = "rgba(90,123,192,.35)"; ctx.lineWidth = 1; for (z = -3; z <= 3; z++){ ctx.beginPath(); ctx.moveTo(cx - rx * 0.9, cy); ctx.quadraticCurveTo(cx, cy + z * R * 0.18, cx + rx * 0.9, cy); ctx.stroke(); } ctx.restore(); }
+        CH.forEach(function(ch, j){
+          var len = R * 0.5 * ch[1], col = COL[ch[0]][ch[2]], yj = cy + (j - 1.5) * R * 0.42;
+          if (u < 0.3){ var a = j * 1.57 + 0.5; chromo(cx + Math.cos(a) * R * 0.22 * (1 - cond * 0.3), cy + Math.sin(a) * R * 0.18, len, a + 0.6, col, true, cond, 0); }
+          else if (u < 0.55){ chromo(cx, yj, len * 0.62, 0, col, true, 1, 0); }
+          else { var sp = Math.min(1, (u - 0.55) / 0.2), dx = sp * rx * 0.62;
+            chromo(cx - dx, yj, len * 0.62, 0.35 * sp, col, false, 1 - Math.max(0, (u - 0.85) / 0.15) * 0.8, 0); chromo(cx + dx, yj, len * 0.62, -0.35 * sp, col, false, 1 - Math.max(0, (u - 0.85) / 0.15) * 0.8, 0);
+            if (u > 0.8){ ctx.save(); ctx.globalAlpha = (u - 0.8) / 0.2; B4.ell(c, cx - rx * 0.62, cy, R * 0.32, R * 0.55, null, "#5a7bc0", 2); B4.ell(c, cx + rx * 0.62, cy, R * 0.32, R * 0.55, null, "#5a7bc0", 2); ctx.restore(); } }
+        });
+        var sub = u < 0.3 ? "prophase" : u < 0.55 ? "métaphase" : u < 0.75 ? "anaphase" : "télophase et division";
+        S.draw.label(c, sub, cx, cy - R - 10, {color:P.red, size:10});
+      }
+    }
+    var PH = ["G1", "S", "G2", "M"], PC = ["#cbd5e1", "#f6d77a", "#9fdcb4", "#f3a3a3"];
+    c.pointer(function(type, p){
+      var g = st.geo;
+      if (type === "down"){ st.drag = null;
+        if (g.w && Math.abs(Math.hypot(p.x - g.w.x, p.y - g.w.y) - g.w.r) < 26) st.drag = "wheel";
+        else if (g.ax && p.y > g.ax.T - 8 && p.y < g.ax.B + 12) st.drag = "curve"; }
+      if ((type === "down" || type === "drag") && st.drag){ var tt = T();
+        if (st.drag === "wheel"){ var a = Math.atan2(p.y - g.w.y, p.x - g.w.x) + Math.PI / 2; if (a < 0) a += 6.2832; st.t = a / 6.2832 * tt * 0.9999; }
+        else st.t = Math.max(0, Math.min(tt * 0.9999, g.ax.ix(p.x))); }
+      if (type === "up") st.drag = null;
+      k.redraw();
+    });
+    c.cv.style.touchAction = "pan-y";
+    c2.pointer(function(type, p){
+      if (type !== "down" || st.checked || !st.geo.cs) return;
+      var best = -1, bd = 1e9; st.geo.cs.forEach(function(q, i){ var d = Math.hypot(p.x - q[0], p.y - q[1]); if (d < bd){ bd = d; best = i; } });
+      if (best >= 0 && bd < st.geo.cr * 1.3){ st.marked[best] = !st.marked[best]; k.redraw(); }
+    });
+    c2.cv.style.touchAction = "pan-y";
+    function mini(x, y, r, t, ang){
+      var ctx = c2.ctx, p = phase(t), i = p.i, u = p.u;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(ang);
+      if (i < 3){ B4.ell(c2, 0, 0, r, r * 0.85, "#f7e4dc", "#c99a87", 1); var nr = r * (i === 0 ? 0.42 : i === 1 ? 0.48 : 0.54); B4.ell(c2, 0, 0, nr, nr * 0.9, "#9f86c8", null); var rr = B4.rng(Math.round(t * 100)); for (var q = 0; q < 5; q++) S.draw.dot(c2, (rr() - 0.5) * nr, (rr() - 0.5) * nr, 0.9, "#5b3f8a"); }
+      else {
+        var el = u > 0.3 ? 1.25 : 1; B4.ell(c2, 0, 0, r * el, r * 0.82, "#f7e4dc", "#c99a87", 1);
+        ctx.strokeStyle = "#4a2d7a"; ctx.lineCap = "round"; ctx.lineWidth = 2;
+        if (u < 0.3){ for (q = 0; q < 5; q++){ ctx.beginPath(); ctx.moveTo(-r * 0.35 + q * r * 0.15, -r * 0.3); ctx.quadraticCurveTo(-r * 0.2 + q * r * 0.1, 0, -r * 0.3 + q * r * 0.16, r * 0.3); ctx.stroke(); } }
+        else if (u < 0.55){ ctx.lineWidth = 2.6; for (q = 0; q < 4; q++){ ctx.beginPath(); ctx.moveTo(-r * 0.12, -r * 0.45 + q * r * 0.3); ctx.lineTo(r * 0.12, -r * 0.45 + q * r * 0.3); ctx.stroke(); } }
+        else if (u < 0.8){ var dx = r * (0.25 + 0.5 * (u - 0.55) / 0.25); ctx.lineWidth = 2.2; for (q = 0; q < 4; q++){ var yy = -r * 0.4 + q * r * 0.26; ctx.beginPath(); ctx.moveTo(-dx, yy); ctx.lineTo(-dx - r * 0.18, yy); ctx.moveTo(dx, yy); ctx.lineTo(dx + r * 0.18, yy); ctx.stroke(); } }
+        else { B4.ell(c2, -r * 0.62, 0, r * 0.3, r * 0.42, "#9f86c8", null); B4.ell(c2, r * 0.62, 0, r * 0.3, r * 0.42, "#9f86c8", null); ctx.strokeStyle = "#c99a87"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, -r * 0.82); ctx.lineTo(0, r * 0.82); ctx.stroke(); }
+      }
+      ctx.restore();
+    }
+    k.draw(function(){
+      var d = D(), tt = T(), p = phase(st.t), wide = c.W >= 480, fs = wide ? 10.5 : 9.5;
+      /* ---------- canevas 1 : roue, cellule, courbe ---------- */
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, top = H * 0.55, R = Math.min(W * 0.2, top * 0.4), wx = R + 22, wy = top / 2 + 4;
+      st.geo.w = {x:wx, y:wy, r:R};
+      var a0 = -Math.PI / 2, acc = 0;
+      for (var i = 0; i < 4; i++){ var a1 = a0 + acc / tt * 6.2832, a2 = a0 + (acc + d[i]) / tt * 6.2832; ctx.beginPath(); ctx.arc(wx, wy, R, a1, a2); ctx.strokeStyle = PC[i]; ctx.lineWidth = 22; ctx.stroke();
+        var am = (a1 + a2) / 2; S.draw.text(c, PH[i], wx + Math.cos(am) * R, wy + Math.sin(am) * R, {size:11, color:"#13233a", weight:800}); acc += d[i]; }
+      var am2 = a0 + st.t / tt * 6.2832; S.draw.dot(c, wx + Math.cos(am2) * R, wy + Math.sin(am2) * R, 9, st.drag === "wheel" ? P.red : P.ink);
+      S.draw.text(c, S.fmt(tt, 1) + " h", wx, wy - 6, {size:13, color:P.ink, weight:800}); S.draw.text(c, "t = " + S.fmt(st.t, 1) + " h", wx, wy + 10, {size:10, color:"#5f6b7a"});
+      S.draw.text(c, "glisse sur la roue", wx, wy + R + 22, {size:9, color:"#5f6b7a"});
+      var ccx = wx + R + 28 + (W - (wx + R + 28)) / 2, Rc = Math.min((W - wx - R - 40) / 2.8, top * 0.34);
+      cellView(ccx, wy + 6, Rc, st.t);
+      var dn = dna(st.t);
+      S.draw.label(c, PH[p.i] + " · ADN = " + S.fmt(dn, 1) + " C", ccx, top - 8, {color:P.acc, size:fs});
+      /* courbe d'ADN */
+      var ax = S.draw.axes(c, {x0:0, x1:tt, y0:0, y1:5, xl:"temps (h)", yl:"ADN par noyau (C)", stepY:1, t:top + 20, l:40, b:30});
+      st.geo.ax = ax; acc = 0;
+      for (i = 0; i < 4; i++){ ctx.fillStyle = S.draw.tint(PC[i], 0.45); ctx.fillRect(ax.X(acc), ax.T, ax.X(acc + d[i]) - ax.X(acc), ax.B - ax.T); S.draw.text(c, PH[i], ax.X(acc + d[i] / 2), ax.B - 9, {size:9.5, color:"#2c3a4e"}); acc += d[i]; }
+      S.draw.fn(c, ax, function(x){ return x >= tt - 1e-6 ? 2 : dna(x); }, P.acc, 3);
+      S.draw.line(c, ax.X(st.t), ax.T, ax.X(st.t), ax.B, P.ink, 1.3, [3, 3]); S.draw.dot(c, ax.X(st.t), ax.Y(dn), 7.5, st.drag === "curve" ? P.red : P.violet);
+      /* ---------- canevas 2 : lame ---------- */
+      c2.clear(); var x2 = c2.ctx, W2 = c2.W, H2 = c2.H, cols = 10, rows = 10, sideW = wide ? W2 * 0.3 : 0, lw = W2 - sideW - 12, lh = wide ? H2 - 34 : H2 * 0.64, cwid = lw / cols, chh = lh / rows, cr = Math.min(cwid, chh) * 0.36;
+      S.draw.rrect(c2, 4, 22, lw + 4, lh + 4, 8); x2.fillStyle = "#fbf5f2"; x2.fill();
+      S.draw.text(c2, "Lame (100 cellules) : touche celles qui sont en mitose", 6, 10, {size:fs, color:P.ink, align:"left"});
+      st.geo.cs = []; st.geo.cr = cr;
+      st.cells.forEach(function(cl, j){ var x = 6 + (j % cols + 0.5 + cl.jx * 0.25) * cwid, y = 24 + (Math.floor(j / cols) + 0.5 + cl.jy * 0.25) * chh; mini(x, y, cr, cl.t, cl.a); st.geo.cs.push([x, y]);
+        var isM = phase(cl.t).i === 3;
+        if (st.marked[j]){ x2.beginPath(); x2.arc(x, y, cr * 1.25, 0, 6.2832); x2.strokeStyle = st.checked ? (isM ? P.green : P.red) : P.acc; x2.lineWidth = 2.2; x2.stroke(); }
+        else if (st.checked && isM){ x2.beginPath(); x2.arc(x, y, cr * 1.25, 0, 6.2832); x2.strokeStyle = P.amber; x2.lineWidth = 2; x2.setLineDash([3, 2]); x2.stroke(); x2.setLineDash([]); } });
+      /* répartition attendue vs comptée */
+      var e = est(), bx0 = wide ? lw + 20 : 8, by0 = wide ? 30 : 30 + lh + 8, bW = wide ? W2 - bx0 - 8 : W2 - 16, bH = wide ? H2 - 44 : H2 - by0 - 6;
+      var fr = d.map(function(x){ return x / tt; }), cnt = [0, 0, 0, 0]; st.cells.forEach(function(cl){ cnt[phase(cl.t).i]++; });
+      S.draw.text(c2, "% de cellules par phase", bx0, by0 - 4, {size:fs - 0.5, color:"#5f6b7a", align:"left"});
+      var bwid = bW / 4;
+      for (i = 0; i < 4; i++){ var hh = (bH - 34) * fr[i], xb = bx0 + i * bwid + 4; x2.fillStyle = PC[i]; x2.fillRect(xb, by0 + (bH - 22) - hh, bwid - 8, hh);
+        S.draw.text(c2, PH[i], xb + (bwid - 8) / 2, by0 + bH - 12, {size:fs - 1, color:"#2c3a4e"}); S.draw.text(c2, S.fmt(fr[i] * 100, 0) + " %", xb + (bwid - 8) / 2, by0 + bH + 0, {size:fs - 1, color:"#5f6b7a", weight:600});
+        if (st.checked){ var hc = (bH - 34) * cnt[i] / 100; S.draw.line(c2, xb - 2, by0 + (bH - 22) - hc, xb + bwid - 6, by0 + (bH - 22) - hc, P.ink, 2); } }
+      /* lectures */
+      var estM = e.mk / 100 * tt;
+      ro.set(0, S.fmt(tt, 1) + " h"); ro.set(1, PH[p.i] + " · " + S.fmt(dn, 1) + " C"); ro.set(2, S.fmt(fr[3] * 100, 1) + " % (" + e.tm + " sur la lame)"); ro.set(3, e.mk ? S.fmt(estM, 2) + " h (réel " + S.fmt(d[3], 1) + " h)" : "—");
+      var msg = p.i === 0 ? "G1 : la cellule grandit ; chaque chromosome n'a qu'une chromatide (2C)." : p.i === 1 ? "Phase S : l'ADN se réplique, chaque chromosome forme deux chromatides : de 2C à 4C." : p.i === 2 ? "G2 : chromosomes à deux chromatides (4C), la cellule se prépare à la mitose." : "Mitose : les chromosomes se condensent, s'alignent, puis les chromatides sœurs se séparent ; chaque cellule fille repart avec 2C.";
+      nt.set(msg + " La mitose dure " + S.fmt(d[3], 1) + " h sur " + S.fmt(tt, 1) + " h : on s'attend à ≈ " + S.fmt(fr[3] * 100, 0) + " cellules sur 100 en mitose.", "");
+      if (st.checked) { var good = e.miss === 0 && e.wrong === 0;
+        nd.set("<b>Correction.</b> Tu as marqué " + e.mk + " cellules : " + e.ok + " en mitose (cercle vert), " + e.wrong + " erreur(s) (rouge), " + e.miss + " oubliée(s) (pointillés). Indice mitotique compté = " + e.mk + " %, durée de M ≈ " + e.mk + " ÷ 100 × " + S.fmt(tt, 1) + " h = " + S.fmt(estM, 2) + " h. " + (good ? "<b>Comptage parfait !</b>" : "Sur une seule lame, le hasard fait aussi varier le résultat.") + " Score : " + st.score + " / " + st.tot + ".", good ? "ok" : "warn"); }
+      else nd.set("<b>Défi.</b> Touche toutes les cellules en mitose (chromosomes visibles, alignés ou séparés, ou deux noyaux en train de se séparer) puis « Corriger mon comptage ». Marquées : " + e.mk + ".", "warn");
     });
   }
 });

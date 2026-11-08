@@ -89,149 +89,309 @@ SFA.sim({
 SFA.sim({
   id:"ub-c04-propagation-myeline", ch:"c04", tag:"Conduction nerveuse",
   titre:"Vitesse de conduction : diamètre, myéline et sclérose en plaques",
-  resume:"Course entre une fibre amyélinique et une fibre myélinisée de même diamètre, avec démyélinisation réglable.",
-  but:"Règle le diamètre, la distance et le taux de démyélinisation ; lis les vitesses et les latences. Lance la course.",
+  resume:"Course entre une fibre amyélinique et une fibre myélinisée : l'onde continue contre les sauts de nœud en nœud, et ce que la démyélinisation leur fait perdre.",
+  but:"Règle le diamètre (curseur ou point du graphique), la distance et le taux de démyélinisation, puis lance la course : le potentiel d'action (lueur rouge) avance en continu dans la fibre nue et saute de nœud de Ranvier en nœud dans la fibre myélinisée.",
   aRetenir:"Fibre amyélinique : v ≈ 1,1·√d (m/s, d en µm). Fibre myélinisée : v ≈ 6·d (m/s) : conduction saltatoire de nœud en nœud de Ranvier (≈ 100·d entre deux nœuds). Pour d = 10 µm, ≈ 60 m/s contre 3,5 m/s. La démyélinisation ralentit puis peut bloquer la conduction (sclérose en plaques).",
   piege:"La myéline n'isole pas pour « garder le courant » : elle diminue la capacité de membrane et force les canaux Na⁺ à se concentrer aux nœuds. Gros diamètre = plus rapide, mais la myéline est bien plus rentable en place.",
   build:function(k,S){
-    var P=S.draw.palette, c=k.canvas(250);
+    var P=S.draw.palette, B=S.bio, c=k.canvas(560);
     var d=k.slider("Diamètre de la fibre d",0.2,20,0.2,10,"µm");
     var L=k.slider("Distance à parcourir",0.05,1.5,0.05,1,"m");
     var dm=k.slider("Démyélinisation",0,100,5,0,"%");
     var ro=k.readouts(["v amyélinique","v myélinisée","Latence amyélinique","Latence myélinisée"]);
-    var tA=0;
-    var run=k.loop(function(dt,t){ tA=t; if(t>7) run.pause(); k.redraw(); });
-    k.button("Lancer la course",function(){ run.reset(); tA=0; run.play(); },true);
+    var nt=k.note("","");
+    var tA=-1, t=0, ax=null, drag=false;
+    function V(){ var vu=1.1*Math.sqrt(d.value), vm=6*d.value; return {vu:vu,vm:vm,vx:vu+(1-dm.value/100)*(vm-vu)}; }
     function fmtT(s){ return s<1?S.fmt(s*1000,1)+" ms":S.fmt(s,2)+" s"; }
-    k.draw(function(){
-      c.clear(); var ctx=c.ctx, vu=1.1*Math.sqrt(d.value), vm=6*d.value, vx=vu+(1-dm.value/100)*(vm-vu);
-      var Tu=L.value/vu, Tm=L.value/vx, Tmax=Math.max(Tu,Tm);
-      ro.set(0,S.fmt(vu,2)+" m/s"); ro.set(1,S.fmt(vx,1)+" m/s"); ro.set(2,fmtT(Tu)); ro.set(3,fmtT(Tm));
-      var tt=Math.min(1,tA/6), x0=40, x1=c.W-30, seg=(x1-x0)/10;
-      function prog(T){ return Math.min(1,tt*Tmax/T); }
-      [[70,"Amyélinique (v = "+S.fmt(vu,2)+" m/s)",P.amber,prog(Tu),false],[170,"Myélinisée (v = "+S.fmt(vx,1)+" m/s)",P.acc,prog(Tm),true]].forEach(function(o){
-        var y=o[0]; S.draw.text(c,o[1],x0,y-36,{size:12,color:o[2],align:"left"});
-        S.draw.line(c,x0,y,x1,y,"#c8d1de",o[4]?3:10);
-        if(o[4]){ for(var i=0;i<10;i++){ ctx.fillStyle="rgba(46,107,85,"+(0.08+0.55*(1-dm.value/100))+")"; ctx.fillRect(x0+i*seg+10,y-11,seg-20,22); S.draw.dot(c,x0+i*seg+5,y,3,P.red); } S.draw.dot(c,x1,y,3,P.red); }
-        var px=o[4]?x0+Math.round(o[3]*10)*seg:x0+o[3]*(x1-x0);
-        S.draw.dot(c,px,y,9,o[2]); ctx.save(); ctx.strokeStyle=o[2]; ctx.globalAlpha=0.3; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(px,y,15,0,7); ctx.stroke(); ctx.restore();
+    var df=B.defi(k,function(n){ return [{id:0,txt:"réflexe : latence ≤ 20 ms sur 1 m dans une fibre myélinisée saine : quel diamètre minimal ? (pas de 0,2 µm)"},
+        {id:1,txt:"sclérose en plaques (d = 10 µm, 1 m) : quel taux de démyélinisation minimal fait dépasser 50 ms de latence ?"},
+        {id:2,txt:"trouve le diamètre de fibre AMYÉLINIQUE qui conduit aussi vite qu'une fibre myélinisée de 0,6 µm (± 0,05 m/s)"}][n%3]; },
+      function(q){ var v=V();
+        if(q.id===0) return {ok:dm.value===0&&L.value===1&&L.value/v.vx<=0.02&&L.value/(6*(d.value-0.2))>0.02};
+        if(q.id===1) return {ok:d.value===10&&L.value===1&&L.value/v.vx>0.05&&L.value/(v.vu+(1-(dm.value-5)/100)*(v.vm-v.vu))<=0.05};
+        return {ok:Math.abs(v.vu-3.6)<=0.05}; });
+    k.button("▶ Lancer la course",function(){ tA=0; },true);
+    c.pointer(function(tp,p){ if(!ax) return; if(tp==="down") drag=ax.has(p,8); if((tp==="down"||tp==="drag")&&drag){ d.set(Math.round(Math.max(0.2,Math.min(20,ax.ix(p.x)))*5)/5); k.redraw(); } if(tp==="up") drag=false; });
+    function frame(dt){
+      t+=dt; if(tA>=0) tA+=dt; var ctx=c.ctx, W=c.W, Ls=B.split(c,.5), D=Ls.d, v=V(), Tu=L.value/v.vu, Tm=L.value/v.vx, Tmax=Math.max(Tu,Tm), sc=6/Tmax;
+      c.clear(); B.bg(c,"#fbfdff","#eef3f9");
+      var top=D.y+44, x0=D.x+30, x1=D.x+D.w-26, nn=10, seg=(x1-x0)/nn, rr=Math.max(4,Math.min(10,3+d.value*.4));
+      function prog(T){ return tA<0?0:Math.min(1,tA/(T*sc)); }
+      [[top+40,false,Tu,P.amber,"Amyélinique"],[top+(D.h-44)*.66,true,Tm,P.acc,"Myélinisée"+(dm.value>0?" ("+dm.value+" % démyélinisée)":"")]].forEach(function(o){
+        var y=o[0], u=prog(o[2]); S.draw.text(c,o[4]+" · v = "+S.fmt(o[1]?v.vx:v.vu,o[1]?1:2)+" m/s",x0-14,y-rr-22,{size:11,color:o[3],align:"left"});
+        /* axone */
+        ctx.save(); var g=ctx.createLinearGradient(0,y-rr,0,y+rr); g.addColorStop(0,"#e6dcf7"); g.addColorStop(.5,"#cdbdf0"); g.addColorStop(1,"#a993de"); ctx.fillStyle=g; S.draw.rrect(c,x0-12,y-rr,x1-x0+24,2*rr,rr); ctx.fill(); ctx.restore();
+        /* gaines de myéline (cellules de Schwann) */
+        if(o[1]) for(var i=0;i<nn;i++){ var a=0.15+0.8*(1-dm.value/100)*(i%3===1&&dm.value>0?.4:1); ctx.save(); ctx.globalAlpha=a; S.draw.rrect(c,x0+i*seg+5,y-rr-6,seg-10,2*rr+12,rr+6); ctx.fillStyle="#fbf3dd"; ctx.fill(); ctx.strokeStyle="#d6c08a"; ctx.lineWidth=1.2; ctx.stroke();
+            ctx.strokeStyle="rgba(190,160,100,.5)"; for(var q=1;q<4;q++){ ctx.beginPath(); ctx.moveTo(x0+i*seg+9,y-rr-6+q*(2*rr+12)/4); ctx.lineTo(x0+(i+1)*seg-9,y-rr-6+q*(2*rr+12)/4); ctx.stroke(); } ctx.restore(); }
+        if(o[1]) for(var j=0;j<=nn;j++) S.draw.dot(c,x0+j*seg,y,3,P.red);
+        /* potentiel d'action */
+        if(tA>=0){ var px=o[1]?x0+Math.min(nn,Math.floor(u*nn+1e-9))*seg:x0+u*(x1-x0);
+          if(o[1]&&dm.value>=50) px=x0+u*(x1-x0);
+          var gl=ctx.createLinearGradient(px-50,0,px+6,0); gl.addColorStop(0,"rgba(192,50,29,0)"); gl.addColorStop(1,"rgba(192,50,29,.55)"); ctx.fillStyle=gl; ctx.fillRect(Math.max(x0-12,px-50),y-rr,Math.min(56,px-x0+18),2*rr);
+          S.draw.glow(c,px,y,18,P.red,.7); for(var m=0;m<3;m++){ var w=((t*3+m/3)%1); B.ball(c,px+(m-1)*5,y-rr-14+w*14,2.6,P.blue); }
+          if(u>=1) S.draw.label(c,"arrivée : "+fmtT(o[2]),x1-30,y+rr+16,{color:o[3],size:10}); }
       });
-      S.draw.text(c,"Vert : myéline · rouge : nœuds de Ranvier · animation : 6 s pour la fibre la plus lente",c.W/2,c.H-12,{size:10,color:P.grey});
-    });
-    k.note("Lois empiriques approchées (v amyélinique ≈ 1,1·√d ; v myélinisée ≈ 6·d, d = diamètre total) ; l'interpolation linéaire selon le taux de démyélinisation est un modèle qualitatif. Le blocage complet de la conduction (démyélinisation sévère) n'est pas modélisé : à 100 %, la fibre myélinisée garde la vitesse d'une fibre amyélinique. Le dessin est schématique : seul le calcul des vitesses est quantitatif.","warn");
+      S.draw.text(c,"stimulus",x0-14,D.y+D.h-14,{size:9.5,color:P.grey,align:"left"}); S.draw.text(c,"enregistrement à "+S.fmt(L.value,2)+" m",x1+10,D.y+D.h-14,{size:9.5,color:P.grey,align:"right"});
+      S.draw.text(c,"crème : myéline · rouge : nœuds de Ranvier · bleu : Na⁺ qui entre",D.x+D.w/2,D.y+D.h-30,{size:9.5,color:P.grey});
+      /* vitesse en fonction du diamètre */
+      ax=B.axes(c,Ls.g,{frame:true,t:24,b:36,l:42,x0:0,x1:20,y0:0,y1:125,stepX:2,stepY:25,xl:"diamètre d (µm)",yl:"vitesse (m/s)"});
+      S.draw.fn(c,ax,function(x){ return 6*x; },P.acc,2.4); S.draw.fn(c,ax,function(x){ return 1.1*Math.sqrt(x); },P.amber,2.4);
+      if(dm.value>0) S.draw.fn(c,ax,function(x){ return 1.1*Math.sqrt(x)+(1-dm.value/100)*(6*x-1.1*Math.sqrt(x)); },P.red,1.8,[5,4]);
+      S.draw.line(c,ax.X(d.value),ax.T,ax.X(d.value),ax.B,P.ink,1,[3,3]);
+      S.draw.dot(c,ax.X(d.value),ax.cy(v.vx),8,P.acc); S.draw.dot(c,ax.X(d.value),ax.Y(v.vu),7,P.amber);
+      S.draw.legend(c,[[P.acc,"myélinisée : 6·d"],[P.amber,"amyélinique : 1,1·√d"],[P.red,"démyélinisée",1]],ax.L+6,ax.T+4);
+      var q=df.banner(c,13);
+      ro.set(0,S.fmt(v.vu,2)+" m/s"); ro.set(1,S.fmt(v.vx,1)+" m/s"); ro.set(2,fmtT(Tu)); ro.set(3,fmtT(Tm));
+      nt.set((q&&q.ok?"<b>Défi réussi.</b> ":"")+"Lois empiriques approchées (d = diamètre total) ; l'interpolation linéaire selon le taux de démyélinisation est un modèle qualitatif et le blocage complet de la conduction n'est pas modélisé. Animation : la fibre la plus lente met 6 s.",q&&q.ok?"ok":"ok");
+    }
+    k.draw(function(){ frame(0); });
+    var lp=k.loop(function(dt){ frame(dt); }); lp.play();
   }
 });
 
 SFA.sim({
   id:"ub-c04-cascade-amplification", ch:"c04", tag:"Transduction",
   titre:"Cascade AMPc : amplification et durée du signal",
-  resume:"Un ligand active des centaines de milliers de molécules ; la phosphodiestérase éteint le signal ; caféine et toxine cholérique le modifient.",
-  but:"Règle l'amplification de chaque étage, l'intensité du signal, et teste la caféine (inhibe la PDE) ou la toxine cholérique (Gs bloquée active).",
+  resume:"Dépose l'hormone sur son récepteur : protéine G, adénylyl cyclase, AMPc, PKA… chaque étage multiplie le signal ; la phosphodiestérase l'éteint.",
+  but:"Glisse l'hormone (violette) sur le récepteur ou appuie sur « Libérer l'hormone ». Règle l'amplification de chaque étage et teste la caféine (inhibe la PDE) ou la toxine cholérique (Gs bloquée active). La courbe suit [AMPc] en direct.",
   aRetenir:"Chaque étage d'une cascade multiplie le signal : 1 ligand × n₁ protéines G × n₂ AMPc × n₃ substrats phosphorylés. L'AMPc est dégradé par la phosphodiestérase : [AMPc] suit d[AMPc]/dt = production − k·[AMPc] ; sa demi-vie est ln 2 / k. La caféine ralentit cette dégradation et prolonge le signal ; la toxine cholérique empêche l'arrêt de Gs : production d'AMPc permanente.",
   piege:"Amplifier ne veut pas dire « plus de ligand » : un faible nombre de récepteurs activés peut produire une réponse énorme. Inversement, un signal qui ne s'éteint pas est pathologique (choléra).",
   build:function(k,S){
-    var P=S.draw.palette, c1=k.canvas(170), c2=k.canvas(210);
+    var P=S.draw.palette, B=S.bio, c=k.canvas(600);
     var n0=k.slider("Molécules de ligand liées",1,1000,1,10,"");
     var n1=k.slider("n₁ : protéines G activées par récepteur",1,100,1,10,"");
     var n2=k.slider("n₂ : AMPc produites par protéine G active",1,500,1,50,"");
     var n3=k.slider("n₃ : substrats phosphorylés par molécule d'AMPc",1,200,1,20,"");
-    var du=k.slider("Durée du signal",5,40,1,20,"s");
+    var du=k.slider("Durée de présence de l'hormone",5,40,1,20,"s");
     var dr=k.seg("Condition",[["none","Normal"],["caf","Caféine"],["cho","Toxine cholérique"]],"none");
-    var ro=k.readouts(["Amplification totale","[AMPc] maximale","Demi-vie de l'AMPc"]);
-    function sci2(x){ if(x<10000) return S.fmt(x,0); var e=Math.floor(Math.log10(x)), m=x/Math.pow(10,e); return S.fmt(m,1)+"·10"+String(e).split("").map(function(ch){return "⁰¹²³⁴⁵⁶⁷⁸⁹".charAt(+ch);}).join(""); }
-    k.draw(function(){
-      var ctx;
-      c1.clear(); ctx=c1.ctx;
-      var st=[["Ligand",n0.value],["Prot. G",n0.value*n1.value],["AMPc",n0.value*n1.value*n2.value],["Substrats phosph.",n0.value*n1.value*n2.value*n3.value]];
-      var lo=0, hi=Math.max(7,Math.ceil(Math.log10(st[3][1]))), bw=(c1.W-60)/4;
-      st.forEach(function(s,i){ var h=(Math.log10(s[1])+0.1)/(hi+0.1)*(c1.H-60); ctx.fillStyle=[P.violet,P.acc,P.teal,P.green][i]; ctx.fillRect(40+i*bw,c1.H-30-h,bw-14,h); S.draw.text(c1,sci2(s[1]),40+i*bw+(bw-14)/2,c1.H-30-h-9,{size:11,color:P.ink}); S.draw.text(c1,s[0],40+i*bw+(bw-14)/2,c1.H-14,{size:10,color:P.grey}); });
-      S.draw.text(c1,"Nombre de molécules (échelle logarithmique)",c1.W/2,12,{size:11,color:P.ink});
-      /* cinétique */
-      c2.clear();
-      var s0=0.3+0.1*Math.log10(n0.value*n1.value*n2.value), kk=dr.value==="caf"?0.1:0.2, T=du.value;
-      var sf=function(t){ return t<T? s0 : (dr.value==="cho"? 0.3*s0 : 0); };
-      var a=0.05, x=0.05, pts=[[0,x]], mx=x;
-      for(var t=0;t<100;t+=0.1){ x+=0.1*(sf(t)-kk*x)+0.1*kk*a; if(x>mx)mx=x; pts.push([t+0.1,x]); }
-      var ax=S.draw.axes(c2,{x0:0,x1:100,y0:0,y1:Math.max(6,Math.ceil(mx*1.1)),stepX:10,xl:"temps (s)",yl:"[AMPc] (µmol/L)"});
-      ctx=c2.ctx; ctx.save(); ctx.beginPath(); ctx.rect(ax.L,ax.T,ax.R-ax.L,ax.B-ax.T); ctx.clip(); ctx.strokeStyle=P.teal; ctx.lineWidth=2.6; ctx.beginPath();
-      pts.forEach(function(p,i){ var xx=ax.X(p[0]),yy=ax.Y(p[1]); if(i===0)ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }); ctx.stroke(); ctx.restore();
-      ctx.fillStyle="rgba(180,83,9,.15)"; ctx.fillRect(ax.X(0),ax.T,ax.X(T)-ax.X(0),ax.B-ax.T);
-      S.draw.text(c2,"signal (ligand lié)",ax.X(T/2),ax.B-10,{size:10,color:P.amber});
-      ro.set(0,S.sci(st[3][1]/st[0][1],2)+" ×"); ro.set(1,S.fmt(mx,2)+" µmol/L"); ro.set(2,S.fmt(Math.LN2/kk,1)+" s");
-    });
-    k.note("Valeurs numériques pédagogiques (ordres de grandeur) : production d'AMPc croissante avec le signal (loi logarithmique arbitraire), dégradation k = 0,2 s⁻¹ (0,1 s⁻¹ avec caféine). La toxine cholérique est modélisée par une production maintenue à 30 % après la fin du signal.","warn");
+    var ro=k.readouts(["Amplification totale","Substrats phosphorylés","[AMPc] maximale","Demi-vie de l'AMPc"]);
+    var nt=k.note("","");
+    var ts=-1, t=0, lig={x:0,y:0,drag:false,home:true}, R={}, rnd=B.rng(31), camp=[], gpos=0, ax=null;
+    for(var q=0;q<44;q++) camp.push({x:rnd(),y:rnd(),ph:rnd()*6.28});
+    function kk(){ return dr.value==="caf"?0.1:0.2; }
+    function traj(){ var s0=0.3+0.1*Math.log10(n0.value*n1.value*n2.value), k1=kk(), T=du.value, x=0.05, pts=[[0,x]], mx=x, e15=null;
+      for(var tt=0;tt<100;tt+=0.1){ var on=tt>=2&&tt<2+T, pr=on||(dr.value==="cho"&&tt>=2)?s0:0; x+=0.1*(pr-k1*(x-0.05)); if(x>mx) mx=x; pts.push([tt+0.1,x]); if(e15===null&&tt>=2+T+15) e15=x; }
+      return {pts:pts,mx:mx,e15:e15==null?x:e15}; }
+    function at(tr,tt){ var i=Math.max(0,Math.min(tr.pts.length-1,Math.round(tt*10))); return tr.pts[i][1]; }
+    function fire(){ ts=0; lig.home=false; }
+    k.button("▶ Libérer l'hormone",fire,true);
+    var df=B.defi(k,function(n){ return [{id:0,txt:"avec UNE seule molécule d'hormone, fais phosphoryler plus d'un million de substrats"},
+        {id:1,txt:"fais durer le signal : [AMPc] encore > 1 µmol/L 15 s après le départ de l'hormone"},
+        {id:2,txt:"règle les trois étages pour une amplification totale de 10⁵ (± 10 %)"}][n%3]; },
+      function(d){ var A=n1.value*n2.value*n3.value;
+        if(d.id===0) return {ok:n0.value===1&&A>=1e6}; if(d.id===1) return {ok:traj().e15>1};
+        return {ok:Math.abs(A/1e5-1)<=0.1}; });
+    c.pointer(function(tp,p){
+      if(tp==="down"&&Math.hypot(p.x-lig.x,p.y-lig.y)<22){ lig.drag=true; }
+      if(tp==="drag"&&lig.drag){ lig.x=p.x; lig.y=p.y; }
+      if(tp==="up"&&lig.drag){ lig.drag=false; if(Math.hypot(p.x-R.rx,p.y-(R.my-26))<46) fire(); }
+      if(ax&&(tp==="down"||tp==="drag")&&!lig.drag&&ax.has(p,6)&&ts>=0){ ts=Math.max(0,Math.min(100,ax.ix(p.x))); } });
+    function frame(dt){
+      t+=dt; if(ts>=0&&ts<100) ts=Math.min(100,ts+dt*8);
+      var ctx=c.ctx, W=c.W, L=B.split(c,.56), D=L.d, tr=traj(), tt=Math.max(0,ts), x=ts>=0?at(tr,tt):0.05, on=ts>=2&&ts<2+du.value, gact=on||(dr.value==="cho"&&ts>=2);
+      c.clear(); B.bg(c,"#fbfdff","#eef3f9");
+      var top=D.y+44, my=top+64, dw=D.w, x0=D.x;
+      R.my=my; R.rx=x0+dw*.2; var acx=x0+dw*.52, pkx=x0+dw*.3, pdx=x0+dw*.8, cyb=D.y+D.h-10;
+      ctx.fillStyle="rgba(168,210,240,.25)"; ctx.fillRect(x0+6,top,dw-12,my-13-top); ctx.fillStyle="rgba(250,236,214,.4)"; ctx.fillRect(x0+6,my+13,dw-12,cyb-my-13);
+      B.membrane(c,x0+6,x0+dw-6,my,{ep:26,step:12,skip:[[R.rx-22,R.rx+22],[acx-24,acx+24]]});
+      /* récepteur à 7 hélices */
+      ctx.save(); ctx.strokeStyle="#6a4fc4"; ctx.lineWidth=5; ctx.lineCap="round"; ctx.beginPath(); for(var h=0;h<7;h++){ var hx=R.rx-18+h*6; ctx.moveTo(hx,my-16); ctx.lineTo(hx,my+16); } ctx.stroke(); ctx.restore();
+      S.draw.text(c,"récepteur",R.rx,my+24,{size:9,color:P.violet,halo:true});
+      /* adénylyl cyclase */
+      ctx.save(); S.draw.rrect(c,acx-20,my-16,40,40,10); var ga=ctx.createLinearGradient(0,my-16,0,my+24); ga.addColorStop(0,"#7fc7a0"); ga.addColorStop(1,"#2f8a62"); ctx.fillStyle=ga; ctx.fill(); ctx.strokeStyle="#1d5d40"; ctx.stroke(); ctx.restore();
+      S.draw.text(c,"AC",acx,my+4,{size:10,color:"#fff"});
+      /* protéine G : l'α (bleu) va du récepteur à l'AC quand elle est active */
+      gpos+=((gact?1:0)-gpos)*Math.min(1,dt*3+(dt===0?1:0)); var gx=R.rx+18+gpos*(acx-R.rx-40), gy=my+26;
+      B.ball(c,gx,gy,8,P.blue,{text:"α",size:9}); B.ball(c,R.rx+16,gy+12,5.5,"#8aa6c9"); B.ball(c,R.rx+26,gy+14,4.5,"#8aa6c9");
+      if(dr.value==="cho") S.draw.text(c,"✶ toxine",gx,gy+18,{size:9,color:P.red,halo:true});
+      /* hormone (glissable) */
+      if(lig.home&&!lig.drag){ lig.x=x0+30; lig.y=top+14; } else if(!lig.drag&&!lig.home){ var bound=ts>=0&&ts<2+du.value, tx=bound?R.rx:x0+dw*.12, tyy=bound?my-22:top+12; lig.x+=(tx-lig.x)*Math.min(1,dt*4); lig.y+=(tyy-lig.y)*Math.min(1,dt*4); if(ts>=2+du.value+3&&Math.abs(lig.x-tx)<2) lig.home=true; }
+      S.draw.glow(c,lig.x,lig.y,16,P.violet,.35); B.ball(c,lig.x,lig.y,8,P.violet,{text:"H",size:9});
+      if(lig.home&&ts<0) S.draw.text(c,"← glisse l'hormone sur le récepteur",lig.x+16,lig.y,{size:10,color:P.violet,align:"left",halo:true});
+      /* AMPc dans le cytoplasme : nombre ∝ concentration */
+      var nC=Math.min(camp.length,Math.round(x*7));
+      for(var i=0;i<nC;i++){ var o=camp[i], cx=x0+16+((o.x+.03*Math.sin(t+o.ph))%1+1)%1*(dw-32), cy=my+40+((o.y+.04*Math.cos(t*.8+o.ph))%1+1)%1*(cyb-my-90); B.ball(c,cx,cy,3.6,P.teal); }
+      if(gact){ var u=(t*1.5)%1; B.ball(c,acx+(u-.5)*20,my+26+u*30,3.6,P.teal); }
+      /* PKA et substrats phosphorylés */
+      var act=x/(x+1.5); ctx.save(); [0,1].forEach(function(j){ var py=cyb-62+j*14; B.ball(c,pkx-12,py,6.5,"#8e6b2e"); B.ball(c,pkx+6+act*24,py+(act*6),6.5,P.amber,{text:"C",size:8}); }); ctx.restore();
+      S.draw.text(c,"PKA",pkx-12,cyb-82,{size:9.5,color:P.amber,halo:true});
+      var nS=12, nP=Math.round(act*nS); for(var j2=0;j2<nS;j2++){ var sx=x0+18+j2*(dw-36)/(nS-1), sy=cyb-16; B.ball(c,sx,sy,6,"#9aa6b6"); if(j2<nP) B.ball(c,sx+5,sy-5,3.4,P.yellow,{text:"P",size:5.5,tcolor:"#5a3b00"}); }
+      S.draw.text(c,"substrats (enzymes, canaux…) : "+S.fmt(act*100,0)+" % phosphorylés",x0+dw/2,cyb-34,{size:9.5,color:P.ink,halo:true});
+      /* PDE */
+      ctx.save(); ctx.fillStyle=dr.value==="caf"?"#e7a59a":P.red; ctx.beginPath(); var mo=.35+.25*Math.abs(Math.sin(t*(dr.value==="caf"?2:5))); ctx.moveTo(pdx,my+66); ctx.arc(pdx,my+66,12,mo,6.2832-mo); ctx.closePath(); ctx.fill(); ctx.restore();
+      S.draw.text(c,"PDE"+(dr.value==="caf"?" (freinée)":""),pdx,my+88,{size:9.5,color:P.red,halo:true});
+      /* facteurs d'amplification */
+      S.draw.label(c,"×"+n1.value,(R.rx+acx)/2,my+50,{color:P.blue,size:10}); S.draw.label(c,"×"+n2.value,acx+30,my+44,{color:P.teal,size:10}); S.draw.label(c,"×"+n3.value,pkx+40,cyb-62,{color:P.amber,size:10});
+      /* [AMPc](t) en direct */
+      ax=B.axes(c,L.g,{frame:true,t:24,b:36,l:40,x0:0,x1:100,y0:0,y1:Math.max(6,Math.ceil(tr.mx*1.15)),stepX:10,xl:"temps (s)",yl:"[AMPc] (µmol/L)"});
+      ctx.save(); ctx.fillStyle="rgba(98,54,196,.10)"; ctx.fillRect(ax.X(2),ax.T,ax.X(Math.min(100,2+du.value))-ax.X(2),ax.B-ax.T); ctx.restore();
+      S.draw.text(c,"hormone liée",ax.X(2+du.value/2),ax.T+8,{size:9.5,color:P.violet,halo:true});
+      B.poly(c,ax,tr.pts,"#9fd3dd",1.4,[4,3]); if(ts>=0){ B.poly(c,ax,tr.pts.slice(0,Math.round(tt*10)+1),P.teal,2.8); S.draw.dot(c,ax.X(tt),ax.Y(x),7,P.teal); }
+      S.draw.line(c,ax.L,ax.Y(1),ax.R,ax.Y(1),P.grey,1,[2,4]); S.draw.text(c,"1 µmol/L",ax.R-4,ax.Y(1)-7,{size:9,color:P.grey,align:"right",halo:true});
+      var d=df.banner(c,13), A=n1.value*n2.value*n3.value;
+      ro.set(0,B.sci(A,1)+" ×"); ro.set(1,B.sci(n0.value*A,1)); ro.set(2,S.fmt(tr.mx,2)+" µmol/L"); ro.set(3,S.fmt(Math.LN2/kk(),1)+" s");
+      nt.set((d&&d.ok?"<b>Défi réussi.</b> ":"")+(ts<0?"Glisse l'hormone sur le récepteur pour lancer la cascade. ":"Temps simulé : "+S.fmt(tt,0)+" s (glisse sur le graphique pour revoir un instant). ")+"Valeurs pédagogiques : production d'AMPc croissant avec le logarithme du signal, dégradation k = 0,2 s⁻¹ (0,1 s⁻¹ avec caféine) ; toxine cholérique : production permanente dès l'activation.",d&&d.ok?"ok":"ok");
+    }
+    k.draw(function(){ frame(0); });
+    var lp=k.loop(function(dt){ frame(dt); }); lp.play();
   }
 });
 
 SFA.sim({
   id:"ub-c04-synapse-sommation", ch:"c04", tag:"Synapse · sommation",
   titre:"Sommation spatiale et temporelle de potentiels post-synaptiques",
-  resume:"Des synapses excitatrices et inhibitrices s'additionnent ; le neurone décharge si le seuil est atteint.",
-  but:"Choisis le nombre de synapses excitatrices et inhibitrices, leur fréquence et la constante de temps de la membrane : suis Vm et les potentiels d'action.",
+  resume:"Un neurone et ses boutons synaptiques : les PPSE (verts) et PPSI (rouges) voyagent jusqu'au soma et s'additionnent ; au seuil, l'axone décharge.",
+  but:"Règle le nombre et la fréquence des synapses excitatrices et inhibitrices, ou touche un bouton synaptique pour l'activer toi-même (tapote vite : sommation temporelle). L'oscilloscope montre Vm au cône d'émergence, ralenti 20 fois.",
   aRetenir:"Le neurone intègre : chaque PPSE (+) ou PPSI (−) décroît avec la constante de temps τ ; ils s'additionnent dans l'espace (plusieurs synapses simultanées) et dans le temps (arrivées rapprochées). Dépolarisation moyenne ≈ (Σ n·f·a)·τ. Seuil ≈ −55 mV depuis −70 mV (15 mV).",
   piege:"Un seul PPSE de 1 mV est loin d'un seuil de 15 mV : c'est la sommation qui compte. Une synapse inhibitrice ne « bloque » pas : elle soustrait.",
   build:function(k,S){
-    var P=S.draw.palette, c=k.canvas(320);
-    var ne=k.slider("Synapses excitatrices",0,30,1,24,"");
-    var fe=k.slider("Fréquence de chaque synapse excitatrice",1,100,1,60,"Hz");
+    var P=S.draw.palette, B=S.bio, c=k.canvas(600);
+    var ne=k.slider("Synapses excitatrices",0,30,1,6,"");
+    var fe=k.slider("Fréquence de chaque synapse excitatrice",1,100,1,40,"Hz");
     var ae=k.slider("Amplitude d'un PPSE",0.2,3,0.1,1,"mV");
     var ni=k.slider("Synapses inhibitrices",0,15,1,0,"");
     var fi=k.slider("Fréquence de chaque synapse inhibitrice",1,100,1,40,"Hz");
     var tau=k.slider("Constante de temps τ",2,30,1,10,"ms");
-    var ro=k.readouts(["Dépolarisation moyenne prévue","Potentiels d'action (200 ms)","Fréquence de décharge"]);
-    k.draw(function(){
-      c.clear(); var ctx=c.ctx, rest=-70, th=-55, dt=0.1, T=200;
-      var ev=[]; /* événements : [temps, amplitude] */
-      for(var i=0;i<ne.value;i++){ var per=1000/fe.value, ph=((i*0.618034)%1)*per; for(var t=ph;t<T;t+=per) ev.push([t,ae.value]); }
-      for(var j=0;j<ni.value;j++){ var per2=1000/fi.value, ph2=((j*0.381966+0.17)%1)*per2; for(var t2=ph2;t2<T;t2+=per2) ev.push([t2,-ae.value]); }
-      ev.sort(function(a,b){return a[0]-b[0];});
-      var V=rest, ei=0, ref=0, sp=[], tr=[];
-      for(var s=0;s<=T/dt;s++){ var t=s*dt; V=rest+(V-rest)*Math.exp(-dt/tau.value);
-        while(ei<ev.length&&ev[ei][0]<=t){ if(ref<=0) V=Math.max(-85,V+ev[ei][1]); ei++; }
-        ref-=dt; if(V>=th&&ref<=0){ sp.push(t); V=rest; ref=3; tr.push(0); } else tr.push(V); }
-      var ax=S.draw.axes(c,{t:28,x0:0,x1:T,y0:-90,y1:10,stepX:25,stepY:10,xl:"temps (ms)",yl:"Vm (mV)"});
-      S.draw.line(c,ax.L,ax.Y(th),ax.R,ax.Y(th),P.red,1.5,[6,4]); S.draw.text(c,"seuil −55 mV",ax.R-4,ax.Y(th)-8,{size:10,color:P.red,align:"right"});
-      ctx.save(); ctx.beginPath(); ctx.rect(ax.L,ax.T,ax.R-ax.L,ax.B-ax.T); ctx.clip(); ctx.strokeStyle=P.acc; ctx.lineWidth=1.8; ctx.beginPath();
-      tr.forEach(function(v,i){ var x=ax.X(i*dt), y=ax.Y(v); if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y); }); ctx.stroke(); ctx.restore();
-      sp.forEach(function(t){ S.draw.line(c,ax.X(t),ax.Y(th),ax.X(t),ax.Y(0),P.green,2.5); });
-      var mean=(ne.value*fe.value*ae.value-ni.value*fi.value*ae.value)/1000*tau.value;
-      ro.set(0,(mean>=0?"+":"")+S.fmt(mean,1).replace("−","−")+" mV"); ro.set(1,String(sp.length)); ro.set(2,S.fmt(sp.length/(T/1000),0)+" Hz");
-    });
-    k.note("Modèle d'intégrateur à fuite : Vm = −70 mV au repos, seuil −55 mV, retour à −70 mV après un potentiel d'action, réfractaire 3 ms. Hyperpolarisation limitée à −85 mV (potentiel d'équilibre de K⁺ et Cl⁻). Trains réguliers déphasés ; les potentiels d'action (traits verts) sont symboliques.","warn");
+    var ro=k.readouts(["Dépolarisation moyenne prévue","Fréquence de décharge (calcul sur 1 s)","Potentiels d'action à l'écran"]);
+    var nt=k.note("","");
+    var rest=-70, th=-55, tm=0, V=rest, ref=0, buf=[], spikes=[], waves=[], flash={}, man=[], cache={}, bt=[], rnd=B.rng(41);
+    function offline(n1,n2){ var key=[n1,fe.value,ae.value,n2,fi.value,tau.value].join(); if(cache[key]!=null) return cache[key];
+      var ev=[], T=1000, i, t2; for(i=0;i<n1;i++){ var per=1000/fe.value, ph=((i*0.618034)%1)*per; for(t2=ph;t2<T;t2+=per) ev.push([t2,ae.value]); }
+      for(i=0;i<n2;i++){ var p2=1000/fi.value, h2=((i*0.381966+0.17)%1)*p2; for(t2=h2;t2<T;t2+=p2) ev.push([t2,-ae.value]); }
+      ev.sort(function(a,b){ return a[0]-b[0]; }); var v=rest, ei=0, rf=0, sp=0;
+      for(var s=0;s<=T*10;s++){ var t=s/10; v=rest+(v-rest)*Math.exp(-0.1/tau.value); while(ei<ev.length&&ev[ei][0]<=t){ if(rf<=0) v=Math.max(-85,v+ev[ei][1]); ei++; } rf-=0.1; if(v>=th&&rf<=0){ sp++; v=rest; rf=3; } }
+      return (cache[key]=sp); }
+    var df=B.defi(k,function(n){ return [{id:0,txt:"fais décharger le neurone à 40 Hz (± 5 Hz)"},{id:1,txt:"sans inhibition et avec au plus 3 synapses excitatrices, obtiens au moins 20 potentiels d'action par seconde"},{id:2,txt:"ajoute juste assez de synapses inhibitrices pour faire taire un neurone qui reçoit 20 synapses excitatrices"}][n%3]; },
+      function(d){ var f=offline(ne.value,ni.value);
+        if(d.id===0) return {ok:Math.abs(f-40)<=5}; if(d.id===1) return {ok:ni.value===0&&ne.value<=3&&f>=20};
+        return {ok:ne.value===20&&f===0&&ni.value>0&&offline(ne.value,ni.value-1)>0}; });
+    k.button("Tout réinitialiser",function(){ ne.set(6); fe.set(40); ae.set(1); ni.set(0); fi.set(40); tau.set(10); });
+    c.pointer(function(tp,p){ if(tp!=="down") return; bt.forEach(function(b){ if(Math.hypot(p.x-b.x,p.y-b.y)<14){ man.push({tm:tm,amp:b.exc?ae.value:-ae.value}); flash[b.k]=0.25; waves.push({b:b,u:0}); } }); });
+    function syncEvents(t0,t1,fn){ /* événements des trains réguliers dans ]t0, t1] */
+      [[ne.value,fe.value,1,0.618034,0],[ni.value,fi.value,-1,0.381966,0.17]].forEach(function(g){ var per=1000/g[1];
+        for(var i=0;i<g[0];i++){ var ph=((i*g[3]+g[4])%1)*per, n=Math.floor((t1-ph)/per); if(n<0) continue; var te=ph+n*per; if(te>t0) fn(g[2],i); } }); }
+    function frame(dt){
+      var ctx=c.ctx, W=c.W, L=B.split(c,.5), D=L.d, dm=dt*50, t0=tm; tm+=dm;
+      /* intégration à pas de 0,1 ms */
+      var nE=0;
+      for(var s=t0;s<tm;s+=0.1){ var s1=Math.min(tm,s+0.1); V=rest+(V-rest)*Math.exp(-(s1-s)/tau.value);
+        syncEvents(s,s1,function(sg,i){ if(ref<=0) V=Math.max(-85,V+sg*ae.value); var key=(sg>0?"e":"i")+(i%10); flash[key]=0.18; if(nE++<6){ var b=bt.filter(function(q){ return q.k===key; })[0]; if(b) waves.push({b:b,u:0}); } });
+        man=man.filter(function(m){ if(m.tm<=s1){ if(ref<=0) V=Math.max(-85,V+m.amp); return false; } return true; });
+        ref-=(s1-s); if(V>=th&&ref<=0){ spikes.push({t:s1,u:0}); V=rest; ref=3; buf.push([s1,30]); } buf.push([s1,V]); }
+      while(buf.length&&buf[0][0]<tm-200) buf.shift(); spikes=spikes.filter(function(q){ return q.t>tm-200; });
+      c.clear(); B.bg(c,"#fbfdff","#eef3f9");
+      var top=D.y+40, sx=D.x+D.w*.58, sy=top+(D.h-40)*.5, sr=Math.min(30,D.h*.13);
+      /* dendrites */
+      var den=[[-1,-.9],[-1,-.35],[-1,.3],[-1,.85],[-.3,-1.1],[-.4,1.1]], tips=[];
+      ctx.save(); ctx.strokeStyle="#c9b2e8"; ctx.lineCap="round";
+      den.forEach(function(d){ var ex=sx+d[0]*D.w*.48, ey=sy+d[1]*(D.h-60)*.42; ex=Math.max(D.x+16,ex); ctx.lineWidth=7; ctx.beginPath(); ctx.moveTo(sx,sy); ctx.quadraticCurveTo((sx+ex)/2,(sy+ey)/2+(d[1]>0?-14:14),ex,ey); ctx.stroke(); tips.push([ex,ey]); });
+      /* axone */
+      var axx1=D.x+D.w-10; ctx.lineWidth=6; ctx.strokeStyle="#c9b2e8"; ctx.beginPath(); ctx.moveTo(sx+sr,sy); ctx.lineTo(axx1,sy); ctx.stroke(); ctx.restore();
+      for(var m=0;m<4;m++){ var mx=sx+sr+22+m*(axx1-sx-sr-30)/4; ctx.fillStyle="rgba(46,107,85,.35)"; S.draw.rrect(c,mx,sy-7,(axx1-sx-sr-30)/4-8,14,6); ctx.fill(); }
+      /* soma coloré selon Vm */
+      var f=Math.max(0,Math.min(1,(V-rest)/(th-rest))), scol=V<rest?"#6c8fd6":"rgb("+Math.round(150+105*f)+","+Math.round(120-40*f)+","+Math.round(210-150*f)+")";
+      S.draw.glow(c,sx,sy,sr*1.8,f>0.7?P.red:P.violet,.25+.3*f); B.ball(c,sx,sy,sr,scol); B.ball(c,sx-sr*.2,sy-sr*.15,sr*.38,"#5b3fa0");
+      S.draw.text(c,S.fmt(V,0)+" mV",sx,sy+sr+12,{size:10.5,color:P.ink,halo:true});
+      /* boutons synaptiques : 10 dessinés au plus par type */
+      bt=[]; var nEd=Math.min(10,ne.value), nId=Math.min(10,ni.value);
+      for(var i=0;i<nEd+nId;i++){ var exc=i<nEd, j=exc?i:i-nEd, tp=tips[(j*2+(exc?0:1))%tips.length], u=0.55+0.4*((j*0.37+(exc?0:.2))%1), bx=sx+(tp[0]-sx)*u, by=sy+(tp[1]-sy)*u+(exc?-9:9);
+        bt.push({x:bx,y:by,exc:exc,k:(exc?"e":"i")+j}); }
+      bt.forEach(function(b){ var fl=flash[b.k]||0; if(fl>0) S.draw.glow(c,b.x,b.y,16,b.exc?P.green:P.red,.6); B.ball(c,b.x,b.y,7.5,b.exc?P.green:P.red,{text:b.exc?"+":"−",size:10}); });
+      Object.keys(flash).forEach(function(q){ flash[q]-=dt; });
+      if(ne.value>10) S.draw.text(c,"1 bouton vert = "+S.fmt(ne.value/10,1)+" synapses",D.x+8,D.y+D.h-12,{size:9.5,color:P.green,align:"left"});
+      /* ondes PPSE / PPSI vers le soma */
+      waves.forEach(function(w){ w.u+=dt*2.2; var x=w.b.x+(sx-w.b.x)*w.u, y=w.b.y+(sy-w.b.y)*w.u; ctx.save(); ctx.globalAlpha=1-w.u*.6; B.ball(c,x,y,3.4,w.b.exc?"#4fbf7f":"#e06a5a"); ctx.restore(); });
+      waves=waves.filter(function(w){ return w.u<1; }); if(waves.length>60) waves=waves.slice(-60);
+      /* potentiels d'action sur l'axone */
+      spikes.forEach(function(q){ var u=(tm-q.t)/6; if(u>1) return; var x=sx+sr+u*(axx1-sx-sr); S.draw.glow(c,x,sy,14,P.amber,.8); B.ball(c,x,sy,5,P.amber); });
+      S.draw.text(c,"touche un bouton (+ ou −) pour l'activer",D.x+D.w/2,top+6,{size:9.5,color:P.grey,halo:true});
+      /* oscilloscope */
+      var ax=B.axes(c,L.g,{frame:true,t:24,b:36,l:42,x0:-200,x1:0,y0:-90,y1:40,stepX:50,stepY:20,xl:"temps (ms, 0 = maintenant)",yl:"Vm au cône d'émergence (mV)"});
+      S.draw.line(c,ax.L,ax.Y(th),ax.R,ax.Y(th),P.red,1.3,[6,4]); S.draw.text(c,"seuil −55",ax.L+6,ax.Y(th)-8,{size:9.5,color:P.red,align:"left",halo:true});
+      S.draw.line(c,ax.L,ax.Y(rest),ax.R,ax.Y(rest),"#c8d1de",1,[3,4]);
+      B.poly(c,ax,buf.map(function(q){ return [q[0]-tm,q[1]]; }),P.acc,1.8);
+      var mean=(ne.value*fe.value*ae.value-ni.value*fi.value*ae.value)/1000*tau.value, fr=offline(ne.value,ni.value);
+      var d=df.banner(c,13);
+      ro.set(0,(mean>=0?"+":"")+S.fmt(mean,1)+" mV"); ro.set(1,S.fmt(fr,0)+" Hz"); ro.set(2,String(spikes.length));
+      nt.set((d&&d.ok?"<b>Défi réussi.</b> ":"")+"Modèle d'intégrateur à fuite : repos −70 mV, seuil −55 mV, retour à −70 mV après chaque potentiel d'action (pics dessinés à +30 mV), réfractaire 3 ms, hyperpolarisation limitée à −85 mV. Trains réguliers déphasés ; l'animation est ralentie 20 fois.",d&&d.ok?"ok":"ok");
+    }
+    k.draw(function(){ frame(0); });
+    var lp=k.loop(function(dt){ frame(dt); }); lp.play();
   }
 });
 
 SFA.sim({
   id:"ub-c04-homeostasie-retroaction", ch:"c04", tag:"Homéostasie",
   titre:"Rétroaction négative et positive : gain et erreur résiduelle",
-  resume:"Perturbation d'une variable réglée : plus le gain est grand, plus l'erreur est petite. Une rétroaction positive emballe le système.",
-  but:"Choisis la variable (glycémie ou température), le type de rétroaction et le gain. Observe l'écart à la consigne au cours du temps.",
+  resume:"Un repas (ou le froid) perturbe la variable ; capteur, centre intégrateur et effecteurs la ramènent vers la consigne. Plus le gain est grand, plus l'erreur restante est petite.",
+  but:"Choisis la variable, le type de rétroaction et le gain, puis lance le film : la boucle s'anime (capteur → centre → effecteurs) et la courbe se trace. Glisse sur le graphique pour revoir n'importe quel instant.",
   aRetenir:"Rétroaction négative : x' = D − a(1 + G)·x. À l'équilibre, l'écart vaut D / [a(1 + G)] : l'erreur est réduite d'un facteur 1 + G par rapport à l'absence de régulation, et la correction est plus rapide (constante de temps 1/[a(1 + G)]). Il reste toujours un petit écart. Rétroaction positive : x' = D + a(G − 1)·x : si G > 1, emballement exponentiel (G = 1 : croissance linéaire, sans équilibre ; accouchement, coagulation, potentiel d'action).",
   piege:"« Homéostasie » ne veut pas dire valeur constante : il reste une erreur résiduelle, et la consigne elle-même peut changer (fièvre).",
   build:function(k,S){
-    var P=S.draw.palette, c=k.canvas(330);
+    var P=S.draw.palette, B=S.bio, c=k.canvas(600);
     var sc=k.seg("Variable",[["gly","Glycémie (g/L)"],["tmp","Température (°C)"]],"gly");
     var md=k.seg("Rétroaction",[["neg","Négative"],["pos","Positive"]],"neg");
     var G=k.slider("Gain G (effecteurs / perturbation)",0,20,0.5,4,"");
-    var tmp=k.toggle("Perturbation temporaire (s'arrête à t = 30)",false);
+    var tmp=k.toggle("Perturbation temporaire (s'arrête à t = 30 min)",false);
     var ro=k.readouts(["Écart final (ou pic)","Réduction de l'erreur","Constante de temps"]);
     var nt=k.note("","");
-    k.draw(function(){
-      c.clear(); var g=G.value, a=0.1, isG=sc.value==="gly", D=isG?0.06:0.4, set=isG?1.0:37, pos=md.value==="pos";
-      var Gp=g; var x=0, pts=[], cap=10*D/a, runaway=false, mx=0;
-      for(var t=0;t<=60;t+=0.1){ var d=(t>=5&&(!tmp.value||t<30))?D:0; var rate=pos? d+a*(Gp-1)*x : d-a*(1+g)*x; x+=0.1*rate; if(x>cap){ x=cap; runaway=true; } pts.push(x); if(Math.abs(x)>mx) mx=Math.abs(x); }
-      var ymax=pos?cap*1.05:D/a*1.2, ax=S.draw.axes(c,{t:28,x0:0,x1:60,y0:-ymax*0.05,y1:ymax,xl:"temps (min)",yl:"écart à la consigne ("+(isG?"g/L":"°C")+")"});
-      S.draw.line(c,ax.L,ax.Y(D/a),ax.R,ax.Y(D/a),P.grey,1.4,[5,4]); S.draw.text(c,"sans régulation : "+S.fmt(D/a,2),ax.R-4,ax.Y(D/a)-8,{size:10,color:P.grey,align:"right"});
-      var ctx=c.ctx; ctx.save(); ctx.beginPath(); ctx.rect(ax.L,ax.T,ax.R-ax.L,ax.B-ax.T); ctx.clip(); ctx.strokeStyle=pos?P.red:P.acc; ctx.lineWidth=2.6; ctx.beginPath();
-      pts.forEach(function(p,i){ var xx=ax.X(i*0.1), yy=ax.Y(p); if(i===0)ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }); ctx.stroke(); ctx.restore();
-      S.draw.text(c,"consigne : "+S.fmt(set,1)+(isG?" g/L":" °C")+" (écart = 0)",ax.L+10,ax.B-12,{size:11,color:P.ink,align:"left"});
-      var fin=pts[pts.length-1];
-      if(!pos){ var pk=tmp.value?mx:D/(a*(1+g)); ro.set(0,S.fmt(pk,3)); ro.set(1,"÷ "+S.fmt(1+g,1)); ro.set(2,S.fmt(1/(a*(1+g)),1)+" min");
-        nt.set((tmp.value?"Valeur au pic : ":"Valeur finale : ")+S.fmt(set+pk,3)+(isG?" g/L":" °C")+" (sans régulation : "+S.fmt(set+D/a,2)+")."+(tmp.value?" Après l'arrêt de la perturbation, la variable revient à la consigne.":""),"ok"); }
-      else { ro.set(0,Gp>=1?"emballement (pas d'équilibre)":S.fmt(D/(a*(1-Gp)),3)+(runaway?" (au-delà du plafond affiché)":"")); ro.set(1,Gp<1?"× "+S.fmt(1/(1-Gp),2)+" (amplifié)":"aucune"); ro.set(2,Gp<1?S.fmt(1/(a*(1-Gp)),1)+" min":Gp===1?"croissance linéaire":"exponentielle");
-        nt.set(Gp>=1?"G ≥ 1 : la perturbation s'auto-amplifie jusqu'à ce qu'un événement externe l'arrête (ex. expulsion du fœtus). Courbe plafonnée à "+S.fmt(cap,1)+" pour l'affichage.":"G < 1 : la rétroaction positive amplifie l'écart sans emballement, ce qui reste un mauvais régulateur.","warn"); }
-    });
-    k.note("Modèle linéaire à une variable (perturbation constante, a = 0,1 min⁻¹). La glycémie et la température sont des illustrations de la même logique ; les vraies boucles font intervenir plusieurs hormones ou effecteurs.","warn");
+    var tc=0, play=true, ax=null, drag=false, t=0, rnd=B.rng(51), dots=[]; for(var q=0;q<40;q++) dots.push({x:rnd(),y:rnd(),ph:rnd()*6.28});
+    function model(){ var g=G.value, a=0.1, isG=sc.value==="gly", D=isG?0.06:0.4, pos=md.value==="pos", x=0, pts=[[0,0]], cap=10*D/a, mx=0, runaway=false;
+      for(var tt=0;tt<60;tt+=0.1){ var d=(tt>=5&&(!tmp.value||tt<30))?D:0, rate=pos?d+a*(g-1)*x:d-a*(1+g)*x; x+=0.1*rate; if(x>cap){ x=cap; runaway=true; } pts.push([tt+0.1,x]); if(Math.abs(x)>mx) mx=Math.abs(x); }
+      return {pts:pts,D:D,a:a,isG:isG,pos:pos,cap:cap,mx:mx,runaway:runaway,set:isG?1.0:37,u:isG?"g/L":"°C"}; }
+    function at(m,tt){ return m.pts[Math.max(0,Math.min(m.pts.length-1,Math.round(tt*10)))][1]; }
+    var df=B.defi(k,function(n){ var id=n%3;
+        if(id===0){ var gly=sc.value==="gly", e=gly?[0.04,0.05,0.06,0.08][Math.floor(rnd()*4)]:[0.2,0.25,0.3,0.4][Math.floor(rnd()*4)]; return {id:0,e:e,gly:gly,txt:"rétroaction négative, perturbation permanente : écart final ≤ "+S.fmt(e,2)+" "+(gly?"g/L":"°C")+" avec le gain le plus petit possible"}; }
+        if(id===1) return {id:1,txt:"rétroaction positive : trouve le gain minimal à partir duquel le système n'a plus d'équilibre"};
+        return {id:2,txt:"perturbation temporaire : après son arrêt, l'écart doit retomber sous 10 % du pic en moins de 5 min, avec G minimal"}; },
+      function(d){ var m=model(), g=G.value;
+        if(d.id===0){ if(md.value!=="neg"||tmp.value||(sc.value==="gly")!==d.gly) return {ok:false}; var gm=Math.ceil((m.D/(m.a*d.e)-1)*2-1e-6)/2; return {ok:g===gm}; }
+        if(d.id===1) return {ok:md.value==="pos"&&g===1};
+        var gm2=Math.ceil((2.3026/(0.1*5)-1)*2)/2; return {ok:md.value==="neg"&&tmp.value&&g===gm2}; });
+    k.button("▶ Rejouer le film",function(){ tc=0; play=true; },true);
+    c.pointer(function(tp,p){ if(!ax) return; if(tp==="down") drag=ax.has(p,8); if((tp==="down"||tp==="drag")&&drag){ tc=Math.max(0,Math.min(60,ax.ix(p.x))); play=false; k.redraw(); } if(tp==="up") drag=false; });
+    function box(x,y,w,h,col,title,sub){ S.draw.panel(c,x-w/2,y-h/2,w,h,{fill:"#ffffff",stroke:col,radius:10}); S.draw.text(c,title,x,y-(sub?7:0),{size:10.5,color:col}); if(sub) S.draw.text(c,sub,x,y+8,{size:9,color:P.grey}); }
+    function frame(dt){
+      t+=dt; if(play){ tc+=dt*6; if(tc>=60){ tc=60; play=false; } }
+      var ctx=c.ctx, W=c.W, L=B.split(c,.52), D=L.d, m=model(), x=at(m,tc), pert=tc>=5&&(!tmp.value||tc<30), g=G.value;
+      var corr=m.pos?g*x:g*x; /* intensité de la réponse des effecteurs */
+      c.clear(); B.bg(c,"#fbfdff","#eef3f9");
+      var top=D.y+44, x0=D.x+10, x1=D.x+D.w-10, cx=(x0+x1)/2, wv=Math.min(200,D.w*.5), yv=top+30, yb=D.y+D.h-36;
+      /* variable réglée : vaisseau sanguin (glucose) ou corps (température) */
+      var rel=Math.max(-1,Math.min(3,x/(m.D/m.a)));
+      if(m.isG){ ctx.save(); S.draw.rrect(c,cx-wv/2,yv-20,wv,40,20); var gg=ctx.createLinearGradient(0,yv-20,0,yv+20); gg.addColorStop(0,"#f9d5d5"); gg.addColorStop(1,"#efb0b0"); ctx.fillStyle=gg; ctx.fill(); ctx.strokeStyle="#c46b6b"; ctx.lineWidth=2; ctx.stroke(); ctx.clip();
+          var nG=Math.round(14*(1+x/m.set*2.5)); for(var i=0;i<nG&&i<dots.length;i++){ var o=dots[i]; B.ball(c,cx-wv/2+((o.x-t*.06)%1+1)%1*wv,yv-14+o.y*28,3.6,P.amber); } ctx.restore();
+          S.draw.text(c,"glycémie "+B.f(m.set+x,2)+" g/L",cx,yv+30,{size:10.5,color:P.ink,halo:true}); }
+      else { var tcol=B.mix(P.red,Math.max(-.3,Math.min(.6,.25-rel*.3))); ctx.save(); ctx.fillStyle=tcol; ctx.beginPath(); ctx.arc(cx,yv-12,9,0,6.2832); ctx.fill(); S.draw.rrect(c,cx-14,yv-2,28,34,10); ctx.fill(); ctx.restore();
+          S.draw.text(c,"température "+B.f(m.set+x,2)+" °C",cx,yv+44,{size:10.5,color:P.ink,halo:true}); }
+      /* perturbation */
+      var px=x0+34; S.draw.text(c,m.isG?"repas":"froid",px,yv-14,{size:10,color:pert?P.amber:P.grey});
+      if(pert){ var pu=(t*1.2)%1; S.draw.arrow(c,px+14,yv,cx-wv/2-6,yv,P.amber,2.6); B.ball(c,px+14+pu*(cx-wv/2-px-24),yv,4,P.amber); }
+      /* boucle : capteur → centre → effecteurs */
+      var bw=Math.min(120,D.w*.3), bh=36, cxs=x1-bw/2, cxe=x0+bw/2, yc=(yv+yb)/2+18;
+      box(cxs,yc,bw,bh,P.teal,"capteur",m.isG?"cellules β, pancréas":"thermorécepteurs");
+      box(cx,yb,bw,bh,P.violet,"centre intégrateur",m.isG?"pancréas (insuline)":"hypothalamus");
+      box(cxe,yc,bw,bh,m.pos?P.red:P.green,"effecteurs",m.isG?"foie, muscles":"peau, muscles");
+      var sig=Math.min(1,Math.abs(corr)/(m.D/m.a*2)), lw=1.5+5*sig;
+      [[cx+wv/2,yv+6,cxs,yc-bh/2],[cxs,yc+bh/2,cx+bw/2,yb],[cx-bw/2,yb,cxe,yc+bh/2],[cxe,yc-bh/2,cx-wv/2,yv+6]].forEach(function(a,i){
+        S.draw.arrow(c,a[0],a[1],a[2],a[3],i===3?(m.pos?P.red:P.green):"#9aa6b6",i===3?lw:1.8);
+        var u=((t*.8+i*.25)%1); if(sig>0.02) B.ball(c,a[0]+(a[2]-a[0])*u,a[1]+(a[3]-a[1])*u,3.2,i===3?(m.pos?P.red:P.green):P.violet); });
+      S.draw.label(c,m.pos?"+ amplifie l'écart":"− corrige l'écart",(cxe+cx-wv/2)/2-6,(yc+yv)/2-6,{color:m.pos?P.red:P.green,size:10});
+      /* graphique */
+      var ymax=m.pos?m.cap*1.05:m.D/m.a*1.2;
+      ax=B.axes(c,L.g,{frame:true,t:24,b:36,l:46,x0:0,x1:60,y0:0,y1:ymax,stepX:10,stepY:ymax/4,xl:"temps (min)",yl:"écart à la consigne ("+m.u+")",fy:function(v){ return S.fmt(v,m.isG?2:1); }});
+      S.draw.line(c,ax.L,ax.cy(m.D/m.a),ax.R,ax.cy(m.D/m.a),P.grey,1.3,[5,4]); S.draw.text(c,"sans régulation : "+S.fmt(m.D/m.a,2),ax.R-4,ax.cy(m.D/m.a)-8,{size:9.5,color:P.grey,align:"right",halo:true});
+      ctx.save(); ctx.fillStyle="rgba(194,106,12,.08)"; ctx.fillRect(ax.X(5),ax.T,ax.X(tmp.value?30:60)-ax.X(5),ax.B-ax.T); ctx.restore();
+      B.poly(c,ax,m.pts,"#c8d1de",1.3,[4,3]); B.poly(c,ax,m.pts.slice(0,Math.round(tc*10)+1),m.pos?P.red:P.acc,2.8);
+      S.draw.dot(c,ax.X(tc),ax.cy(x),7,m.pos?P.red:P.acc);
+      var d=df.banner(c,13);
+      if(!m.pos){ var pk=tmp.value?m.mx:m.D/(m.a*(1+g)); ro.set(0,S.fmt(pk,3)+" "+m.u); ro.set(1,"÷ "+S.fmt(1+g,1)); ro.set(2,S.fmt(1/(m.a*(1+g)),1)+" min"); }
+      else { ro.set(0,g>=1?"emballement":S.fmt(m.D/(m.a*(1-g)),3)+" "+m.u); ro.set(1,g<1?"× "+S.fmt(1/(1-g),2)+" (amplifiée)":"aucune"); ro.set(2,g<1?S.fmt(1/(m.a*(1-g)),1)+" min":g===1?"croissance linéaire":"exponentielle"); }
+      nt.set((d&&d.ok?"<b>Défi réussi.</b> ":"")+(m.pos&&g>=1?"G ≥ 1 : la perturbation s'auto-amplifie jusqu'à ce qu'un événement externe l'arrête (ex. expulsion du fœtus) ; courbe plafonnée à "+S.fmt(m.cap,1)+" pour l'affichage. ":"")+"Modèle linéaire à une variable (a = 0,1 min⁻¹, perturbation constante à partir de t = 5 min). Glycémie et température illustrent la même logique ; les vraies boucles font intervenir plusieurs hormones ou effecteurs.",d&&d.ok?"ok":(m.pos&&g>=1)?"warn":"ok");
+    }
+    k.draw(function(){ frame(0); });
+    var lp=k.loop(function(dt){ frame(dt); }); lp.play();
   }
 });
 

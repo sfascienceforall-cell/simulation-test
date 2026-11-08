@@ -218,110 +218,135 @@ SFA.sim({
 SFA.sim({
   id: "p5-c02-nappe", ch: "c02", tag: "Niche utile",
   titre: "Le tour de la nappe : inertie en action",
-  resume: "Plus on tire fort et vite, plus le verre reste en place.",
-  but: "Tire la nappe sous le verre avec une accélération réglable. Trouve à partir de quelle accélération le verre ne tombe pas de la table. Que se passe-t-il quand on tire doucement ?",
-  aRetenir: "Le verre n'est entraîné que par le frottement, une force limitée (μ·m·g) qui agit pendant très peu de temps si on tire vite. Son déplacement diminue quand A augmente : D = μ₁·g·d·(1 + μ₁/μ₂) / (A − μ₁·g).",
-  piege: "Ce n'est pas « il n'y a pas de force sur le verre » : il y a du frottement. L'inertie signifie qu'une force brève ne change presque pas la vitesse d'un objet.",
+  resume: "Tire la nappe d'un coup sec : le verre, presque immobile, reste sur la table. Tire doucement : il part avec la nappe.",
+  but: "Règle l'accélération A de la traction puis « Tirer la nappe ! » : la scène se rejoue au ralenti, avec les forces sur le verre et les positions x(t) du verre et de la nappe. Défi : réussis le tour avec un verre déplacé de moins de 5 cm.",
+  aRetenir: "Le verre n'est entraîné que par le frottement de la nappe, une force limitée (μ₁·m·g) qui ne lui donne au plus qu'une accélération μ₁·g. Si on tire plus vite que ça, la nappe glisse sous le verre ; plus A est grand, plus ce glissement est bref et plus le verre reste en place : D = μ₁·g·d·(1 + μ₁/μ₂) / (A − μ₁·g).",
+  piege: "Ce n'est pas « il n'y a pas de force sur le verre » : il y a bien du frottement, vers l'avant. L'inertie signifie qu'une force limitée, agissant très peu de temps, ne change presque pas la vitesse du verre.",
   build: function(k, S){
-    var c = k.canvas(300), g2 = k.canvas(190);
-    var A = k.slider("Accélération de la nappe A", 1, 200, 1, 5, "m/s²");
+    var c = k.canvas(0, {ratio: 0.56}), g2 = k.canvas(190);
+    var A = k.slider("Accélération de la nappe A", 1, 200, 1, 20, "m/s²");
     var mu1 = k.slider("Frottement verre/nappe μ₁", 0.1, 0.8, 0.05, 0.4, "");
-    var ro = k.readouts(["Marge jusqu'au bord de la table", "Résultat", "Accélération limite μ₁·g", "Déplacement D (formule)"]);
+    var gv = k.seg("Graphe", [["xt", "Positions x(t)"], ["DA", "Déplacement D(A)"]], "DA");
+    var ro = k.readouts(["Accélération max du verre μ₁·g", "Durée du glissement", "Déplacement D du verre", "Résultat"]);
     var nt = k.note("", "");
-    var MU2 = 0.3, d0 = 0.20, w0 = 0.35, g = P5.g;
-    var fr = null, tp = 0, scale = 1, tries = 0, wins = 0;
+    var MU2 = 0.3, d0 = 0.20, w0 = 0.35, g = P5.g, edge = d0 + w0;
+    var fr = null, tp = 0, scale = 1, tries = 0, wins = 0, defiOk = 0;
+    /* intégration pas à pas (dt = 1 ms) ; frames : [t, x nappe, x verre, chute, v verre] */
     function run(){
-      var a1 = A.value, m1 = mu1.value, xe = 0, ve = 0, xg = d0, vg = 0, t = 0, dt = 0.001, out = [], fall = 0, yg = 0, vy = 0, edge = d0 + w0;
-      var guard = 0;
-      while (guard++ < 40000){
-        var slip = a1 > m1 * g, under = xe < xg;
-        var ag;
+      var a1 = A.value, m1 = mu1.value, xe = 0, ve = 0, xg = d0, vg = 0, t = 0, dt = 0.0005, out = [], fall = 0, yg = 0, vy = 0, tslip = 0, guard = 0;
+      while (guard++ < 80000){
+        var slip = a1 > m1 * g, under = xe < xg, ag;
         if (fall) ag = 0; else if (under) ag = slip ? m1 * g : a1; else ag = vg > 0 ? -MU2 * g : 0;
-        if (!fall){ vg = Math.max(0, vg + ag * dt); if (!under && vg === 0) { out.push([t, xe, xg, yg, vg]); break; } xg += vg * dt; }
+        if (under && !fall) tslip = t;
+        if (!fall){ vg = Math.max(0, vg + ag * dt); if (!under && vg === 0){ out.push([t, xe, xg, yg, vg]); break; } xg += vg * dt; }
         ve += a1 * dt; xe += ve * dt; t += dt;
         if (xg > edge && !fall) fall = 1;
-        if (fall){ vy += g * dt; yg += vy * dt; xg += vg * dt; if (yg > 0.5) { out.push([t, xe, xg, yg, vg]); break; } }
-        if (guard % 20 === 0) out.push([t, xe, xg, yg, vg]);
+        if (fall){ vy += g * dt; yg += vy * dt; xg += vg * dt; if (yg > 0.62){ out.push([t, xe, xg, yg, vg]); break; } }
+        if (guard % 10 === 0) out.push([t, xe, xg, yg, vg]);
       }
-      fr = {frames: out, fell: !!fall, shift: xg - d0, A: a1, mu: m1};
-      tp = 0; scale = Math.max(1, out[out.length - 1][0] / 4);
-      tries++; if (!fall) wins++;
+      fr = {frames: out, fell: !!fall, shift: xg - d0, A: a1, mu: m1, tslip: tslip, T: out[out.length - 1][0]};
+      tp = 0; scale = Math.max(1, Math.min(400, 2.5 / fr.T)); tries++; gv.set("xt"); if (!fall) wins++;
+      if (!fall && fr.shift < 0.05) defiOk++;
       lp.play();
     }
-    var lp = k.loop(function(dt){
-      tp += dt * (1 / scale); k.redraw();
-      if (tp > fr.frames[fr.frames.length - 1][0] + 0.8) lp.pause();
-    });
+    var lp = k.loop(function(dt){ if (!fr){ lp.pause(); return; } tp += dt / scale; k.redraw(); if (tp > fr.T + 0.6 / scale) lp.pause(); });
     k.button("Tirer la nappe !", run, true);
-    function frameAt(t){
-      var F = fr.frames; if (!F.length) return [0, 0, d0, 0, 0];
-      var i = 0; while (i < F.length - 1 && F[i][0] < t) i++;
-      return F[i];
-    }
+    function frameAt(t){ var F = fr.frames, i = 0; while (i < F.length - 1 && F[i][0] < t) i++; return F[i]; }
     function Dcm(a, m1){ return a > m1 * g ? m1 * g * d0 * (1 + m1 / MU2) / (a - m1 * g) * 100 : Infinity; }
     var gx = null;
-    /* manipulation directe : on glisse le point sur la courbe D(A) du graphe du bas */
-    P5x.drag(g2, k, function(){ return gx ? [{x: gx.X(Math.min(A.value, 100)), y: gx.Y(Math.min(Dcm(A.value, mu1.value), 40)), r: 34, set: function(px){ A.set(Math.round(P5.clamp(gx.ix(px), 1, 100))); }}] : null; });
+    P5x.drag(g2, k, function(){ return gx && gv.value === "DA" ? [{x: gx.X(A.value), y: gx.Y(Math.min(Dcm(A.value, mu1.value), 40)), r: 34, set: function(px){ A.set(Math.round(P5.clamp(gx.ix(px), 1, 200))); }}] : null; });
+    function glass(ctx, x, y, s, tilt){
+      ctx.save(); ctx.translate(x, y); ctx.rotate(tilt || 0);
+      var w = 30 * s, h = 50 * s;
+      ctx.beginPath(); ctx.moveTo(-w / 2, -h); ctx.lineTo(w / 2, -h); ctx.lineTo(w / 2 - 5 * s, 0); ctx.lineTo(-w / 2 + 5 * s, 0); ctx.closePath();
+      ctx.fillStyle = "rgba(205,228,247,.55)"; ctx.fill();
+      ctx.save(); ctx.clip(); ctx.fillStyle = "rgba(70,150,225,.6)"; ctx.fillRect(-w, -h * 0.62, 2 * w, h); ctx.restore();
+      ctx.strokeStyle = "#3f7fbf"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-w / 2, -h); ctx.lineTo(-w / 2 + 5 * s, 0); ctx.lineTo(w / 2 - 5 * s, 0); ctx.lineTo(w / 2, -h); ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,.75)"; ctx.fillRect(-w / 2 + 5 * s, -h + 5 * s, 3 * s, h * 0.68);
+      ctx.restore();
+    }
     k.draw(function(){
-      var pal = S.draw.palette, ctx = c.ctx, a1 = A.value, m1 = mu1.value;
+      var pal = S.draw.palette, ctx = c.ctx, W = c.W, H = c.H, a1 = A.value, m1 = mu1.value, s = Math.max(0.75, Math.min(1.2, W / 480));
       if (fr && (fr.A !== a1 || fr.mu !== m1)){ fr = null; lp.pause(); tp = 0; }
-      P5x.sky(c, "#f3f8fd", "#e4edf6"); 
-      var floor = c.H - 22, ty = 150, X = function(x){ return 20 + x / 0.8 * (c.W - 40); };
-      var st = fr ? frameAt(tp) : [0, 0, d0, 0, 0], xe = st[1], xg = st[2], yg = st[3], fell = fr && fr.fell && yg > 0.02;
-      /* sol et table */
-      P5x.ground(c, floor, {col: "#d9cdb8"});
-      var tx0 = X(0), tx1 = X(d0 + w0);
-      ctx.fillStyle = P5x.lin(ctx, 0, ty, 0, ty + 14, [[0, "#d9b98a"], [1, "#b8946a"]]); P5x.rr(ctx, tx0 - 6, ty, tx1 - tx0 + 12, 14, 4); ctx.fill();
-      ctx.fillStyle = "#a98458"; ctx.fillRect(tx0 + 8, ty + 14, 11, floor - ty - 14); ctx.fillRect(tx1 - 19, ty + 14, 11, floor - ty - 14);
-      /* nappe : posée sur la table, qui pend après le bord */
-      var cx0 = Math.max(X(xe), tx0 - 6), cEnd = X(1.0);
-      ctx.fillStyle = "#e88b8b"; ctx.fillRect(cx0, ty - 4, Math.max(0, cEnd - cx0), 4);
-      var hang = Math.max(0, Math.min(cEnd, tx1 + 6) - Math.max(cx0, tx1 + 6)); 
-      if (cEnd > tx1 + 6){ var hx = tx1 + 6; ctx.fillStyle = "#d97575"; ctx.beginPath(); ctx.moveTo(hx, ty - 4); ctx.lineTo(hx + 26, ty - 4); ctx.lineTo(hx + 26, ty + 4 + 40); ctx.lineTo(hx, ty + 36); ctx.closePath(); ctx.fill(); }
-      /* motif de la nappe */
-      ctx.fillStyle = "rgba(255,255,255,.55)"; for (var q = Math.ceil(cx0 / 14) * 14; q < Math.min(cEnd, tx1 + 6); q += 14) ctx.fillRect(q, ty - 3, 6, 2);
-      S.draw.line(c, tx1, ty - 74, tx1, floor, "rgba(15,27,45,.35)", 1.5, [5, 4]);
-      P5x.tag(c, "bord de la table", tx1, ty - 82, pal.grey, {color: "#4b5868"});
+      var floor = H - 16, ty = H * 0.45, X0 = 18, sx = (W - 36) / 0.95, X = function(x){ return X0 + (x + 0.18) * sx; };
+      var st = fr ? frameAt(tp) : [0, 0, d0, 0, 0], xe = st[1], xg = st[2], yg = st[3], onCloth = xe < xg, sliding = fr && onCloth && a1 > m1 * g;
+      /* salle */
+      ctx.fillStyle = P5x.lin(ctx, 0, 0, 0, H, [[0, "#f6efe4"], [1, "#eadfcd"]]); ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "rgba(160,120,80,.10)"; for (var b = 0; b < W; b += 46) ctx.fillRect(b, 0, 2, floor);
+      P5x.ground(c, floor, {col: "#cdb592"});
+      /* table */
+      var tx0 = X(-0.15), tx1 = X(edge);
+      ctx.fillStyle = P5x.lin(ctx, 0, ty, 0, ty + 14, [[0, "#c79d6a"], [1, "#9d7448"]]); P5x.rr(ctx, tx0, ty, tx1 - tx0, 13, 3); ctx.fill();
+      ctx.fillStyle = "#8a6440"; ctx.fillRect(tx0 + 10, ty + 13, 10, floor - ty - 13); ctx.fillRect(tx1 - 20, ty + 13, 10, floor - ty - 13);
+      /* nappe : de son bout arrière (xe) jusqu'au bord, puis pend et est tirée par les mains */
+      var cl = Math.max(X(xe), tx0), hx = tx1, drop = Math.min(floor - ty - 30, 60 + 0), pull = Math.max(0, (xe) * sx);
+      if (cl < hx){ ctx.fillStyle = "#d9534f"; ctx.fillRect(cl, ty - 4, hx - cl, 5); ctx.fillStyle = "rgba(255,255,255,.7)"; for (var q = cl + 3; q < hx - 4; q += 12) ctx.fillRect(q, ty - 3, 6, 3); }
+      var handX = Math.min(W - 18, tx1 + 30 + pull), handY = ty + 30;
+      ctx.fillStyle = "#c9443f"; ctx.beginPath(); ctx.moveTo(Math.max(cl, hx - 1), ty - 4); ctx.lineTo(hx + 4, ty + 1); ctx.quadraticCurveTo(hx + 12, handY - 4, handX - 6, handY - 6); ctx.lineTo(handX - 6, handY + 6); ctx.quadraticCurveTo(hx + 4, handY + 10, hx, ty + 6); ctx.closePath(); ctx.fill();
+      /* mains */
+      ctx.fillStyle = "#f0c8a0"; ctx.strokeStyle = "#c79a74"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(handX, handY, 9, 7, 0, 0, 7); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#3f5f9f"; ctx.fillRect(handX + 7, handY - 6, Math.max(0, W - handX), 12);
+      P5.vec(c, Math.min(handX + 12, W - 60), handY - 22, Math.min(handX + 12, W - 60) + 18 + Math.min(1, a1 / 200) * 34, handY - 22, pal.red, "", {w: 3});
+      P5x.tag(c, "A = " + S.fmt(a1, 0) + " m/s²", Math.min(handX + 6, W - 64), handY - 40, pal.red, {size: 11.5});
+      S.draw.line(c, tx1, ty - 70 * s, tx1, ty - 6, "rgba(15,27,45,.35)", 1.3, [4, 4]);
+      P5x.tag(c, "bord", tx1, ty - 76 * s, "#4b5868", {size: 11});
+      /* chronophotographie du verre (fantômes) */
+      if (fr){ for (var f = 1; f <= 5; f++){ var sf = frameAt(tp * f / 6); if (sf[3] > 0.01) continue; ctx.globalAlpha = 0.14; glass(ctx, X(sf[2]), (sf[1] < sf[2] ? ty - 4 : ty), s); } ctx.globalAlpha = 1; }
       /* verre */
-      var onCloth = xe < xg, surf = onCloth ? ty - 4 : ty, gy = surf + (yg > 0 ? yg * (floor - surf) / 0.5 : 0);
-      if (fell && yg > 0.47){ /* éclats */
-        ctx.fillStyle = "rgba(120,170,225,.85)"; for (var s = 0; s < 9; s++){ var an = s * 0.7, rr0 = 8 + s * 3; ctx.beginPath(); ctx.arc(X(xg) + Math.cos(an) * rr0, floor - 3 - Math.abs(Math.sin(an)) * 6, 2.6, 0, 7); ctx.fill(); }
+      var surf = onCloth ? ty - 4 : ty, fell = fr && fr.fell && yg > 0.01, gyy = surf + yg * (floor - surf) / 0.62;
+      if (fell && yg > 0.6){
+        ctx.fillStyle = "rgba(120,170,225,.85)"; for (var e = 0; e < 10; e++){ var an = e * 0.65; ctx.beginPath(); ctx.arc(X(xg) + Math.cos(an) * (8 + e * 3), floor - 3 - Math.abs(Math.sin(an)) * 5, 2.4, 0, 7); ctx.fill(); }
+        ctx.fillStyle = "rgba(70,150,225,.35)"; ctx.beginPath(); ctx.ellipse(X(xg), floor + 1, 34, 4, 0, 0, 7); ctx.fill();
         P5x.banner(c, "Le verre tombe et se brise !", pal.red, 20);
       } else {
-        var gw = 28, gh = 44, gxx = X(xg);
-        ctx.save(); ctx.beginPath(); ctx.moveTo(gxx - gw / 2, gy - gh); ctx.lineTo(gxx + gw / 2, gy - gh); ctx.lineTo(gxx + gw / 2 - 4, gy); ctx.lineTo(gxx - gw / 2 + 4, gy); ctx.closePath();
-        ctx.fillStyle = "rgba(190,220,245,.55)"; ctx.fill(); ctx.strokeStyle = "#4a86c5"; ctx.lineWidth = 2; ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(gxx - gw / 2 + 2, gy - gh * 0.62); ctx.lineTo(gxx + gw / 2 - 2, gy - gh * 0.62); ctx.lineTo(gxx + gw / 2 - 4, gy); ctx.lineTo(gxx - gw / 2 + 4, gy); ctx.closePath(); ctx.fillStyle = "rgba(60,140,220,.55)"; ctx.fill();
-        ctx.fillStyle = "rgba(255,255,255,.7)"; ctx.fillRect(gxx - gw / 2 + 4, gy - gh + 4, 3, gh * 0.7); ctx.restore();
-        /* force de frottement de la nappe sur le verre */
-        if (fr && onCloth && lp.running) P5.vec(c, gxx, gy - gh / 2, gxx + Math.min(60, Math.max(18, m1 * 70)), gy - gh / 2, pal.red, "f", {size: 12, dy: -6});
-        if (fr && st[4] > 0.01 && !onCloth) P5.vec(c, gxx, gy - gh - 12, gxx + Math.min(70, 14 + st[4] * 50), gy - gh - 12, pal.acc, "v", {size: 12});
+        glass(ctx, X(xg), gyy, s, fell ? Math.min(1.2, yg * 3) : 0);
+        var gc = X(xg), gm = gyy - 25 * s;
+        if (fr && !fell && (sliding || st[4] > 0.005)){
+          /* forces sur le verre : poids, réaction, frottement */
+          P5.vec(c, gc, gm, gc, gm + 30, pal.ink, "P", {w: 2, size: 11});
+          P5.vec(c, gc, gyy, gc, gyy - 52 * s - 26, pal.green, "N", {w: 2, size: 11, dx: 8});
+          var fdir = sliding ? 1 : -1, fl = 14 + (sliding ? m1 : MU2) * 40;
+          P5.vec(c, gc, gyy - 2, gc + fdir * fl, gyy - 2, pal.amber, "f", {w: 2.6, size: 11});
+        }
       }
-      /* flèche de traction */
-      var arx = Math.min(X(xe) + 28, c.W - 30);
-      P5.vec(c, Math.min(Math.max(X(xe) + 6, 50), c.W - 90), ty - 28, Math.min(Math.max(X(xe) + 6, 50) + 26 + Math.min(a1, 100) * 0.55, c.W - 14), ty - 28, "#c0392b", "", {w: 3.4});
-      P5x.tag(c, "tirer, A = " + S.fmt(a1, 0) + " m/s²", Math.min(Math.max(X(xe) + 6, 50), c.W - 150), ty - 46, pal.red, {align: "left"});
-      if (fr && !fell && tp >= fr.frames[fr.frames.length - 1][0]) P5x.banner(c, "Le verre reste sur la table : déplacement " + S.fmt(fr.shift * 100, 1) + " cm", pal.green, 20);
-      if (!fr) P5x.hint(c, "Règle A puis « Tirer la nappe ! » · " + wins + " réussie(s) sur " + tries, {y: 18});
-      else P5x.hint(c, "Ralenti ×" + S.fmt(scale, 0) + " · " + wins + " réussie(s) sur " + tries, {y: c.H - 8});
-      /* graphe D(A) */
+      if (fr && !fell && tp >= fr.T) P5x.banner(c, "Réussi : le verre a glissé de " + S.fmt(fr.shift * 100, 1) + " cm", pal.green, 20);
+      if (!fr) P5x.hint(c, "Règle A puis « Tirer la nappe ! » · réussites : " + wins + "/" + tries, {y: 16, size: 11.5});
+      else P5x.hint(c, "Ralenti ×" + S.fmt(scale, 0) + " · t = " + S.fmt(Math.min(tp, fr.T) * 1000, 0) + " ms", {y: 16, size: 11.5});
+      /* graphes */
       g2.clear();
       var slip = a1 > m1 * g, D = Dcm(a1, m1);
-      gx = S.draw.axes(g2, {x0: 0, x1: 100, y0: 0, y1: 40, xl: "A (m/s²)", yl: "D (cm)", stepX: 10, stepY: 10, l: 50});
-      S.draw.area(g2, gx, function(x){ return 40; }, 0, 100, pal.red, 0.07, w0 * 100);
-      S.draw.line(g2, gx.X(0), gx.Y(w0 * 100), gx.X(100), gx.Y(w0 * 100), pal.red, 1.8, [6, 4]);
-      P5x.tag(g2, "marge " + S.fmt(w0 * 100, 0) + " cm : au-dessus, le verre tombe", gx.X(98), gx.Y(w0 * 100) + 14, pal.red, {align: "right", size: 11.5});
-      S.draw.fn(g2, gx, function(x){ var d = Dcm(x, m1); return isFinite(d) ? d : 1e4; }, pal.acc, 2.8);
-      S.draw.line(g2, gx.X(m1 * g), gx.Y(0), gx.X(m1 * g), gx.Y(40), pal.grey, 1.4, [4, 4]);
-      P5x.tag(g2, "μ₁·g", gx.X(m1 * g) + 4, gx.Y(0) - 12, "#4b5868", {align: "left", size: 11});
-      var okD = slip && D <= w0 * 100, hx = gx.X(Math.min(a1, 100)), hy = slip ? gx.Y(Math.min(D, 40)) : gx.Y(40);
-      P5x.handle(g2, hx, hy, okD ? pal.green : pal.red, 8);
-      P5x.hint(g2, "Glisse le point : trouve A pour que le verre reste", {x: g2.W - 10, y: 12, align: "right", size: 11});
-      ro.set(0, S.fmt(w0 * 100, 0) + " cm"); ro.set(2, S.fmt(m1 * g, 2) + " m/s²");
-      ro.set(1, fr ? (fr.fell ? "tombe" : "reste") : "—");
-      ro.set(3, slip ? S.fmt(D, 1) + " cm" : "la nappe l'entraîne");
-      if (!slip) nt.set("A ≤ μ₁·g = " + S.fmt(m1 * g, 2) + " m/s² : le frottement suffit à entraîner le verre avec la nappe, sans glissement : il tombe.", "warn");
-      else nt.set(D > w0 * 100 ? "Prévision : D = " + S.fmt(D, 1) + " cm dépasse la marge de " + S.fmt(w0 * 100, 0) + " cm : le verre ira au bord et tombera." : "Prévision : D = " + S.fmt(D, 1) + " cm est inférieur à la marge de " + S.fmt(w0 * 100, 0) + " cm : le verre s'arrête sur la table.", D > w0 * 100 ? "warn" : "ok");
+      if (gv.value === "DA"){
+        gx = S.draw.axes(g2, {x0: 0, x1: 200, y0: 0, y1: 40, xl: "A (m/s²)", yl: "D (cm)", stepX: 50, stepY: 10, l: 46});
+        S.draw.area(g2, gx, function(){ return 40; }, 0, 200, pal.red, 0.07, w0 * 100);
+        S.draw.line(g2, gx.X(0), gx.Y(w0 * 100), gx.X(200), gx.Y(w0 * 100), pal.red, 1.6, [6, 4]);
+        P5x.tag(g2, "au-dessus de 35 cm : il tombe", gx.X(196), gx.Y(w0 * 100) + 13, pal.red, {align: "right", size: 11});
+        S.draw.line(g2, gx.X(0), gx.Y(5), gx.X(200), gx.Y(5), pal.green, 1.4, [3, 3]);
+        P5x.tag(g2, "défi : moins de 5 cm", gx.X(196), gx.Y(5) - 11, pal.green, {align: "right", size: 11});
+        S.draw.fn(g2, gx, function(x){ var d = Dcm(x, m1); return isFinite(d) ? d : 1e4; }, pal.acc, 2.8);
+        P5x.handle(g2, gx.X(a1), slip ? gx.Y(Math.min(D, 40)) : gx.Y(40), slip && D <= 5 ? pal.green : slip && D <= 35 ? pal.amber : pal.red, 7);
+        P5x.hint(g2, "Glisse le point pour régler A", {x: g2.W - 10, y: 12, align: "right", size: 11});
+      } else {
+        gx = null;
+        var Tm = fr ? fr.T : 0.4, ax = S.draw.axes(g2, {x0: 0, x1: Tm * 1000, y0: 0, y1: 1.0, xl: "t (ms)", yl: "x (m)", stepY: 0.25, l: 46});
+        S.draw.line(g2, ax.X(0), ax.Y(edge), ax.X(Tm * 1000), ax.Y(edge), pal.red, 1.4, [6, 4]); P5x.tag(g2, "bord de la table", ax.X(Tm * 1000) - 4, ax.Y(edge) - 11, pal.red, {align: "right", size: 11});
+        if (fr){
+          var F = fr.frames, cx2 = g2.ctx;
+          [[1, "#d9534f", "nappe (bout arrière)", d0 * 0], [2, pal.acc, "verre", 0]].forEach(function(sr){
+            cx2.strokeStyle = sr[1]; cx2.lineWidth = 2.6; cx2.beginPath(); var st0 = true;
+            for (var i = 0; i < F.length && F[i][0] <= tp; i++){ var yv = Math.min(F[i][sr[0]] + (sr[0] === 1 ? d0 * 0 : 0), 1.0); if (st0){ cx2.moveTo(ax.X(F[i][0] * 1000), ax.Y(yv)); st0 = false; } else cx2.lineTo(ax.X(F[i][0] * 1000), ax.Y(yv)); }
+            cx2.stroke();
+          });
+          if (fr.tslip > 0) { S.draw.line(g2, ax.X(fr.tslip * 1000), ax.Y(0), ax.X(fr.tslip * 1000), ax.Y(1), pal.amber, 1.2, [3, 3]); P5x.tag(g2, "fin du glissement", ax.X(fr.tslip * 1000) + 4, ax.T + 10, "#8a5200", {align: "left", size: 11}); }
+          S.draw.legend(g2, [["#d9534f", "nappe"], [pal.acc, "verre"]], 52, ax.T + 22, {});
+        } else P5x.hint(g2, "Tire la nappe : les courbes se tracent en même temps que la scène", {x: g2.W / 2, y: g2.H / 2 - 10, align: "center", size: 11.5});
+      }
+      ro.set(0, S.fmt(m1 * g, 2) + " m/s²");
+      ro.set(1, slip ? S.fmt(Math.sqrt(2 * d0 / (a1 - m1 * g)) * 1000, 0) + " ms" : "pas de glissement");
+      ro.set(2, slip ? (D > 99 ? "> 99 cm" : S.fmt(D, 1) + " cm") : "il suit la nappe");
+      ro.set(3, fr ? (fr.fell ? "tombe" : "reste (" + S.fmt(fr.shift * 100, 1) + " cm)") : "—");
+      var dok = slip && D < 5;
+      if (!slip) nt.set("A ≤ μ₁·g = " + S.fmt(m1 * g, 2) + " m/s² : le frottement suffit à entraîner le verre avec la nappe, sans glissement : il part avec elle et tombe.", "warn");
+      else nt.set("<b>Défi</b> : verre déplacé de moins de 5 cm. Prévision : D = " + (D > 99 ? "plus de 99" : S.fmt(D, 1)) + " cm " + (D > w0 * 100 ? "> 35 cm : il atteint le bord et tombe." : dok ? "< 5 cm : défi réussi si tu tires !" : "< 35 cm : il reste sur la table, mais il glisse encore trop.") + (defiOk ? " · Défi réussi " + defiOk + " fois." : ""), D > w0 * 100 ? "warn" : dok ? "ok" : "");
     });
   }
 });

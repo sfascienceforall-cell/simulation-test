@@ -96,59 +96,124 @@ window.P5x = (function(){
 SFA.sim({
   id: "p5-c01-somme", ch: "c01", tag: "Vecteurs",
   titre: "Somme de deux forces : la règle du parallélogramme",
-  resume: "Déplace les pointes de F₁ et F₂ et vois la résultante apparaître.",
-  but: "Déplace la pointe des deux flèches (ou utilise les curseurs). Observe la résultante R = F₁ + F₂, ses composantes, et compare ‖R‖ à ‖F₁‖ + ‖F₂‖.",
-  aRetenir: "On additionne les forces composante par composante : Rx = F₁x + F₂x et Ry = F₁y + F₂y. La norme de R est toujours inférieure ou égale à la somme des normes.",
-  piege: "Additionner les normes (3 N + 4 N = 7 N) n'est vrai que si les deux forces ont la même direction et le même sens. Si elles sont perpendiculaires, ‖R‖ = 5 N.",
+  resume: "Deux personnes tirent une caisse avec des cordes : la caisse part selon la résultante, pas selon la somme des valeurs.",
+  but: "Vue de dessus : deux personnes tirent une caisse posée sur un sol glissant. Fais glisser les mains (pointes de F₁ et F₂), lis les dynamomètres, puis lâche la caisse : elle part dans la direction de R = F₁ + F₂. Défi : avec des dynamomètres bloqués à 3 N et 4 N, obtiens la résultante demandée.",
+  aRetenir: "On additionne les forces comme des vecteurs : règle du parallélogramme (ou bout à bout), ou composante par composante Rx = F₁x + F₂x et Ry = F₁y + F₂y. Avec deux forces de valeurs F₁ et F₂ faisant un angle θ : |F₁ − F₂| ≤ R ≤ F₁ + F₂.",
+  piege: "Additionner les valeurs (3 N + 4 N = 7 N) n'est vrai que si les deux cordes sont parallèles et tirent dans le même sens. Si elles sont perpendiculaires, R = 5 N (Pythagore) ; si elles sont opposées, R = 1 N.",
   build: function(k, S){
-    var c = k.canvas(0, {ratio: 0.64});
-    var ax1 = k.slider("F₁ horizontale", -6, 6, 0.5, 3, "N");
-    var ay1 = k.slider("F₁ verticale", -4, 4, 0.5, 1, "N");
-    var ax2 = k.slider("F₂ horizontale", -6, 6, 0.5, 1, "N");
-    var ay2 = k.slider("F₂ verticale", -4, 4, 0.5, 3, "N");
-    var tg = k.toggle("Montrer les composantes de R", true);
-    k.button("Perpendiculaires (3 N et 4 N)", function(){ ax1.set(3); ay1.set(0); ax2.set(0); ay2.set(4); });
-    k.button("Opposées", function(){ ax1.set(3); ay1.set(1); ax2.set(-3); ay2.set(-1); });
-    k.button("Alignées", function(){ ax1.set(2); ay1.set(1); ax2.set(4); ay2.set(2); });
-    var ro = k.readouts(["‖F₁‖", "‖F₂‖", "‖R‖", "‖F₁‖ + ‖F₂‖", "Rx ; Ry", "Angle de R"]);
+    var c = k.canvas(0, {ratio: 0.8}), g = k.canvas(170);
+    var mode = k.seg("Mode", [["libre", "Libre"], ["defi", "Défi 3 N + 4 N"]], "libre", function(v){ if (v === "defi"){ n1.set(3); n2.set(4); } lach = null; });
+    var n1 = k.slider("Valeur de F₁ (dynamomètre bleu)", 0.5, 5, 0.1, 3, "N");
+    var d1 = k.slider("Direction de F₁", -180, 180, 1, 20, "°");
+    var n2 = k.slider("Valeur de F₂ (dynamomètre rouge)", 0.5, 5, 0.1, 4, "N");
+    var d2 = k.slider("Direction de F₂", -180, 180, 1, 110, "°");
+    var tg = k.toggle("Construction : parallélogramme et composantes", true);
+    var ro = k.readouts(["F₁ + F₂ (valeurs)", "‖R‖ (résultante)", "Angle θ entre les cordes", "Rx ; Ry", "Direction de R"]);
     var nt = k.note("", "");
-    var f, drag = 0;
-    c.pointer(function(type, p){
-      if (!f) return;
-      var x = P5.clamp(Math.round(f.ix(p.x) * 2) / 2, -6, 6), y = P5.clamp(Math.round(f.iy(p.y) * 2) / 2, -4, 4);
-      if (type === "down"){
-        var d1 = Math.hypot(p.x - f.X(ax1.value), p.y - f.Y(ay1.value)), d2 = Math.hypot(p.x - f.X(ax2.value), p.y - f.Y(ay2.value));
-        drag = d1 <= d2 ? 1 : 2;
-      }
-      if (type === "down" || type === "drag"){
-        if (drag === 1){ ax1.set(x); ay1.set(y); } else if (drag === 2){ ax2.set(x); ay2.set(y); }
-        k.redraw();
-      }
-    });
+    var DEF = [[7, "R = 7 N"], [5, "R = 5 N"], [1, "R = 1 N"], [6, "R = 6 N"], [2.5, "R = 2,5 N"]], di = 0, okCount = 0, lastOk = false;
+    var lach = null;                    /* animation : la caisse lâchée part selon R */
+    var lp = k.loop(function(dt){ if (!lach) { lp.pause(); return; } lach.t += dt; if (lach.t > 1.8){ lach = null; lp.pause(); } k.redraw(); });
+    k.button("Lâcher la caisse", function(){ lach = {t: 0}; lp.play(); }, true);
+    k.button("Défi suivant", function(){ mode.set("defi"); n1.set(3); n2.set(4); di = (di + 1) % DEF.length; lastOk = false; });
+    var G = {cx: 0, cy: 0, u: 1}, gx = null;
+    function tip(n, d){ var a = d.value * Math.PI / 180; return [G.cx + n.value * G.u * Math.cos(a), G.cy - n.value * G.u * Math.sin(a)]; }
+    function setFrom(n, d, px, py){
+      var dx = (px - G.cx) / G.u, dy = -(py - G.cy) / G.u, a = Math.round(Math.atan2(dy, dx) * 180 / Math.PI);
+      d.set(a); if (mode.value !== "defi") n.set(Math.round(P5.clamp(Math.hypot(dx, dy), 0.5, 5) * 10) / 10);
+    }
+    P5x.drag(c, k, function(){ var t1 = tip(n1, d1), t2 = tip(n2, d2);
+      return [{x: t1[0], y: t1[1], r: 30, set: function(px, py){ setFrom(n1, d1, px, py); lach = null; }}, {x: t2[0], y: t2[1], r: 30, set: function(px, py){ setFrom(n2, d2, px, py); lach = null; }}]; });
+    /* sur le graphe : glisser le point change l'angle entre les cordes (F₂ tourne autour de F₁) */
+    P5x.drag(g, k, function(){ if (!gx) return null; var th = theta(); return [{x: gx.X(th), y: gx.Y(Rn(th)), r: 30, set: function(px){ var t = Math.round(P5.clamp(gx.ix(px), 0, 180)); var s = ((d2.value - d1.value) % 360 + 540) % 360 - 180 >= 0 ? 1 : -1; var a = d1.value + s * t; a = ((a + 180) % 360 + 360) % 360 - 180; d2.set(a); lach = null; }}]; });
+    function theta(){ var t = Math.abs(((d2.value - d1.value) % 360 + 540) % 360 - 180); return t; }
+    function Rn(th){ var a = n1.value, b = n2.value; return Math.sqrt(Math.max(0, a * a + b * b + 2 * a * b * Math.cos(th * Math.PI / 180))); }
+    /* personne vue de dessus, tournée vers la caisse */
+    function person(x, y, ang, col){
+      var ctx = c.ctx; ctx.save(); ctx.translate(x, y); ctx.rotate(-ang);
+      ctx.fillStyle = "rgba(15,27,45,.12)"; ctx.beginPath(); ctx.ellipse(3, 3, 13, 20, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = P5x.shade(col, -0.1); ctx.beginPath(); ctx.ellipse(0, 0, 11, 19, 0, 0, 7); ctx.fill();
+      ctx.strokeStyle = P5x.shade(col, -0.2); ctx.lineWidth = 5; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(2, -13); ctx.lineTo(19, -3); ctx.moveTo(2, 13); ctx.lineTo(19, 3); ctx.stroke();
+      ctx.fillStyle = "#f0c8a0"; ctx.beginPath(); ctx.arc(0, 0, 8, 0, 7); ctx.fill(); ctx.fillStyle = "#5b3b25"; ctx.beginPath(); ctx.arc(-1, 0, 7.5, 1.4, 4.9); ctx.fill();
+      ctx.restore();
+    }
+    function dyna(x, y, ang, col, val){
+      var ctx = c.ctx; ctx.save(); ctx.translate(x, y); ctx.rotate(-ang);
+      ctx.fillStyle = P5x.lin(ctx, 0, -6, 0, 6, [[0, "#fafbfd"], [1, "#c9d1dc"]]); P5x.rr(ctx, -16, -6, 32, 12, 4); ctx.fill(); ctx.strokeStyle = col; ctx.lineWidth = 1.6; ctx.stroke();
+      ctx.fillStyle = col; ctx.fillRect(-12, -2, 24 * Math.min(1, val / 5), 4); ctx.restore();
+    }
     k.draw(function(){
-      c.clear();
-      f = P5.frame(c, {x0: -7, x1: 7, y0: -4.5, y1: 4.5}, {axes: true});
-      var x1 = ax1.value, y1 = ay1.value, x2 = ax2.value, y2 = ay2.value, rx = x1 + x2, ry = y1 + y2;
-      var X0 = f.X(0), Y0 = f.Y(0), pal = S.draw.palette;
-      S.draw.line(c, f.X(x1), f.Y(y1), f.X(rx), f.Y(ry), "#9bb0d8", 1.5, [5, 4]);
-      S.draw.line(c, f.X(x2), f.Y(y2), f.X(rx), f.Y(ry), "#e2a29b", 1.5, [5, 4]);
+      var pal = S.draw.palette, ctx = c.ctx, W = c.W, H = c.H, defi = mode.value === "defi";
+      if (defi && (n1.value !== 3 || n2.value !== 4)){ n1.set(3); n2.set(4); }
+      G.cx = W / 2; G.cy = H / 2 + 6; G.u = (Math.min(W, H) / 2 - 34) / 7;
+      var a1 = d1.value * Math.PI / 180, a2 = d2.value * Math.PI / 180;
+      var f1 = [n1.value * Math.cos(a1), n1.value * Math.sin(a1)], f2 = [n2.value * Math.cos(a2), n2.value * Math.sin(a2)], R = [f1[0] + f2[0], f1[1] + f2[1]], nr = Math.hypot(R[0], R[1]);
+      /* sol (carrelage 1 N) */
+      ctx.fillStyle = P5x.lin(ctx, 0, 0, 0, H, [[0, "#f2f5f9"], [1, "#e4eaf2"]]); ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = "rgba(120,140,170,.18)"; ctx.lineWidth = 1;
+      for (var gxx = G.cx % G.u; gxx < W; gxx += G.u){ ctx.beginPath(); ctx.moveTo(gxx, 0); ctx.lineTo(gxx, H); ctx.stroke(); }
+      for (var gyy = G.cy % G.u; gyy < H; gyy += G.u){ ctx.beginPath(); ctx.moveTo(0, gyy); ctx.lineTo(W, gyy); ctx.stroke(); }
+      /* déplacement de la caisse lâchée (sol sans frottement, a = R/m) */
+      var off = [0, 0];
+      if (lach && nr > 0){ var s = 0.5 * (nr / 2) * lach.t * lach.t * G.u * 0.4; off = [R[0] / nr * s, -R[1] / nr * s];
+        for (var gh = 1; gh <= 4; gh++){ var tg2 = lach.t * gh / 5, s2 = 0.5 * (nr / 2) * tg2 * tg2 * G.u * 0.4; ctx.globalAlpha = 0.12 + 0.05 * gh; P5x.box(c, G.cx + R[0] / nr * s2, G.cy - R[1] / nr * s2 + 17, 34, 34, "#b98a52", "", {r: 3}); }
+        ctx.globalAlpha = 1; }
+      var bx = G.cx + off[0], by = G.cy + off[1];
+      var t1 = [bx + f1[0] * G.u, by - f1[1] * G.u], t2 = [bx + f2[0] * G.u, by - f2[1] * G.u];
+      /* cordes jusqu'aux personnes (au-delà de la pointe) */
+      [[a1, n1.value, pal.acc], [a2, n2.value, pal.red]].forEach(function(q){
+        var L = q[1] * G.u + 30, ex = bx + L * Math.cos(q[0]), ey = by - L * Math.sin(q[0]);
+        S.draw.line(c, bx, by, ex, ey, "#a07a4a", 3); S.draw.line(c, bx, by, ex, ey, "rgba(255,255,255,.35)", 1, [3, 4]);
+        dyna(bx + (q[1] * G.u * 0.55) * Math.cos(q[0]), by - (q[1] * G.u * 0.55) * Math.sin(q[0]), q[0], q[2], q[1]);
+        person(bx + (L + 14) * Math.cos(q[0]), by - (L + 14) * Math.sin(q[0]), q[0] + Math.PI, q[2]);
+      });
+      /* caisse */
+      P5x.box(c, bx, by + 17, 34, 34, "#b98a52", "", {r: 3});
+      ctx.strokeStyle = "rgba(90,60,30,.5)"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(bx - 14, by - 14); ctx.lineTo(bx + 14, by + 14); ctx.moveTo(bx + 14, by - 14); ctx.lineTo(bx - 14, by + 14); ctx.stroke();
+      /* construction */
+      var rt = [bx + R[0] * G.u, by - R[1] * G.u];
       if (tg.value){
-        S.draw.line(c, X0, Y0, f.X(rx), Y0, pal.green, 2, [3, 3]);
-        S.draw.line(c, f.X(rx), Y0, f.X(rx), f.Y(ry), pal.green, 2, [3, 3]);
+        S.draw.line(c, t1[0], t1[1], rt[0], rt[1], "#8fa6d4", 1.6, [6, 4]); S.draw.line(c, t2[0], t2[1], rt[0], rt[1], "#e0a197", 1.6, [6, 4]);
+        S.draw.line(c, bx, by, rt[0], by, pal.green, 1.6, [3, 3]); S.draw.line(c, rt[0], by, rt[0], rt[1], pal.green, 1.6, [3, 3]);
       }
-      P5.vec(c, X0, Y0, f.X(x1), f.Y(y1), pal.acc, "F₁");
-      P5.vec(c, X0, Y0, f.X(x2), f.Y(y2), pal.red, "F₂");
-      P5.vec(c, X0, Y0, f.X(rx), f.Y(ry), pal.green, "R", {w: 3.4});
-      S.draw.dot(c, f.X(x1), f.Y(y1), 6, pal.acc); S.draw.dot(c, f.X(x2), f.Y(y2), 6, pal.red);
-      S.draw.text(c, "1 carreau = 1 N", c.W - 12, c.H - 12, {align: "right", size: 12, color: pal.grey});
-      var n1 = Math.hypot(x1, y1), n2 = Math.hypot(x2, y2), nr = Math.hypot(rx, ry);
-      ro.set(0, S.fmt(n1, 2) + " N"); ro.set(1, S.fmt(n2, 2) + " N"); ro.set(2, S.fmt(nr, 2) + " N"); ro.set(3, S.fmt(n1 + n2, 2) + " N");
-      ro.set(4, S.fmt(rx, 1) + " ; " + S.fmt(ry, 1));
-      ro.set(5, nr < 1e-9 ? "—" : S.fmt(Math.atan2(ry, rx) * 180 / Math.PI, 1) + " °");
-      if (nr < 1e-9) nt.set("R = 0 : les deux forces se compensent exactement, le corps serait en équilibre.", "ok");
-      else if (Math.abs(nr - (n1 + n2)) < 1e-9 && n1 > 0 && n2 > 0) nt.set("Forces de même direction et de même sens : ici seulement, les normes s'additionnent.", "ok");
-      else if (Math.abs(x1 * x2 + y1 * y2) < 1e-9 && n1 > 0 && n2 > 0) nt.set("Forces perpendiculaires : ‖R‖ = √(‖F₁‖² + ‖F₂‖²) (Pythagore).", "ok");
-      else nt.set("‖R‖ = " + S.fmt(nr, 2) + " N est plus petit que ‖F₁‖ + ‖F₂‖ = " + S.fmt(n1 + n2, 2) + " N.", "");
+      P5.vec(c, bx, by, t1[0], t1[1], pal.acc, "", {w: 3});
+      P5.vec(c, bx, by, t2[0], t2[1], pal.red, "", {w: 3});
+      if (nr > 0.05) P5.vec(c, bx, by, rt[0], rt[1], pal.green, "", {w: 4.2});
+      /* étiquettes posées à côté des flèches (pas sur les personnes) */
+      [[t1, "F₁", pal.acc], [t2, "F₂", pal.red], [rt, "R", pal.green]].forEach(function(z){ var dx = z[0][0] - bx, dy = z[0][1] - by, L = Math.hypot(dx, dy); if (L < 8 || (z[1] === "R" && nr <= 0.05)) return;
+        P5x.tag(c, z[1], bx + dx * 0.62 - dy / L * 15, by + dy * 0.62 + dx / L * 15, z[2], {size: 12.5}); });
+      /* cible du défi : cercle de rayon R visé */
+      if (defi){ ctx.save(); ctx.strokeStyle = S.draw.tint(pal.amber, 0.7); ctx.setLineDash([5, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(G.cx, G.cy, DEF[di][0] * G.u, 0, 7); ctx.stroke(); ctx.restore();
+        P5x.tag(c, "cercle visé : " + DEF[di][1], W / 2, H - 40, pal.amber, {size: 11.5}); }
+      if (!lach){ P5x.handle(c, t1[0], t1[1], pal.acc, 7); P5x.handle(c, t2[0], t2[1], pal.red, 7); }
+      P5x.tag(c, S.fmt(n1.value, 1) + " N", 10, H - 16, pal.acc, {align: "left"}); P5x.tag(c, S.fmt(n2.value, 1) + " N", 66, H - 16, pal.red, {align: "left"});
+      S.draw.text(c, "1 carreau = 1 N", W - 10, H - 14, {align: "right", size: 11.5, color: "#5f6b7a"});
+      P5x.hint(c, defi ? "Dynamomètres bloqués : tourne les cordes" : "Glisse les mains (pointes des flèches)", {size: 11.5});
+      if (lach && nr > 0.05) P5x.banner(c, "La caisse part selon R", pal.green, 36);
+      /* graphe R(θ) pour les valeurs actuelles */
+      g.clear();
+      var th = theta(), Rmax = n1.value + n2.value;
+      gx = S.draw.axes(g, {x0: 0, x1: 180, y0: 0, y1: 10.5, xl: "θ (°)", yl: "R (N)", stepX: 30, stepY: 2, l: 40});
+      S.draw.line(g, gx.X(0), gx.Y(Rmax), gx.X(180), gx.Y(Rmax), pal.grey, 1.2, [5, 4]);
+      S.draw.line(g, gx.X(0), gx.Y(Math.abs(n1.value - n2.value)), gx.X(180), gx.Y(Math.abs(n1.value - n2.value)), pal.grey, 1.2, [5, 4]);
+      P5x.tag(g, "F₁ + F₂", gx.X(178), gx.Y(Rmax) - 11, "#4b5868", {align: "right", size: 11});
+      P5x.tag(g, "|F₁ − F₂|", gx.X(178), gx.Y(Math.abs(n1.value - n2.value)) - 11, "#4b5868", {align: "right", size: 11});
+      if (defi) S.draw.line(g, gx.X(0), gx.Y(DEF[di][0]), gx.X(180), gx.Y(DEF[di][0]), pal.amber, 2, [2, 3]);
+      S.draw.fn(g, gx, Rn, pal.green, 3);
+      P5x.handle(g, gx.X(th), gx.Y(Rn(th)), pal.green, 7);
+      P5x.hint(g, "Glisse le point : change l'angle θ", {x: g.W - 10, y: 12, align: "right", size: 11});
+      /* lectures */
+      ro.set(0, S.fmt(n1.value + n2.value, 1) + " N"); ro.set(1, S.fmt(nr, 2) + " N"); ro.set(2, S.fmt(th, 0) + " °");
+      ro.set(3, S.fmt(R[0], 2) + " ; " + S.fmt(R[1], 2) + " N"); ro.set(4, nr < 0.01 ? "—" : S.fmt(Math.atan2(R[1], R[0]) * 180 / Math.PI, 0) + " °");
+      if (defi){
+        var ok = Math.abs(nr - DEF[di][0]) <= 0.06;
+        if (ok && !lastOk) okCount++; lastOk = ok;
+        var th0 = Math.acos(P5.clamp((DEF[di][0] * DEF[di][0] - 25) / 24, -1, 1)) * 180 / Math.PI;
+        nt.set("<b>Défi " + (di + 1) + "/5 · " + DEF[di][1] + "</b> avec 3 N et 4 N. " + (ok ? "Réussi : θ = " + S.fmt(th, 0) + " ° (calcul : cos θ = (R² − 3² − 4²)/(2·3·4), θ = " + S.fmt(th0, 0) + " °). " + okCount + " défi(s) réussi(s)." : "Pour l'instant R = " + S.fmt(nr, 2) + " N : tourne une corde."), ok ? "ok" : "");
+      } else if (nr < 0.05) nt.set("R = 0 : les deux tractions se compensent, la caisse lâchée reste immobile.", "ok");
+      else if (th < 0.5) nt.set("Cordes parallèles et de même sens : ici seulement, R = F₁ + F₂ = " + S.fmt(nr, 1) + " N.", "ok");
+      else if (Math.abs(th - 90) < 0.5) nt.set("Cordes perpendiculaires : R = √(F₁² + F₂²) = " + S.fmt(nr, 2) + " N (Pythagore).", "ok");
+      else nt.set("Les deux personnes tirent avec " + S.fmt(n1.value + n2.value, 1) + " N au total, mais la caisse ne reçoit que R = " + S.fmt(nr, 2) + " N : les composantes latérales se compensent en partie.", "");
     });
   }
 });
@@ -261,50 +326,101 @@ SFA.sim({
 SFA.sim({
   id: "p5-c01-cables", ch: "c01", tag: "Niche utile",
   titre: "Pourquoi un câble ne peut jamais être tendu à l'horizontale",
-  resume: "Une charge au milieu de deux câbles : la tension explose quand l'angle diminue.",
-  but: "Accroche une charge au milieu de deux câbles. Diminue l'angle α avec l'horizontale et surveille la tension : jusqu'où peux-tu tendre le câble sans le rompre ?",
-  aRetenir: "Chaque câble porte T = m·g / (2·sin α). Quand α → 0, sin α → 0 et T devient immense : un câble parfaitement horizontal est impossible avec une charge au milieu.",
-  piege: "La tension n'est pas égale à la moitié du poids : elle ne vaut m·g/2 que si les câbles sont verticaux (α = 90°). Plus ils sont tendus, plus chacun porte.",
+  resume: "Une lanterne au milieu d'un câble entre deux poteaux : plus on tend le câble, plus la tension explose, jusqu'à la rupture.",
+  but: "Écarte les poteaux (glisse le poteau de droite) ou tire la lanterne vers le haut : le câble s'aplatit et l'angle α diminue. Surveille la tension sur le graphe. Défi : tends le câble au maximum (angle le plus petit) sans le rompre.",
+  aRetenir: "À l'équilibre, les deux tensions et le poids se compensent : 2·T·sin α = m·g, donc T = m·g / (2·sin α). Quand α → 0, sin α → 0 et T devient immense : un câble parfaitement horizontal est impossible avec une charge au milieu.",
+  piege: "La tension n'est pas égale à la moitié du poids : elle ne vaut m·g/2 que si les câbles sont verticaux (α = 90°). Plus le câble est tendu, plus chaque moitié porte… et c'est la composante horizontale T·cos α qui grandit.",
   build: function(k, S){
-    var c = k.canvas(250), g2 = k.canvas(200);
-    var al = k.slider("Angle α de chaque câble avec l'horizontale", 3, 90, 1, 30, "°");
-    var m = k.slider("Masse suspendue", 20, 1000, 10, 200, "kg");
-    var lim = k.slider("Résistance maximale d'un câble", 2, 40, 1, 10, "kN");
-    var ro = k.readouts(["Poids", "Tension T (chaque câble)", "Composante horizontale", "Angle minimal permis"]);
+    var c = k.canvas(0, {ratio: 0.66}), g = k.canvas(190);
+    var al = k.slider("Angle α de chaque moitié avec l'horizontale", 2, 80, 0.5, 25, "°", function(){ chk(); });
+    var m = k.slider("Masse de la lanterne", 2, 60, 1, 20, "kg", function(){ chk(); });
+    var lim = k.slider("Résistance maximale du câble", 0.2, 3, 0.1, 1, "kN", function(){ chk(); });
+    var ro = k.readouts(["Poids P = m·g", "Tension T dans chaque moitié", "Composante verticale T·sin α", "Composante horizontale T·cos α", "Angle minimal permis"]);
     var nt = k.note("", "");
+    var brk = null, best = null;
+    var lp = k.loop(function(dt){ if (!brk){ lp.pause(); return; } brk.t += dt; if (brk.t > 2.2) lp.pause(); k.redraw(); });
+    function val(){ var A = al.value * Math.PI / 180, W = m.value * P5.g, T = W / (2 * Math.sin(A)), Tm = lim.value * 1000, r = W / (2 * Tm); return {A: A, W: W, T: T, Tm: Tm, amin: r <= 1 ? Math.asin(r) * 180 / Math.PI : null}; }
+    function chk(){ var v = val(); if (v.T > v.Tm){ if (!brk){ brk = {t: 0}; lp.play(); } } else brk = null; }
+    k.button("Remplacer le câble (α = 30°)", function(){ al.set(30); brk = null; });
+    var Gm = {}, gx = null;
+    /* poignées : poteau de droite (horizontal) et lanterne (vertical) */
+    P5x.drag(c, k, function(){ return [
+      {x: Gm.xr, y: Gm.top - 6, r: 34, set: function(px){ var hs = P5.clamp(px - Gm.mx, Gm.l * Math.cos(80 * Math.PI / 180), Gm.l * Math.cos(2 * Math.PI / 180)); al.set(Math.round(Math.acos(hs / Gm.l) * 360 / Math.PI) / 2); chk(); }},
+      {x: Gm.mx, y: Gm.ly + 18, r: 34, set: function(px, py){ var sag = P5.clamp(py - 18 - Gm.top, Gm.l * Math.sin(2 * Math.PI / 180), Gm.l * Math.sin(80 * Math.PI / 180)); al.set(Math.round(Math.asin(sag / Gm.l) * 360 / Math.PI) / 2); chk(); }}]; });
+    P5x.drag(g, k, function(){ if (!gx) return null; var v = val(); return [{x: gx.X(al.value), y: gx.Y(Math.min(v.T / 1000, gx.y1)), r: 30, set: function(px){ al.set(Math.round(P5.clamp(gx.ix(px), 2, 80) * 2) / 2); chk(); }}]; });
+    function lantern(ctx, x, y, s, lit){
+      ctx.save(); ctx.translate(x, y);
+      if (lit){ var gl = ctx.createRadialGradient(0, 22 * s, 2, 0, 22 * s, 46 * s); gl.addColorStop(0, "rgba(255,214,110,.55)"); gl.addColorStop(1, "rgba(255,214,110,0)"); ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(0, 22 * s, 46 * s, 0, 7); ctx.fill(); }
+      ctx.fillStyle = "#2c3a4e"; ctx.beginPath(); ctx.moveTo(-4 * s, 0); ctx.lineTo(4 * s, 0); ctx.lineTo(12 * s, 9 * s); ctx.lineTo(-12 * s, 9 * s); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = lit ? "#ffe39a" : "#cfd6df"; ctx.beginPath(); ctx.moveTo(-10 * s, 9 * s); ctx.lineTo(10 * s, 9 * s); ctx.lineTo(7 * s, 30 * s); ctx.lineTo(-7 * s, 30 * s); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "#2c3a4e"; ctx.lineWidth = 2 * s; ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, 9 * s); ctx.lineTo(0, 30 * s); ctx.stroke();
+      ctx.fillStyle = "#2c3a4e"; ctx.fillRect(-8 * s, 30 * s, 16 * s, 4 * s); ctx.restore();
+    }
+    function pole(ctx, x, top, base){
+      ctx.fillStyle = P5x.lin(ctx, x - 5, 0, x + 5, 0, [[0, "#6b7685"], [0.5, "#aab4c3"], [1, "#5b6676"]]); ctx.fillRect(x - 5, top - 16, 10, base - top + 16);
+      ctx.fillStyle = "#4b5563"; ctx.fillRect(x - 9, base - 6, 18, 6); ctx.beginPath(); ctx.arc(x, top - 16, 6, 0, 7); ctx.fill();
+    }
     k.draw(function(){
-      var pal = S.draw.palette, ctx = c.ctx, A = al.value * Math.PI / 180, W = m.value * P5.g, T = W / (2 * Math.sin(A));
-      var Tmax = lim.value * 1000, ratio = W / (2 * Tmax);
-      var amin = ratio <= 1 ? Math.asin(ratio) * 180 / Math.PI : null;
-      var broke = T > Tmax;
-      /* scène */
-      c.clear();
-      var mx = c.W / 2, top = 40, sagMax = c.H - 130, hs = Math.min((c.W - 120) / 2, sagMax / Math.tan(A)), sag = hs * Math.tan(A);   /* demi-portée adaptée : l'angle dessiné = α */
-      var xl = mx - hs, xr = mx + hs;
-      S.draw.line(c, xl, top - 20, xl, top + 30, pal.grey, 8); S.draw.line(c, xr, top - 20, xr, top + 30, pal.grey, 8);
-      var col = broke ? pal.red : pal.acc;
-      S.draw.line(c, xl, top, mx, top + sag, col, 3); S.draw.line(c, xr, top, mx, top + sag, col, 3);
-      ctx.fillStyle = "#c9d6f2"; ctx.strokeStyle = pal.acc; ctx.lineWidth = 2; ctx.fillRect(mx - 20, top + sag, 40, 34); ctx.strokeRect(mx - 20, top + sag, 40, 34);
-      S.draw.text(c, S.fmt(m.value, 0) + " kg", mx, top + sag + 17, {size: 12});
-      var Ls = Math.min(sag * 0.7 + 25, 85);
-      P5.vec(c, mx, top + sag, mx - Ls * Math.cos(A), top + sag - Ls * Math.sin(A), pal.red, "T", {dx: -2});
-      P5.vec(c, mx, top + sag, mx + Ls * Math.cos(A), top + sag - Ls * Math.sin(A), pal.red, "T", {dx: 2});
-      P5.vec(c, mx, top + sag + 34, mx, top + sag + 34 + 28, pal.ink, "", {});
-      if (hs > 30) S.draw.text(c, "α", xl + 34 * Math.cos(A / 2), top + 34 * Math.sin(A / 2) + 4, {color: pal.ink, size: 12});
-      if (broke) S.draw.text(c, "RUPTURE : T > " + S.fmt(lim.value, 0) + " kN", c.W / 2, c.H - 14, {color: pal.red, size: 14});
+      var pal = S.draw.palette, ctx = c.ctx, W = c.W, H = c.H, v = val(), broke = v.T > v.Tm;
+      var top = 46, base = H - 14, l = Math.min(W * 0.44, (base - top - 60) / Math.sin(80 * Math.PI / 180));
+      var mx = W / 2, hs = l * Math.cos(v.A), sag = l * Math.sin(v.A), xl = mx - hs, xr = mx + hs, ly = top + sag;
+      Gm = {mx: mx, xr: xr, top: top, l: l, ly: ly};
+      /* rue au crépuscule */
+      ctx.fillStyle = P5x.lin(ctx, 0, 0, 0, H, [[0, "#2b3a63"], [0.7, "#5a6a96"], [1, "#8d97b5"]]); ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#3b4669"; for (var b = 0; b < 7; b++){ var bw = W / 7, bh = 40 + (b * 37 % 50); ctx.fillRect(b * bw, base - bh, bw - 4, bh); }
+      ctx.fillStyle = "rgba(255,220,140,.5)"; for (b = 0; b < 7; b++) for (var wy = 0; wy < 2; wy++) ctx.fillRect(b * W / 7 + 8 + (b % 2) * 10, base - 30 - wy * 16, 6, 8);
+      ctx.fillStyle = "#59617a"; ctx.fillRect(0, base, W, H - base);
+      pole(ctx, xl, top, base); pole(ctx, xr, top, base);
+      /* couleur du câble selon la charge T/Tmax */
+      var q = Math.min(1, v.T / v.Tm), col = q < 0.6 ? "#9fe0b8" : q < 0.9 ? "#ffcf6e" : "#ff7a6b";
+      var fall = 0;
+      if (broke && brk){
+        var t = Math.min(brk.t, 2.2), yF = ly + 0.5 * 900 * t * t; fall = Math.min(yF, base - 34) - ly;
+        /* deux bouts de câble qui pendent */
+        var sw = Math.sin(brk.t * 6) * Math.exp(-brk.t * 1.5) * 18;
+        ctx.strokeStyle = "#ff7a6b"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(xl, top); ctx.quadraticCurveTo(xl + hs * 0.3, top + 40, xl + 10 + sw, top + Math.min(l * 0.9, base - top - 10)); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(xr, top); ctx.lineTo(mx + 6, ly + fall); ctx.stroke();
+        lantern(ctx, mx, ly + fall, Math.max(0.9, W / 480), false);
+        if (fall >= base - 34 - ly - 1){ ctx.fillStyle = "rgba(255,240,200,.9)"; for (var s = 0; s < 8; s++){ ctx.beginPath(); ctx.arc(mx - 22 + s * 6, base - 3 - (s % 3) * 3, 2, 0, 7); ctx.fill(); } }
+        P5x.banner(c, "RUPTURE : T = " + S.fmt(v.T / 1000, 2) + " kN > " + S.fmt(lim.value, 1) + " kN", pal.red, 20);
+      } else {
+        ctx.strokeStyle = col; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(xl, top); ctx.lineTo(mx, ly); ctx.lineTo(xr, top); ctx.stroke();
+        lantern(ctx, mx, ly, Math.max(0.9, W / 480), true);
+        /* tensions et décomposition, au point d'accroche */
+        var sc = Math.min(95, 36 + 55 * q), Lx = sc * Math.cos(v.A), Ly = sc * Math.sin(v.A);
+        P5.vec(c, mx, ly, mx - Lx, ly - Ly, "#ffffff", "T", {w: 2.8});
+        P5.vec(c, mx, ly, mx + Lx, ly - Ly, "#ffffff", "T", {w: 2.8});
+        S.draw.line(c, mx + Lx, ly, mx + Lx, ly - Ly, "#ffcf6e", 1.6, [3, 3]); S.draw.line(c, mx, ly, mx + Lx, ly, "#ffcf6e", 1.6, [3, 3]);
+        S.draw.line(c, xl, top, xl + 44, top, "rgba(255,255,255,.5)", 1, [3, 3]);
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.arc(xl, top, 34, 0, v.A); ctx.stroke();
+        S.draw.text(c, "α", xl + 44 * Math.cos(v.A / 2), top + 44 * Math.sin(v.A / 2) + 3, {color: "#fff", size: 13});
+        P5x.handle(c, mx, ly + 18, "#ffcf6e", 7, false);
+        P5x.handle(c, xr, top - 6, "#ffcf6e", 7, false);
+        P5x.tag(c, "T = " + S.fmt(v.T / 1000, 2) + " kN (" + S.fmt(100 * q, 0) + " % de la limite)", mx, ly + 56, q < 0.6 ? pal.green : q < 0.9 ? pal.amber : pal.red, {size: 11.5, fill: "rgba(255,255,255,.94)"});
+      }
+      P5x.hint(c, "Glisse le poteau de droite ou la lanterne", {color: "#eef2f8", size: 11, y: H - 7});
       /* graphe T(α) */
-      g2.clear();
-      var Tm = Math.max(lim.value * 1000 * 1.6, 1);
-      var ax = S.draw.axes(g2, {x0: 0, x1: 90, y0: 0, y1: Tm / 1000, xl: "α (°)", yl: "T (kN)", stepX: 15});
-      S.draw.fn(g2, ax, function(x){ return W / (2 * Math.sin(Math.max(x, 0.3) * Math.PI / 180)) / 1000; }, pal.acc);
-      S.draw.line(g2, ax.X(0), ax.Y(lim.value), ax.X(90), ax.Y(lim.value), pal.red, 1.8, [6, 4]);
-      S.draw.text(g2, "limite", ax.X(88), ax.Y(lim.value) - 10, {align: "right", color: pal.red, size: 12});
-      if (T / 1000 <= ax.y1) S.draw.dot(g2, ax.X(al.value), ax.Y(T / 1000), 6, broke ? pal.red : pal.green);
-      ro.set(0, S.fmt(W / 1000, 2) + " kN"); ro.set(1, S.fmt(T / 1000, 2) + " kN"); ro.set(2, S.fmt(T * Math.cos(A) / 1000, 2) + " kN");
-      ro.set(3, amin === null ? "aucun" : S.fmt(amin, 1) + " °");
-      if (amin === null) nt.set("Même câbles verticaux, chacun porterait " + S.fmt(W / 2000, 1) + " kN, au-delà de sa limite : ce câble ne convient pas.", "bad");
-      else if (broke) nt.set("T = " + S.fmt(T / 1000, 1) + " kN dépasse la limite de " + S.fmt(lim.value, 0) + " kN. Il faut α ≥ " + S.fmt(amin, 1) + " °.", "warn");
-      else nt.set("Le câble tient : T = " + S.fmt(T / 1000, 2) + " kN pour une limite de " + S.fmt(lim.value, 0) + " kN. Tu peux descendre jusqu'à α = " + S.fmt(amin, 1) + " °.", "ok");
+      g.clear();
+      var ymax = Math.max(lim.value * 1.8, v.W / 1000 * 1.2);
+      gx = S.draw.axes(g, {x0: 0, x1: 80, y0: 0, y1: ymax, xl: "α (°)", yl: "T (kN)", stepX: 10, l: 46});
+      S.draw.area(g, gx, function(){ return ymax; }, 0, 80, pal.red, 0.07, lim.value);
+      S.draw.line(g, gx.X(0), gx.Y(lim.value), gx.X(80), gx.Y(lim.value), pal.red, 1.8, [6, 4]);
+      P5x.tag(g, "rupture au-dessus de " + S.fmt(lim.value, 1) + " kN", gx.X(79), gx.Y(lim.value) - 12, pal.red, {align: "right", size: 11});
+      S.draw.line(g, gx.X(0), gx.Y(v.W / 2000), gx.X(80), gx.Y(v.W / 2000), pal.grey, 1.2, [3, 3]);
+      P5x.tag(g, "m·g/2", gx.X(62), gx.Y(v.W / 2000) - 11, "#4b5868", {size: 11});
+      S.draw.fn(g, gx, function(x){ return v.W / (2 * Math.sin(Math.max(x, 0.5) * Math.PI / 180)) / 1000; }, pal.acc, 3);
+      if (v.amin !== null){ S.draw.line(g, gx.X(v.amin), gx.Y(0), gx.X(v.amin), gx.Y(lim.value), pal.amber, 1.4, [3, 3]); P5x.tag(g, "α min", gx.X(v.amin) + 4, gx.Y(0) - 12, pal.amber, {align: "left", size: 11}); }
+      P5x.handle(g, gx.X(al.value), gx.Y(Math.min(v.T / 1000, ymax)), broke ? pal.red : pal.green, 7);
+      P5x.hint(g, "Glisse le point le long de la courbe", {x: g.W - 10, y: 12, align: "right", size: 11});
+      ro.set(0, S.fmt(v.W, 0) + " N"); ro.set(1, S.fmt(v.T, 0) + " N"); ro.set(2, S.fmt(v.T * Math.sin(v.A), 0) + " N (= P/2)"); ro.set(3, S.fmt(v.T * Math.cos(v.A), 0) + " N");
+      ro.set(4, v.amin === null ? "aucun" : S.fmt(v.amin, 1) + " °");
+      if (v.amin === null) nt.set("Même avec des câbles verticaux, chaque moitié porterait " + S.fmt(v.W / 2, 0) + " N, plus que les " + S.fmt(v.Tm, 0) + " N permis : ce câble est trop faible pour cette lanterne. Choisis un câble plus résistant.", "warn");
+      else if (broke) nt.set("Rupture : à α = " + S.fmt(al.value, 1) + " °, T = m·g/(2 sin α) = " + S.fmt(v.T, 0) + " N. Il faut α ≥ " + S.fmt(v.amin, 1) + " ° (sin α ≥ m·g / (2·T max)). Remonte l'angle ou remplace le câble.", "warn");
+      else {
+        var gap = al.value - v.amin;
+        if (gap <= 1){ best = best === null ? al.value : Math.min(best, al.value); nt.set("<b>Défi réussi</b> : α = " + S.fmt(al.value, 1) + " °, à moins de 1 ° de l'angle minimal " + S.fmt(v.amin, 1) + " °. La tension vaut " + S.fmt(100 * v.T / v.Tm, 0) + " % de la limite.", "ok"); }
+        else nt.set("<b>Défi</b> : tends le câble au maximum sans le rompre (à moins de 1 ° de l'angle minimal). Ici α = " + S.fmt(al.value, 1) + " °, encore " + S.fmt(gap, 1) + " ° de marge ; T = " + S.fmt(v.T, 0) + " N.", "");
+      }
     });
   }
 });

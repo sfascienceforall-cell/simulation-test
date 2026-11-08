@@ -1,5 +1,7 @@
 /* Biologie BA1 · chapitre 8 : cycle cellulaire, division et embryologie */
 (function(){
+function rng(seed){ var a = seed >>> 0; return function(){ a = (a + 0x6D2B79F5) >>> 0; var t = a; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function axIn(S, c, r, o){ o = o || {}; o.l = r.x + (o.pl == null ? 44 : o.pl); o.r = Math.max(4, c.W - r.x - r.w + (o.pr == null ? 10 : o.pr)); o.t = r.y + (o.pt == null ? 16 : o.pt); o.b = Math.max(4, c.H - r.y - r.h + (o.pb == null ? 32 : o.pb)); return S.draw.axes(c, o); }
 function glyph(c, x, y, chromatids, col){
   var ctx = c.ctx; ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.lineCap = "round";
   if (chromatids === 2){ ctx.beginPath(); ctx.moveTo(x - 5, y - 11); ctx.lineTo(x + 5, y + 11); ctx.moveTo(x + 5, y - 11); ctx.lineTo(x - 5, y + 11); ctx.stroke(); }
@@ -101,43 +103,103 @@ SFA.sim({
 SFA.sim({
   id:"ub-c08-cycle-controle", ch:"c08", tag:"Cancer",
   titre:"Cycle cellulaire, p53 et accumulation de mutations",
-  resume:"Durée des phases, croissance d'une population, rôle du point de contrôle de p53.",
-  but:"Règle la durée des phases, la fréquence des lésions de l'ADN et le statut de p53 : compare la croissance et la fraction de cellules mutées.",
-  aRetenir:"Cycle = G1 + S + G2 + M. Les points de contrôle (G1/S, G2/M, métaphase-anaphase) arrêtent le cycle tant que l'ADN est lésé ou incomplet : p53 active p21, inhibiteur de CDK, puis réparation ou apoptose. Si p53 est inactivée (mutée dans environ la moitié des cancers), les cellules lésées prolifèrent : les mutations s'accumulent.",
-  piege:"Population : N = N₀·2<sup>t/T</sup> sans perte ; l'apoptose réduit le facteur de 2 à 2(1 − δ·a) par cycle. Les phases n'ont pas la même durée : G1 est la plus variable (la phase M ne dure que ≈ 1 h). Modèle très simplifié : δ constant, a = 90 % pour p53 fonctionnelle (hypothèse pédagogique).",
+  resume:"Des cellules tournent sur l'anneau du cycle ; au point de contrôle G1/S, p53 arrête les cellules lésées (réparation ou apoptose). Sans p53, les lésions passent et s'accumulent.",
+  but:"Règle la durée des phases et la fréquence des lésions de l'ADN, active ou non p53, et regarde ce qui arrive aux cellules lésées (éclair) au point de contrôle G1/S. Glisse le temps sur le graphique. Défi : sans p53, trouve le plus petit δ pour qu'après 10 jours plus de la moitié des cellules portent une lésion non éliminée.",
+  aRetenir:"Cycle = G1 + S + G2 + M. Les points de contrôle (G1/S, G2/M, métaphase-anaphase) arrêtent le cycle tant que l'ADN est lésé ou incomplet : p53 active p21, inhibiteur des CDK, puis réparation ou apoptose. Si p53 est inactivée (mutée dans environ la moitié des cancers), les cellules lésées prolifèrent : les mutations s'accumulent. Fraction de lignées touchées après k cycles : 1 − (1 − δ(1 − a))<sup>k</sup>.",
+  piege:"Population : N = N₀·2<sup>t/T</sup> sans perte ; l'apoptose réduit le facteur de 2 à 2(1 − δ·a) par cycle. Les phases n'ont pas la même durée : G1 est la plus variable (la phase M ne dure que ≈ 1 h). Modèle très simplifié : δ constant, a = 90 % des lésions éliminées si p53 est fonctionnelle (hypothèse pédagogique) ; l'anneau montre quelques cellules, les nombres viennent du modèle.",
   build:function(k,S){
-    var c = k.canvas(300), pal = S.draw.palette;
+    var pal = S.draw.palette, c = k.canvas(600), rs = rng(17), cells = [], kids = [], tD = 0, playing = true, geo = null, drag = false, bPlay;
+    c.cv.style.touchAction = "none";
     var g1 = k.slider("G1", 2, 16, 1, 10, "h");
     var s = k.slider("S", 4, 12, 1, 8, "h");
     var g2 = k.slider("G2", 1, 6, 1, 4, "h");
     var m = k.slider("M", 0.5, 2, 0.5, 1, "h");
     var dl = k.slider("Cellules lésées à chaque cycle (δ)", 0, 30, 1, 10, "%");
     var p53 = k.toggle("p53 fonctionnelle", true);
-    var ro = k.readouts(["Durée du cycle","Population après 10 j","Cellules à ADN lésé non éliminé après 10 j","Cycles en 10 j"]);
-    k.draw(function(){
-      c.clear();
-      var T = g1.value + s.value + g2.value + m.value, ncyc = 240 / T, d = dl.value / 100;
-      var a = p53.value ? 0.9 : 0, fac = 2 * (1 - d * a);
-      var mutf = 1 - Math.pow(1 - d * (1 - a), ncyc);
-      var Nwt = Math.pow(2 * (1 - d * 0.9), ncyc), N = Math.pow(fac, ncyc), ctx = c.ctx;
-      /* anneau des phases */
-      var cx = 100, cy = 100, R = 70, ph = [["G1",g1.value,pal.acc],["S",s.value,pal.amber],["G2",g2.value,pal.green],["M",m.value,pal.red]], ang = -Math.PI / 2;
-      ph.forEach(function(p){ var da = p[1] / T * 2 * Math.PI; ctx.fillStyle = p[2]; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, R, ang, ang + da); ctx.closePath(); ctx.fill();
-        var mid = ang + da / 2; S.draw.text(c, p[0], cx + Math.cos(mid) * (R + 14), cy + Math.sin(mid) * (R + 14), {size:11}); ang += da; });
-      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(cx, cy, 34, 0, 6.3); ctx.fill();
-      S.draw.text(c, S.fmt(T, 1) + " h", cx, cy, {size:14});
-      S.draw.text(c, "Contrôles : G1/S, G2/M, M", 20, 250, {align:"left", size:11, weight:600, color:pal.grey});
-      /* barres : population et mutées */
-      var bx = 230, bw = c.W - bx - 20;
-      var lg = function(v){ return Math.max(0, Math.log10(Math.max(v, 1))); };
-      var mx = Math.max(6, lg(Nwt) + 1, lg(N) + 1);
-      function bar(y, label, val, col, txt){ S.draw.text(c, label, bx, y - 16, {align:"left", size:11}); ctx.fillStyle = "#e3e7ed"; ctx.fillRect(bx, y - 8, bw, 16); ctx.fillStyle = col; ctx.fillRect(bx, y - 8, val / mx * bw, 16); S.draw.text(c, txt, bx + 4, y, {align:"left", size:10, color:"#fff"}); }
-      bar(60, "log₁₀(population), p53 fonctionnelle", lg(Nwt), pal.green, S.bio.sci(Nwt, 2));
-      bar(120, "log₁₀(population), statut choisi", lg(N), p53.value ? pal.green : pal.red, S.bio.sci(N, 2));
-      S.draw.text(c, "Cellules à ADN lésé, non éliminées : " + S.fmt(mutf * 100, 1) + " %", bx, 170, {align:"left", size:12, color:pal.red});
-      S.draw.text(c, "Lésées éliminées par cycle : " + S.fmt(d * a * 100, 1) + " %", bx, 195, {align:"left", size:12, color:pal.green});
-      ro.set(0, S.fmt(T, 1) + " h"); ro.set(1, S.sci(N, 2)); ro.set(2, S.fmt(mutf * 100, 1) + " %"); ro.set(3, S.fmt(ncyc, 1));
+    bPlay = k.button("⏸ Pause", function(){ if (tD >= 10) tD = 0; playing = !playing; }, true);
+    k.button("↺ Jour 0", function(){ tD = 0; });
+    var ro = k.readouts(["Durée du cycle T", "Cycles en 10 j", "Population après 10 j", "Lésions non éliminées", "Éliminées par cycle"]);
+    var note = k.note("", "");
+    for (var i = 0; i < 16; i++) cells.push({th:i / 16 + rs() * 0.03, les:0, hold:0, die:-1, ro:(rs() - 0.5) * 16});
+    function T(){ return g1.value + s.value + g2.value + m.value; }
+    function mutf(days, d, a){ return 1 - Math.pow(1 - d * (1 - a), days * 24 / T()); }
+    c.pointer(function(t, p){
+      if (!geo) return;
+      if (t === "down") drag = p.y > geo.ax.T - 6 && p.y < geo.ax.B + 20;
+      if ((t === "down" || t === "drag") && drag){ tD = Math.max(0, Math.min(10, geo.ax.ix(p.x))); playing = false; k.redraw(); }
+      if (t === "up") drag = false;
+      if (t === "down" && !drag && p.y < geo.top) playing = !playing;
     });
+    function cellG(x, y, r, st, al, dividing){
+      var ctx = c.ctx; ctx.save(); ctx.globalAlpha = al;
+      var body = st === 3 ? "#f3c9c3" : st === 2 ? "#f8dfb7" : "#dcebd8", nuc = st === 3 ? pal.red : st === 2 ? pal.amber : "#4e8a6a";
+      if (dividing){ ctx.fillStyle = body; ctx.strokeStyle = "rgba(15,27,45,.45)"; ctx.lineWidth = 1; [-1, 1].forEach(function(sg){ ctx.beginPath(); ctx.arc(x + sg * r * 0.55, y, r * 0.75, 0, 6.2832); ctx.fill(); ctx.stroke(); ctx.fillStyle = nuc; ctx.beginPath(); ctx.arc(x + sg * r * 0.55, y, r * 0.3, 0, 6.2832); ctx.fill(); ctx.fillStyle = body; }); }
+      else { ctx.fillStyle = body; ctx.strokeStyle = "rgba(15,27,45,.45)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill(); ctx.stroke(); ctx.fillStyle = nuc; ctx.beginPath(); ctx.arc(x, y, r * 0.45, 0, 6.2832); ctx.fill(); }
+      if (st === 1){ ctx.fillStyle = "#f4c542"; ctx.strokeStyle = "#8a6d1c"; ctx.beginPath(); ctx.moveTo(x + 2, y - r - 6); ctx.lineTo(x - 3, y - r + 1); ctx.lineTo(x + 1, y - r + 1); ctx.lineTo(x - 2, y - r + 7); ctx.lineTo(x + 4, y - r - 1); ctx.lineTo(x, y - r - 1); ctx.closePath(); ctx.fill(); ctx.stroke(); }
+      ctx.restore();
+    }
+    function step(dt){
+      var Tv = T(), hps = 12, b1 = g1.value / Tv, d = dl.value / 100;
+      cells.forEach(function(z){
+        if (z.die >= 0){ z.die += dt; if (z.die > 0.9){ z.die = -1; z.th = rs() * 0.05; z.les = rs() < d ? 1 : 0; } return; }
+        if (z.hold > 0){ z.hold -= dt; if (z.hold <= 0){ if (rs() < 0.9){ z.die = 0; } else { z.les = 2; z.th = b1 + 0.001; } } return; }
+        var old = z.th; z.th += dt * hps / Tv;
+        if (old < b1 && z.th >= b1 && z.les === 1){ if (p53.value){ z.th = b1 - 0.0005; z.hold = 0.9; } else z.les = 3; }
+        if (z.th >= 1){ z.th -= 1; kids.push({th:0, st:z.les >= 2 ? z.les : 0, t:0}); if (z.les < 2) z.les = rs() < d ? 1 : 0; }
+      });
+      kids.forEach(function(q){ q.t += dt; }); kids = kids.filter(function(q){ return q.t < 0.9; });
+    }
+    function render(dt){
+      var ctx = c.ctx, W = c.W, H = c.H, Tv = T(), d = dl.value / 100, a = p53.value ? 0.9 : 0, i;
+      if (dt) step(dt);
+      c.clear();
+      var top = 316, R = Math.max(68, Math.min(98, W * 0.24)), cx = R + 30, cy = 26 + R + 10;
+      S.draw.text(c, "Cycle cellulaire · " + S.fmt(Tv, 1) + " h", 6, 12, {size:11.5, align:"left", color:pal.ink});
+      var ph = [["G1", g1.value, "#6d93d6"], ["S", s.value, "#e0a01b"], ["G2", g2.value, "#4ea37f"], ["M", m.value, "#c0321d"]], ang = -Math.PI / 2;
+      ph.forEach(function(p){ var da = p[1] / Tv * 6.2832; ctx.strokeStyle = p[2]; ctx.lineWidth = 16; ctx.lineCap = "butt"; ctx.beginPath(); ctx.arc(cx, cy, R, ang, ang + da); ctx.stroke();
+        var mid = ang + da / 2; S.draw.text(c, p[0], cx + Math.cos(mid) * (R - 24), cy + Math.sin(mid) * (R - 24), {size:11, color:p[2]}); ang += da; });
+      /* point de contrôle G1/S */
+      var aG = -Math.PI / 2 + g1.value / Tv * 6.2832, gx = cx + Math.cos(aG) * R, gy = cy + Math.sin(aG) * R;
+      ctx.save(); ctx.translate(gx, gy); ctx.rotate(aG); ctx.fillStyle = p53.value ? "#1f4b9e" : "#b8c0cc"; ctx.fillRect(-14, -3, 28, 6); ctx.restore();
+      var sx = cx + Math.cos(aG) * (R + 26), sy = cy + Math.sin(aG) * (R + 26);
+      ctx.fillStyle = p53.value ? "#1f4b9e" : "#b8c0cc"; ctx.beginPath(); ctx.moveTo(sx, sy - 11); ctx.lineTo(sx + 10, sy - 6); ctx.lineTo(sx + 8, sy + 6); ctx.lineTo(sx, sy + 12); ctx.lineTo(sx - 8, sy + 6); ctx.lineTo(sx - 10, sy - 6); ctx.closePath(); ctx.fill();
+      S.draw.text(c, "p53", sx, sy, {size:8.5, color:"#fff"});
+      S.draw.text(c, p53.value ? "contrôle G1/S actif" : "p53 inactivée", sx, sy + 22, {size:9.5, color:p53.value ? pal.acc : pal.grey, halo:"#fff"});
+      /* cellules */
+      cells.forEach(function(z){ var an = -Math.PI / 2 + z.th * 6.2832, rr = R + z.ro * 0.4, x = cx + Math.cos(an) * rr, y = cy + Math.sin(an) * rr;
+        if (z.die >= 0){ var f = z.die / 0.9; for (var q = 0; q < 5; q++){ var aa = q * 1.256 + z.ro; cellG(x + Math.cos(aa) * f * 12, y + Math.sin(aa) * f * 12, 3.2, 1, 1 - f, false); } return; }
+        cellG(x, y, 7, z.les, 1, z.th > 1 - m.value / Tv * 0.6);
+        if (z.hold > 0) S.draw.glow(c, x, y, 16, "#1f4b9e", 0.35); });
+      /* population (dessin lié au modèle) */
+      var px = cx + R + 40, pw = W - px - 8, ncyc = tD * 24 / Tv, N = Math.pow(2 * (1 - d * a), ncyc), mf = mutf(tD, d, a);
+      if (pw > 90){
+        S.draw.panel(c, px, 26, pw, 2 * R + 20, {shadow:false, title:"Jour " + S.fmt(tD, 1)});
+        var cols = 10, cw = Math.min((pw - 16) / cols, 15), nred = Math.round(mf * 100);
+        for (i = 0; i < 100; i++){ var xx = px + 8 + cw * (i % cols + 0.5), yy = 52 + cw * (Math.floor(i / cols) + 0.5); cellG(xx, yy, cw * 0.38, i < nred ? (p53.value ? 2 : 3) : 0, 1, false); }
+        S.draw.text(c, "N ≈ " + (N < 1e5 ? S.fmt(N, 0) : S.bio && S.bio.sci ? S.bio.sci(N, 2) : S.fmt(N, 0)) + " cellules", px + pw / 2, 52 + cw * 10 + 14, {size:10.5, color:pal.ink});
+        S.draw.text(c, nred + " % à lésion non éliminée", px + pw / 2, 52 + cw * 10 + 30, {size:10, color:p53.value ? "#a8740c" : pal.red});
+        kids.forEach(function(q){ var an = -Math.PI / 2, x0 = cx + Math.cos(an) * R, y0 = cy + Math.sin(an) * R, e = q.t / 0.9; cellG(x0 + (px + pw / 2 - x0) * e, y0 + (40 + R - y0) * e - Math.sin(e * 3.14) * 18, 4, q.st, 1 - e * 0.6, false); });
+      }
+      /* légende */
+      var ly = cy + R + 64; cellG(16, ly, 5, 1, 1, false); S.draw.text(c, "lésée", 25, ly, {size:10, align:"left"}); cellG(70, ly, 5, 2, 1, false); S.draw.text(c, "lésion passée", 79, ly, {size:10, align:"left"}); cellG(160, ly, 5, 3, 1, false); S.draw.text(c, "mutée (sans p53)", 169, ly, {size:10, align:"left"});
+      /* graphique */
+      var ax = axIn(S, c, {x:0, y:top, w:W, h:H - top}, {x0:0, x1:10, y0:0, y1:100, xl:"jours", yl:"% de cellules à lésion non éliminée", stepX:1, stepY:25, pt:20});
+      geo = {ax:ax, top:top};
+      S.draw.fn(c, ax, function(x){ return 100 * mutf(x, d, 0.9); }, pal.green, p53.value ? 3 : 1.6, p53.value ? null : [5, 4]);
+      S.draw.fn(c, ax, function(x){ return 100 * mutf(x, d, 0); }, pal.red, p53.value ? 1.6 : 3, p53.value ? [5, 4] : null);
+      S.draw.legend(c, [[pal.green, "p53 fonctionnelle"], [pal.red, "p53 inactivée"]], ax.R - 4, ax.T + 20, {align:"right"});
+      S.draw.line(c, ax.L, ax.Y(50), ax.R, ax.Y(50), pal.grey, 1, [2, 4]);
+      S.draw.line(c, ax.X(tD), ax.T, ax.X(tD), ax.B, pal.ink, 1.2, [4, 3]);
+      S.draw.dot(c, ax.X(tD), ax.Y(100 * mf), 6, p53.value ? pal.green : pal.red);
+      var m10 = mutf(10, d, a);
+      ro.set(0, S.fmt(Tv, 1) + " h"); ro.set(1, S.fmt(240 / Tv, 1)); ro.set(2, S.sci(Math.pow(2 * (1 - d * a), 240 / Tv), 2)); ro.set(3, S.fmt(mf * 100, 1) + " % (j " + S.fmt(tD, 1) + ")"); ro.set(4, S.fmt(d * a * 100, 1) + " %");
+      bPlay.textContent = playing ? "⏸ Pause" : "▶ Lancer";
+      var ok = !p53.value && m10 > 0.5 && mutf(10, Math.max(0, d - 0.01), 0) <= 0.5;
+      note.set(ok ? "✓ <b>Défi réussi</b> : avec δ = " + dl.value + " % par cycle et sans p53, " + S.fmt(m10 * 100, 0) + " % des cellules portent une lésion après 10 jours (" + S.fmt(240 / Tv, 1) + " cycles). Avec p53 fonctionnelle, ce serait " + S.fmt(mutf(10, d, 0.9) * 100, 0) + " %."
+        : "◎ <b>Défi</b> : désactive p53 et trouve le plus petit δ (en %) pour qu'après 10 jours plus de la moitié des cellules portent une lésion non éliminée (courbe rouge au-dessus de 50 % au jour 10). Actuellement : " + S.fmt(m10 * 100, 1) + " %.", ok ? "ok" : "");
+    }
+    k.draw(function(){ render(0); });
+    var lp = k.loop(function(dt){ if (playing){ tD += dt * 0.5; if (tD >= 10){ tD = 10; playing = false; } } render(dt); }); lp.play();
   }
 });
 
@@ -145,29 +207,100 @@ SFA.sim({
 SFA.sim({
   id:"ub-c08-brassage", ch:"c08", tag:"Combinatoire",
   titre:"Brassage génétique : combien de gamètes différents ?",
-  resume:"2ⁿ gamètes par brassage interchromosomique ; le crossing-over multiplie encore.",
-  but:"Choisis le nombre de paires de chromosomes n et combien d'entre elles ont un crossing-over entre deux locus hétérozygotes.",
+  resume:"En métaphase I, chaque paire d'homologues s'oriente au hasard : touche les bivalents pour les faire basculer, forme les gamètes et remplis la galerie des 2ⁿ combinaisons.",
+  but:"Touche un bivalent pour choisir quel homologue (maternel en rouge, paternel en bleu) part vers le pôle du gamète, puis « Former ce gamète ». « Méiose au hasard » tire toutes les orientations. Défi : obtiens tous les gamètes différents possibles (galerie complète).",
   aRetenir:"Brassage interchromosomique : n paires → 2<sup>n</sup> gamètes ; humain (n = 23) : 2²³ = 8 388 608. Chaque paire avec un crossing-over entre deux locus hétérozygotes fournit 4 types de chromatides au lieu de 2 : gamètes = 2<sup>n+c</sup>. Fécondation : (2<sup>n+c</sup>)² zygotes possibles, soit (2²³)² ≈ 7·10¹³ sans crossing-over.",
-  piege:"« 2ⁿ » suppose que chaque paire est hétérozygote pour au moins un gène : le nombre réel de gamètes différents dépend de l'hétérozygotie. Le crossing-over n'a d'effet de brassage que s'il se produit entre deux locus hétérozygotes. Deux frères ont une probabilité (1/2)ⁿ de recevoir le même gamète d'un parent.",
+  piege:"« 2ⁿ » suppose que chaque paire est hétérozygote pour au moins un gène : le nombre réel de gamètes différents dépend de l'hétérozygotie. Le crossing-over n'a d'effet de brassage que s'il se produit entre deux locus hétérozygotes. Deux frères ont une probabilité (1/2)ⁿ de recevoir le même gamète d'un parent. Le dessin montre au plus 6 paires.",
   build:function(k,S){
-    var c = k.canvas(290), pal = S.draw.palette;
+    var pal = S.draw.palette, c = k.canvas(620), RED = "#c0392b", BLU = "#2563c9", rs = rng(3), st = [], found = {}, anim = -1, first = true, auto = false, key = "", geo = null, last = null;
+    c.cv.style.touchAction = "manipulation";
     var n = k.slider("Paires de chromosomes n", 1, 23, 1, 3, "");
     var cc = k.slider("Paires avec un crossing-over informatif c", 0, 23, 1, 0, "");
-    var ro = k.readouts(["Gamètes différents","Zygotes possibles","Probabilité d'un gamète « tout maternel »"]);
-    var note = k.note("", "ok");
-    k.draw(function(){
-      c.clear();
-      var nn = n.value, ct = Math.min(cc.value, nn);
-      var ax = S.draw.axes(c, {t:28,x0:0, x1:23, y0:0, y1:15, xl:"n", yl:"log₁₀(gamètes)", stepX:5, stepY:3});
-      S.draw.fn(c, ax, function(x){ return x * Math.log10(2); }, pal.acc);
-      S.draw.fn(c, ax, function(x){ return 2 * x * Math.log10(2); }, pal.red, 2, [5, 4]);
-      S.draw.text(c, "n paires (c = 0)", ax.X(14), ax.Y(14 * 0.301) + 14, {size:11, color:pal.acc});
-      S.draw.text(c, "toutes les paires avec crossing-over (c = n)", ax.X(8), ax.Y(16 * 0.301) - 12, {size:11, color:pal.red});
-      S.draw.dot(c, ax.X(nn), ax.Y((nn + ct) * Math.log10(2)), 6, pal.ink);
-      var g = Math.pow(2, nn + ct);
-      ro.set(0, g < 1e6 ? Math.round(g).toLocaleString("fr-BE") : S.sci(g, 2)); ro.set(1, S.sci(g * g, 2)); ro.set(2, "1/" + (Math.pow(2, nn) < 1e6 ? Math.pow(2, nn).toLocaleString("fr-BE") : S.sci(Math.pow(2, nn), 2)));
-      note.set(cc.value > nn ? "Il ne peut pas y avoir plus de paires avec crossing-over que de paires de chromosomes : c est ramené à n = " + nn + "." : nn === 23 && ct === 0 ? "Humain sans crossing-over : 2²³ = 8 388 608 gamètes possibles par individu." : "Seules les paires hétérozygotes comptent ; 4<sup>c</sup>·2<sup>n−c</sup> = 2<sup>n+c</sup>.", "ok");
+    k.button("Méiose au hasard", function(){ if (anim < 0){ randomize(); anim = 0; } }, true);
+    k.button("Former ce gamète", function(){ if (anim < 0) anim = 0; });
+    var bA = k.button("▶ En continu", function(){ auto = !auto; if (auto && anim < 0){ randomize(); anim = 0; } });
+    k.button("Vider la galerie", function(){ found = {}; last = null; });
+    var ro = k.readouts(["Gamètes différents 2<sup>n+c</sup>", "Zygotes possibles", "P(gamète « tout maternel »)", "Galerie"]);
+    var note = k.note("", "");
+    function dims(){ var nd = Math.min(n.value, 6), cd = Math.min(cc.value, n.value, nd); return {nd:nd, cd:cd}; }
+    function reset(){ var D = dims(); st = []; for (var i = 0; i < D.nd; i++) st.push({o:0, r:0}); found = {}; last = null; }
+    function randomize(){ st.forEach(function(z, i){ z.o = rs() < 0.5 ? 0 : 1; z.r = i < dims().cd && rs() < 0.5 ? 1 : 0; }); }
+    function code(){ var D = dims(); return st.map(function(z, i){ return z.o + (i < D.cd ? "" + z.r : ""); }).join(""); }
+    c.pointer(function(t, p){
+      if (t !== "down" || !geo || anim >= 0) return;
+      for (var i = 0; i < geo.ys.length; i++){ if (Math.abs(p.y - geo.ys[i]) < geo.sp / 2 && Math.abs(p.x - geo.cx) < geo.rx * 0.7){ var z = st[i]; if (i < dims().cd){ var v = z.o * 2 + z.r + 1; z.o = (v >> 1) & 1; z.r = v & 1; } else z.o = 1 - z.o; k.redraw(); return; } }
     });
+    function chromX(x, y, L, colA, colB, tipA, tipB){
+      var ctx = c.ctx, w = Math.max(3, L * 0.2); ctx.save(); ctx.lineCap = "round";
+      [[-1, colA, tipA], [1, colB, tipB]].forEach(function(q){ var sg = q[0]; ctx.strokeStyle = q[1]; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(x + sg * L * 0.17, y - L / 2); ctx.quadraticCurveTo(x, y, x + sg * L * 0.17, y + L / 2); ctx.stroke();
+        if (q[2]){ ctx.strokeStyle = q[2]; ctx.beginPath(); ctx.moveTo(x + sg * L * 0.17, y - L / 2); ctx.quadraticCurveTo(x + sg * L * 0.1, y - L * 0.3, x + sg * L * 0.06, y - L * 0.22); ctx.stroke(); } });
+      ctx.fillStyle = "rgba(0,0,0,.35)"; ctx.beginPath(); ctx.arc(x, y, w * 0.6, 0, 6.2832); ctx.fill(); ctx.restore();
+    }
+    function mini(x, y, cd, nd, codeS, r){ /* gamète miniature */
+      var ctx = c.ctx; ctx.save(); ctx.fillStyle = "#fffaf0"; ctx.strokeStyle = "#c7a96b"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill(); ctx.stroke();
+      var j = 0, bw = Math.min(4, r * 1.4 / nd), sx = x - (nd - 1) * bw * 0.75;
+      for (var i = 0; i < nd; i++){ var o = +codeS[j++], rr = i < cd ? +codeS[j++] : 0, col = o ? BLU : RED, xx = sx + i * bw * 1.5;
+        ctx.strokeStyle = col; ctx.lineWidth = bw; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(xx, y - r * 0.5); ctx.lineTo(xx, y + r * 0.5); ctx.stroke();
+        if (rr){ ctx.strokeStyle = o ? RED : BLU; ctx.beginPath(); ctx.moveTo(xx, y - r * 0.5); ctx.lineTo(xx, y - r * 0.15); ctx.stroke(); } }
+      ctx.restore();
+    }
+    function render(dt){
+      var ctx = c.ctx, W = c.W, H = c.H, D = dims(), i;
+      var kk = n.value + "|" + cc.value; if (kk !== key){ key = kk; reset(); if (first){ first = false; randomize(); anim = 0; } }
+      if (anim >= 0){ anim += (dt || 0) / 1.6; if (anim >= 1){ var cd0 = code(); found[cd0] = 1; last = cd0; anim = -1; if (auto){ randomize(); anim = 0; } } }
+      c.clear();
+      /* ---- cellule en métaphase I / anaphase I ---- */
+      var cx = W / 2, cy = 122, rx = Math.min(W * 0.46, 210), ry = 100, e = anim < 0 ? 0 : Math.min(1, anim / 0.6);
+      var gr = ctx.createRadialGradient(cx - rx * .3, cy - ry * .3, 4, cx, cy, rx); gr.addColorStop(0, "#fffaf0"); gr.addColorStop(1, "#f3e6cc");
+      ctx.fillStyle = gr; ctx.strokeStyle = "#c7a96b"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, 6.2832); ctx.fill(); ctx.stroke();
+      S.draw.text(c, anim < 0 ? "Métaphase I : touche un bivalent pour le faire basculer" : "Anaphase I : les homologues migrent vers les pôles", W / 2, 10, {size:W < 420 ? 10 : 11.5, color:pal.ink});
+      var pL = cx - rx * 0.86, pR = cx + rx * 0.86;
+      S.draw.dot(c, pL, cy, 5, pal.amber); S.draw.dot(c, pR, cy, 5, pal.amber);
+      S.draw.text(c, "pôle du gamète", pL + 4, cy + ry * 0.62, {size:9.5, color:"#8a6d1c", align:"left"});
+      S.draw.line(c, cx, cy - ry * 0.85, cx, cy + ry * 0.85, "rgba(120,120,120,.35)", 1, [3, 4]);
+      var sp = Math.min(48, ry * 1.6 / D.nd), L = Math.min(40, sp * 0.92), ys = [];
+      for (i = 0; i < D.nd; i++){
+        var y = cy - (D.nd - 1) * sp / 2 + i * sp, z = st[i], co = i < D.cd, dx = L * 0.42 + e * (rx * 0.55);
+        ys.push(y);
+        var leftCol = z.o ? BLU : RED, rightCol = z.o ? RED : BLU;
+        ctx.save(); ctx.strokeStyle = "rgba(90,110,140,.35)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(pL, cy); ctx.lineTo(cx - dx, y); ctx.moveTo(pR, cy); ctx.lineTo(cx + dx, y); ctx.stroke(); ctx.restore();
+        /* chromatide recombinante : pointe échangée ; z.r = 1 : la recombinante part dans le gamète */
+        chromX(cx - dx, y, L, leftCol, leftCol, co && z.r ? rightCol : null, co && !z.r ? rightCol : null);
+        chromX(cx + dx, y, L, rightCol, rightCol, co ? leftCol : null, null);
+        if (co && e === 0) S.draw.text(c, "CO", cx, y - L * 0.55, {size:8.5, color:pal.violet});
+      }
+      geo = {ys:ys, sp:sp, cx:cx, rx:rx};
+      if (n.value > D.nd) S.draw.text(c, D.nd + " paires dessinées sur " + n.value, cx + rx - 6, cy + ry - 8, {size:9.5, align:"right", color:pal.grey});
+      /* gamète formé */
+      if (anim > 0.6){ var u = (anim - 0.6) / 0.4; ctx.save(); ctx.globalAlpha = 0.6 * (1 - u); ctx.strokeStyle = pal.green; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(cx - L * 0.42 - rx * 0.55, cy, L, ry * 0.8, 0, 0, 6.2832); ctx.stroke(); ctx.restore(); }
+      /* ---- galerie ---- */
+      var tot = Math.pow(2, D.nd + D.cd), gy = 238, nf = Object.keys(found).length;
+      S.draw.text(c, "Galerie des gamètes obtenus (" + nf + (tot <= 64 ? " / " + tot : "") + ")", 6, gy, {size:11, align:"left", color:pal.ink});
+      var slotR = tot > 16 ? 10 : 13, cols = Math.max(1, Math.floor((W - 12) / (2 * slotR + 6))), gTop = gy + 22, rows = 0;
+      if (tot <= 64){
+        for (i = 0; i < tot; i++){ var bits = "", v = i; for (var q = 0; q < D.nd + D.cd; q++){ bits = (v & 1) + bits; v >>= 1; }
+          var sx = 6 + slotR + (i % cols) * (2 * slotR + 6), sy = gTop + slotR + Math.floor(i / cols) * (2 * slotR + 6); rows = Math.floor(i / cols) + 1;
+          if (found[bits]){ mini(sx, sy, D.cd, D.nd, bits, slotR); if (bits === last){ ctx.strokeStyle = pal.green; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(sx, sy, slotR + 3, 0, 6.2832); ctx.stroke(); } }
+          else { ctx.strokeStyle = "#cfd6e0"; ctx.setLineDash([3, 3]); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(sx, sy, slotR, 0, 6.2832); ctx.stroke(); ctx.setLineDash([]); }
+        }
+      } else { rows = 1; S.draw.text(c, "Trop de combinaisons pour une galerie (" + (tot < 1e6 ? tot.toLocaleString("fr-BE") : S.fmt(tot, 0)) + ") : " + nf + " gamètes différents obtenus.", 6, gTop + 12, {size:10.5, align:"left", color:pal.grey}); }
+      /* ---- courbe ---- */
+      var top = gTop + rows * (2 * slotR + 6) + 12, nn = n.value, ct = Math.min(cc.value, nn);
+      var ax = axIn(S, c, {x:0, y:top, w:W, h:H - top}, {x0:0, x1:23, y0:0, y1:15, xl:"n (paires)", yl:"log₁₀(gamètes)", stepX:5, stepY:3, pt:16});
+      S.draw.fn(c, ax, function(x){ return x * Math.log10(2); }, pal.acc, 2.4);
+      S.draw.fn(c, ax, function(x){ return 2 * x * Math.log10(2); }, pal.violet, 2, [5, 4]);
+      S.draw.text(c, "c = 0 : 2ⁿ", ax.X(18), ax.Y(18 * 0.301) + 14, {size:10.5, color:pal.acc, halo:"#fff"});
+      S.draw.text(c, "c = n : 4ⁿ", ax.X(9), ax.Y(18 * 0.301) - 10, {size:10.5, color:pal.violet, halo:"#fff"});
+      S.draw.dot(c, ax.X(nn), ax.Y((nn + ct) * Math.log10(2)), 6.5, pal.ink);
+      var g = Math.pow(2, nn + ct);
+      ro.set(0, g < 1e6 ? Math.round(g).toLocaleString("fr-BE") : S.sci(g, 2)); ro.set(1, S.sci(g * g, 2)); ro.set(2, "1/" + (Math.pow(2, nn) < 1e6 ? Math.pow(2, nn).toLocaleString("fr-BE") : S.sci(Math.pow(2, nn), 2)) + (ct ? " (1/" + (g < 1e6 ? Math.round(g).toLocaleString("fr-BE") : S.sci(g, 2)) + " avec CO)" : "")); ro.set(3, nf + (tot <= 64 ? " / " + tot : ""));
+      bA.textContent = auto ? "⏸ Arrêter" : "▶ En continu";
+      var ok = tot <= 64 && nf === tot && n.value === D.nd;
+      note.set(ok ? "✓ <b>Galerie complète</b> : les " + tot + " gamètes possibles = 2<sup>" + (D.nd + D.cd) + "</sup>. Chaque paire double le nombre de combinaisons ; avec 23 paires, on dépasse 8 millions." + (cc.value > n.value ? " (c ramené à n)" : "")
+        : n.value > 6 ? "◎ <b>Défi</b> : avec n = " + n.value + ", la galerie n'est plus dessinable. Ramène n à 3 ou 4 (et c à 0 ou 1) pour remplir la galerie complète." : "◎ <b>Défi</b> : obtiens les " + tot + " gamètes différents. Fais basculer les bivalents puis « Former ce gamète » : c'est plus rapide que le hasard ! " + (D.cd ? "Bivalent avec crossing-over : 4 états (chromatide parentale ou recombinante)." : ""), ok ? "ok" : "");
+    }
+    k.draw(function(){ render(0); });
+    var lp = k.loop(function(dt){ render(dt); }); lp.play();
   }
 });
 

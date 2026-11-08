@@ -3,38 +3,97 @@
 SFA.sim({
   id:"ub-c02-microscopie", ch:"c02", tag:"Observation · classique",
   titre:"Échelles, grossissement et résolution",
-  resume:"Que voit-on avec quel microscope ? Taille réelle sur une image et limite de résolution.",
-  but:"Fais varier la longueur d'onde et l'ouverture numérique (NA) : les structures plus petites que la limite de résolution disparaissent. En dessous, convertis une mesure sur image en taille réelle.",
-  aRetenir:"Résolution optique : d ≈ 0,61·λ / NA (≈ 0,2-0,3 µm en lumière visible). Le grossissement ne crée pas de détails : au-delà de la résolution, c'est du « grossissement vide ». Taille réelle = taille mesurée sur l'image ÷ grossissement. La microscopie électronique (λ d'électron très petite) résout la fraction de nanomètre à quelques nm en biologie.",
+  resume:"Regarde un vrai tissu à travers l'oculaire : le grossissement agrandit, mais seule la résolution 0,61·λ/NA révèle les détails.",
+  but:"Choisis la technique, λ, l'ouverture numérique et le grossissement, puis glisse dans le champ pour te déplacer dans le tissu. Le profil d'intensité de deux billes voisines montre si elles sont séparées (critère de Rayleigh).",
+  aRetenir:"Résolution optique : d ≈ 0,61·λ / NA (≈ 0,2-0,3 µm en lumière visible). Le grossissement ne crée pas de détails : au-delà de la résolution, c'est du « grossissement vide ». Taille sur l'image = taille réelle × grossissement. La microscopie électronique (λ d'électron très petite) résout la fraction de nanomètre à quelques nm en biologie.",
   piege:"Résolution ≠ grossissement. Un ribosome (≈ 25 nm) ne se voit pas en microscopie optique, même à ×10 000 : il se voit en microscopie électronique à transmission.",
   build:function(k,S){
-    var P=S.draw.palette, c=k.canvas(330);
+    var P=S.draw.palette, B=S.bio, c=k.canvas(580);
     var mode=k.seg("Technique",[["opt","Optique (λ, NA)"],["tem","Électronique à transmission"]],"opt");
     var lam=k.slider("Longueur d'onde λ",400,700,10,550,"nm");
-    var na=k.slider("Ouverture numérique NA",0.4,1.4,0.05,1.25,"");
-    var img=k.slider("Taille mesurée sur l'image",1,100,1,20,"mm");
-    var G=k.select("Grossissement",[[40,"× 40"],[100,"× 100"],[400,"× 400"],[1000,"× 1 000"],[10000,"× 10 000"],[50000,"× 50 000"]],1000);
-    var ro=k.readouts(["Résolution d","Taille réelle de l'objet mesuré"]);
-    var O=[["ADN (diamètre)",2],["ribosome",25],["virus (≈ 100 nm)",100],["mitochondrie",1000],["bactérie",2000],["globule rouge",7500],["hépatocyte",25000],["ovocyte",120000]];
-    k.draw(function(){
-      c.clear(); var ctx=c.ctx;
-      var d = mode.value==="opt" ? 0.61*lam.value/na.value : 0.5;
-      var L0=-0.5,L1=5.3, X=function(nm){ return 30+(Math.log10(nm)-L0)/(L1-L0)*(c.W-50); };
-      var y0=200;
-      S.draw.line(c,30,y0,c.W-20,y0,"#8a95a3",1.4);
-      [[1,"1 nm"],[10,"10 nm"],[100,"100 nm"],[1000,"1 µm"],[10000,"10 µm"],[100000,"100 µm"]].forEach(function(t){ S.draw.line(c,X(t[0]),y0-4,X(t[0]),y0+4,"#8a95a3",1.2); S.draw.text(c,t[1],X(t[0]),y0+16,{size:10,color:P.grey}); });
-      ctx.fillStyle="rgba(180,35,24,.10)"; ctx.fillRect(30,40,X(d)-30,y0-40);
-      S.draw.line(c,X(d),40,X(d),y0,P.red,2);
-      S.draw.text(c,"limite de résolution : "+(d<1?S.fmt(d,1)+" nm":S.fmt(d,0)+" nm"),Math.min(X(d)+6,c.W-170),52,{size:11,color:P.red,align:"left"});
-      S.draw.text(c,"non résolu",Math.max(60,X(d)/2+12),68,{size:11,color:P.red});
-      O.forEach(function(o,i){ var x=X(o[1]), vis=o[1]>=d; var yy=y0-34-(i%3)*34; S.draw.line(c,x,y0,x,yy+8,vis?P.green:"#c0c8d4",1,[3,3]); S.draw.dot(c,x,y0,5,vis?P.green:P.grey); S.draw.text(c,o[0],x,yy,{size:10,color:vis?P.green:P.grey}); });
-      S.draw.text(c,"Échelle logarithmique (nm)",c.W/2,y0+40,{size:11,color:P.ink});
-      ro.set(0,d<1?S.fmt(d,2)+" nm":S.fmt(d,0)+" nm");
-      var real=img.value*1e6/G.value; /* nm */
-      ro.set(1,real>=1000?S.fmt(real/1000,2)+" µm":S.fmt(real,1)+" nm");
-      S.draw.text(c,"Vert = taille ≥ résolution (structure distinguable) ; gris = trop petit pour cette technique.",c.W/2,c.H-14,{size:11,color:P.ink});
-    });
-    k.note("Électronique : valeur indicative de 0,5 nm pour des préparations biologiques (limitée par les aberrations et la préparation, pas par λ). Le critère « taille ≥ d » simplifie : la résolution est la plus petite distance séparant deux points distincts.","warn");
+    var na=k.slider("Ouverture numérique NA",0.1,1.4,0.05,0.65,"");
+    var G=k.select("Grossissement",[[40,"× 40"],[100,"× 100"],[400,"× 400"],[1000,"× 1 000"],[10000,"× 10 000"],[50000,"× 50 000"]],400);
+    var ro=k.readouts(["Résolution d","Champ observé (diamètre)","Mitochondrie (1 µm) sur l'image","Billes voisines séparées ?"]);
+    var nt=k.note("","");
+    var cx=3, cy=5.2, fw=50, drag=null, off=document.createElement("canvas"), oc=off.getContext("2d"), sep=250, t=0;
+    function h(i,j,s){ var x=Math.sin(i*127.1+j*311.7+s*74.7)*43758.5453; return x-Math.floor(x); }
+    var DEF=[function(){ sep=[180,200,230,260][Math.floor(Math.random()*4)]; return {id:1,txt:"au microscope optique, sépare les deux billes distantes de "+sep+" nm (règle λ et NA)"}; },
+      function(){ return {id:2,txt:"fais apparaître les ribosomes (25 nm) le long du réticulum"}; },
+      function(){ return {id:3,txt:"grossissement minimal pour qu'une mitochondrie (1 µm) mesure au moins 5 mm sur l'image"}; }];
+    function res(){ return mode.value==="opt"?0.61*lam.value/na.value:0.5; }
+    var df=B.defi(k,function(n){ return DEF[n%3](); },function(d){ var dd=res(), g=+G.value;
+      if(d.id===1) return {ok:mode.value==="opt"&&dd<=sep};
+      if(d.id===2) return {ok:dd<=12&&25e-3*(2*Rp/fw)>=1.5};
+      return {ok:g===10000}; });
+    var Rp=100;
+    k.button("Recentrer",function(){ cx=3; cy=5.2; });
+    c.pointer(function(tp,p){ if(tp==="down") drag=Math.hypot(p.x-drag0.x,p.y-drag0.y)<Rp?{x:p.x,y:p.y}:null;
+      else if(tp==="drag"&&drag){ var um=fw/(2*Rp); cx-=(p.x-drag.x)*um; cy-=(p.y-drag.y)*um; drag={x:p.x,y:p.y}; }
+      else if(tp==="up") drag=null; });
+    var drag0={x:0,y:0};
+    function specimen(ctx,R,tem){
+      /* coordonnées : µm, centre du champ (cx,cy), échelle R/(fw/2) px/µm */
+      var s=R/(fw/2), cell=25, i0=Math.floor((cx-fw/2)/cell)-1, i1=Math.floor((cx+fw/2)/cell)+1, j0=Math.floor((cy-fw/2)/cell)-1, j1=Math.floor((cy+fw/2)/cell)+1;
+      function X(x){ return R+(x-cx)*s; } function Y(y){ return R+(y-cy)*s; }
+      ctx.fillStyle=tem?"#c9c9c9":"#f3dbe6"; ctx.fillRect(0,0,2*R,2*R);
+      for(var i=i0;i<=i1;i++) for(var j=j0;j<=j1;j++){
+        if(Math.abs(i)>14||Math.abs(j)>14) continue;
+        var ox=i*cell+(i||j?(h(i,j,1)-.5)*3:0), oy=j*cell+(i||j?(h(i,j,2)-.5)*3:0);
+        /* membrane plasmique */
+        ctx.strokeStyle=tem?"#555":"#c27aa0"; ctx.lineWidth=Math.max(.6,0.008*s); ctx.beginPath(); ctx.rect(X(ox-cell/2+.3),Y(oy-cell/2+.3),(cell-.6)*s,(cell-.6)*s); ctx.stroke();
+        /* noyau + nucléole */
+        ctx.fillStyle=tem?"#8d8d8d":"#7c5aa8"; ctx.beginPath(); ctx.arc(X(ox-3),Y(oy-2),4.2*s,0,6.2832); ctx.fill();
+        ctx.fillStyle=tem?"#5a5a5a":"#4b2f7a"; ctx.beginPath(); ctx.arc(X(ox-2.2),Y(oy-1.4),1.1*s,0,6.2832); ctx.fill();
+        if(s>3){ ctx.strokeStyle=tem?"#6b6b6b":"#6a4b98"; ctx.lineWidth=Math.max(.5,.01*s); ctx.beginPath(); ctx.arc(X(ox-3),Y(oy-2),4.2*s,0,6.2832); ctx.stroke(); }
+        /* mitochondries (1 µm × 0,45 µm) avec crêtes */
+        for(var m=0;m<14;m++){ var mx=ox+(h(i,j,10+m)-.5)*20, my=oy+(h(i,j,40+m)-.5)*20; if(Math.hypot(mx-ox+3,my-oy+2)<5.2) continue; var a=h(i,j,70+m)*3.14;
+          ctx.save(); ctx.translate(X(mx),Y(my)); ctx.rotate(a); ctx.fillStyle=tem?"#9a9a9a":"#c8577a"; ctx.beginPath(); ctx.ellipse(0,0,.5*s,.22*s,0,0,6.2832); ctx.fill();
+          if(s>20){ ctx.strokeStyle=tem?"#4a4a4a":"#8e2f52"; ctx.lineWidth=Math.max(.5,.012*s); ctx.beginPath(); for(var q=-3;q<=3;q++){ ctx.moveTo(q*.12*s,-.2*s); ctx.lineTo(q*.12*s,(q%2?.05:-.02)*s); } ctx.stroke(); }
+          ctx.restore(); }
+        /* réticulum rugueux : citernes + ribosomes de 25 nm */
+        for(var r=0;r<3;r++){ var ry=oy+5+r*.35, rx0=ox+1, rx1=ox+8; ctx.strokeStyle=tem?"#6f6f6f":"#b06b97"; ctx.lineWidth=Math.max(.4,.03*s); ctx.beginPath(); ctx.moveTo(X(rx0),Y(ry)); ctx.lineTo(X(rx1),Y(ry)); ctx.stroke();
+          if(.025*s>=.6){ ctx.fillStyle=tem?"#2b2b2b":"#7a3d6a"; for(var x=rx0;x<rx1;x+=.06){ if(X(x)<-5||X(x)>2*R+5) continue; ctx.beginPath(); ctx.arc(X(x),Y(ry-.05),.0125*s,0,6.2832); ctx.fill(); } } }
+      }
+      /* virus (100 nm) dans la cellule centrale et paire de billes fluorescentes */
+      ctx.fillStyle=tem?"#3a3a3a":"#5b2d6b"; for(var v=0;v<9;v++){ ctx.beginPath(); ctx.arc(X(3.55+(v%3)*.13+.004*Math.sin(t+v)),Y(4.62+Math.floor(v/3)*.13),.05*s,0,6.2832); ctx.fill(); }
+      ctx.fillStyle=tem?"#111":"#1d6b3a"; [-sep/2000,sep/2000].forEach(function(d){ ctx.beginPath(); ctx.arc(X(3+d),Y(5.17),Math.max(.6,.02*s),0,6.2832); ctx.fill(); });
+    }
+    function frame(dt){
+      t+=dt; var ctx=c.ctx, W=c.W, L=B.split(c,.58), D=L.d, tem=mode.value==="tem", g=+G.value, d=res();
+      var target=20000/g; fw+=(target-fw)*Math.min(1,dt*4+(dt===0?1:0));
+      c.clear(); B.bg(c,"#f6f8fb","#e9eef5");
+      Rp=Math.min(D.w*.36,(D.h-70)/2); var fx=D.x+(L.wide?D.w/2:W*.42), fy=D.y+44+Rp; drag0={x:fx,y:fy};
+      var dpr=window.devicePixelRatio||1, sz=Math.ceil(2*Rp*dpr); if(off.width!==sz){ off.width=sz; off.height=sz; }
+      oc.setTransform(dpr,0,0,dpr,0,0); oc.clearRect(0,0,2*Rp,2*Rp); specimen(oc,Rp,tem);
+      var sig=Math.min(40,0.34*d*(2*Rp/(fw*1000)));
+      ctx.save(); ctx.beginPath(); ctx.arc(fx,fy,Rp,0,6.2832); ctx.clip(); ctx.filter=sig>0.3?"blur("+sig.toFixed(2)+"px)":"none"; ctx.drawImage(off,fx-Rp,fy-Rp,2*Rp,2*Rp); ctx.filter="none";
+      var vg=ctx.createRadialGradient(fx,fy,Rp*.7,fx,fy,Rp); vg.addColorStop(0,"rgba(0,0,0,0)"); vg.addColorStop(1,"rgba(0,0,0,.35)"); ctx.fillStyle=vg; ctx.fillRect(fx-Rp,fy-Rp,2*Rp,2*Rp); ctx.restore();
+      ctx.save(); ctx.lineWidth=7; ctx.strokeStyle="#1e2a3a"; ctx.beginPath(); ctx.arc(fx,fy,Rp+3,0,6.2832); ctx.stroke(); ctx.restore();
+      /* barre d'échelle */
+      var um=fw*.25, e=Math.pow(10,Math.floor(Math.log10(um))), nice=um/e>=5?5*e:um/e>=2?2*e:e, bl=nice/fw*2*Rp;
+      S.draw.line(c,fx-bl/2,fy+Rp-18,fx+bl/2,fy+Rp-18,"#fff",4); S.draw.text(c,nice>=1?S.fmt(nice,1)+" µm":S.fmt(nice*1000,0)+" nm",fx,fy+Rp-30,{size:10.5,color:"#fff",halo:"rgba(0,0,0,.6)"});
+      /* légende à droite */
+      var lx=fx+Rp+16, ly=fy-Rp+10, lw=W-lx-6;
+      if(lw>70){ [["noyau",tem?"#8d8d8d":"#7c5aa8","8 µm"],["mitochondrie",tem?"#9a9a9a":"#c8577a","1 µm"],["virus",tem?"#3a3a3a":"#5b2d6b","100 nm"],["ribosome",tem?"#2b2b2b":"#7a3d6a","25 nm"],["2 billes",tem?"#111":"#1d6b3a",sep+" nm"]].forEach(function(o,i){
+          B.ball(c,lx+6,ly+i*30,5,o[1]); S.draw.text(c,o[0],lx+16,ly+i*30-5,{size:10,color:P.ink,align:"left"}); S.draw.text(c,o[2],lx+16,ly+i*30+8,{size:9.5,color:P.grey,align:"left"}); }); }
+      S.draw.text(c,(tem?"MET":"optique")+" × "+S.fmt(g,0)+" · glisse pour te déplacer",fx,fy+Rp+16,{size:10,color:P.grey});
+      /* profil d'intensité des deux billes */
+      var Rg=Math.max(1.7*sep,3.2*d), sg=Math.max(d/0.61*0.21,Rg/120);
+      var ax=B.axes(c,L.g,{frame:true,t:24,b:36,l:40,x0:-Rg,x1:Rg,y0:0,y1:1.25,stepX:Rg>800?500:Rg>300?100:Rg>60?20:2,stepY:.25,xl:"position (nm)",yl:"intensité"});
+      function I1(x,x0){ var u=(x-x0)/sg; return Math.exp(-u*u/2); }
+      function I(x){ return I1(x,-sep/2)+I1(x,sep/2); }
+      var mx=0; for(var x=-Rg;x<=Rg;x+=Rg/200) mx=Math.max(mx,I(x));
+      S.draw.fn(c,ax,function(x){ return I1(x,-sep/2)/mx; },"#9aa6b6",1.2,[4,3]); S.draw.fn(c,ax,function(x){ return I1(x,sep/2)/mx; },"#9aa6b6",1.2,[4,3]);
+      S.draw.fn(c,ax,function(x){ return I(x)/mx; },P.green,2.6);
+      var dip=1-I(0)/mx, ok=sep>=d;
+      S.draw.text(c,ok?"creux de "+S.fmt(dip*100,0)+" % : deux taches distinctes":"une seule tache : non résolues",ax.X(0),ax.T+8,{size:10.5,color:ok?P.green:P.red,halo:true});
+      S.draw.line(c,ax.X(-d/2),ax.B-6,ax.X(d/2),ax.B-6,P.red,2.5); S.draw.text(c,"d = "+(d<10?S.fmt(d,1):S.fmt(d,0))+" nm",ax.X(d/2)+4,ax.B-14,{size:9.5,color:P.red,align:"left",halo:true});
+      var dd=df.banner(c,13);
+      ro.set(0,d<10?S.fmt(d,2)+" nm":S.fmt(d,0)+" nm"); ro.set(1,target>=1?S.fmt(target,target<10?1:0)+" µm":S.fmt(target*1000,0)+" nm"); ro.set(2,S.fmt(g/1000,g<1000?2:0)+" mm"); ro.set(3,(ok?"oui":"non")+" ("+sep+" nm)");
+      nt.set((dd&&dd.ok?"<b>Défi réussi.</b> ":"")+(g>=10000&&!tem&&d>100?"Grossissement vide : l'image est plus grande, mais pas plus nette (d = "+S.fmt(d,0)+" nm). ":"")+"Flou calculé à partir de d (tache d'Airy assimilée à une gaussienne). Champ = 20 mm / grossissement. MET : 0,5 nm indicatif pour des coupes biologiques (limité par la préparation, pas par λ). Le tissu est schématique, mais ses dimensions sont à l'échelle.",dd&&dd.ok?"ok":(g>=10000&&!tem&&d>100)?"warn":"ok");
+    }
+    k.draw(function(){ frame(0); });
+    var lp=k.loop(function(dt){ frame(dt); }); lp.play();
   }
 });
 
@@ -104,33 +163,71 @@ SFA.sim({
 SFA.sim({
   id:"ub-c02-centrifugation", ch:"c02", tag:"Technique · fractionnement",
   titre:"Centrifugation différentielle : qui sédimente à quelle vitesse ?",
-  resume:"Choisis l'accélération et la durée : vois quels organites forment un culot et lesquels restent en surnageant.",
-  but:"Modèle de Stokes pour des particules sphériques dans du saccharose 0,25 M (ρ = 1,03 g/mL, η = 2,0 mPa·s). Un organite « culotte » s'il parcourt au moins 6 cm (hauteur du tube).",
-  aRetenir:"Vitesse de sédimentation (Stokes) : v = 2r²(ρ<sub>p</sub> − ρ<sub>m</sub>)·a / 9η, avec a = RCF × 9,81. Elle croît avec le carré du rayon : noyaux d'abord (≈ 1 000 g), puis mitochondries (≈ 10 000-20 000 g), puis microsomes (≈ 100 000 g), enfin ribosomes (> 100 000 g, plusieurs heures). Le surnageant final contient le cytosol.",
-  piege:"Le modèle suppose une particule isolée et diluée, une accélération constante sur tout le tube (en réalité elle varie avec la distance à l'axe) et des organites sphériques. Les valeurs réelles de protocole dépendent du rotor.",
+  resume:"Fais tourner le rotor, regarde les organites descendre dans le tube et enchaîne les centrifugations pour purifier les mitochondries.",
+  but:"Choisis l'accélération et la durée (curseur ou trait vertical du graphique), lance la centrifugation, puis garde le surnageant pour une nouvelle étape. Modèle de Stokes dans du saccharose 0,25 M (ρ = 1,03 g/mL, η = 2,0 mPa·s), tube de 6 cm.",
+  aRetenir:"Vitesse de sédimentation (Stokes) : v = 2r²(ρ<sub>p</sub> − ρ<sub>m</sub>)·a / 9η, avec a = RCF × 9,81. Elle croît avec le carré du rayon : noyaux d'abord (≈ 1 000 g), puis mitochondries (≈ 10 000-20 000 g), puis microsomes (≈ 100 000 g), enfin ribosomes (> 100 000 g, plusieurs heures). Chaque étape garde le SURNAGEANT pour l'étape suivante ; le surnageant final contient le cytosol.",
+  piege:"Une seule centrifugation ne purifie pas : un culot contient tout ce qui a eu le temps de descendre, y compris une partie des particules plus petites parties du bas du tube (ici les lysosomes avec les mitochondries). Le modèle suppose des particules sphériques isolées et une accélération constante dans le tube.",
   build:function(k,S){
-    var P=S.draw.palette, c=k.canvas(320);
-    var g=k.select("Accélération relative (RCF)",[[1000,"1 000 g"],[5000,"5 000 g"],[10000,"10 000 g"],[20000,"20 000 g"],[100000,"100 000 g"],[150000,"150 000 g"]],10000);
-    var t=k.slider("Durée",1,240,1,20,"min");
-    var ro=k.readouts(["Organites en culot","Organites en surnageant"]);
-    var O=[["Noyaux",3,1.30,P.violet],["Mitochondries",0.4,1.19,P.red],["Lysosomes",0.25,1.12,P.amber],["Microsomes",0.05,1.15,P.teal],["Ribosomes",0.0125,1.60,P.green]];
-    k.draw(function(){
-      c.clear(); var ctx=c.ctx, a=parseFloat(g.value)*9.81, T=t.value*60, eta=2.0e-3, rm=1030;
-      var left=120, right=c.W-20, lo=-4, hi=2, X=function(cm){ return left+(Math.log10(cm)-lo)/(hi-lo)*(right-left); };
-      var pel=[],sup=[];
-      S.draw.text(c,"Distance parcourue en "+t.value+" min à "+g.value+" g (échelle log, cm)",c.W/2,16,{size:12,color:P.ink});
-      O.forEach(function(o,i){
-        var v=2*Math.pow(o[1]*1e-6,2)*(o[2]*1000-rm)*a/(9*eta), dcm=v*T*100, y=56+i*46;
-        var ok=dcm>=6; (ok?pel:sup).push(o[0]);
-        S.draw.text(c,o[0],8,y,{size:12,color:o[3],align:"left"});
-        ctx.fillStyle=ok?o[3]:"#c8d1de"; var w=Math.max(2,X(Math.max(dcm,1e-4))-left); ctx.fillRect(left,y-10,Math.min(w,right-left),20);
-        var lab=(dcm<0.01?S.bio.sci(dcm,1):dcm>=1000?S.bio.sci(dcm,1):S.fmt(dcm,dcm<1?2:1))+" cm"; var wc=Math.min(w,right-left);
-        if(wc>110) S.draw.text(c,lab,left+wc-6,y,{size:11,color:ok?"#fff":P.ink,align:"right"}); else S.draw.text(c,lab,left+wc+6,y,{size:11,color:P.ink,align:"left"});
-      });
-      S.draw.line(c,X(6),40,X(6),c.H-20,P.red,1.8,[5,4]); S.draw.text(c,"6 cm = fond du tube",X(6)-4,c.H-12,{size:10,color:P.red,align:"right"});
-      ro.set(0,pel.length?pel.join(", "):"aucun"); ro.set(1,sup.length?sup.join(", "):"aucun");
-    });
-    k.note("Valeurs choisies pour l'exercice : noyau r = 3 µm, ρ = 1,30 ; mitochondrie r = 0,4 µm, ρ = 1,19 ; lysosome r = 0,25 µm, ρ = 1,12 ; microsome r = 50 nm, ρ = 1,15 ; ribosome r = 12,5 nm, ρ = 1,60 g/mL. Ordres de grandeur, pas des mesures.","warn");
+    var P=S.draw.palette, B=S.bio, c=k.canvas(600);
+    var g=k.select("Accélération relative (RCF)",[[1000,"1 000 g"],[5000,"5 000 g"],[10000,"10 000 g"],[20000,"20 000 g"],[100000,"100 000 g"],[150000,"150 000 g"]],1000);
+    var tm=k.slider("Durée",0.5,60,0.5,5,"min");
+    var ro=k.readouts(["Culot (dernière centrifugation)","Pureté en mitochondries","Rendement en mitochondries","Étape"]);
+    var nt=k.note("","");
+    var O=[["Noyaux",3,1.30,"#6236c4",7],["Mitochondries",0.4,1.19,"#c0321d",5],["Lysosomes",0.25,1.12,"#c26a0c",4],["Microsomes",0.05,1.15,"#0e7f96",3],["Ribosomes",0.0125,1.60,"#24775a",2]];
+    var amt, pel, parts, run=null, step, ang=0, ax=null, drag=false, rnd=B.rng(21);
+    function vcm(i){ var o=O[i], a=parseFloat(g.value)*9.81; return 2*Math.pow(o[1]*1e-6,2)*(o[2]*1000-1030)*a/(9*2.0e-3)*100*60; } /* cm/min */
+    function fr(i,T){ return Math.min(1,vcm(i)*T/6); }
+    function fill(){ parts=[]; O.forEach(function(o,i){ var n=Math.round(10*amt[i]); for(var q=0;q<n;q++) parts.push({i:i,z0:rnd(),x:rnd(),z:0}); }); parts.forEach(function(p){ p.z=p.z0; }); }
+    function reset(){ amt=[1,1,1,1,1]; pel=null; step=1; run=null; fill(); }
+    reset();
+    k.button("▶ Centrifuger",function(){ if(run) return; pel=null; parts.forEach(function(p){ p.z0=rnd(); p.z=p.z0; }); run={u:0,T:tm.value,a:g.value}; },true);
+    k.button("Garder le surnageant",function(){ if(!pel||run) return; amt=amt.map(function(a,i){ return a-pel[i]; }); pel=null; step++; fill(); });
+    k.button("Recommencer (homogénat)",function(){ reset(); });
+    var df=B.defi(k,function(n){ return [{id:1,txt:"obtiens un culot à au moins 75 % de mitochondries, en gardant 80 % d'entre elles"},{id:2,txt:"en une seule centrifugation, fais culotter tous les noyaux sans perdre plus de 5 % des mitochondries"},{id:3,txt:"fais sédimenter au moins la moitié des microsomes (ultracentrifugation)"}][n%3]; },
+      function(d){ if(!pel) return {ok:false}; var tot=pel.reduce(function(a,b){ return a+b; },0);
+        if(d.id===1) return {ok:pel[1]/tot>=0.75&&pel[1]>=0.8};
+        if(d.id===2) return {ok:step===1&&pel[0]>=0.999&&pel[1]<=0.05};
+        return {ok:pel[3]>=0.5}; });
+    c.pointer(function(tp,p){ if(!ax) return; if(tp==="down") drag=ax.has(p,8);
+      if((tp==="down"||tp==="drag")&&drag){ tm.set(Math.round(Math.max(0.5,Math.min(60,ax.ix(p.x)))*2)/2); k.redraw(); } if(tp==="up") drag=false; });
+    function frame(dt){
+      var ctx=c.ctx, W=c.W, L=B.split(c,.5), D=L.d;
+      if(run){ run.u+=dt/2.6; var T=run.T; parts.forEach(function(p){ p.z=p.z0+vcm(p.i)*T/6*Math.min(1,run.u); });
+        if(run.u>=1){ pel=amt.map(function(a,i){ return a*fr(i,T); }); run=null; } }
+      ang+=dt*(run?Math.min(30,4+Math.log10(parseFloat(g.value))*5):0);
+      c.clear(); B.bg(c,"#fbfdff","#eef3f9");
+      var top=D.y+44, ry=top+(D.h-60)/2, rx=D.x+(L.wide?D.w*.3:W*.3), rr=Math.min(70,(D.h-70)/2,W*.2);
+      /* rotor vu de dessus */
+      ctx.save(); ctx.translate(rx,ry); var gr=ctx.createRadialGradient(-rr*.3,-rr*.3,4,0,0,rr); gr.addColorStop(0,"#eef1f5"); gr.addColorStop(1,"#a3adba"); ctx.fillStyle=gr; ctx.beginPath(); ctx.arc(0,0,rr,0,6.2832); ctx.fill(); ctx.strokeStyle="#7b8694"; ctx.lineWidth=2; ctx.stroke();
+      ctx.rotate(ang); for(var q=0;q<6;q++){ ctx.save(); ctx.rotate(q*Math.PI/3); ctx.fillStyle=q===0?"#f6e7c8":"#dfe5ec"; ctx.strokeStyle="#7b8694"; ctx.lineWidth=1.3; ctx.beginPath(); ctx.arc(rr*.62,0,rr*.17,0,6.2832); ctx.fill(); ctx.stroke(); ctx.restore(); }
+      if(run){ ctx.strokeStyle="rgba(123,134,148,.35)"; ctx.lineWidth=3; ctx.beginPath(); ctx.arc(0,0,rr*.85,-.8,0); ctx.stroke(); }
+      ctx.fillStyle="#4b5563"; ctx.beginPath(); ctx.arc(0,0,rr*.12,0,6.2832); ctx.fill(); ctx.restore();
+      S.draw.text(c,run?"rotor en marche : "+S.fmt(parseFloat(run.a),0)+" g":"rotor ("+S.fmt(parseFloat(g.value),0)+" g)",rx,ry+rr+14,{size:10.5,color:P.grey});
+      S.draw.text(c,"étape "+step+(step>1?" : surnageant précédent":" : homogénat"),rx,ry+rr+30,{size:10.5,color:P.ink});
+      /* tube agrandi */
+      var tw=Math.min(64,W*.15), tx=D.x+(L.wide?D.w*.66:W*.62), ty0=top, th=D.y+D.h-top-26;
+      function tube(){ ctx.beginPath(); ctx.moveTo(tx-tw/2,ty0); ctx.lineTo(tx-tw/2,ty0+th-tw/2); ctx.arc(tx,ty0+th-tw/2,tw/2,Math.PI,0,true); ctx.lineTo(tx+tw/2,ty0); }
+      ctx.save(); tube();
+      ctx.fillStyle="rgba(240,226,200,.55)"; ctx.fill(); ctx.save(); ctx.clip();
+      var bot=ty0+th, pt=0; if(pel){ O.forEach(function(o,i){ var hh=pel[i]*9; if(hh<.5) return; ctx.fillStyle=o[3]; ctx.fillRect(tx-tw/2,bot-pt-hh,tw,hh); pt+=hh; }); }
+      parts.forEach(function(p){ var z=Math.min(1,p.z); if(p.z>=1&&!run) return; var y=ty0+8+z*(th-14-pt), x=tx-tw/2+5+p.x*(tw-10); B.ball(c,x,y,O[p.i][4]*.75,O[p.i][3]); });
+      ctx.restore(); tube(); ctx.strokeStyle="#7b8694"; ctx.lineWidth=2; ctx.stroke(); ctx.restore();
+      S.draw.text(c,pel?"culot":"",tx,bot+10,{size:10,color:P.ink}); S.draw.text(c,"surnageant",tx+tw/2+6,ty0+14,{size:10,color:P.grey,align:"left"});
+      if(tx-tw/2-rx-rr>44){ S.draw.line(c,tx-tw/2-8,ty0,tx-tw/2-8,bot,"#9aa6b6",1); S.draw.text(c,"6 cm",tx-tw/2-12,ty0+th/2,{size:9.5,color:P.grey,align:"right"}); }
+      var lx=tx+tw/2+8; if(W-lx>80) O.forEach(function(o,i){ B.ball(c,lx+5,ty0+40+i*20,4.5,o[3]); S.draw.text(c,o[0]+(amt[i]<.995?" ("+S.fmt(amt[i]*100,0)+" %)":""),lx+13,ty0+40+i*20,{size:9.5,color:P.ink,align:"left"}); });
+      /* graphique : fraction sédimentée en fonction du temps */
+      ax=B.axes(c,L.g,{frame:true,t:24,b:36,l:40,x0:0,x1:60,y0:0,y1:100,stepX:10,stepY:25,xl:"durée (min)",yl:"% sédimenté à "+S.fmt(parseFloat(g.value),0)+" g"});
+      O.forEach(function(o,i){ S.draw.fn(c,ax,function(T){ return 100*fr(i,T); },o[3],2.2); var y=100*fr(i,tm.value); S.draw.dot(c,ax.X(tm.value),ax.Y(y),4.5,o[3]); });
+      S.draw.line(c,ax.X(tm.value),ax.T,ax.X(tm.value),ax.B,P.ink,1.4,[4,3]); S.draw.label(c,S.fmt(tm.value,1)+" min",Math.min(ax.R-26,ax.X(tm.value)+4),ax.T+8,{color:P.ink,align:"left",size:10});
+      var d=df.banner(c,13);
+      if(pel){ var tot=pel.reduce(function(a,b){ return a+b; },0), comp=O.map(function(o,i){ return [o[0],pel[i]/tot]; }).filter(function(x){ return x[1]>=0.01; }).map(function(x){ return x[0]+" "+S.fmt(x[1]*100,0)+" %"; });
+        ro.set(0,tot>0.001?comp.join(" · "):"rien"); ro.set(1,tot>0.001?S.fmt(pel[1]/tot*100,0)+" %":"—"); ro.set(2,S.fmt(pel[1]*100,0)+" %"); }
+      else { ro.set(0,run?"centrifugation…":"lance la centrifugation"); ro.set(1,"—"); ro.set(2,"—"); }
+      ro.set(3,String(step));
+      nt.set((d&&d.ok?"<b>Défi réussi.</b> ":"")+"Trait vertical du graphique = durée choisie (glisse-le). Une courbe atteint 100 % quand l'organite parcourt les 6 cm du tube en ce temps. Valeurs de l'exercice : noyau r = 3 µm, ρ = 1,30 ; mitochondrie 0,4 µm, 1,19 ; lysosome 0,25 µm, 1,12 ; microsome 50 nm, 1,15 ; ribosome 12,5 nm, 1,60 g/mL (ordres de grandeur). Chaque centrifugation repart d'un tube bien mélangé.",d&&d.ok?"ok":"ok");
+    }
+    k.draw(function(){ frame(0); });
+    var lp=k.loop(function(dt){ frame(dt); }); lp.play();
   }
 });
 

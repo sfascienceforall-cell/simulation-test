@@ -65,31 +65,111 @@ SFA.sim({
 SFA.sim({
   id:"b4-c07-mb", ch:"c07", tag:"Calcul · besoins",
   titre:"Métabolisme de base et besoins énergétiques",
-  resume:"Calcule le métabolisme de base d'une personne et ses besoins totaux selon son activité.",
-  but:"Règle sexe, masse, taille, âge et niveau d'activité. Compare avec la courbe en fonction de la masse.",
-  aRetenir:"Le métabolisme de base (MB) est l'énergie dépensée au repos complet, à jeun, pour maintenir les fonctions vitales (cœur, respiration, température, renouvellement cellulaire). Il varie avec la masse, la taille, l'âge et le sexe. Les besoins totaux = MB × niveau d'activité physique. 1 kcal = 4,184 kJ.",
-  piege:"Le MB n'est pas la dépense totale : l'activité physique peut l'augmenter de 20 % à 90 %. Formule de Mifflin–St Jeor : valeur moyenne approximative, pas une mesure individuelle.",
+  resume:"Une personne dessinée à ta taille : ses organes consomment l'énergie du métabolisme de base, l'activité fait grimper la dépense. Glisse le point sur la courbe pour changer la masse.",
+  but:"Règle sexe, taille, âge ; glisse le point sur la courbe (ou le curseur) pour la masse ; touche une activité sous le personnage. Les organes s'allument selon leur part du MB, la chaleur rayonne selon la dépense. Défi : trouve un profil qui dépense exactement ce qui est demandé.",
+  aRetenir:"Le métabolisme de base (MB) est l'énergie dépensée au repos complet, à jeun, pour maintenir les fonctions vitales : foie, cerveau, muscles, cœur et reins en consomment l'essentiel. Il dépend de la masse, de la taille, de l'âge et du sexe. Besoins totaux = MB × niveau d'activité physique. 1 kcal = 4,184 kJ.",
+  piege:"Le MB n'est pas la dépense totale : l'activité physique l'augmente de 20 % à 90 %. Formule de Mifflin–St Jeor : valeur moyenne approximative, pas une mesure individuelle ; parts des organes : ordres de grandeur pour un adulte.",
   build:function(k, S){
-    var c = k.canvas(0, {ratio:.75});
+    var P = S.draw.palette, c = k.canvas(0, {ratio:1.25}); B4.adapt(c, 1.32, 0.9, 480);
     var sx = k.seg("Sexe", [["m","Garçon / homme"],["f","Fille / femme"]], "m");
-    var m = k.slider("Masse", 30, 120, 1, 65, "kg");
-    var h = k.slider("Taille", 130, 200, 1, 172, "cm");
+    var m = k.slider("Masse", 30, 120, 1, 60, "kg");
+    var h = k.slider("Taille", 130, 200, 1, 170, "cm");
     var a = k.slider("Âge", 12, 80, 1, 16, "ans");
-    var act = k.select("Activité", [["1.2","Sédentaire (×1,2)"],["1.375","Peu active (×1,375)"],["1.55","Modérée (×1,55)"],["1.725","Active (×1,725)"],["1.9","Très active (×1,9)"]], "1.375");
-    var ro = k.readouts(["MB", "Besoins totaux", "ATP régénéré par jour", "Part du MB"]);
-    var nt = k.note("", "");
+    var ACT = [["1.2","Sédentaire (×1,2)"],["1.375","Peu active (×1,375)"],["1.55","Modérée (×1,55)"],["1.725","Active (×1,725)"],["1.9","Très active (×1,9)"]];
+    var act = k.select("Activité", ACT, "1.375");
+    var ro = k.readouts(["Métabolisme de base", "Besoins totaux", "ATP régénéré par jour", "Part du MB"]);
+    var nt = k.note("", ""), nd = k.note("", "");
+    var ORG = [["Foie", 0.21, "#9c5a2e"], ["Cerveau", 0.20, "#d9709a"], ["Muscles", 0.22, "#c0321d"], ["Cœur", 0.09, "#e0475a"], ["Reins", 0.08, "#8a4bb0"], ["Autres", 0.20, "#8a95a3"]];
+    var st = {t:0, drag:false, geo:{}, defi:null, score:0, tot:0, sel:-1};
     function mb(sex, mm, hh, aa){ return 10 * mm + 6.25 * hh - 5 * aa + (sex === "m" ? 5 : -161); }
+    k.button("Défi : vise une dépense", function(){ st.defi = {T:50 * Math.round((1700 + Math.random() * 1600) / 50), done:false}; st.tot++; }, true);
+    var lp = k.loop(function(dt){ st.t += dt; k.redraw(); }); lp.play();
+    c.pointer(function(type, p){
+      var g = st.geo;
+      if (type === "down"){
+        st.drag = false;
+        if (g.icons){ g.icons.forEach(function(ic, i){ if (Math.abs(p.x - ic[0]) < ic[2] / 2 && Math.abs(p.y - ic[1]) < 16) act.set(ACT[i][0]); }); }
+        if (g.org){ g.org.forEach(function(o, i){ if (p.x >= o[0] && p.x <= o[0] + o[2] && Math.abs(p.y - o[1]) < o[3] / 2) st.sel = st.sel === i ? -1 : i; }); }
+        if (g.ax && p.y >= g.ax.T - 6 && p.y <= g.ax.B + 6 && p.x >= g.ax.L - 6) st.drag = true;
+      }
+      if ((type === "down" || type === "drag") && st.drag){ m.set(Math.round(Math.max(30, Math.min(120, g.ax.ix(p.x))))); }
+      if (type === "up") st.drag = false;
+      k.redraw();
+    });
+    c.cv.style.touchAction = "pan-y";
+    function person(cx, foot, H0, wf, lvl){
+      var ctx = c.ctx, t = st.t, fr = [0, 1, 1.6, 2.4, 3.2][lvl], amp = [0, 0.12, 0.3, 0.5, 0.7][lvl], ph = Math.sin(t * fr * 6.2832) * amp, bob = lvl >= 3 ? Math.abs(Math.sin(t * fr * 6.2832)) * H0 * 0.015 : 0;
+      var top = foot - H0 - bob, hr = H0 * 0.065, sw = H0 * 0.26 * wf, hipY = top + H0 * 0.53, shY = top + H0 * 0.19, skin = "#f0c3a6", cloth = sx.value === "m" ? "#5b7fb8" : "#b4609a";
+      ctx.save(); ctx.lineCap = "round";
+      function limb(x, y, len, ang, w, col){ ctx.strokeStyle = col; ctx.lineWidth = w; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + Math.sin(ang) * len, y + Math.cos(ang) * len); ctx.stroke(); }
+      limb(cx - sw * 0.22, hipY, H0 * 0.47 - bob, ph, H0 * 0.075 * Math.sqrt(wf), "#34445e");
+      limb(cx + sw * 0.22, hipY, H0 * 0.47 - bob, -ph, H0 * 0.075 * Math.sqrt(wf), "#3d4f6b");
+      limb(cx - sw * 0.52, shY + 4, H0 * 0.34, -ph * 0.8 + 0.08, H0 * 0.05 * Math.sqrt(wf), skin);
+      limb(cx + sw * 0.52, shY + 4, H0 * 0.34, ph * 0.8 - 0.08, H0 * 0.05 * Math.sqrt(wf), skin);
+      S.draw.rrect(c, cx - sw / 2, shY, sw, hipY - shY + H0 * 0.04, sw * 0.28); ctx.fillStyle = cloth; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, top + hr + 2, hr, 0, 6.2832); ctx.fillStyle = skin; ctx.fill();
+      ctx.fillStyle = "#4a3426"; ctx.beginPath(); ctx.arc(cx, top + hr + 2, hr, 3.3, 6.1); ctx.fill();
+      ctx.restore();
+      /* organes */
+      var beat = 1 + 0.12 * Math.max(0, Math.sin(t * (1.1 + lvl * 0.35) * 6.2832));
+      var O = [[cx - sw * 0.12, top + H0 * 0.37, sw * 0.28, H0 * 0.04], [cx, top + hr + 1, hr * 0.62, hr * 0.48], [cx - sw * 0.22, hipY + H0 * 0.14, H0 * 0.04, H0 * 0.09], [cx + sw * 0.12, top + H0 * 0.28, H0 * 0.028 * beat, H0 * 0.03 * beat], [cx, top + H0 * 0.44, sw * 0.3, H0 * 0.02], [cx + sw * 0.2, top + H0 * 0.47, sw * 0.12, H0 * 0.02]];
+      O.forEach(function(o, i){ if (i === 5) return; var on = st.sel === -1 || st.sel === i, col = ORG[i][2];
+        S.draw.glow(c, o[0], o[1], Math.max(o[2], o[3]) * 2.4, col, on ? 0.25 + ORG[i][1] * 1.5 * (0.6 + 0.4 * Math.sin(t * 3 + i)) : 0.05);
+        if (i === 4){ B4.ell(c, o[0] - o[2] * 0.6, o[1], o[2] * 0.3, o[3], on ? col : "rgba(138,75,176,.3)"); B4.ell(c, o[0] + o[2] * 0.6, o[1], o[2] * 0.3, o[3], on ? col : "rgba(138,75,176,.3)"); }
+        else B4.ell(c, o[0], o[1], o[2], o[3], on ? col : S.draw.tint(col, 0.3), "rgba(255,255,255,.7)", 1); });
+      return {top:top, sw:sw};
+    }
     k.draw(function(){
-      c.clear(); var B = mb(sx.value, m.value, h.value, a.value), tot = B * parseFloat(act.value);
-      var ax = S.draw.axes(c, {x0:30, x1:120, y0:400, y1:2800, xl:"masse (kg)", yl:"MB (kcal/jour)", stepX:10, stepY:400});
-      S.draw.fn(c, ax, function(x){ return mb("m", x, h.value, a.value); }, B4.pal.acc, 2.4);
-      S.draw.fn(c, ax, function(x){ return mb("f", x, h.value, a.value); }, B4.pal.red, 2.4);
-      B4.txt(c, "garçons / hommes", ax.X(120), ax.Y(mb("m", 120, h.value, a.value)) - 12, B4.pal.acc, 12, "right"); B4.txt(c, "filles / femmes", ax.X(120), ax.Y(mb("f", 120, h.value, a.value)) + 16, B4.pal.red, 12, "right");
-      S.draw.dot(c, ax.X(m.value), ax.Y(Math.max(400, Math.min(2800, B))), 7, "#13233a");
-      B4.txt(c, "à " + S.fmt(h.value, 0) + " cm, " + S.fmt(a.value, 0) + " ans", ax.R - 4, ax.T + 10, "#5f6b7a", 12, "right");
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, wide = W >= 480, fs = wide ? 10.5 : 9.5, sh = H * 0.56;
+      var B = mb(sx.value, m.value, h.value, a.value), fa = parseFloat(act.value), tot = B * fa, lvl = ACT.map(function(x){ return x[0]; }).indexOf(act.value);
+      var hm = h.value / 100, bmi = m.value / (hm * hm), wf = Math.sqrt(bmi / 21);
+      /* chaleur */
+      var pw = W * (wide ? 0.42 : 0.44), pcx = pw / 2 + 6, foot = sh - 44, H0 = (foot - 22) * h.value / 200;
+      for (var q = 0; q < 3 + lvl; q++){ var ph = (st.t * 0.5 + q / (3 + lvl)) % 1; ctx.save(); ctx.globalAlpha = (1 - ph) * 0.4; ctx.strokeStyle = "#e07a1f"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(pcx, foot - H0 * 0.55, H0 * 0.2 * wf + ph * pw * 0.32, H0 * 0.55 + ph * 30, 0, 0, 6.2832); ctx.stroke(); ctx.restore(); }
+      S.draw.line(c, 8, foot + 1, pw, foot + 1, "#cbd5e1", 2);
+      /* toise */
+      var tx = 12; S.draw.line(c, tx, foot, tx, foot - (foot - 22), "#cbd5e1", 1.5); for (var cm = 0; cm <= 200; cm += 50){ var yy = foot - (foot - 22) * cm / 200; S.draw.line(c, tx, yy, tx + 6, yy, "#8a95a3", 1.5); S.draw.text(c, cm + "", tx + 9, yy, {size:8.5, color:"#8a95a3", align:"left"}); }
+      person(pcx, foot, H0, wf, lvl);
+      S.draw.label(c, S.fmt(h.value, 0) + " cm · " + S.fmt(m.value, 0) + " kg · IMC " + S.fmt(bmi, 1), pcx, 12, {color:P.ink, size:fs});
+      /* icônes d'activité */
+      var icons = [], iw = (W - 20) / 5;
+      ["assis", "peu", "marche", "jogging", "course"].forEach(function(t2, i){ var x = 10 + iw * i + iw / 2, y = sh - 20, on = i === lvl;
+        S.draw.rrect(c, x - iw / 2 + 2, y - 14, iw - 4, 28, 8); ctx.fillStyle = on ? "#1f4b9e" : "#eef1f5"; ctx.fill();
+        S.draw.text(c, t2, x, y - 4, {size:wide ? 9.5 : 8.5, color:on ? "#fff" : "#2c3a4e"}); S.draw.text(c, "×" + ACT[i][0].replace(".", ","), x, y + 7, {size:wide ? 9 : 8, color:on ? "#dbe6ff" : "#5f6b7a", weight:600}); icons.push([x, y, iw]); });
+      st.geo.icons = icons;
+      /* répartition du MB par organe */
+      var ox = pw + 14, ow = W - ox - 10, oy = 22, rh = Math.min(30, (foot - oy - 52) / 6);
+      S.draw.text(c, "Où part le MB (" + S.fmt(B, 0) + " kcal/j) ?", ox, 10, {size:fs, color:P.ink, align:"left"});
+      var lw2 = wide ? 66 : 54, bw = ow - lw2 - (wide ? 70 : 54); st.geo.org = [];
+      ORG.forEach(function(o, i){ var y = oy + 8 + i * rh + rh / 2, on = st.sel === -1 || st.sel === i;
+        S.draw.text(c, o[0], ox + lw2 - 6, y, {size:fs, color:on ? "#2c3a4e" : "#a3adba", align:"right"});
+        S.draw.rrect(c, ox + lw2, y - rh * 0.3, bw, rh * 0.6, 4); ctx.fillStyle = "#eef1f5"; ctx.fill();
+        S.draw.rrect(c, ox + lw2, y - rh * 0.3, Math.max(4, bw * o[1] / 0.25), rh * 0.6, 4); ctx.fillStyle = on ? o[2] : S.draw.tint(o[2], 0.3); ctx.fill();
+        S.draw.text(c, S.fmt(B * o[1], 0) + " kcal", ox + lw2 + bw + 6, y, {size:fs - 0.5, color:"#2c3a4e", align:"left", weight:700});
+        st.geo.org.push([ox, y, ow, rh]); });
+      /* barre MB + activité */
+      var yb = oy + 8 + 6 * rh + 14, bwT = ow, sc = bwT / 4000;
+      S.draw.text(c, "Besoins du jour : " + S.fmt(tot, 0) + " kcal", ox, yb, {size:fs, color:P.ink, align:"left"});
+      S.draw.rrect(c, ox, yb + 9, bwT, 14, 7); ctx.fillStyle = "#eef1f5"; ctx.fill();
+      ctx.fillStyle = P.violet; ctx.fillRect(ox, yb + 9, B * sc, 14); ctx.fillStyle = P.orange; ctx.fillRect(ox + B * sc, yb + 9, (tot - B) * sc, 14);
+      S.draw.text(c, "MB", ox + 4, yb + 16, {size:9, color:"#fff", align:"left"}); if ((tot - B) * sc > 40) S.draw.text(c, "activité", ox + B * sc + 4, yb + 16, {size:9, color:"#fff", align:"left"});
+      if (st.defi){ var tx2 = ox + st.defi.T * sc; S.draw.line(c, tx2, yb + 5, tx2, yb + 27, P.red, 2.5); }
+      /* courbe MB(masse) */
+      var ax = S.draw.axes(c, {x0:30, x1:120, y0:600, y1:2600, xl:"masse (kg) — glisse le point", yl:"MB (kcal/jour)", stepX:10, stepY:400, t:sh + 26, l:48, b:32});
+      st.geo.ax = ax;
+      S.draw.fn(c, ax, function(x){ return mb("m", x, h.value, a.value); }, sx.value === "m" ? P.acc : S.draw.tint(P.acc, 0.35), 2.4);
+      S.draw.fn(c, ax, function(x){ return mb("f", x, h.value, a.value); }, sx.value === "f" ? P.pink : S.draw.tint(P.pink, 0.35), 2.4);
+      S.draw.text(c, "garçons / hommes", ax.X(118), ax.Y(mb("m", 118, h.value, a.value)) - 12, {size:9.5, color:P.acc, align:"right"});
+      S.draw.text(c, "filles / femmes", ax.X(118), ax.Y(mb("f", 118, h.value, a.value)) + 13, {size:9.5, color:P.pink, align:"right"});
+      S.draw.line(c, ax.X(m.value), ax.B, ax.X(m.value), ax.Y(B), P.ink, 1.2, [3, 3]);
+      S.draw.dot(c, ax.X(m.value), ax.Y(Math.max(600, Math.min(2600, B))), 8, st.drag ? P.red : P.violet);
+      S.draw.label(c, S.fmt(B, 0) + " kcal", ax.X(m.value) + (m.value > 95 ? -10 : 10), ax.Y(B) - 14, {color:P.violet, size:10, align:m.value > 95 ? "right" : "left"});
       var kj = tot * 4.184;
-      ro.set(0, S.fmt(B, 0) + " kcal (" + S.fmt(B * 4.184, 0) + " kJ)"); ro.set(1, S.fmt(tot, 0) + " kcal (" + S.fmt(kj, 0) + " kJ)"); ro.set(2, S.fmt(kj * 0.4 / 50, 0) + " mol"); ro.set(3, S.fmt(B / tot * 100, 0) + " %");
-      nt.set("MB ≈ " + S.fmt(B, 0) + " kcal/jour : c'est ce que dépense le corps pour vivre sans rien faire. Avec l'activité choisie, le besoin passe à ≈ " + S.fmt(tot, 0) + " kcal/jour. Plus la masse (donc plus de cellules à entretenir) est grande, plus le MB est élevé ; il diminue un peu avec l'âge.", "");
+      ro.set(0, S.fmt(B, 0) + " kcal (" + S.fmt(B * 4.184, 0) + " kJ)"); ro.set(1, S.fmt(tot, 0) + " kcal (" + S.fmt(kj, 0) + " kJ)"); ro.set(2, "≈ " + S.fmt(kj * 0.4 / 50, 0) + " mol"); ro.set(3, S.fmt(B / tot * 100, 0) + " %");
+      nt.set("MB = 10 × " + m.value + " + 6,25 × " + h.value + " − 5 × " + a.value + (sx.value === "m" ? " + 5" : " − 161") + " = " + S.fmt(B, 0) + " kcal/jour, dépensés surtout par le foie, le cerveau, les muscles, le cœur et les reins. Avec l'activité (×" + act.value.replace(".", ",") + "), les besoins montent à " + S.fmt(tot, 0) + " kcal/jour (" + S.fmt(kj, 0) + " kJ)." + (st.sel >= 0 ? " " + ORG[st.sel][0] + " : ≈ " + S.fmt(ORG[st.sel][1] * 100, 0) + " % du MB." : ""), "");
+      if (st.defi){ var d = st.defi, ok = Math.abs(tot - d.T) <= 50; if (ok && !d.done){ d.done = true; st.score++; }
+        nd.set("<b>Défi.</b> Trouve un profil (sexe, masse, taille, âge, activité) dont les besoins valent " + d.T + " kcal/jour, à 50 kcal près (trait rouge). " + (d.done ? "<b>Réussi !</b>" : "Écart : " + (tot > d.T ? "+" : "−") + S.fmt(Math.abs(tot - d.T), 0) + " kcal.") + " Score : " + st.score + " / " + st.tot + ".", d.done ? "ok" : "warn"); }
+      else nd.set("Défi : clique « Défi : vise une dépense » et compose une personne qui dépense exactement la valeur demandée.", "");
     });
   }
 });
@@ -97,37 +177,96 @@ SFA.sim({
 SFA.sim({
   id:"b4-c07-bilan", ch:"c07", tag:"Bilan · défi",
   titre:"Bilan énergétique du jour",
-  resume:"Compose un menu en glucides, lipides et protéines, compare-le à la dépense et projette l'évolution de la masse.",
-  but:"Règle les apports et la dépense journalière. Lis l'énergie, les pourcentages, le bilan et la projection sur 90 jours. Défi : équilibrer le bilan à ±300 kJ.",
+  resume:"Compose ton menu en touchant des aliments : ils tombent sur le plateau « apports » d'une balance face à la dépense du jour. La courbe projette la masse sur 90 jours.",
+  but:"Touche un aliment pour en ajouter une portion (mode « Retirer » pour l'enlever), règle la dépense journalière. La balance penche du côté le plus lourd, la barre montre glucides / lipides / protéines, la courbe la variation de masse. Défi : équilibrer le bilan à ±300 kJ avec une répartition proche des repères.",
   aRetenir:"Énergie des nutriments : glucides ≈ 17 kJ/g, protéines ≈ 17 kJ/g, lipides ≈ 37 kJ/g (≈ 4, 4 et 9 kcal/g). Bilan = apports − dépenses ; un bilan positif durable est stocké (surtout en lipides : 1 kg de graisse corporelle ≈ 32 000 kJ), un bilan négatif puise dans les réserves.",
-  piege:"Projection simplifiée (le corps s'adapte, la dépense change avec la masse). Les repères de répartition (≈ 50-55 % glucides, 30-35 % lipides, 10-15 % protéines) sont indicatifs.",
+  piege:"Projection simplifiée (le corps s'adapte, la dépense change avec la masse). Compositions des portions arrondies, d'après des tables nutritionnelles courantes. Les repères de répartition (≈ 50-55 % glucides, 30-35 % lipides, 10-15 % protéines) sont indicatifs.",
   build:function(k, S){
-    var c = k.canvas(0, {ratio:.9});
-    var g = k.slider("Glucides", 0, 600, 10, 300, "g");
-    var l = k.slider("Lipides", 0, 200, 5, 80, "g");
-    var p = k.slider("Protéines", 0, 250, 5, 80, "g");
+    var P = S.draw.palette, c = k.canvas(0, {ratio:1.4}); B4.adapt(c, 1.66, 1.08, 480);
+    var md = k.seg("Toucher un aliment pour", [["+","Ajouter"],["-","Retirer"]], "+");
     var d = k.slider("Dépense journalière", 6000, 16000, 100, 10000, "kJ");
-    var ro = k.readouts(["Apports", "Bilan", "Glucides / Lipides / Protéines", "Variation de masse en 90 jours"]);
-    var nt = k.note("", "");
-    k.button("Repas équilibré", function(){ g.set(330); l.set(85); p.set(85); d.set(10000); }, true);
-    k.button("Excès de lipides", function(){ g.set(250); l.set(170); p.set(90); d.set(10000); });
-    k.button("Régime très restrictif", function(){ g.set(100); l.set(30); p.set(60); d.set(10000); });
+    var ro = k.readouts(["Apports", "Bilan", "Glucides / lipides / protéines", "Variation de masse en 90 jours"]);
+    var nt = k.note("", ""), nd = k.note("", "");
+    /* portion : [nom, glucides, lipides, protéines] en g */
+    var F = [["tartine", 19, 1, 3], ["céréales", 30, 2, 3], ["lait 25 cL", 12, 4, 8], ["pâtes", 75, 2, 13], ["frites", 70, 30, 7], ["steak", 0, 15, 39], ["fromage", 0, 9, 7], ["yaourt", 6, 4, 5], ["légumes", 8, 0, 3], ["pomme", 18, 0, 0], ["soda 33 cL", 35, 0, 0], ["chocolat", 28, 15, 3]];
+    var st = {n:[1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0], tilt:0, t:0, drop:[], geo:{}, defi:false, score:0, tot:0, done:false};
+    function kj(i){ return F[i][1] * 17 + F[i][2] * 37 + F[i][3] * 17; }
+    k.button("Défi : équilibre la journée", function(){ st.defi = true; st.done = false; st.tot++; d.set(100 * Math.round((8500 + Math.random() * 4500) / 100)); st.n = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; }, true);
+    k.button("Vider le plateau", function(){ st.n = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; });
+    k.button("Menu type", function(){ st.n = [4, 1, 2, 1, 0, 1, 1, 1, 2, 2, 0, 1]; });
+    var lp = k.loop(function(dt){ st.t += dt; var tg = tiltTarget(); st.tilt += (tg - st.tilt) * Math.min(1, dt * 3); st.drop.forEach(function(p){ p.t += dt; }); st.drop = st.drop.filter(function(p){ return p.t < 0.7; }); k.redraw(); });
+    lp.play();
+    function totals(){ var g = 0, l = 0, p = 0; st.n.forEach(function(q, i){ g += q * F[i][1]; l += q * F[i][2]; p += q * F[i][3]; }); return {g:g, l:l, p:p, eg:g * 17, el:l * 37, ep:p * 17, tot:g * 17 + l * 37 + p * 17}; }
+    function tiltTarget(){ var b = totals().tot - d.value; return -Math.max(-0.2, Math.min(0.2, b / 12000)); }
+    c.pointer(function(type, p){
+      if (type !== "down" || !st.geo.tiles) return;
+      st.geo.tiles.forEach(function(t, i){ if (p.x >= t[0] && p.x <= t[0] + t[2] && p.y >= t[1] && p.y <= t[1] + t[3]){
+        if (md.value === "+"){ if (st.n[i] < 9){ st.n[i]++; st.drop.push({i:i, t:0, x:t[0] + t[2] / 2, y:t[1] + t[3] / 2}); } } else if (st.n[i] > 0) st.n[i]--; } });
+      k.redraw();
+    });
+    c.cv.style.touchAction = "pan-y";
+    function icon(i, x, y, s){
+      var ctx = c.ctx; ctx.save(); ctx.translate(x, y); ctx.scale(s / 24, s / 24);
+      function e(cx, cy, rx, ry, f, st2){ ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, 6.2832); ctx.fillStyle = f; ctx.fill(); if (st2){ ctx.strokeStyle = st2; ctx.lineWidth = 1.2; ctx.stroke(); } }
+      function rr(x0, y0, w, h, r, f, st2){ S.draw.rrect(c, x0, y0, w, h, r); ctx.fillStyle = f; ctx.fill(); if (st2){ ctx.strokeStyle = st2; ctx.lineWidth = 1.2; ctx.stroke(); } }
+      if (i === 0){ rr(-10, -8, 20, 16, 5, "#f4d9a2", "#b9853f"); rr(-7, -5, 14, 10, 3, "#fbecc8"); }
+      else if (i === 1 || i === 3){ ctx.beginPath(); ctx.arc(0, -1, 11, 0, 3.1416); ctx.fillStyle = "#dfe7f2"; ctx.fill(); ctx.strokeStyle = "#7b8ba3"; ctx.lineWidth = 1.2; ctx.stroke(); if (i === 1){ for (var q = 0; q < 7; q++) e(-8 + q * 2.6, -2 - (q % 2) * 2, 1.8, 1.4, "#d9a441"); } else { ctx.strokeStyle = "#e9c25a"; ctx.lineWidth = 2; ctx.beginPath(); for (q = 0; q < 6; q++){ ctx.moveTo(-8 + q * 3, -1); ctx.quadraticCurveTo(-6 + q * 3, -7, -4 + q * 3, -1); } ctx.stroke(); } }
+      else if (i === 2){ rr(-6, -10, 12, 20, 2, "#ffffff", "#9aa6b6"); rr(-6, -4, 12, 14, 2, "#f6f7fb"); }
+      else if (i === 4){ ctx.fillStyle = "#e9c25a"; for (q = 0; q < 5; q++) ctx.fillRect(-6 + q * 2.6, -11 + (q % 2) * 2, 2, 10); ctx.beginPath(); ctx.moveTo(-8, -3); ctx.lineTo(8, -3); ctx.lineTo(5, 10); ctx.lineTo(-5, 10); ctx.closePath(); ctx.fillStyle = "#d6453d"; ctx.fill(); }
+      else if (i === 5){ e(0, 0, 11, 7, "#8a4b2a", "#5a2e16"); e(-3, -1, 3, 2, "#f2e2d0"); }
+      else if (i === 6){ ctx.beginPath(); ctx.moveTo(-10, 7); ctx.lineTo(10, 7); ctx.lineTo(10, -2); ctx.lineTo(-10, -7); ctx.closePath(); ctx.fillStyle = "#f5cf4f"; ctx.fill(); ctx.strokeStyle = "#c79a1e"; ctx.lineWidth = 1.2; ctx.stroke(); e(-3, 2, 1.8, 1.8, "#e0b437"); e(4, 0, 1.4, 1.4, "#e0b437"); }
+      else if (i === 7){ ctx.beginPath(); ctx.moveTo(-8, -7); ctx.lineTo(8, -7); ctx.lineTo(6, 9); ctx.lineTo(-6, 9); ctx.closePath(); ctx.fillStyle = "#ffffff"; ctx.fill(); ctx.strokeStyle = "#9aa6b6"; ctx.lineWidth = 1.2; ctx.stroke(); ctx.fillStyle = "#6fa8dc"; ctx.fillRect(-7, -2, 14, 3); }
+      else if (i === 8){ ctx.fillStyle = "#4f9a4a"; ctx.fillRect(-1.5, 0, 3, 10); e(-5, -3, 5, 5, "#3c8a3c"); e(4, -4, 5, 5, "#4fa64a"); e(0, -8, 5, 4, "#5fb85a"); }
+      else if (i === 9){ e(0, 1, 9, 9, "#d6453d", "#9b2c22"); ctx.strokeStyle = "#6b3f1d"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(0, -7); ctx.lineTo(1, -11); ctx.stroke(); e(4, -9, 3.5, 1.8, "#4f9a4a"); }
+      else if (i === 10){ rr(-6, -10, 12, 20, 3, "#c0321d", "#7a1d10"); ctx.fillStyle = "#fff"; ctx.fillRect(-6, -2, 12, 3); }
+      else { rr(-10, -6, 20, 12, 2, "#6b3a1f", "#3e1f0c"); ctx.strokeStyle = "#8b5432"; ctx.lineWidth = 1; for (q = 1; q < 4; q++){ ctx.beginPath(); ctx.moveTo(-10 + q * 5, -6); ctx.lineTo(-10 + q * 5, 6); ctx.stroke(); } ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(10, 0); ctx.stroke(); }
+      ctx.restore();
+    }
     k.draw(function(){
-      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, eg = g.value * 17, el = l.value * 37, ep = p.value * 17, tot = eg + el + ep, bil = tot - d.value;
-      var bx = 12, bw = W - 24, by = 34, bh = 26, scale = bw / Math.max(18000, tot, d.value);
-      ctx.fillStyle = "#e3e7ed"; ctx.fillRect(bx, by, bw, bh);
-      var x = bx; [[eg, "#2e6b55", "glucides"], [el, "#B45309", "lipides"], [ep, "#1e3f8f", "protéines"]].forEach(function(s){ ctx.fillStyle = s[1]; ctx.fillRect(x, by, s[0] * scale, bh); x += s[0] * scale; });
-      B4.txt(c, "Apports : " + S.fmt(tot, 0) + " kJ", bx, 14, B4.pal.ink, 12, "left");
-      S.draw.line(c, bx + d.value * scale, by - 6, bx + d.value * scale, by + bh + 6, B4.pal.red, 3); B4.txt(c, "dépense " + S.fmt(d.value, 0) + " kJ", W - 12, 14, B4.pal.red, 12, "right");
-      B4.txt(c, "vert glucides · orange lipides · bleu protéines", bx, by + bh + 14, "#5f6b7a", 11, "left");
-      var dm = bil * 90 / 32000, ym = Math.max(8, Math.ceil(Math.abs(dm) / 4) * 4);
-      var ax = S.draw.axes(c, {x0:0, x1:90, y0:-ym, y1:ym, xl:"jours", yl:"variation de masse (kg)", stepX:15, stepY:ym > 16 ? 8 : 4, t:by + bh + 34, l:44});
-      S.draw.fn(c, ax, function(t){ return bil * t / 32000; }, bil > 0 ? B4.pal.red : B4.pal.acc, 3);
-      S.draw.dot(c, ax.X(90), ax.Y(dm), 6, "#13233a");
-      var pg = eg / tot * 100, pl = el / tot * 100, pp = ep / tot * 100;
-      ro.set(0, S.fmt(tot, 0) + " kJ (" + S.fmt(tot / 4.184, 0) + " kcal)"); ro.set(1, (bil >= 0 ? "+" : "") + S.fmt(bil, 0) + " kJ"); ro.set(2, tot ? S.fmt(pg, 0) + " / " + S.fmt(pl, 0) + " / " + S.fmt(pp, 0) + " %" : "—"); ro.set(3, (dm >= 0 ? "+" : "") + S.fmt(dm, 1) + " kg");
-      var okb = Math.abs(bil) <= 300;
-      nt.set((okb ? "Bilan équilibré (±300 kJ) : la masse reste stable. " : bil > 0 ? "Apports supérieurs à la dépense : l'excès est stocké (surtout en lipides), la masse augmente. " : "Dépense supérieure aux apports : le corps puise dans ses réserves, la masse diminue. ") + (tot && (pl > 40 || pg < 35) ? "Répartition éloignée des repères (50-55 % glucides, 30-35 % lipides, 10-15 % protéines)." : tot && pp < 8 ? "Apport en protéines faible." : "Répartition proche des repères."), okb ? "ok" : "warn");
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, wide = W >= 480, fs = wide ? 10 : 9, T = totals(), bil = T.tot - d.value;
+      /* aliments */
+      var cols = wide ? 6 : 4, rows = 12 / cols, gx = 8, gy = 8, tw = (W - 16 - (cols - 1) * 6) / cols, th = wide ? 44 : 40; st.geo.tiles = [];
+      F.forEach(function(f, i){ var x = gx + (i % cols) * (tw + 6), y = gy + Math.floor(i / cols) * (th + 6), q = st.n[i];
+        S.draw.rrect(c, x, y, tw, th, 8); ctx.fillStyle = q ? "#eef6ff" : "#f6f8fb"; ctx.fill(); ctx.strokeStyle = q ? "#7fa7dd" : "#e3e7ed"; ctx.lineWidth = 1.2; ctx.stroke();
+        icon(i, x + 17, y + th / 2, wide ? 24 : 22);
+        S.draw.text(c, f[0], x + 32, y + th * 0.36, {size:fs, color:"#2c3a4e", align:"left", weight:700});
+        S.draw.text(c, S.fmt(kj(i), 0) + " kJ", x + 32, y + th * 0.7, {size:fs - 0.5, color:"#5f6b7a", align:"left", weight:600});
+        if (q){ S.draw.dot(c, x + 7, y + 7, 7.5, md.value === "-" ? P.red : P.acc); S.draw.text(c, "×" + q, x + 7, y + 7, {size:8, color:"#fff", weight:800}); }
+        st.geo.tiles.push([x, y, tw, th]); });
+      /* balance */
+      var y0 = gy + rows * (th + 6) + 6, sh = H * 0.6, bcx = W / 2, piv = y0 + 44, L = Math.min(W * 0.34, 180), th2 = st.tilt;
+      ctx.fillStyle = "#3d4f6b"; ctx.beginPath(); ctx.moveTo(bcx - 8, piv); ctx.lineTo(bcx + 8, piv); ctx.lineTo(bcx + 22, sh - 30); ctx.lineTo(bcx - 22, sh - 30); ctx.closePath(); ctx.fill();
+      S.draw.rrect(c, bcx - 50, sh - 32, 100, 8, 4); ctx.fill();
+      var ex1 = bcx - Math.cos(th2) * L, ey1 = piv - Math.sin(th2) * L, ex2 = bcx + Math.cos(th2) * L, ey2 = piv + Math.sin(th2) * L;
+      S.draw.line(c, ex1, ey1, ex2, ey2, "#24324a", 5); S.draw.dot(c, bcx, piv, 6, "#f4c542");
+      var drop = 34, pw = Math.min(110, L * 0.85);
+      function pan(x, y, col, title, val){ S.draw.line(c, x, y, x - pw / 2 + 6, y + drop, "#8a95a3", 1.2); S.draw.line(c, x, y, x + pw / 2 - 6, y + drop, "#8a95a3", 1.2); ctx.beginPath(); ctx.moveTo(x - pw / 2, y + drop); ctx.quadraticCurveTo(x, y + drop + 14, x + pw / 2, y + drop); ctx.closePath(); ctx.fillStyle = col; ctx.fill(); S.draw.text(c, title, x, y + drop + 22, {size:fs, color:"#2c3a4e"}); S.draw.text(c, S.fmt(val, 0) + " kJ", x, y + drop + 34, {size:fs + 1, color:"#13233a", weight:800}); }
+      pan(ex1, ey1, "#9cc3ef", "apports", T.tot); pan(ex2, ey2, "#f3b199", "dépense", d.value);
+      /* aliments empilés sur le plateau gauche ; poids sur le droit */
+      var stack = []; st.n.forEach(function(q, i){ for (var z = 0; z < q; z++) stack.push(i); });
+      stack.slice(0, 18).forEach(function(i, z){ icon(i, ex1 - pw / 2 + 12 + (z % 6) * ((pw - 24) / 5), ey1 + drop - 8 - Math.floor(z / 6) * 13, 15); });
+      var nw = Math.round(d.value / 2000); for (var z = 0; z < nw; z++){ var wx = ex2 - pw / 2 + 14 + (z % 4) * ((pw - 28) / 3), wy = ey2 + drop - 9 - Math.floor(z / 4) * 12; S.draw.rrect(c, wx - 8, wy - 5, 16, 11, 3); ctx.fillStyle = "#5f6b7a"; ctx.fill(); }
+      st.drop.forEach(function(p){ var u = B4.ease(p.t / 0.7); icon(p.i, p.x + (ex1 - p.x) * u, p.y + (ey1 + drop - 10 - p.y) * u, 18); });
+      var bilTxt = Math.abs(bil) <= 300 ? "équilibre" : bil > 0 ? "excès +" + S.fmt(bil, 0) + " kJ" : "déficit −" + S.fmt(-bil, 0) + " kJ";
+      S.draw.label(c, bilTxt, bcx, piv - 16, {color:Math.abs(bil) <= 300 ? P.green : bil > 0 ? P.red : P.acc, size:fs + 1});
+      /* répartition des nutriments */
+      var rx = 8, rw = W - 16, ry = sh - 12, pg = T.tot ? T.eg / T.tot : 0, pl = T.tot ? T.el / T.tot : 0, pp = T.tot ? T.ep / T.tot : 0;
+      S.draw.rrect(c, rx, ry, rw, 12, 6); ctx.fillStyle = "#eef1f5"; ctx.fill();
+      if (T.tot){ ctx.save(); S.draw.rrect(c, rx, ry, rw, 12, 6); ctx.clip(); ctx.fillStyle = "#2e8b57"; ctx.fillRect(rx, ry, rw * pg, 12); ctx.fillStyle = "#d18a1b"; ctx.fillRect(rx + rw * pg, ry, rw * pl, 12); ctx.fillStyle = "#1f4b9e"; ctx.fillRect(rx + rw * (pg + pl), ry, rw * pp, 12); ctx.restore();
+        [[0.5, 0.55], [0.85, 0.9]].forEach(function(z2){ S.draw.line(c, rx + rw * z2[0], ry - 3, rx + rw * z2[0], ry + 15, "rgba(15,27,45,.45)", 1, [2, 2]); }); }
+      S.draw.text(c, "glucides " + S.fmt(pg * 100, 0) + " % · lipides " + S.fmt(pl * 100, 0) + " % · protéines " + S.fmt(pp * 100, 0) + " % (pointillés : repères)", rx, ry - 8, {size:fs - 0.5, color:"#2c3a4e", align:"left", weight:700});
+      /* projection de masse */
+      var dm = bil * 90 / 32000, ym = Math.max(4, Math.ceil(Math.abs(dm) / 2) * 2 + 2);
+      var ax = S.draw.axes(c, {x0:0, x1:90, y0:-ym, y1:ym, xl:"jours", yl:"variation de masse (kg)", stepX:15, t:sh + 24, l:44, b:28});
+      ctx.fillStyle = "rgba(36,119,90,.10)"; var e0 = ax.Y(300 * 90 / 32000), e1 = ax.Y(-300 * 90 / 32000); ctx.fillRect(ax.L, e0, ax.R - ax.L, e1 - e0);
+      S.draw.fn(c, ax, function(t){ return bil * t / 32000; }, bil > 300 ? P.red : bil < -300 ? P.acc : P.green, 3);
+      S.draw.dot(c, ax.X(90), ax.Y(dm), 7, "#13233a"); S.draw.label(c, (dm >= 0 ? "+" : "") + S.fmt(dm, 1) + " kg", ax.X(90) - 8, ax.Y(dm) + (dm > 0 ? 14 : -14), {color:P.ink, size:10, align:"right"});
+      ro.set(0, S.fmt(T.tot, 0) + " kJ (" + S.fmt(T.tot / 4.184, 0) + " kcal)"); ro.set(1, (bil >= 0 ? "+" : "") + S.fmt(bil, 0) + " kJ"); ro.set(2, T.tot ? S.fmt(pg * 100, 0) + " / " + S.fmt(pl * 100, 0) + " / " + S.fmt(pp * 100, 0) + " %" : "—"); ro.set(3, (dm >= 0 ? "+" : "") + S.fmt(dm, 1) + " kg");
+      var okb = Math.abs(bil) <= 300, rep = T.tot > 0 && pg >= 0.45 && pg <= 0.6 && pl >= 0.25 && pl <= 0.4 && pp >= 0.1 && pp <= 0.2;
+      nt.set("Apports : " + S.fmt(T.g, 0) + " g de glucides × 17 + " + S.fmt(T.l, 0) + " g de lipides × 37 + " + S.fmt(T.p, 0) + " g de protéines × 17 = " + S.fmt(T.tot, 0) + " kJ. " + (okb ? "Bilan équilibré : la masse reste stable." : bil > 0 ? "Excès : stocké surtout en graisse (32 000 kJ par kg), la masse augmente." : "Déficit : le corps puise dans ses réserves, la masse diminue.") + (T.tot ? (rep ? " Répartition proche des repères." : " Répartition éloignée des repères.") : ""), okb ? "ok" : "warn");
+      if (st.defi){ if (okb && rep && !st.done){ st.done = true; st.score++; }
+        nd.set("<b>Défi.</b> Dépense du jour : " + S.fmt(d.value, 0) + " kJ. Compose un menu au bilan ±300 kJ, avec glucides 45-60 %, lipides 25-40 %, protéines 10-20 %. " + (st.done ? "<b>Réussi !</b>" : (okb ? "Bilan OK, " : "Bilan à " + (bil >= 0 ? "+" : "") + S.fmt(bil, 0) + " kJ, ") + (rep ? "répartition OK." : "répartition à corriger.")) + " Score : " + st.score + " / " + st.tot + ".", st.done ? "ok" : "warn"); }
+      else nd.set("Défi : clique « Défi : équilibre la journée ».", "");
     });
   }
 });

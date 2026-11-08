@@ -182,7 +182,7 @@ SFA.sim({
       var rel = cc < CI - 0.04 ? "hypotonique" : cc > CI + 0.04 ? "hypertonique" : "isotonique";
       var etat = animal ? (lyse ? "éclatée (hémolyse)" : v > 1.2 ? "gonflée" : v >= 0.85 ? "normale" : "ratatinée") : (v > 1.005 ? "turgescente" : v >= 0.995 ? "équilibre (flasque)" : "plasmolysée");
       ro.set(0, rel); ro.set(1, S.fmt(Math.min(v, 9.99), 2)); ro.set(2, dirw === "entre" ? "vers l'intérieur" : dirw === "sort" ? "vers l'extérieur" : "nul"); ro.set(3, etat);
-      nt.set(rel === "isotonique" ? "Concentrations égales : pas de mouvement net d'eau, volume inchangé." : rel === "hypotonique" ? "Bain moins concentré que la cellule : l'eau entre (vers le plus concentré)." + (animal && lyse ? " Sans paroi, la membrane cède : hémolyse." : !animal ? " La paroi résiste : la cellule devient turgescente mais n'éclate pas." : "") : "Bain plus concentré que la cellule : l'eau sort." + (animal ? " La cellule se ratatine." : " La membrane se décolle de la paroi : plasmolyse."), lyse ? "bad" : rel === "isotonique" ? "ok" : "warn");
+      nt.set(rel === "isotonique" ? "Concentrations égales : pas de mouvement net d'eau, volume inchangé." : rel === "hypotonique" ? "Bain moins concentré que la cellule : l'eau entre (vers le plus concentré)." + (animal && lyse ? " Sans paroi, la membrane cède : hémolyse." : !animal ? " La paroi résiste : la cellule devient turgescente mais n'éclate pas." : "") : "Bain plus concentré que la cellule : l'eau sort." + (animal ? " La cellule se ratatine." : " La membrane se décolle de la paroi : plasmolyse."), lyse ? "warn" : rel === "isotonique" ? "ok" : "warn");
     });
   }
 });

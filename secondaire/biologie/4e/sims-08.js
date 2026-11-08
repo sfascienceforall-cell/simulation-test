@@ -2,45 +2,106 @@
 SFA.sim({
   id:"b4-c08-adn", ch:"c08", tag:"Classique · défi",
   titre:"Construis ton ADN : appariement des bases",
-  resume:"Tape une séquence, lis son brin complémentaire, ses liaisons hydrogène et son %GC ; ou joue à compléter le brin.",
-  but:"Mode « Analyser » : écris une séquence (A, T, G, C). Mode « Jeu » : complète le brin complémentaire en choisissant les bases.",
-  aRetenir:"Dans l'ADN, A s'apparie avec T (2 liaisons hydrogène) et G avec C (3 liaisons). Les deux brins sont complémentaires et antiparallèles. Dans toute molécule d'ADN double brin : %A = %T et %G = %C. Plus il y a de G–C, plus la molécule est stable.",
-  piege:"A ne s'apparie jamais avec G ou C. L'ARN remplace T par U (uracile), mais pas l'ADN. Les bactéries ont aussi de l'ADN, même sans noyau.",
+  resume:"Une double hélice qui tourne : écris une séquence, lis le brin complémentaire, ses liaisons hydrogène et son %GC ; chauffe-la pour voir les régions riches en A–T s'ouvrir d'abord ; ou complète toi-même le brin.",
+  but:"Mode « Analyser » : écris une séquence (A, T, G, C) et monte la température : les paires s'ouvrent là où la courbe de stabilité passe sous la température. Mode « Jeu » : touche (ou glisse) la bonne base du plateau vers la case qui clignote.",
+  aRetenir:"Dans l'ADN, A s'apparie avec T (2 liaisons hydrogène) et G avec C (3 liaisons). Les deux brins sont complémentaires et antiparallèles (5'→3' face à 3'→5'). Dans toute molécule d'ADN double brin : %A = %T et %G = %C (règle de Chargaff). Plus il y a de paires G–C, plus il faut chauffer pour séparer les brins.",
+  piege:"A ne s'apparie jamais avec G ou C. L'ARN remplace T par U (uracile), mais pas l'ADN. Températures d'ouverture illustratives (règle simplifiée : une paire A–T s'ouvre vers 62 °C, une G–C vers 82 °C, moyennées avec les voisines).",
   build:function(k, S){
-    var c = k.canvas(0, {ratio:.62});
-    var mode = k.seg("Mode", [["a","Analyser"],["j","Jeu"]], "a");
-    var inp = k.input("Séquence du brin 1 (5' → 3')", "ATGCCGTTAGCA", function(){});
-    var ro = k.readouts(["Longueur", "%GC", "Liaisons hydrogène", "Brin complémentaire"]);
-    var nt = k.note("", "");
-    var COMP = {A:"T", T:"A", G:"C", C:"G"}, COL = {A:"#2e6b55", T:"#b42318", G:"#1e3f8f", C:"#B45309"};
-    var st = {tpl:[], idx:0, err:0, msg:"", done:false};
-    function nouvelle(){ st.tpl = []; for (var i = 0; i < 10; i++) st.tpl.push("ATGC"[Math.floor(Math.random() * 4)]); st.idx = 0; st.err = 0; st.msg = ""; st.done = false; }
-    nouvelle();
-    function choisir(b){ if (mode.value !== "j" || st.done) return; if (COMP[st.tpl[st.idx]] === b){ st.idx++; st.msg = ""; if (st.idx >= st.tpl.length){ st.done = true; } } else { st.err++; st.msg = b + " ne s'apparie pas avec " + st.tpl[st.idx] + " (" + st.tpl[st.idx] + " ↔ " + COMP[st.tpl[st.idx]] + ")."; } }
+    var P = S.draw.palette, c = k.canvas(0, {ratio:1.0}); B4.adapt(c, 1.12, 0.78, 480);
+    var mode = k.seg("Mode", [["a","Analyser"],["j","Jeu"]], "a", function(v){ if (v === "j" && !st.tpl.length) nouvelle(); });
+    var inp = k.input("Séquence du brin 1 (5' → 3')", "ATGCCGTTAGCAATTA", function(){});
+    var hel = k.toggle("Hélice en rotation (sinon échelle à plat)", true);
+    var T = k.slider("Température", 20, 100, 1, 37, "°C");
+    var ro = k.readouts(["Longueur", "%GC (et A = T, G = C)", "Liaisons hydrogène", "Brin complémentaire (3' → 5')"]);
+    var nt = k.note("", ""), nd = k.note("", "");
+    var COMP = {A:"T", T:"A", G:"C", C:"G"}, COL = {A:"#2e8b57", T:"#c0392b", G:"#1f4b9e", C:"#d18a1b"};
+    var st = {tpl:[], idx:0, err:0, msg:"", done:false, t:0, tw:1, open:[], shake:0, drag:null, geo:{}, score:0, tot:0, fly:null};
+    function nouvelle(){ st.tpl = []; for (var i = 0; i < 12; i++) st.tpl.push("ATGC"[Math.floor(Math.random() * 4)]); st.idx = 0; st.err = 0; st.msg = ""; st.done = false; st.tot++; }
+    function choisir(b){ if (mode.value !== "j" || st.done) return; if (COMP[st.tpl[st.idx]] === b){ st.idx++; st.msg = ""; if (st.idx >= st.tpl.length){ st.done = true; if (st.err === 0) st.score++; } } else { st.err++; st.shake = 0.5; st.msg = b + " ne s'apparie pas avec " + st.tpl[st.idx] + " (" + st.tpl[st.idx] + " ↔ " + COMP[st.tpl[st.idx]] + ")."; } }
     ["A","T","G","C"].forEach(function(b){ k.button("Base " + b, function(){ choisir(b); }); });
     k.button("Nouvelle séquence (jeu)", function(){ nouvelle(); mode.set("j"); }, true);
-    function base(x, y, w, b, fill){ B4.rr(c, x + 1, y, w - 2, w - 2, 4, fill ? COL[b] : "#f1f5f9", fill ? null : "#8a95a3", 1.2); if (fill) B4.txt(c, b, x + w / 2, y + (w - 2) / 2, "#fff", Math.min(15, w * 0.6)); else B4.txt(c, "?", x + w / 2, y + (w - 2) / 2, "#8a95a3", Math.min(14, w * 0.55)); }
+    function seq(){ return mode.value === "j" ? st.tpl.slice() : inp.value.toUpperCase().replace(/[^ATGC]/g, "").slice(0, 20).split(""); }
+    function thr(sq){ return sq.map(function(b, i){ var v = 0, n = 0; for (var j = i - 1; j <= i + 1; j++) if (sq[j]){ v += (sq[j] === "A" || sq[j] === "T") ? 62 : 82; n++; } return v / n; }); }
+    var lp = k.loop(function(dt){
+      st.t += dt; var target = (hel.value && mode.value === "a") ? 1 : 0; st.tw += (target - st.tw) * Math.min(1, dt * 3); st.shake = Math.max(0, st.shake - dt);
+      var sq = seq(), th = thr(sq); while (st.open.length < sq.length) st.open.push(0); st.open.length = sq.length;
+      for (var i = 0; i < sq.length; i++){ var o = mode.value === "a" && T.value >= th[i] ? 1 : 0; st.open[i] += (o - st.open[i]) * Math.min(1, dt * 4); }
+      if (st.fly){ st.fly.t += dt; if (st.fly.t > 0.35){ var b = st.fly.b; st.fly = null; choisir(b); } }
+      k.redraw();
+    });
+    lp.play();
+    c.pointer(function(type, p){
+      var g = st.geo;
+      if (type === "down" && g.tray && mode.value === "j"){ g.tray.forEach(function(tb){ if (Math.hypot(p.x - tb[1], p.y - tb[2]) < tb[3] + 6) st.drag = {b:tb[0], x:p.x, y:p.y, x0:p.x, y0:p.y}; }); }
+      if (type === "drag" && st.drag){ st.drag.x = p.x; st.drag.y = p.y; }
+      if (type === "up" && st.drag){ var d = st.drag; st.drag = null;
+        if (Math.hypot(d.x - d.x0, d.y - d.y0) < 8 || (g.slot && Math.hypot(d.x - g.slot[0], d.y - g.slot[1]) < 40)){ if (!st.done && st.tpl.length) st.fly = {b:d.b, t:0, x:d.x0, y:d.y0}; } }
+      k.redraw();
+    });
+    c.cv.style.touchAction = "pan-y";
+    function sugar(x, y, r, col){ var ctx = c.ctx; ctx.beginPath(); for (var i = 0; i < 5; i++){ var a = -Math.PI / 2 + i * 2 * Math.PI / 5; i ? ctx.lineTo(x + r * Math.cos(a), y + r * Math.sin(a)) : ctx.moveTo(x + r * Math.cos(a), y + r * Math.sin(a)); } ctx.closePath(); ctx.fillStyle = col; ctx.fill(); ctx.strokeStyle = "rgba(0,0,0,.25)"; ctx.lineWidth = 1; ctx.stroke(); }
+    function baseBar(x, y0, y1, w, b, alpha){ var ctx = c.ctx; ctx.save(); ctx.globalAlpha = alpha; S.draw.rrect(c, x - w / 2, Math.min(y0, y1), w, Math.abs(y1 - y0), Math.min(4, w / 3)); ctx.fillStyle = COL[b]; ctx.fill(); ctx.restore(); }
     k.draw(function(){
-      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, game = mode.value === "j", seq, raw = inp.value.toUpperCase(), bad = /[^ATGC]/.test(raw);
-      seq = game ? st.tpl.slice() : raw.replace(/[^ATGC]/g, "").slice(0, 24).split("");
-      var n = seq.length, cw = Math.min(34, (W - 40) / Math.max(n, 1)), x0 = (W - cw * n) / 2, y1 = H * 0.2, y2 = H * 0.2 + cw * 2.1 + 14;
-      B4.txt(c, "5'", x0 - 14, y1 + cw / 2, B4.pal.ink, 12); B4.txt(c, "3'", x0 + cw * n + 14, y1 + cw / 2, B4.pal.ink, 12);
-      B4.txt(c, "3'", x0 - 14, y2 + cw / 2, B4.pal.ink, 12); B4.txt(c, "5'", x0 + cw * n + 14, y2 + cw / 2, B4.pal.ink, 12);
-      var gc = 0, hb = 0, comp = "";
-      seq.forEach(function(b, i){
-        var x = x0 + i * cw, filled = !game || i < st.idx;
-        base(x, y1, cw, b, true); base(x, y2, cw, COMP[b], filled);
-        if (filled){ var mx = x + cw / 2, ya = y1 + cw - 2, yb = y2, hbn = (b === "A" || b === "T") ? 2 : 3; hb += hbn; if (b === "G" || b === "C") gc++; comp += COMP[b];
-          for (var q = 0; q < hbn; q++){ var dx = (q - (hbn - 1) / 2) * 5; S.draw.line(c, mx + dx, ya + 2, mx + dx, yb - 1, "#5f6b7a", 1.6, [3, 2]); } }
-        if (game && i === st.idx) { S.draw.line(c, x + 2, y1 + cw + 4, x + cw - 2, y1 + cw + 4, B4.pal.red, 3); }
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, wide = W >= 480, fs = wide ? 11 : 9.5, game = mode.value === "j", sq = seq(), n = sq.length, th = thr(sq), tw = st.tw;
+      var hy = H * (game ? 0.3 : 0.27), amp = Math.min(H * 0.15, 70), x0 = 30, x1 = W - 30, dx = n > 1 ? (x1 - x0) / (n - 1) : 0, w = Math.max(6, Math.min(18, dx * 0.5));
+      if (n === 0){ S.draw.text(c, "Écris des bases A, T, G ou C", W / 2, hy, {size:13, color:P.grey}); }
+      var pts = [];
+      for (var i = 0; i < n; i++){
+        var ph = i * 0.62832 + st.t * 0.9, cs = Math.cos(ph), sn = Math.sin(ph), op = st.open[i] || 0;
+        var half = amp * (1 - tw + tw * Math.abs(cs)) * 0.62 + op * amp * 0.45, sgn = tw > 0.5 && cs < 0 ? -1 : 1;
+        var ya = hy - half * (tw > 0.5 ? (cs >= 0 ? 1 : -1) : 1), yb = hy + half * (tw > 0.5 ? (cs >= 0 ? 1 : -1) : 1);
+        var depth = tw * sn; pts.push({x:x0 + i * dx, ya:ya, yb:yb, d:depth, op:op});
+      }
+      /* squelettes (sucre–phosphate) : derrière d'abord */
+      function backbone(key, col){ ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 4; ctx.lineJoin = "round"; ctx.beginPath(); pts.forEach(function(q, j){ var y = q[key]; j ? ctx.lineTo(q.x, y) : ctx.moveTo(q.x, y); }); ctx.stroke(); ctx.restore(); }
+      backbone("ya", "rgba(98,54,196,.55)"); backbone("yb", "rgba(14,127,150,.55)");
+      /* barreaux : paires de bases */
+      var order = pts.map(function(q, j){ return j; }).sort(function(a, b){ return pts[a].d - pts[b].d; });
+      order.forEach(function(j){
+        var q = pts[j], b = sq[j], cb = COMP[b], filled = !game || j < st.idx, mid = (q.ya + q.yb) / 2, gap = 4 + q.op * 20, al = 0.55 + 0.45 * (1 - Math.max(0, -q.d));
+        var top = Math.min(q.ya, q.yb), bot = Math.max(q.ya, q.yb), upper = q.ya <= q.yb ? b : cb, lower = q.ya <= q.yb ? cb : b, upFill = q.ya <= q.yb ? true : filled, loFill = q.ya <= q.yb ? filled : true;
+        if (bot - top > gap + 4){
+          if (upFill) baseBar(q.x, top + 6, mid - gap / 2, w, upper, al);
+          if (loFill) baseBar(q.x, mid + gap / 2, bot - 6, w, lower, al);
+          else { ctx.save(); ctx.setLineDash([3, 3]); S.draw.rrect(c, q.x - w / 2, mid + gap / 2, w, bot - 6 - mid - gap / 2, 4); ctx.strokeStyle = j === st.idx ? (st.shake > 0 ? P.red : "#13233a") : "#a3adba"; ctx.lineWidth = j === st.idx ? 2.2 : 1.2; ctx.stroke(); ctx.restore();
+            if (j === st.idx){ st.geo.slot = [q.x, (mid + bot) / 2]; S.draw.glow(c, q.x, (mid + bot) / 2, 18 + 4 * Math.sin(st.t * 6), P.yellow, 0.6); } }
+          if (filled && q.op < 0.5){ var hb = (b === "A" || b === "T") ? 2 : 3; for (var z = 0; z < hb; z++){ var xx = q.x + (z - (hb - 1) / 2) * Math.min(5, w / 3); S.draw.line(c, xx, mid - gap / 2 + 1, xx, mid + gap / 2 - 1, "rgba(15,27,45," + (0.7 * al) + ")", 1.4, [2, 1.5]); } }
+          if (w >= 9 && bot - top > 36){ S.draw.text(c, upper, q.x, top + 14, {size:Math.min(13, w * 0.8), color:"#fff", weight:800}); if (loFill) S.draw.text(c, lower, q.x, bot - 14, {size:Math.min(13, w * 0.8), color:"#fff", weight:800}); }
+        }
       });
-      if (n === 0){ B4.txt(c, "Écris des bases A, T, G ou C", W / 2, H / 2, B4.pal.grey, 14); }
-      var cnt = {A:0, T:0, G:0, C:0}; seq.forEach(function(b){ cnt[b]++; });
-      var tot2 = n * 2;
-      ro.set(0, n + " paires" ); ro.set(1, n ? S.fmt((game ? (function(){ var g = 0; for (var i = 0; i < n; i++) if (seq[i] === "G" || seq[i] === "C") g++; return g; })() : (cnt.G + cnt.C)) / n * 100, 0) + " %" : "—");
-      ro.set(2, game ? hb + " (partiel)" : (cnt.A + cnt.T) * 2 + (cnt.G + cnt.C) * 3); ro.set(3, game ? comp + "…" : seq.map(function(b){ return COMP[b]; }).join(""));
-      if (game) nt.set(st.done ? "Brin complété avec " + st.err + " erreur(s). Les deux brins sont complémentaires : A↔T (2 liaisons), G↔C (3 liaisons)." : (st.msg ? "<b>Non.</b> " + st.msg + " " : "") + "Quelle base s'apparie avec " + st.tpl[st.idx] + " ? Erreurs : " + st.err + ".", st.done ? "ok" : st.msg ? "warn" : "");
-      else nt.set(bad ? "Seules les lettres A, T, G, C sont acceptées dans l'ADN : les autres sont ignorées (le U n'existe que dans l'ARN)." : n === 0 ? "Entre une séquence." : "Le brin 2 est le complément du brin 1 : " + seq.map(function(b){ return COMP[b]; }).join("") + ". Il y a " + (cnt.A + cnt.T) + " paires A–T (2 liaisons chacune) et " + (cnt.G + cnt.C) + " paires G–C (3 liaisons). Sur les deux brins ensemble : A = T = " + (cnt.A + cnt.T) + " et G = C = " + (cnt.G + cnt.C) + " (règle de Chargaff).", bad ? "warn" : "");
+      /* sucres et phosphates par-dessus */
+      pts.forEach(function(q){ var al = 0.6 + 0.4 * (1 - Math.max(0, -q.d)); ctx.save(); ctx.globalAlpha = al; sugar(q.x, q.ya, 5.5, "#b9a3ea"); sugar(q.x, q.yb, 5.5, "#8fd0dc"); ctx.restore(); });
+      for (i = 0; i < n - 1; i++){ var p1 = pts[i], p2 = pts[i + 1]; S.draw.dot(c, (p1.x + p2.x) / 2, (p1.ya + p2.ya) / 2, 3, "#e0a91b"); S.draw.dot(c, (p1.x + p2.x) / 2, (p1.yb + p2.yb) / 2, 3, "#e0a91b"); }
+      if (n){ S.draw.text(c, "5'", x0 - 16, pts[0].ya, {size:12, color:P.violet}); S.draw.text(c, "3'", x1 + 16, pts[n - 1].ya, {size:12, color:P.violet}); S.draw.text(c, "3'", x0 - 16, pts[0].yb, {size:12, color:P.teal}); S.draw.text(c, "5'", x1 + 16, pts[n - 1].yb, {size:12, color:P.teal}); }
+      S.draw.text(c, "● sucre (désoxyribose)  ● phosphate", 8, 10, {size:fs - 1, color:"#5f6b7a", align:"left", weight:600});
+      /* plateau de bases (jeu) */
+      st.geo.tray = [];
+      if (game){
+        var ty = H * 0.6, tw2 = Math.min(64, (W - 40) / 4);
+        S.draw.text(c, st.done ? "Brin complété !" : "Plateau : touche ou glisse la base qui s'apparie avec " + st.tpl[st.idx], W / 2, ty - 26, {size:fs, color:P.ink});
+        ["A", "T", "G", "C"].forEach(function(b, q2){ var x = W / 2 + (q2 - 1.5) * (tw2 + 10); S.draw.rrect(c, x - tw2 / 2, ty - 16, tw2, 32, 8); ctx.fillStyle = COL[b]; ctx.fill(); S.draw.text(c, b, x, ty, {size:16, color:"#fff", weight:800}); st.geo.tray.push([b, x, ty, tw2 / 2]); });
+        if (st.drag){ S.draw.rrect(c, st.drag.x - 14, st.drag.y - 14, 28, 28, 6); ctx.fillStyle = COL[st.drag.b]; ctx.fill(); S.draw.text(c, st.drag.b, st.drag.x, st.drag.y, {size:14, color:"#fff", weight:800}); }
+        if (st.fly && st.geo.slot){ var u = B4.ease(st.fly.t / 0.35), fx = st.fly.x + (st.geo.slot[0] - st.fly.x) * u, fy = st.fly.y + (st.geo.slot[1] - st.fly.y) * u; S.draw.rrect(c, fx - 12, fy - 12, 24, 24, 6); ctx.fillStyle = COL[st.fly.b]; ctx.fill(); }
+      }
+      /* profil : liaisons H et température d'ouverture */
+      var gy0 = game ? H * 0.72 : H * 0.55;
+      var ax = S.draw.axes(c, {x0:-0.5, x1:Math.max(n, 1) - 0.5, y0:20, y1:100, yl:"ouverture (°C)", stepX:Math.max(1, Math.ceil(n / 10)), stepY:20, t:gy0 + 14, l:40, b:24, grid:false});
+      for (i = 0; i < n; i++){ var hb2 = (sq[i] === "A" || sq[i] === "T") ? 2 : 3, filled2 = !game || i < st.idx; ctx.fillStyle = S.draw.tint(COL[sq[i]], 0.35); var xb = ax.X(i), yt = ax.Y(filled2 ? (hb2 === 2 ? 62 : 82) : 20); ctx.fillRect(xb - Math.min(9, dx * 0.35), yt, Math.min(18, dx * 0.7), ax.B - yt); if (filled2) S.draw.text(c, hb2 + "", xb, ax.B - 8, {size:9, color:COL[sq[i]]}); }
+      if (!game && n){ ctx.save(); ctx.strokeStyle = P.violet; ctx.lineWidth = 2.4; ctx.beginPath(); th.forEach(function(v, j){ var x = ax.X(j), y = ax.Y(v); j ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke(); ctx.restore();
+        S.draw.line(c, ax.L, ax.Y(T.value), ax.R, ax.Y(T.value), P.red, 1.6, [5, 4]); S.draw.label(c, S.fmt(T.value, 0) + " °C", ax.R - 4, ax.Y(T.value) - 10, {color:P.red, size:9.5, align:"right"});
+        S.draw.text(c, "barres : paire seule (chiffre = liaisons H) · courbe : avec ses voisines", ax.L + 4, gy0 + 2, {size:fs - 1.5, color:"#5f6b7a", align:"left", weight:600}); }
+      /* lectures */
+      var cnt = {A:0, T:0, G:0, C:0}, hbt = 0, k2 = game ? st.idx : n; for (i = 0; i < k2; i++){ cnt[sq[i]]++; hbt += (sq[i] === "A" || sq[i] === "T") ? 2 : 3; }
+      var gc = k2 ? (cnt.G + cnt.C) / k2 * 100 : 0, comp = sq.slice(0, k2).map(function(b){ return COMP[b]; }).join("");
+      ro.set(0, n + " paires"); ro.set(1, k2 ? S.fmt(gc, 0) + " %" : "—"); ro.set(2, hbt + (game && !st.done ? " (partiel)" : "")); ro.set(3, comp ? "3'-" + comp + (game && !st.done ? "…" : "") + "-5'" : "—");
+      var nOpen = st.open.filter(function(o){ return o > 0.5; }).length;
+      if (game){ nt.set(st.done ? "Brin complété avec " + st.err + " erreur(s) : A↔T (2 liaisons), G↔C (3 liaisons), brins antiparallèles." : (st.msg ? "<b>Non.</b> " + st.msg + " " : "") + "Quelle base s'apparie avec " + st.tpl[st.idx] + " ? Erreurs : " + st.err + ".", st.done ? "ok" : st.msg ? "warn" : "");
+        nd.set("<b>Défi.</b> Complète le brin de 12 bases sans erreur. " + (st.done ? (st.err === 0 ? "<b>Parfait !</b>" : "Recommence pour un sans-faute.") : "") + " Brins parfaits : " + st.score + " / " + st.tot + ".", st.done && st.err === 0 ? "ok" : "warn"); }
+      else {
+        var bad = /[^ATGC]/.test(inp.value.toUpperCase());
+        nt.set(bad ? "Seules les lettres A, T, G, C existent dans l'ADN : les autres sont ignorées (U n'existe que dans l'ARN)." : n === 0 ? "Entre une séquence." : "Paires A–T : " + (cnt.A + cnt.T) + " (2 liaisons chacune), paires G–C : " + (cnt.G + cnt.C) + " (3 liaisons) → " + hbt + " liaisons H. Sur les deux brins : A = T = " + (cnt.A + cnt.T) + " et G = C = " + (cnt.G + cnt.C) + " (Chargaff). À " + S.fmt(T.value, 0) + " °C : " + nOpen + " paire(s) ouverte(s) sur " + n + (nOpen && nOpen < n ? ", d'abord là où il y a des A–T." : "."), bad ? "warn" : nOpen === n && n ? "warn" : "");
+        nd.set("Essaie : une séquence riche en G–C (GCGCGGCC) et une riche en A–T (ATATTAAT) : laquelle faut-il chauffer le plus pour séparer les brins ?", "");
+      }
     });
   }
 });

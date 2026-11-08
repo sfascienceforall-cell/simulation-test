@@ -280,31 +280,32 @@ SFA.sim({
 SFA.sim({
   id:"c4-c01-quiz", ch:"c01", tag:"Défi",
   titre:"Nom, formule : juste ou fausse ?",
-  resume:"Un quiz sans fin à trois niveaux : retrouve le nom, ou chasse la formule fautive.",
-  but:"Choisis un mode et un niveau, puis réponds. Les erreurs te montrent comment la bonne formule se construit.",
-  aRetenir:"Pour contrôler une formule : 1) repère les ions, 2) lis leurs charges, 3) vérifie que la somme est nulle et que les indices sont les plus petits possibles.",
-  piege:"Ca₂SO₄ ou Al₂SO₄ semblent « normaux » mais les charges ne s'annulent pas. Et Ca₂(SO₄)₂ est neutre, mais pas simplifié : la formule s'écrit CaSO₄.",
+  resume:"Un quiz sans fin à trois modes : retrouve le nom, chasse la formule fautive ou construis-la toi-même sur la balance des charges.",
+  but:"Choisis un mode et un niveau. En mode « Construis-la », ajoute ou retire des ions sur la balance des charges jusqu'à ce qu'elle soit d'aplomb, puis valide. Après chaque réponse, les ions s'assemblent en une unité neutre. Objectif : une série de 5 bonnes réponses.",
+  aRetenir:"Pour écrire ou contrôler une formule : 1) repère les ions et leurs charges, 2) prends autant de cations et d'anions qu'il faut pour que la somme des charges soit nulle, 3) garde les plus petits nombres possibles. Le nom se lit « anion de cation » : sulfate d'aluminium = Al₂(SO₄)₃.",
+  piege:"Ca₂SO₄ ou Al₂SO₄ semblent « normaux » mais les charges ne s'annulent pas. Et Ca₂(SO₄)₂ est neutre, mais pas simplifié : la formule s'écrit CaSO₄. Un ion polyatomique reste un bloc : parenthèses dès qu'il en faut plus d'un.",
   build:function(k, S){
-    var c = k.canvas(330), P = S.draw.palette, st = {score:0, n:0, q:null, done:false, streak:0, best:0, hist:[]};
-    var mode = k.seg("Mode", [["nom","Formule → nom"],["jf","Juste ou fausse ?"]], "nom", function(){ next(); });
+    var c = k.canvas(350), P = S.draw.palette, st = {score:0, n:0, done:false, streak:0, best:0, hist:[], cnt:[1, 1], anim:null, wins5:0};
+    var mode = k.seg("Mode", [["nom","Formule → nom"],["jf","Juste ou fausse ?"],["cons","Construis-la"]], "cons", function(){ next(); });
     var lev = k.seg("Niveau", [[1,"1"],[2,"2"],[3,"3"]], 1, function(){ next(); });
     var ro = k.readouts(["Score", "Série en cours (record)"]);
-    var fb = k.note("Réponds à la question.", "");
+    var fb = k.note("", "");
     var btns = [];
     for (var i = 0; i < 4; i++) (function(i){ btns.push(k.button("…", function(){ answer(i); })); })(i);
+    var A = C4.anim(k, 1.4);
     function pool(){
       var L = +lev.value;
       var cats = C4.CAT.filter(function(x){ return x.s !== "H" && (L === 1 ? ["Na","K","Mg","Ca","Zn"].indexOf(x.s) >= 0 : L === 2 ? x.s !== "Fe" && x.s !== "Ag" : true); });
       var ans = C4.AN.filter(function(x){ return L === 1 ? ["Cl","O","S","OH"].indexOf(x.s) >= 0 : L === 2 ? ["Cl","O","S","OH","NO3","SO4","CO3"].indexOf(x.s) >= 0 : true; });
       return {cats:cats, ans:ans};
     }
-    function ok(a, b){ var s = C4.salt(a, b); return !s.note; }
+    function ok(a, b){ return !C4.salt(a, b).note; }
     function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
     function next(){
       var p = pool(), a, b, tries = 0;
-      do { a = pick(p.cats); b = pick(p.ans); tries++; } while (!ok(a, b) && tries < 60);
+      do { a = pick(p.cats); b = pick(p.ans); tries++; } while ((!ok(a, b) || (mode.value === "cons" && +lev.value > 1 && a.q === b.q && tries < 20)) && tries < 80);
       var s = C4.salt(a, b);
-      st.done = false; st.n0 = a; st.n1 = b; st.s = s;
+      st.done = false; st.n0 = a; st.n1 = b; st.s = s; st.cnt = [1, 1]; st.good = 0; A.stop(); st.lastOk = null;
       if (mode.value === "nom"){
         var opts = [s.nom], guard = 0;
         while (opts.length < 4 && guard++ < 80){
@@ -312,15 +313,11 @@ SFA.sim({
           if (!ok(a2, b2)) continue;
           var nn = C4.salt(a2, b2).nom; if (opts.indexOf(nn) < 0) opts.push(nn);
         }
-        var order = [0,1,2,3].sort(function(){ return Math.random() - 0.5; });
-        st.opts = order.map(function(j){ return opts[j]; }); st.good = st.opts.indexOf(s.nom);
-        st.shown = s.f;
-      } else {
-        var wrong = [], x = s.x, y = s.y;
-        function mk(xx, yy, par){
-          function part(i, n, isc){ if (n === 1) return i.s; return (i.poly && par ? "(" + i.s + ")" : i.s) + n; }
-          return part(a, xx) + part(b, yy);
-        }
+        st.opts = opts.map(function(o){ return [Math.random(), o]; }).sort(function(x, y){ return x[0] - y[0]; }).map(function(z){ return z[1]; });
+        st.good = st.opts.indexOf(s.nom); st.shown = s.f;
+      } else if (mode.value === "jf"){
+        var x = s.x, y = s.y;
+        function mk(xx, yy, par){ function part(i, n){ if (n === 1) return i.s; return (i.poly && par ? "(" + i.s + ")" : i.s) + n; } return part(a, xx) + part(b, yy); }
         var cand = [];
         if (x !== y) cand.push(mk(y, x, true));
         if (x !== 1 || y !== 1) cand.push(mk(1, 1, true));
@@ -330,41 +327,93 @@ SFA.sim({
         cand = cand.filter(function(f){ return f !== s.f; });
         var isTrue = Math.random() < 0.45 || !cand.length;
         st.shown = isTrue ? s.f : pick(cand); st.isTrue = isTrue; st.opts = ["Juste", "Fausse", "", ""]; st.good = isTrue ? 0 : 1;
-      }
-      draw2(); k.redraw();
+      } else { st.opts = ["Valider ma formule", "", "", ""]; st.shown = ""; }
+      paintBtns(); k.redraw();
     }
+    function userF(){ var a = st.n0, b = st.n1, x = st.cnt[0], y = st.cnt[1]; function part(i, n){ if (n === 1) return i.s; return (i.poly ? "(" + i.s + ")" : i.s) + n; } return part(a, x) + part(b, y); }
     function answer(i){
       if (st.done || !st.opts[i]) return;
+      var s = st.s, good;
+      if (mode.value === "cons"){
+        var net = st.cnt[0] * st.n0.q - st.cnt[1] * st.n1.q;
+        good = net === 0 && st.cnt[0] === s.x && st.cnt[1] === s.y;
+        st.lastOk = good;
+        if (!good && net === 0){ fb.set("Neutre, mais pas simplifié : " + C4.sub(userF()) + " se divise par " + (st.cnt[0] / s.x) + ". La formule s'écrit avec les plus petits nombres : <b>" + C4.sub(s.f) + "</b>.", "warn"); }
+        else if (!good){ fb.set("La balance n'est pas d'aplomb : il reste une charge totale de " + (net > 0 ? "+" : "−") + Math.abs(net) + ". Ajoute ou retire des ions, puis valide à nouveau.", "warn"); return; }
+      } else good = i === st.good;
       st.done = true; st.n++;
-      var good = i === st.good, s = st.s;
-      if (good){ st.score++; st.streak++; st.best = Math.max(st.best, st.streak); } else st.streak = 0;
-      st.hist.push(good ? 1 : 0); if (st.hist.length > 12) st.hist.shift();
-      btns.forEach(function(b, j){ if (!st.opts[j]) return; var on = j === st.good || j === i; b.style.setProperty("background", on ? (j === st.good ? P.green : P.red) : "", "important"); b.style.setProperty("color", on ? "#fff" : "", "important"); b.style.setProperty("border-color", on ? (j === st.good ? P.green : P.red) : "", "important"); b.style.opacity = (j === st.good || j === i) ? 1 : .55; });
-      if (mode.value === "nom") fb.set((good ? "✅ Juste. " : "❌ Non. ") + "<b>" + C4.sub(s.f) + " = " + s.nom + "</b> (" + s.x + " × " + C4.ionHtml(st.n0, 1) + " et " + s.y + " × " + C4.ionHtml(st.n1, 0) + " : charges +" + (s.x * st.n0.q) + " et −" + (s.y * st.n1.q) + ").", good ? "ok" : "warn");
-      else fb.set((good ? "✅ " : "❌ ") + "Le composé « " + s.nom + " » a pour formule <b>" + C4.sub(s.f) + "</b> (" + s.x + " × " + C4.ionHtml(st.n0, 1) + " = +" + (s.x * st.n0.q) + ", " + s.y + " × " + C4.ionHtml(st.n1, 0) + " = −" + (s.y * st.n1.q) + ")." + (st.isTrue ? "" : " La formule proposée « " + C4.sub(st.shown) + " » est fausse."), good ? "ok" : "warn");
+      if (good){ st.score++; st.streak++; st.best = Math.max(st.best, st.streak); if (st.streak === 5) st.wins5++; } else st.streak = 0;
+      st.hist.push(good ? 1 : 0); if (st.hist.length > 14) st.hist.shift();
+      st.cnt = [s.x, s.y]; A.go();
+      btns.forEach(function(b, j){ if (!st.opts[j]) return; var on = mode.value !== "cons" && (j === st.good || j === i); b.style.setProperty("background", on ? (j === st.good ? P.green : P.red) : "", "important"); b.style.setProperty("color", on ? "#fff" : "", "important"); b.style.setProperty("border-color", on ? (j === st.good ? P.green : P.red) : "", "important"); b.style.opacity = on || mode.value === "cons" ? 1 : .55; });
+      var why = " (" + s.x + " × " + C4.ionHtml(st.n0, 1) + " = +" + (s.x * st.n0.q) + " et " + s.y + " × " + C4.ionHtml(st.n1, 0) + " = −" + (s.y * st.n1.q) + ")";
+      if (mode.value === "nom") fb.set((good ? "✅ Juste. " : "❌ Non. ") + "<b>" + C4.sub(s.f) + " = " + s.nom + "</b>" + why + ".", good ? "ok" : "warn");
+      else if (mode.value === "jf") fb.set((good ? "✅ " : "❌ ") + "« " + s.nom + " » s'écrit <b>" + C4.sub(s.f) + "</b>" + why + "." + (st.isTrue ? "" : " La formule proposée « " + C4.sub(st.shown) + " » est fausse."), good ? "ok" : "warn");
+      else if (good) fb.set("✅ Bravo : <b>" + C4.sub(s.f) + "</b>" + why + ".", "ok");
+      if (st.streak >= 5 && good) fb.set("🏆 Objectif atteint : série de " + st.streak + " ! " + "<b>" + C4.sub(s.f) + " = " + s.nom + "</b>.", "ok");
       k.redraw();
     }
-    function draw2(){ btns.forEach(function(b, i){ b.innerHTML = st.opts[i] || "·"; b.style.display = st.opts[i] ? "" : "none"; b.style.removeProperty("background"); b.style.removeProperty("color"); b.style.removeProperty("border-color"); b.style.opacity = ""; }); }
+    function paintBtns(){ btns.forEach(function(b, i){ b.innerHTML = st.opts[i] || "·"; b.style.display = st.opts[i] ? "" : "none"; b.style.removeProperty("background"); b.style.removeProperty("color"); b.style.removeProperty("border-color"); b.style.opacity = ""; });
+      fb.set(mode.value === "cons" ? "Touche les boutons + et − sous les plateaux pour ajouter ou retirer des ions. La balance est d'aplomb quand la charge totale est nulle." : "Réponds à la question. Objectif : série de 5 bonnes réponses.", ""); }
+    var G = {};
+    c.pointer(function(type, p){
+      if (type !== "down" || mode.value !== "cons" || st.done || !G.btn) return;
+      G.btn.forEach(function(b){ if (Math.hypot(p.x - b.x, p.y - b.y) < 22){ st.cnt[b.side] = Math.max(1, Math.min(6, st.cnt[b.side] + b.d)); k.redraw(); } });
+    });
     next();
     k.draw(function(){
       c.clear(); C4.bg(c);
       if (!st.s) return;
-      var W = c.W, s = st.s, ctx = c.ctx;
-      S.draw.label(c, mode.value === "nom" ? "QUEL EST LE NOM DE CETTE SUBSTANCE ?" : "CETTE FORMULE EST-ELLE JUSTE ?", W / 2, 24, {color:P.mat, size:12});
-      if (mode.value === "nom"){
-        S.draw.text(c, C4.uni(st.shown), W / 2, 84, {size:W < 420 ? 40 : 52, color:P.ink, math:true});
+      var W = c.W, s = st.s, ctx = c.ctx, cons = mode.value === "cons", small = W < 420;
+      S.draw.label(c, cons ? "CONSTRUIS LA FORMULE DE…" : mode.value === "nom" ? "QUEL EST LE NOM DE CETTE SUBSTANCE ?" : "CETTE FORMULE EST-ELLE JUSTE ?", W / 2, 20, {color:P.mat, size:11.5});
+      if (mode.value === "nom") S.draw.text(c, C4.uni(st.shown), W / 2, 64, {size:small ? 38 : 48, color:P.ink, math:true});
+      else if (mode.value === "jf"){ C4.t(c, s.nom, W / 2, 50, {size:small ? 15 : 18, color:P.ink}); S.draw.text(c, C4.uni(st.shown), W / 2, 88, {size:small ? 32 : 40, color:P.ink, math:true}); }
+      else { C4.t(c, s.nom, W / 2, 52, {size:small ? 18 : 22, color:P.ink}); S.draw.text(c, st.done ? C4.uni(s.f) : C4.uni(userF()), W / 2, 90, {size:small ? 26 : 32, color:st.done ? P.green : "#5f6b7a", math:true}); }
+      /* balance des charges */
+      var show = cons || st.done;
+      var p = A.p, yB = 150, Lb = Math.min(W * 0.36, 175), r = Math.min(14, Lb / 6.2), nC = st.cnt[0], nA = st.cnt[1];
+      var net = nC * st.n0.q - nA * st.n1.q, tilt = -Math.max(-0.18, Math.min(0.18, net * 0.05));
+      if (!show){
+        C4.wrap(c, "Repère les ions, lis leurs charges, vérifie que la somme est nulle et que les nombres sont les plus petits possibles.", W / 2, 160, W - 50, {size:12.5, color:P.grey, weight:600});
       } else {
-        C4.t(c, s.nom, W / 2, 62, {size:W < 420 ? 17 : 20, color:P.ink});
-        S.draw.text(c, C4.uni(st.shown), W / 2, 112, {size:W < 420 ? 36 : 46, color:P.ink, math:true});
+        var asm = st.done ? C4.ph(p, 0.25, 1) : 0;
+        ctx.save(); ctx.globalAlpha = 1 - 0.7 * asm;
+        ctx.fillStyle = "#8a95a3"; ctx.beginPath(); ctx.moveTo(W / 2 - 16, yB + 98); ctx.lineTo(W / 2 + 16, yB + 98); ctx.lineTo(W / 2 + 4, yB); ctx.lineTo(W / 2 - 4, yB); ctx.closePath(); ctx.fill();
+        ctx.translate(W / 2, yB); ctx.rotate(tilt);
+        ctx.fillStyle = "#5f6b7a"; C4.rr(ctx, -Lb, -4, 2 * Lb, 8, 4); ctx.fill(); ctx.restore();
+        var ends = [[-1, nC, st.n0, true], [1, nA, st.n1, false]];
+        G.btn = [];
+        ends.forEach(function(e){
+          var ex = W / 2 + e[0] * Lb * Math.cos(tilt), ey = yB + e[0] * Lb * Math.sin(tilt), py = ey + 52, pw = Lb * 0.74;
+          ctx.save(); ctx.globalAlpha = 1 - 0.7 * asm; ctx.strokeStyle = "#8a95a3"; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex - pw / 2, py); ctx.moveTo(ex, ey); ctx.lineTo(ex + pw / 2, py); ctx.stroke();
+          ctx.fillStyle = e[3] ? "#dbe5f6" : "#f6dcd8"; ctx.beginPath(); ctx.ellipse(ex, py, pw / 2, 7, 0, 0, Math.PI); ctx.fill(); ctx.strokeStyle = "#5f6b7a"; ctx.stroke(); ctx.restore();
+          var per = 3, rows = Math.ceil(e[1] / per);
+          for (var j = 0; j < e[1]; j++){
+            var row = Math.floor(j / per), inRow = Math.min(per, e[1] - row * per), col = j % per;
+            var ix = ex + (col - (inRow - 1) / 2) * r * 2.15, iy = py - r - 1 - row * r * 1.95;
+            /* position dans l'unité assemblée (au centre, en alternance) */
+            var tot = nC + nA, idx = e[3] ? j : nC + j, order = [];
+            var ci = 0, ai = 0; for (var q = 0; q < tot; q++){ var wantC = (ci / Math.max(1, nC)) <= (ai / Math.max(1, nA)); if ((wantC && ci < nC) || ai >= nA){ order.push(["c", ci++]); } else order.push(["a", ai++]); }
+            var slot = 0; order.forEach(function(o, oi){ if ((o[0] === "c") === e[3] && o[1] === j) slot = oi; });
+            var gap = Math.min(r * 2.05, (W - 40) / tot), tx = W / 2 + (slot - (tot - 1) / 2) * gap, ty = yB + 20;
+            var X = C4.lerp(ix, tx, asm), Y = C4.lerp(iy, ty, asm);
+            C4.ion(c, X, Y, r, e[3] ? "#2f64c8" : "#d6453a", (e[2].q > 1 ? e[2].q : "") + (e[3] ? "+" : "−"), {size:Math.max(10.5, r * .8)});
+          }
+          if (cons && !st.done){
+            [[-1, "−"], [1, "+"]].forEach(function(bt){ var bx = ex + bt[0] * 26, by = py + 30; G.btn.push({x:bx, y:by, side:e[3] ? 0 : 1, d:bt[0]});
+              ctx.save(); ctx.fillStyle = "#fff"; ctx.strokeStyle = e[3] ? "#2f64c8" : "#d6453a"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(bx, by, 14, 0, 7); ctx.fill(); ctx.stroke(); ctx.restore();
+              S.draw.text(c, bt[1], bx, by + 1, {size:17, color:e[3] ? "#2f64c8" : "#d6453a"}); });
+          }
+          var lab = e[1] + " × " + (e[3] ? C4.ionUni(e[2], 1) : C4.ionUni(e[2], 0));
+          C4.t(c, lab, ex, py + (cons && !st.done ? 56 : 26), {size:12.5, color:e[3] ? "#1f4b9e" : "#a3271a"});
+        });
+        var sum = "charges : +" + (nC * st.n0.q) + " et −" + (nA * st.n1.q) + (net === 0 ? " → total 0" : " → total " + (net > 0 ? "+" : "−") + Math.abs(net));
+        if (st.done && asm > 0.95) S.draw.label(c, "unité neutre : " + C4.uni(s.f), W / 2, yB + 62, {color:P.green, size:13});
+        else C4.t(c, sum, W / 2, yB - 30, {size:12.5, color:net === 0 ? P.green : P.amber});
       }
-      if (st.done){
-        var n1 = s.x, n2 = s.y, tot = n1 + n2, r = Math.min(15, (W - 40) / (tot * 2.3)), gap = r * 2.3, x0 = W / 2 - (tot - 1) * gap / 2, y = 212;
-        for (var i = 0; i < tot; i++){ var cat = i < n1, it = cat ? st.n0 : st.n1; C4.ion(c, x0 + i * gap, y, r, cat ? P.acc : P.red, (it.q > 1 ? it.q : "") + (cat ? "+" : "−"), {size:Math.max(10, r * .8)}); }
-        C4.t(c, n1 + " × " + C4.ionUni(st.n0, 1) + " (+" + (n1 * st.n0.q) + ")   ·   " + n2 + " × " + C4.ionUni(st.n1, 0) + " (−" + (n2 * st.n1.q) + ")", W / 2, 250, {size:13, color:P.ink});
-        C4.t(c, "total = 0 : formule " + C4.uni(s.f), W / 2, 274, {size:13, color:P.green});
-      } else C4.wrap(c, "Repère les ions, lis leurs charges, vérifie que la somme est nulle.", W / 2, 230, W - 40, {size:12.5, color:P.grey, weight:600});
-      for (var h = 0; h < st.hist.length; h++) S.draw.dot(c, 16 + h * 15, 308, 4.5, st.hist[h] ? P.green : P.red);
-      if (st.streak >= 3) S.draw.label(c, "🔥 série de " + st.streak, W - 12, 308, {align:"right", color:P.orange, size:12.5});
+      var hs = st.hist.slice(-Math.max(3, Math.floor((W - 200) / 15))); for (var h = 0; h < hs.length; h++) S.draw.dot(c, 16 + h * 15, 334, 4.5, hs[h] ? P.green : P.red);
+      var goal = Math.min(st.streak, 5);
+      S.draw.label(c, "objectif série de 5 : " + "●".repeat(goal) + "○".repeat(5 - goal), W - 10, 334, {align:"right", color:st.streak >= 5 ? P.green : P.amber, size:11.5});
       ro.set(0, st.score + " / " + st.n); ro.set(1, st.streak + " (" + st.best + ")");
     });
     k.button("Nouvelle question", function(){ next(); }, true);

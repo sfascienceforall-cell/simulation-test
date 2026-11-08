@@ -98,55 +98,132 @@ SFA.sim({
 SFA.sim({
   id:"c4-c10-flacons", ch:"c10", tag:"Enquête",
   titre:"Les trois flacons sans étiquette",
-  resume:"Un flacon contient NaCl, un autre Na₂SO₄, le dernier Na₂CO₃ : identifie-les avec deux réactifs.",
-  but:"Ajoute du nitrate de baryum ou de l'acide chlorhydrique dilué dans chaque flacon, note les observations et propose une identification.",
-  aRetenir:"Ba²⁺ forme un précipité blanc avec SO₄²⁻ et CO₃²⁻ mais pas avec Cl⁻. L'acide dissout le précipité de carbonate en dégageant du CO₂ (bulles) mais pas celui de sulfate. Deux tests bien choisis suffisent.",
-  piege:"Si tu ajoutes l'acide AVANT le baryum, le carbonate est déjà détruit (CO₂ dégagé) : plus de précipité BaCO₃. L'ordre des tests compte.",
+  resume:"NaCl, Na₂SO₄ ou Na₂CO₃ ? Verse du nitrate de baryum ou de l'acide chlorhydrique dans les tubes, observe à l'œil et à la loupe, puis identifie les trois flacons.",
+  but:"Glisse un flacon compte-gouttes (Ba(NO₃)₂ ou HCl) sur un tube, ou touche un tube puis utilise les boutons. La loupe montre les ions du tube choisi : précipité, bulles de CO₂… Propose une identification. Défi : y arriver en 3 tests au plus.",
+  aRetenir:"Ba²⁺ forme un précipité blanc avec SO₄²⁻ (BaSO₄) et avec CO₃²⁻ (BaCO₃), mais pas avec Cl⁻. L'acide détruit les ions carbonate : CO₃²⁻ + 2 H₃O⁺ → CO₂ + 3 H₂O (effervescence), ce qui redissout BaCO₃ ; BaSO₄, lui, reste. Deux réactifs bien choisis suffisent.",
+  piege:"Si tu ajoutes l'acide AVANT le baryum, le carbonate est déjà parti en CO₂ : plus de précipité BaCO₃, et le tube ressemble à celui du chlorure. L'ordre des tests compte. Les ions Na⁺ et NO₃⁻ ne réagissent jamais : ce sont des ions spectateurs.",
   build:function(k, S){
-    var c = k.canvas(300), P = S.draw.palette;
+    var c = k.canvas(430), P = S.draw.palette;
     var NAMES = {Cl:"NaCl", SO4:"Na₂SO₄", CO3:"Na₂CO₃"}, st = {};
-    function newGame(){ var a = ["Cl", "SO4", "CO3"].sort(function(){ return Math.random() - 0.5; }); st = {sol:a, ba:[0,0,0], ac:[0,0,0], log:[[],[],[]], tests:0, res:null, carbPresent:[1,1,1], tm:[0,0,0], kind:["","",""]}; }
+    function fresh(sol){ return {sol:sol, ba:0, hcl:0, carb:sol === "CO3" ? 1 : 0, pre:null, tp:0, td:0, tc:0, te:0, kind:""}; }
+    function newGame(){ var a = ["Cl", "SO4", "CO3"].map(function(x){ return [Math.random(), x]; }).sort(function(p, q){ return p[0] - q[0]; }).map(function(z){ return z[1]; });
+      st = {sol:a, tube:a.map(fresh), log:[[], [], []], tests:0, res:null, sel:0, t:0}; }
     newGame();
-    var fl = k.seg("Flacon", [[0,"A"],[1,"B"],[2,"C"]], 0);
-    var g = [k.select("Je pense que A est", [["Cl","NaCl"],["SO4","Na₂SO₄"],["CO3","Na₂CO₃"]], "Cl"), k.select("Je pense que B est", [["Cl","NaCl"],["SO4","Na₂SO₄"],["CO3","Na₂CO₃"]], "SO4"), k.select("Je pense que C est", [["Cl","NaCl"],["SO4","Na₂SO₄"],["CO3","Na₂CO₃"]], "CO3")];
-    var ro = k.readouts(["Tests effectués"]);
+    var opt = [["Cl","NaCl"],["SO4","Na₂SO₄"],["CO3","Na₂CO₃"]];
+    var gs = [k.select("Je pense que A est", opt, "Cl"), k.select("Je pense que B est", opt, "SO4"), k.select("Je pense que C est", opt, "CO3")];
+    var ro = k.readouts(["Tube choisi", "Tests effectués"]);
     var out = k.note("", "");
-    k.button("+ Ba(NO₃)₂", function(){ var i = +fl.value; st.tests++; st.tm[i] = Date.now(); st.kind[i] = "ba"; var s = st.sol[i];
-      if (s === "SO4" || (s === "CO3" && st.carbPresent[i])){ st.ba[i] = 1; st.log[i].push("+ Ba(NO₃)₂ : précipité blanc"); } else st.log[i].push("+ Ba(NO₃)₂ : rien" + (s === "CO3" ? " (le carbonate a déjà disparu avec l'acide)" : "")); });
-    k.button("+ HCl dilué", function(){ var i = +fl.value; st.tests++; st.tm[i] = Date.now(); st.kind[i] = "ac"; var s = st.sol[i];
-      if (s === "CO3" && st.carbPresent[i]){ st.carbPresent[i] = 0; st.ba[i] = 0; st.log[i].push("+ HCl : bulles (effervescence)" + (st.ac[i] === 0 && st.log[i].some(function(l){ return /précipité/.test(l); }) ? ", le précipité disparaît" : "")); } else st.log[i].push("+ HCl : rien d'observable");
-      st.ac[i] = 1; });
-    k.button("Vérifier mes réponses", function(){ var ok = g.every(function(x, i){ return x.value === st.sol[i]; }); st.res = ok ? "ok" : "ko"; });
-    k.button("Nouveau jeu", function(){ newGame(); });
-    c.pointer(function(type, pt){ if (type !== "down") return; var i = Math.floor(pt.x / (c.W / 3)); if (i >= 0 && i < 3){ fl.set(i); k.redraw(); } });
-    var lp = k.loop(function(){ k.redraw(); }); lp.play();
-    k.draw(function(){
-      c.clear(); C4.bg(c, 262); var W = c.W, ctx = c.ctx, cw = W / 3, now = Date.now();
-      for (var i = 0; i < 3; i++){
-        var cx = cw * i + cw / 2, sel = +fl.value === i, tw = Math.min(64, cw * .56), ty = 70, th = 168, dt = now - st.tm[i];
-        if (sel){ ctx.save(); ctx.fillStyle = "rgba(31,75,158,.08)"; S.draw.rrect(c, cx - cw / 2 + 5, 8, cw - 10, 290, 12); ctx.fill(); ctx.strokeStyle = P.acc; ctx.lineWidth = 2; ctx.stroke(); ctx.restore(); }
-        var lvlr = .62 + (dt < 900 && st.tm[i] ? .05 * Math.min(1, dt / 700) : 0);
-        C4.tube(c, cx - tw / 2, ty, tw, th, st.tm[i] ? lvlr : .62, "#9cc7e8", {alpha:.4, ticks:3});
-        /* précipité qui se dépose */
-        if (st.ba[i]){ var sett = Math.min(1, Math.max(0, (dt - 300) / 1600)); ctx.save(); ctx.beginPath(); ctx.rect(cx - tw / 2 + 2, ty, tw - 4, th - 2); ctx.clip();
-          ctx.fillStyle = "rgba(255,255,255," + (.75 * (1 - sett)) + ")"; ctx.fillRect(cx - tw / 2, ty + th * .38, tw, th * .62);
-          for (var j = 0; j < 26; j++){ var gx = cx - tw / 2 + 5 + (j * 37 % (tw - 10)), gy = ty + th * .45 + (j * 53 % 70) * (1 - sett) + sett * (th * .55 - 12 - (j % 4) * 3 - 4); ctx.fillStyle = "#f6f6f6"; ctx.strokeStyle = "#9aa5b4"; ctx.lineWidth = .8; ctx.beginPath(); ctx.arc(gx, Math.min(gy, ty + th - tw / 2 + (j % 3) * 3 + 4), 3, 0, 7); ctx.fill(); ctx.stroke(); }
-          ctx.restore(); }
-        /* bulles */
-        if (st.kind[i] === "ac" && st.sol[i] === "CO3" && dt < 3200){ for (var b2 = 0; b2 < 9; b2++){ var by = ty + th - 14 - ((dt / 12 + b2 * 31) % (th - 70)); S.draw.dot(c, cx - tw / 2 + 8 + (b2 * 17 % (tw - 16)) + Math.sin(dt / 160 + b2) * 3, by, 2.6 + (b2 % 3) * .6, "rgba(255,255,255,.95)"); } }
-        /* goutte */
-        if (st.tm[i] && dt < 650){ var gyy = 14 + dt / 650 * (ty + 40 - 14); var rc = st.kind[i] === "ba" ? "#7fb4de" : "#e8c547"; ctx.fillStyle = rc; ctx.beginPath(); ctx.ellipse(cx, gyy, 5, 7, 0, 0, 7); ctx.fill(); }
-        S.draw.text(c, "Flacon " + "ABC"[i], cx, 38, {size:14, color:sel ? P.acc : P.ink});
-        if (!st.res) S.draw.text(c, "?", cx, ty + th + 22, {size:20, color:"#b8c0cc"});
-        else S.draw.label(c, NAMES[st.sol[i]], cx, ty + th + 22, {color:g[i].value === st.sol[i] ? P.green : P.red, size:13});
+    function add(r, i){
+      var u = st.tube[i], now = st.t; st.tests++; st.sel = i; u.te = now; u.kind = r; st.res = null;
+      if (r === "ba"){
+        if (u.ba){ st.log[i].push("+ Ba(NO₃)₂ : rien de nouveau"); return; }
+        u.ba = 1;
+        if (u.sol === "SO4"){ u.pre = "BaSO4"; u.tp = now; st.log[i].push("+ Ba(NO₃)₂ : précipité blanc"); }
+        else if (u.sol === "CO3" && u.carb){ u.pre = "BaCO3"; u.tp = now; st.log[i].push("+ Ba(NO₃)₂ : précipité blanc"); }
+        else st.log[i].push("+ Ba(NO₃)₂ : rien" + (u.sol === "CO3" ? " (le carbonate est déjà parti avec l'acide)" : ""));
+      } else {
+        u.hcl = 1;
+        if (u.carb){ u.carb = 0; u.tc = now; var had = u.pre === "BaCO3"; if (had){ u.pre = null; u.td = now; }
+          st.log[i].push("+ HCl : effervescence (bulles)" + (had ? ", le précipité disparaît" : "")); }
+        else st.log[i].push("+ HCl : " + (u.pre === "BaSO4" ? "le précipité reste" : "rien d'observable"));
       }
-      if (st.res) C4.t(c, st.res === "ok" ? "tes réponses sont justes" : "certaines réponses sont fausses", W / 2, 286, {size:12.5, color:st.res === "ok" ? P.green : P.red});
-      else C4.t(c, "touche un flacon pour le choisir, puis ajoute un réactif", W / 2, 286, {size:12, color:P.grey, weight:600});
-      ro.set(0, st.tests);
-      var h = "<b>Observations</b><br>" + [0,1,2].map(function(i){ return "<b>" + "ABC"[i] + " :</b> " + (st.log[i].length ? st.log[i].join(" ; ") : "aucun test") ; }).join("<br>");
-      if (st.res === "ok") h += "<br>✅ Bravo, identification correcte en " + st.tests + " test(s). Raisonnement : le précipité blanc qui persiste avec l'acide désigne le sulfate, celui qui disparaît en bullant le carbonate, l'absence de précipité le chlorure.";
+    }
+    k.button("+ Ba(NO₃)₂ dans le tube choisi", function(){ add("ba", st.sel); }, true);
+    k.button("+ HCl dilué dans le tube choisi", function(){ add("hcl", st.sel); });
+    k.button("Nouvel échantillon (vider le tube)", function(){ var i = st.sel; st.tube[i] = fresh(st.sol[i]); st.log[i].push("— nouvel échantillon —"); });
+    k.button("Vérifier mes réponses", function(){ var okk = gs.every(function(x, i){ return x.value === st.sol[i]; }); st.res = okk ? "ok" : "ko"; });
+    k.button("Nouveau jeu", function(){ newGame(); });
+    var lp = k.loop(function(dt){ st.t += dt; k.redraw(); }); lp.play();
+    var L = {}, drag = null;
+    c.pointer(function(type, p){
+      if (!L.tubes) return;
+      if (type === "down"){
+        drag = null;
+        L.bot.forEach(function(b){ if (Math.abs(p.x - b.x) < 30 && Math.abs(p.y - b.y) < 40) drag = {r:b.r, x:p.x, y:p.y}; });
+        if (!drag) L.tubes.forEach(function(t, i){ if (Math.abs(p.x - t.x) < t.w && p.y > t.y - 20 && p.y < t.y + t.h + 20) st.sel = i; });
+      } else if (type === "drag" && drag){ drag.x = p.x; drag.y = p.y; }
+      else if (type === "up" && drag){ L.tubes.forEach(function(t, i){ if (Math.abs(drag.x - t.x) < t.w && drag.y > t.y - 70 && drag.y < t.y + t.h) add(drag.r, i); }); drag = null; }
+    });
+    function dropper(x, y, r, lab, col, ghost){
+      var ctx = c.ctx; ctx.save(); if (ghost) ctx.globalAlpha = 0.35;
+      ctx.fillStyle = "#7a4a1f"; C4.rr(ctx, x - 15, y - 6, 30, 38, 6); ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.fillRect(x - 12, y + 6, 24, 14);
+      ctx.fillStyle = "#2c3a4e"; ctx.fillRect(x - 5, y - 18, 10, 12); ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(x, y - 24, 7, 9, 0, 0, 7); ctx.fill();
+      ctx.restore();
+      if (!ghost) C4.t(c, lab, x, y + 46, {size:11.5, color:"#2c3a4e"});
+    }
+    /* types d'ions dans la loupe */
+    var ION = {Na:["#9b6fd6", "Na⁺", 6], Cl:["#3aa35b", "Cl⁻", 7], SO4:["#e0a020", "SO₄²⁻", 9], CO3:["#4b5563", "CO₃²⁻", 9], Ba:["#2f64c8", "Ba²⁺", 8.5], NO3:["#c9b7e8", "NO₃⁻", 6.5], H:["#e2453c", "H₃O⁺", 6.5], CO2:["#9aa5b4", "CO₂", 8]};
+    function seed(i){ var x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x); }
+    k.draw(function(){
+      var W = c.W, H = c.H, ctx = c.ctx, wide = W >= 480, t = st.t;
+      C4.bg(c);
+      var zone = wide ? W * 0.58 : W, ty = wide ? 120 : 110, th = wide ? 170 : 120, tw = Math.min(40, zone / 3 * 0.42);
+      L.tubes = []; L.bot = [{r:"ba", x:zone * 0.3, y:34}, {r:"hcl", x:zone * 0.7, y:34}];
+      dropper(L.bot[0].x, L.bot[0].y, "ba", "Ba(NO₃)₂", "#2f64c8", drag && drag.r === "ba");
+      dropper(L.bot[1].x, L.bot[1].y, "hcl", "HCl dilué", "#e2453c", drag && drag.r === "hcl");
+      /* portoir et tubes */
+      ctx.fillStyle = "#c9a77c"; C4.rr(ctx, 8, ty + th * 0.55, zone - 16, 12, 4); ctx.fill();
+      for (var i = 0; i < 3; i++){
+        var u = st.tube[i], tx = zone * (2 * i + 1) / 6, sel = st.sel === i, dt = t - u.te;
+        L.tubes.push({x:tx, y:ty, w:tw, h:th});
+        if (sel){ ctx.save(); ctx.fillStyle = "rgba(31,75,158,.08)"; C4.rr(ctx, tx - zone / 6 + 4, ty - 26, zone / 3 - 8, th + 58, 10); ctx.fill(); ctx.strokeStyle = P.acc; ctx.lineWidth = 2; ctx.stroke(); ctx.restore(); }
+        C4.tube(c, tx - tw / 2, ty, tw, th, 0.6, "#9cc7e8", {alpha:.45});
+        var ly = ty + th * 0.4;
+        /* trouble puis dépôt du précipité */
+        if (u.pre){ var age = t - u.tp, sett = Math.min(1, Math.max(0, (age - 0.4) / 2.2));
+          ctx.save(); ctx.beginPath(); ctx.rect(tx - tw / 2 + 2, ly, tw - 4, th - (ly - ty) - 1); ctx.clip();
+          ctx.fillStyle = "rgba(255,255,255," + (0.8 * (1 - sett)).toFixed(2) + ")"; ctx.fillRect(tx - tw / 2, ly, tw, th);
+          ctx.fillStyle = "#fbfbfb"; ctx.strokeStyle = "#aab4c3"; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(tx, ty + th - tw * 0.32, tw * 0.4, tw * 0.3 * sett + 2, 0, 0, 7); ctx.fill(); ctx.stroke(); ctx.restore(); }
+        /* précipité qui se redissout */
+        if (!u.pre && u.td && t - u.td < 1.5){ ctx.fillStyle = "rgba(255,255,255," + (0.7 * (1 - (t - u.td) / 1.5)).toFixed(2) + ")"; ctx.beginPath(); ctx.ellipse(tx, ty + th - tw * 0.32, tw * 0.4, tw * 0.25, 0, 0, 7); ctx.fill(); }
+        /* bulles de CO₂ */
+        if (u.tc && t - u.tc < 3.5) for (var b = 0; b < 10; b++){ var by = ty + th - 12 - (((t - u.tc) * 70 + b * 23) % (th - th * 0.4 - 10)); if (by > ly) S.draw.dot(c, tx - tw / 2 + 7 + (b * 13 % (tw - 14)) + Math.sin(t * 6 + b) * 2, by, 2.2 + (b % 3) * 0.6, "rgba(255,255,255,.95)"); }
+        /* goutte qui tombe */
+        if (u.kind && dt < 0.6){ var gy2 = ty - 30 + dt / 0.6 * (ly - ty + 30); ctx.fillStyle = u.kind === "ba" ? "#7fb4de" : "#f08f87"; ctx.beginPath(); ctx.ellipse(tx, gy2, 4, 6, 0, 0, 7); ctx.fill(); }
+        S.draw.text(c, "Tube " + "ABC"[i], tx, ty - 12, {size:13, color:sel ? P.acc : P.ink});
+        if (st.res) S.draw.label(c, NAMES[st.sol[i]], tx, ty + th + 18, {color:gs[i].value === st.sol[i] ? P.green : P.red, size:12});
+        else S.draw.text(c, "?", tx, ty + th + 18, {size:17, color:"#b8c0cc"});
+      }
+      if (drag) dropper(drag.x, drag.y, drag.r, "", drag.r === "ba" ? "#2f64c8" : "#e2453c", false);
+      /* loupe : ions du tube choisi */
+      var lr = wide ? Math.min(W * 0.19, 100) : 62, lx = wide ? zone + (W - zone) / 2 : W / 2, lyy = wide ? ty + th / 2 + 6 : ty + th + 30 + lr;
+      var tt = L.tubes[st.sel];
+      S.draw.line(c, tt.x + tw / 2, ty + th * 0.7, lx - lr * 0.7, lyy - lr * 0.7, "rgba(15,27,45,.3)", 1.4, [4, 4]);
+      ctx.save(); ctx.beginPath(); ctx.arc(lx, lyy, lr, 0, 7); ctx.fillStyle = "#eaf4fb"; ctx.fill(); ctx.clip();
+      var u2 = st.tube[st.sel], list = [], n;
+      for (n = 0; n < 6; n++) list.push(["Na", n]);
+      if (u2.sol === "Cl") for (n = 0; n < 6; n++) list.push(["Cl", 10 + n]);
+      if (u2.sol === "SO4") for (n = 0; n < 3; n++) list.push(["SO4", 20 + n, "pair", n]);
+      if (u2.sol === "CO3") for (n = 0; n < 3; n++) list.push([u2.carb ? "CO3" : "CO2", 30 + n, "pair", n]);
+      if (u2.ba){ for (n = 0; n < 3; n++) list.push(["Ba", 40 + n, "pair", n]); for (n = 0; n < 6; n++) list.push(["NO3", 50 + n]); }
+      if (u2.hcl){ var nh = u2.tc ? 1 : 4; for (n = 0; n < nh; n++) list.push(["H", 60 + n]); for (n = 0; n < 4; n++) list.push(["Cl", 70 + n]); }
+      var solid = u2.pre ? Math.min(1, (t - u2.tp) / 1.6) : (u2.td && t - u2.td < 1.6 ? 1 - (t - u2.td) / 1.6 : 0);
+      list.forEach(function(p){
+        var s1 = seed(p[1] + 1), s2 = seed(p[1] + 101), hx = lx + (s1 - 0.5) * lr * 1.5, hy = lyy + (s2 - 0.5) * lr * 1.4;
+        var x = hx + Math.sin(t * (0.8 + s1) + p[1]) * 6, y = hy + Math.cos(t * (0.7 + s2) + p[1]) * 6, info = ION[p[0]];
+        if (p[2] === "pair" && solid > 0 && (p[0] === "Ba" || p[0] === "SO4" || p[0] === "CO3" || (p[0] === "CO2" && u2.td))){
+          var isBa = p[0] === "Ba", sp = lr * 0.42, sx = lx + (p[3] - 1) * sp + (isBa ? -sp * 0.27 : sp * 0.27), sy = lyy + lr * 0.6;
+          x = C4.lerp(x, sx, C4.ease(solid)); y = C4.lerp(y, sy, C4.ease(solid));
+        }
+        if (p[0] === "CO2"){ var age = t - u2.tc; if (age > 2.6) return; y = C4.lerp(hy, lyy - lr - 10, Math.min(1, age / 2.4)); ctx.globalAlpha = Math.max(0, 1 - age / 2.6); }
+        C4.ion(c, x, y, info[2] * Math.max(0.85, lr / 85), info[0], "", {}); ctx.globalAlpha = 1;
+      });
+      if (solid > 0.9 && u2.pre){ ctx.fillStyle = "rgba(255,255,255,.35)"; C4.rr(ctx, lx - 52, lyy + lr * 0.62 - 14, 104, 28, 8); ctx.fill(); }
+      ctx.restore();
+      ctx.save(); ctx.strokeStyle = "#5f6b7a"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(lx, lyy, lr, 0, 7); ctx.stroke(); ctx.restore();
+      if (u2.pre && solid > 0.9) S.draw.label(c, "précipité " + (u2.pre === "BaSO4" ? "BaSO₄" : "BaCO₃"), lx, lyy + lr * 0.62 - 26, {color:P.ink, size:11});
+      C4.t(c, "loupe : tube " + "ABC"[st.sel], lx, lyy - lr - 12, {size:12, color:P.acc});
+      /* légende des ions présents */
+      var seen = {}; list.forEach(function(p){ seen[p[0]] = 1; }); if (!u2.tc || t - u2.tc > 2.6) delete seen.CO2;
+      var keys = Object.keys(seen), cols = wide ? 2 : 4, lw = wide ? (W - zone) / 2 - 6 : (W - 20) / 4;
+      keys.forEach(function(key, j){ var ex = (wide ? zone + 8 : 10) + (j % cols) * lw, ey = lyy + lr + 18 + Math.floor(j / cols) * 17; C4.ion(c, ex + 6, ey, 5.5, ION[key][0], "", {}); S.draw.text(c, ION[key][1], ex + 15, ey, {size:11.5, align:"left", color:"#2c3a4e"}); });
+      ro.set(0, "ABC"[st.sel]); ro.set(1, st.tests);
+      var stars = st.tests <= 3 ? 3 : st.tests <= 5 ? 2 : 1;
+      var h = "<b>Observations</b><br>" + [0, 1, 2].map(function(i){ return "<b>" + "ABC"[i] + " :</b> " + (st.log[i].length ? st.log[i].join(" ; ") : "aucun test"); }).join("<br>");
+      if (st.res === "ok") h += "<br>✅ Identification correcte en " + st.tests + " test(s) : " + C4.stars(stars) + (stars < 3 ? " (défi : 3 tests au plus)" : " défi réussi !") + " Le précipité qui reste avec l'acide désigne le sulfate, celui qui disparaît en moussant le carbonate, l'absence de précipité le chlorure.";
       if (st.res === "ko") h += "<br>Pas encore : revois tes observations. Un précipité avec Ba²⁺ exclut le chlorure ; l'acide départage sulfate et carbonate.";
-      out.set(h, st.res === "ok" ? "ok" : "");
+      out.set(h, st.res === "ok" ? "ok" : st.res === "ko" ? "warn" : "");
     });
   }
 });

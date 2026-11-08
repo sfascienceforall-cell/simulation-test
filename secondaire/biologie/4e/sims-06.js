@@ -2,36 +2,121 @@
 SFA.sim({
   id:"b4-c06-bilan", ch:"c06", tag:"Classique · bilan",
   titre:"Respiration ou fermentation : le bilan en ATP",
-  resume:"Un même glucose rapporte ≈ 30 ATP avec dioxygène, 2 ATP sans : règle l'oxygène et compare.",
-  but:"Choisis le nombre de glucoses, la part qui peut être respirée (oxygène disponible) et le type de fermentation. Lis ATP, CO₂, O₂ et rendement.",
-  aRetenir:"La glycolyse (cytoplasme) donne toujours 2 ATP nets par glucose. Avec dioxygène, les mitochondries poursuivent (Krebs, chaîne respiratoire) : ≈ 30 ATP au total et 6 CO₂ + 6 H₂O. Sans dioxygène, le pyruvate subit une fermentation (lactique ou alcoolique) : seulement 2 ATP, et l'énergie reste dans le lactate ou l'éthanol.",
-  piege:"Les manuels comptent souvent 36 ou 38 ATP (anciens comptages) ; les mesures actuelles donnent ≈ 30 à 32 : on utilise 30. Rendement = énergie des ATP (≈ 30,5 kJ/mol) ÷ énergie du glucose (≈ 2 870 kJ/mol).",
+  resume:"Des glucoses entrent dans une cellule : ouvre plus ou moins la vanne de dioxygène et regarde les pyruvates partir vers la mitochondrie (≈ 30 ATP par glucose) ou vers la fermentation (2 ATP).",
+  but:"Glisse la vanne de la bouteille d'O₂ (ou le curseur) pour choisir la part de pyruvates respirés, règle le nombre de glucoses et le type de fermentation, puis lance. Les ATP s'accumulent dans la jauge ; le point rouge suit la droite « ATP en fonction de la part respirée ». Défi : couvre un besoin en ATP avec le moins de glucose possible.",
+  aRetenir:"La glycolyse (cytoplasme) donne toujours 2 ATP nets par glucose et 2 pyruvates. Avec dioxygène, les mitochondries poursuivent (cycle de Krebs, chaîne respiratoire) : ≈ 30 ATP au total, 6 CO₂ libérés et 6 O₂ consommés par glucose. Sans dioxygène, le pyruvate est fermenté (lactate, ou éthanol + CO₂) : 2 ATP seulement, l'énergie reste dans le lactate ou l'éthanol.",
+  piege:"Les manuels comptent souvent 36 ou 38 ATP (anciens comptages) ; les mesures actuelles donnent ≈ 30 à 32 : on utilise 30. Rendement = énergie des ATP (≈ 30,5 kJ/mol) ÷ énergie du glucose (≈ 2 870 kJ/mol). Ici, chaque pyruvate suit une seule voie : la part respirée est arrondie au pyruvate près.",
   build:function(k, S){
-    var c = k.canvas(0, {ratio:1.2});
-    var n = k.slider("Glucose consommé", 1, 10, 1, 1, "molécules");
-    var f = k.slider("Part respirée (dioxygène disponible)", 0, 100, 5, 100, "%");
-    var fe = k.seg("Fermentation de la part restante", [["l","Lactique"],["a","Alcoolique"]], "l");
+    var P = S.draw.palette, c = k.canvas(0, {ratio:1.3}); B4.adapt(c, 1.38, 1.0, 480);
+    var n = k.slider("Glucoses consommés", 1, 10, 1, 3, "molécules", function(){ reset(); });
+    var f = k.slider("Part des pyruvates respirés (vanne d'O₂)", 0, 100, 5, 100, "%", function(){ reset(); });
+    var fe = k.seg("Fermentation de la part restante", [["l","Lactique (muscle)"],["a","Alcoolique (levure)"]], "l", function(){ reset(); });
     var ro = k.readouts(["ATP produits", "CO₂ libéré", "O₂ consommé", "Rendement énergétique"]);
-    var nt = k.note("", "");
+    var nt = k.note("", ""), nd = k.note("", "");
+    var st = {tt:0, ev:[], parts:[], cnt:{atp:0, co2:0, o2:0, lac:0, eth:0}, drag:false, geo:{}, defi:null, score:0, tot:0}, end = 0;
+    function plan(){ var N = n.value, py = 2 * N, rp = Math.round(py * f.value / 100); return {N:N, py:py, rp:rp, fp:py - rp, atp:2 * N + 14 * rp, co2:3 * rp + (fe.value === "a" ? py - rp : 0), o2:3 * rp}; }
+    function spawn(o){ o.t0 = st.tt; st.parts.push(o); }
+    function reset(){
+      st.tt = 0; st.ev = []; st.parts = []; st.cnt = {atp:0, co2:0, o2:0, lac:0, eth:0};
+      var pl = plan(), k2 = 0, acc = 0;
+      for (var i = 0; i < pl.N; i++){ (function(t0, i){
+        st.ev.push([t0, function(){ spawn({k:"glc", a:"in", b:"G", d:0.9}); }]);
+        st.ev.push([t0 + 0.9, function(){ spawn({k:"atp", a:"G", b:"jar", d:1.1, v:2}); }]);
+        for (var q = 0; q < 2; q++){
+          acc += pl.rp / pl.py; var resp = acc >= 0.999; if (resp) acc -= 1;
+          (function(resp, dt){
+            if (resp){
+              st.ev.push([t0 + 0.9 + dt, function(){ spawn({k:"pyr", a:"G", b:"M", d:0.8}); for (var z = 0; z < 3; z++) spawn({k:"o2", a:"bot", b:"M", d:1.2, v:1, dl:z * 0.12}); }]);
+              st.ev.push([t0 + 2.0 + dt, function(){ for (var z = 0; z < 3; z++) spawn({k:"co2", a:"M", b:"out", d:1.3, v:1, dl:z * 0.15}); for (z = 0; z < 7; z++) spawn({k:"atp", a:"M", b:"jar", d:1.1, v:2, dl:z * 0.07}); }]);
+            } else {
+              st.ev.push([t0 + 0.9 + dt, function(){ spawn({k:fe.value === "a" ? "eth" : "lac", a:"G", b:"F", d:0.9, v:1}); if (fe.value === "a") spawn({k:"co2", a:"G", b:"out", d:1.6, v:1}); }]);
+            }
+          })(resp, q * 0.12);
+        }
+      })(i * 0.7, i); }
+      st.ev.sort(function(a, b){ return a[0] - b[0]; }); end = (pl.N - 1) * 0.7 + 4;
+    }
+    reset();
+    k.button("▶ Relancer", function(){ reset(); }, true);
+    k.button("Défi : besoin en ATP", function(){
+      var x = [0, 25, 50, 75, 100][Math.floor(Math.random() * 5)], T = [20, 40, 60, 90, 120, 150][Math.floor(Math.random() * 6)];
+      function atpN(N){ var py = 2 * N; return 2 * N + 14 * Math.round(py * x / 100); }
+      function needF(T){ for (var N = 1; N <= 10; N++) if (atpN(N) >= T) return N; return 99; }
+      var need = needF(T), tries = 0;
+      while ((need > 10 || need < 2) && tries++ < 30){ T = [20, 30, 40, 60, 90, 120, 150, 200][Math.floor(Math.random() * 8)]; need = needF(T); }
+      if (need > 10 || need < 2){ T = atpN(3) - 1; need = needF(T); }
+      f.set(x); st.defi = {x:x, T:T, need:need, done:false}; st.tot++; n.set(1); reset();
+    });
+    var lp = k.loop(function(dt){
+      st.tt += dt; while (st.ev.length && st.ev[0][0] <= st.tt) st.ev.shift()[1]();
+      st.parts = st.parts.filter(function(p){ var a = st.tt - p.t0 - (p.dl || 0); if (a >= p.d){ if (p.k === "atp") st.cnt.atp += p.v; if (p.k === "co2") st.cnt.co2 += 1; if (p.k === "o2") st.cnt.o2 += 1; if (p.k === "lac") st.cnt.lac += 1; if (p.k === "eth") st.cnt.eth += 1; return false; } return true; });
+      k.redraw();
+    });
+    lp.play();
+    c.pointer(function(type, p){
+      var g = st.geo.valve;
+      if (type === "down") st.drag = g && Math.abs(p.y - g.y) < 24 && p.x > g.x0 - 16 && p.x < g.x1 + 16;
+      if ((type === "down" || type === "drag") && st.drag){ var v = Math.round(Math.max(0, Math.min(1, (p.x - g.x0) / (g.x1 - g.x0))) * 20) * 5; if (v !== f.value){ f.set(v); reset(); } k.redraw(); }
+      if (type === "up") st.drag = false;
+    });
+    c.cv.style.touchAction = "pan-y";
+    function hex(x, y, r){ B4.hex(c, x, y, r, "#f7dc7a", "#7a5b12", 1.3); }
     k.draw(function(){
-      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, ff = f.value / 100, N = n.value, resp = N * ff, ferm = N * (1 - ff);
-      var atpG = 2 * N, atpR = 28 * resp, atp = atpG + atpR;
-      var co2 = 6 * resp + (fe.value === "a" ? 2 * ferm : 0), o2 = 6 * resp;
-      var eff = atp * 30.5 / (N * 2870) * 100;
-      var bw = (W - 40) / 3;
-      function box(x, y, w, h, t1, t2, col){ B4.rr(c, x, y, w, h, 8, col, "#13233a", 1.5); B4.txt(c, t1, x + w / 2, y + 16, B4.pal.ink, 12); if (t2) B4.txt(c, t2, x + w / 2, y + 34, B4.pal.ink, 12); }
-      box(W / 2 - 55, 8, 110, 42, "Glucose", S.fmt(N, 0) + " (C₆H₁₂O₆)", "rgba(254,243,199,.8)");
-      S.draw.arrow(c, W / 2, 50, W / 2, 70, B4.pal.ink, 2.5);
-      box(W / 2 - 110, 72, 220, 44, "Glycolyse (cytoplasme)", "+ " + S.fmt(atpG, 0) + " ATP · " + S.fmt(2 * N, 0) + " pyruvates", "rgba(219,234,254,.8)");
-      S.draw.arrow(c, W * 0.3, 116, W * 0.2, 140, B4.pal.green, 2.5); S.draw.arrow(c, W * 0.7, 116, W * 0.8, 140, B4.pal.red, 2.5);
-      B4.txt(c, "avec O₂ (" + S.fmt(f.value, 0) + " %)", W * 0.17, 132, B4.pal.green, 11); B4.txt(c, "sans O₂ (" + S.fmt(100 - f.value, 0) + " %)", W * 0.83, 132, B4.pal.red, 11);
-      box(8, 142, W * 0.46, 76, "Mitochondrie", "+ " + S.fmt(atpR, 0) + " ATP", "rgba(220,252,231,.8)"); B4.txt(c, S.fmt(6 * resp, 0) + " CO₂ · " + S.fmt(6 * resp, 0) + " O₂ consommé", 8 + W * 0.23, 196, B4.pal.ink, 11);
-      box(W * 0.52, 142, W * 0.46 - 8, 76, fe.value === "l" ? "Lactate" : "Éthanol + CO₂", "+ 0 ATP", "rgba(254,226,226,.8)"); B4.txt(c, fe.value === "l" ? S.fmt(2 * ferm, 0) + " lactates" : S.fmt(2 * ferm, 0) + " éthanols, " + S.fmt(2 * ferm, 0) + " CO₂", W * 0.52 + (W * 0.46 - 8) / 2, 196, B4.pal.ink, 11);
-      var ax = S.draw.axes(c, {x0:0, x1:100, y0:0, y1:N * 32, xl:"part respirée (%)", yl:"ATP", stepX:25, stepY:N * 10, t:244, b:30, l:44});
-      S.draw.fn(c, ax, function(x){ return N * (2 + 28 * x / 100); }, B4.pal.acc, 2.6);
-      S.draw.dot(c, ax.X(f.value), ax.Y(atp), 7, B4.pal.red);
-      ro.set(0, S.fmt(atp, 0) + " ATP"); ro.set(1, S.fmt(co2, 0)); ro.set(2, S.fmt(o2, 0)); ro.set(3, S.fmt(eff, 0) + " %");
-      nt.set(f.value === 0 ? "Fermentation seule : 2 ATP par glucose (≈ 2 % de l'énergie récupérée). Il faut consommer beaucoup plus de glucose pour la même énergie." : f.value === 100 ? "Respiration complète : ≈ 30 ATP par glucose (≈ 32 % de l'énergie du glucose dans l'ATP), le reste part en chaleur." : "Régime mixte : " + S.fmt(resp, 1) + " glucose respiré(s), " + S.fmt(ferm, 1) + " fermenté(s). Même glucose, bilan bien meilleur quand le dioxygène est disponible.", f.value === 100 ? "ok" : "");
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, wide = W >= 480, sh = H * 0.58, fs = wide ? 10.5 : 9.5, pl = plan();
+      /* bouteille d'O₂ couchée + vanne à glisser */
+      var tw = wide ? 96 : 70, bx = 10, by = 8, bh = 28, bw = tw, fo = f.value / 100;
+      S.draw.rrect(c, bx, by, tw, bh, 13); var bg = ctx.createLinearGradient(0, by, 0, by + bh); bg.addColorStop(0, "#9fc6ee"); bg.addColorStop(1, "#4f86c6"); ctx.fillStyle = bg; ctx.fill();
+      ctx.fillStyle = "#3d4f6b"; ctx.fillRect(bx + tw, by + 9, 10, 10); S.draw.text(c, "O₂", bx + tw / 2, by + bh / 2, {size:wide ? 14 : 12, color:"#fff", weight:800});
+      var vx0 = bx + tw + 22, vx1 = Math.min(W * 0.66, vx0 + (wide ? 190 : 130)), vy = by + 10; st.geo.valve = {x0:vx0, x1:vx1, y:vy};
+      S.draw.rrect(c, vx0, vy - 4, vx1 - vx0, 8, 4); ctx.fillStyle = "#e3e7ed"; ctx.fill(); S.draw.rrect(c, vx0, vy - 4, (vx1 - vx0) * fo, 8, 4); ctx.fillStyle = P.blue; ctx.fill();
+      S.draw.dot(c, vx0 + (vx1 - vx0) * fo, vy, 9, st.drag ? P.red : "#13233a");
+      S.draw.text(c, "vanne O₂ ↔ " + f.value + " %", vx0, vy + 17, {size:fs, color:P.blue, align:"left"});
+      /* cellule */
+      var cx0 = 10, cx1 = W - 10, cy0 = 52, cy1 = sh - 40;
+      S.draw.rrect(c, cx0, cy0, cx1 - cx0, cy1 - cy0, 30); var cg = ctx.createLinearGradient(0, cy0, 0, cy1); cg.addColorStop(0, "#fff6ee"); cg.addColorStop(1, "#fde9e0"); ctx.fillStyle = cg; ctx.fill(); ctx.strokeStyle = "#c97b63"; ctx.lineWidth = 2.5; ctx.stroke();
+      var X = function(u){ return cx0 + u * (cx1 - cx0); }, Y = function(v){ return cy0 + v * (cy1 - cy0); };
+      var mo = pl.rp > 0, mx = X(0.56), my = Y(0.12), mw = (cx1 - cx0) * 0.4, mh = (cy1 - cy0) * 0.5;
+      S.draw.rrect(c, mx, my, mw, mh, mh / 2); ctx.fillStyle = mo ? "#bfe7cc" : "#dfe3e8"; ctx.fill(); ctx.strokeStyle = mo ? "#2a7a55" : "#8a95a3"; ctx.lineWidth = 2.5; ctx.stroke();
+      ctx.save(); ctx.strokeStyle = mo ? "#2a7a55" : "#8a95a3"; ctx.lineWidth = 1.6; for (var q = 0; q < 4; q++){ var xx = mx + mw * (0.22 + q * 0.18); ctx.beginPath(); ctx.moveTo(xx, my + mh - 4); ctx.lineTo(xx, my + mh * 0.4); ctx.quadraticCurveTo(xx + 4, my + mh * 0.32, xx + 8, my + mh * 0.4); ctx.lineTo(xx + 8, my + mh - 4); ctx.stroke(); } ctx.restore();
+      S.draw.label(c, "mitochondrie", mx + mw / 2, my + mh + 10, {color:mo ? P.green : P.grey, size:fs - 0.5});
+      S.draw.label(c, "glycolyse", X(0.22), Y(0.3) - 18, {color:"#1f4b9e", size:fs - 0.5});
+      S.draw.label(c, fe.value === "a" ? "fermentation alcoolique" : "fermentation lactique", X(0.3), Y(0.92) - 4, {color:P.pink, size:fs - 0.5});
+      S.draw.text(c, "glucose →", cx0 + 4, Y(0.62), {size:fs - 0.5, color:"#8a6d1a", align:"left"});
+      S.draw.text(c, "CO₂ ↑", cx1 - 6, cy0 - 10, {size:fs - 0.5, color:"#5f6b7a", align:"right"});
+      /* jauge d'ATP */
+      var jx = cx0, jw = cx1 - cx0, jy = sh - 34;
+      S.draw.rrect(c, jx, jy, jw, 14, 7); ctx.fillStyle = "#eef1f5"; ctx.fill();
+      var fa = Math.min(1, st.cnt.atp / Math.max(30, pl.N * 30)); if (fa > 0){ S.draw.rrect(c, jx, jy, Math.max(10, jw * fa), 14, 7); ctx.fillStyle = "#f4c542"; ctx.fill(); }
+      S.draw.text(c, "ATP : " + st.cnt.atp + " / " + S.fmt(pl.N * 30, 0) + " possibles avec O₂", jx + 8, jy + 7, {size:fs - 0.5, color:P.ink, align:"left", weight:800});
+      var POS = {in:[cx0 - 4, Y(0.62)], G:[X(0.22), Y(0.4)], M:[mx + mw * 0.3, my + mh * 0.5], F:[X(0.28), Y(0.78)], jar:[jx + jw * Math.max(0.05, fa), jy + 7], bot:[bx + tw + 10, by + 14], out:[cx1 - 6, 4]};
+      /* produits accumulés */
+      for (q = 0; q < Math.min(st.cnt.lac + st.cnt.eth, 40); q++){ var rx = X(0.08 + (q % 10) * 0.04), ry = Y(0.7 + Math.floor(q / 10) * 0.07); S.draw.dot(c, rx, ry, 3.4, st.cnt.eth ? "#9c6b2e" : P.pink); }
+      /* particules */
+      st.parts.forEach(function(pp){
+        var a = st.tt - pp.t0 - (pp.dl || 0); if (a < 0) return; var u = B4.ease(a / pp.d), A0 = POS[pp.a], B0 = POS[pp.b], x = A0[0] + (B0[0] - A0[0]) * u, y = A0[1] + (B0[1] - A0[1]) * u - Math.sin(u * 3.1416) * 12;
+        if (pp.k === "glc") hex(x, y, 8);
+        else if (pp.k === "pyr") S.draw.dot(c, x, y, 5, P.orange);
+        else if (pp.k === "atp"){ S.draw.glow(c, x, y, 10, P.yellow, 0.7); S.draw.dot(c, x, y, 4.2, "#e8b923"); }
+        else if (pp.k === "o2"){ S.draw.dot(c, x, y, 4.2, P.blue); }
+        else if (pp.k === "co2"){ S.draw.dot(c, x, y, 4.2, "#8a95a3"); }
+        else S.draw.dot(c, x, y, 4.2, pp.k === "eth" ? "#9c6b2e" : P.pink);
+      });
+      var lx = cx0; [["#e8b923", "ATP"], [P.orange, "pyruvate"], [P.blue, "O₂"], ["#8a95a3", "CO₂"], [fe.value === "a" ? "#9c6b2e" : P.pink, fe.value === "a" ? "éthanol" : "lactate"]].forEach(function(it){ S.draw.dot(c, lx + 4, sh - 9, 4, it[0]); S.draw.text(c, it[1], lx + 11, sh - 9, {size:fs - 0.5, color:"#2c3a4e", align:"left", weight:600}); ctx.font = "600 " + (fs - 0.5) + "px Mulish, sans-serif"; lx += ctx.measureText(it[1]).width + 24; });
+      /* droite ATP = N (2 + 28 x) */
+      var N = pl.N, ymax = Math.max(60, Math.ceil(N * 30 / 20) * 20);
+      var ax = S.draw.axes(c, {x0:0, x1:100, y0:0, y1:ymax, xl:"part des pyruvates respirés (%)", yl:"ATP pour " + N + " glucose" + (N > 1 ? "s" : ""), stepX:25, t:sh + 26, l:44, b:32});
+      S.draw.area(c, ax, function(x){ return N * (2 + 28 * x / 100); }, 0, 100, P.amber, 0.1);
+      S.draw.fn(c, ax, function(x){ return N * (2 + 28 * x / 100); }, P.amber, 2.8);
+      S.draw.text(c, "fermentation seule : " + 2 * N, ax.X(1) + 4, ax.Y(2 * N) - 10, {size:9.5, color:P.pink, align:"left"});
+      S.draw.text(c, "respiration : " + 30 * N, ax.X(100) - 4, ax.Y(30 * N) + 12, {size:9.5, color:P.green, align:"right"});
+      if (st.defi) { S.draw.line(c, ax.L, ax.Y(st.defi.T), ax.R, ax.Y(st.defi.T), P.red, 1.5, [5, 4]); S.draw.text(c, "besoin " + st.defi.T + " ATP", ax.L + 6, ax.Y(st.defi.T) - 9, {size:9.5, color:P.red, align:"left"}); }
+      S.draw.dot(c, ax.X(100 * pl.rp / pl.py), ax.Y(pl.atp), 7.5, P.red);
+      var eff = pl.atp * 30.5 / (N * 2870) * 100;
+      ro.set(0, pl.atp + " ATP"); ro.set(1, pl.co2 + " CO₂"); ro.set(2, pl.o2 + " O₂"); ro.set(3, S.fmt(eff, 0) + " %");
+      nt.set("<b>Bilan pour " + N + " glucose" + (N > 1 ? "s" : "") + ".</b> Glycolyse : " + 2 * N + " ATP et " + pl.py + " pyruvates ; " + pl.rp + " respirés (" + 14 * pl.rp + " ATP de plus, " + pl.o2 + " O₂ consommés, " + 3 * pl.rp + " CO₂) et " + pl.fp + " fermentés (" + (fe.value === "a" ? pl.fp + " éthanols + " + pl.fp + " CO₂" : pl.fp + " lactates") + ", 0 ATP de plus). Total " + pl.atp + " ATP, soit " + S.fmt(pl.atp / N, 1) + " par glucose et " + S.fmt(eff, 0) + " % de l'énergie du glucose.", pl.fp === 0 ? "ok" : "");
+      if (st.defi){ var d = st.defi, okd = f.value === d.x && pl.atp >= d.T && N === d.need; if (okd && !d.done){ d.done = true; st.score++; }
+        nd.set("<b>Défi.</b> Avec " + d.x + " % des pyruvates respirés, il faut au moins " + d.T + " ATP. Trouve le <b>plus petit</b> nombre de glucoses. " + (d.done ? "<b>Réussi : " + d.need + " glucose" + (d.need > 1 ? "s" : "") + "</b> (" + S.fmt(2 + 28 * d.x / 100, 0) + " ATP par glucose)." : f.value !== d.x ? "Remets la vanne à " + d.x + " %." : pl.atp < d.T ? "Encore " + (d.T - pl.atp) + " ATP manquants." : "Assez d'ATP, mais peut-on utiliser moins de glucose ?") + " Score : " + st.score + " / " + st.tot + ".", d.done ? "ok" : "warn"); }
+      else nd.set("Défi : couvre un besoin en ATP avec le moins de glucose possible (bouton « Défi : besoin en ATP »).", "");
     });
   }
 });

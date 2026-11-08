@@ -9,6 +9,32 @@ function vl(c, ax, x, col, dash, w){ D.line(c, ax.X(x), ax.T, ax.X(x), ax.B, col
 function hl(c, ax, y, col, dash, w){ D.line(c, ax.L, ax.Y(y), ax.R, ax.Y(y), col, w || 1.5, dash || [5, 4]); }
 function curve(c, ax, fx, fy, t0, t1, col, w, dash, n){ var ctx = c.ctx; n = n || 500; ctx.save(); ctx.beginPath(); ctx.rect(ax.L, ax.T - 2, ax.R - ax.L, ax.B - ax.T + 4); ctx.clip(); ctx.strokeStyle = col; ctx.lineWidth = w || 2.4; if (dash) ctx.setLineDash(dash); ctx.beginPath(); var st = false; for (var i = 0; i <= n; i++){ var t = t0 + (t1 - t0) * i / n, x = fx(t), y = fy(t); if (!isFinite(x) || !isFinite(y)){ st = false; continue; } if (!st){ ctx.moveTo(ax.X(x), ax.Y(y)); st = true; } else ctx.lineTo(ax.X(x), ax.Y(y)); } ctx.stroke(); ctx.restore(); }
 function fillArea(c, ax, f, g, a, b, col){ var ctx = c.ctx, n = 240; ctx.save(); ctx.beginPath(); ctx.rect(ax.L, ax.T, ax.R - ax.L, ax.B - ax.T); ctx.clip(); ctx.fillStyle = col; ctx.beginPath(); for (var i = 0; i <= n; i++){ var x = a + (b - a) * i / n; ctx.lineTo(ax.X(x), ax.Y(f(x))); } for (i = n; i >= 0; i--){ x = a + (b - a) * i / n; ctx.lineTo(ax.X(x), ax.Y(g(x))); } ctx.closePath(); ctx.fill(); ctx.restore(); }
+/* ---- aides de la refonte (novembre 2026) : dessin et graphe côte à côte (empilés sur téléphone), repère dans une boîte, poignées ---- */
+function lay2(c, wide, tall){ var r0 = c.resize; c.resize = function(){ c.ratio = (c.cv.parentNode && c.cv.parentNode.clientWidth < 560) ? tall : wide; r0(); }; c.resize(); }
+function split2(c, f, g){ var W = c.W, H = c.H; if (W < 560){ var h = Math.round(H * (g || f)); return [{x:0, y:0, w:W, h:h}, {x:0, y:h, w:W, h:H - h}]; } var w = Math.round(W * f); return [{x:0, y:0, w:w, h:H}, {x:w, y:0, w:W - w, h:H}]; }
+function axIn(c, b, o){ var q = {}, key; for (key in o) q[key] = o[key]; q.l = b.x + (o.l || 46); q.r = c.W - b.x - b.w + (o.r || 14); q.t = b.y + (o.t || 16); q.b = c.H - b.y - b.h + (o.b || 34); return D.axes(c, q); }
+function rnd(seed){ var s = seed >>> 0; return function(){ s = (s + 0x6D2B79F5) >>> 0; var t = s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function hnd(c, x, y, col, txt){ if (!isFinite(x) || !isFinite(y)) return; var ctx = c.ctx; D.glow(c, x, y, 20, col, 0.3); ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, 12, 0, 7); ctx.stroke(); ctx.restore(); D.dot(c, x, y, 7, col); if (txt) D.text(c, txt, x + 15, y - 15, {size:10.5, color:col, align:"left", weight:700, halo:true}); }
+function frame(c, b, title, col){ D.panel(c, b.x + 4, b.y + 4, b.w - 8, b.h - 8, {shadow:false, fill:"rgba(248,250,252,.9)", title:title, titleColor:col}); }
+/* repère dans une boîte avec graduations choisies : o.xt / o.yt = [[valeur, "texte"], …] */
+function axBox(c, b, o){
+  var L = b.x + (o.l || 40), R = b.x + b.w - (o.r || 12), T = b.y + (o.t || 14), B = b.y + b.h - (o.b || 28), ctx = c.ctx;
+  var ax = {x0: o.x0, x1: o.x1, y0: o.y0, y1: o.y1, L: L, R: R, T: T, B: B};
+  ax.X = function(x){ return L + (x - o.x0) / (o.x1 - o.x0) * (R - L); }; ax.Y = function(y){ return B - (y - o.y0) / (o.y1 - o.y0) * (B - T); };
+  ax.ix = function(px){ return o.x0 + (px - L) / (R - L) * (o.x1 - o.x0); }; ax.iy = function(py){ return o.y0 + (B - py) / (B - T) * (o.y1 - o.y0); };
+  var y0p = (!o.xb && o.y0 <= 0 && o.y1 >= 0) ? ax.Y(0) : B, x0p = (o.x0 <= 0 && o.x1 >= 0) ? ax.X(0) : L;
+  ctx.save(); ctx.lineWidth = 1; ctx.strokeStyle = "#eef1f5"; ctx.beginPath();
+  (o.xt || []).forEach(function(t){ var p = Math.round(ax.X(t[0])) + 0.5; ctx.moveTo(p, T); ctx.lineTo(p, B); });
+  (o.yt || []).forEach(function(t){ var p = Math.round(ax.Y(t[0])) + 0.5; ctx.moveTo(L, p); ctx.lineTo(R, p); }); ctx.stroke();
+  ctx.strokeStyle = "#a3adba"; ctx.lineWidth = 1.25; ctx.beginPath(); ctx.moveTo(L, y0p); ctx.lineTo(R, y0p); ctx.moveTo(x0p, T); ctx.lineTo(x0p, B); ctx.stroke();
+  ctx.font = "600 10.5px Mulish, system-ui, sans-serif"; ctx.fillStyle = "#7b8694"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+  (o.xt || []).forEach(function(t){ if (t[1]) ctx.fillText(t[1], ax.X(t[0]), Math.min(B, y0p) + 5); });
+  ctx.textAlign = "right"; ctx.textBaseline = "middle"; (o.yt || []).forEach(function(t){ if (t[1]) ctx.fillText(t[1], x0p - 5, ax.Y(t[0])); });
+  ctx.font = "700 11px Mulish, system-ui, sans-serif"; ctx.fillStyle = "#2c3a4e";
+  if (o.xl){ ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText(o.xl, R, y0p - 4); }
+  if (o.yl){ ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText(o.yl, x0p + 6, T); }
+  ctx.restore(); return ax;
+}
 /* Mathématiques BA1 · chapitre 3 : dérivées et applications */
 /* 1 ---- sécante -> tangente ---- */
 var D1 = {
@@ -94,38 +120,77 @@ SFA.sim({
 SFA.sim({
   id: "um-c03-optimisation", ch: "c03", tag: "Optimisation",
   titre: "Optimiser : la boîte de volume maximal et la canette de surface minimale",
-  resume: "On coupe des carrés aux coins d'un carton ; ou on dessine une canette de 33 cL. Où V est-il maximal ? où S est-elle minimale ? Là où la dérivée s'annule.",
-  but: "Choisis le problème, déplace la variable (x ou r) et regarde la valeur de la grandeur à optimiser. Vérifie que le maximum (minimum) correspond bien à la dérivée nulle.",
-  aRetenir: "Méthode : (1) exprimer la grandeur en fonction d'une seule variable ; (2) préciser le domaine ; (3) dériver et résoudre f′ = 0 ; (4) vérifier qu'il s'agit d'un max/min (signe de f′, ou f″) et comparer aux bords ; (5) conclure avec les unités.",
-  piege: "Il faut aussi regarder les bords du domaine : un maximum peut être atteint à une extrémité. Ici V = 0 aux deux bords, donc le maximum est intérieur.",
+  resume: "Découpe les coins d'un carton 30 × 20 cm et plie-le en boîte ; ou dessine une canette de 33 cL. Glisse la découpe, observe la pente de la tangente, et trouve l'optimum à la main avant de le vérifier par f′ = 0.",
+  but: "Boîte : glisse le coin rouge du carton pour choisir la taille x des carrés découpés, puis « Plier » pour voir la boîte. Canette : glisse le bord de la canette pour changer son rayon (la hauteur s'ajuste pour garder 330 cm³). Défi : trouve l'optimum à 1 cm³ (ou 0,5 cm²) près, en t'aidant de la pente de la tangente.",
+  aRetenir: "Méthode : (1) exprimer la grandeur en fonction d'une seule variable ; (2) préciser le domaine ; (3) dériver et résoudre f′ = 0 ; (4) vérifier qu'il s'agit d'un max/min (signe de f′, ou f″) et comparer aux bords ; (5) conclure avec les unités. Boîte : V(x) = x(30 − 2x)(20 − 2x), x* = (25 − 5√7)/3 ≈ 3,92 cm. Canette : S(r) = 2πr² + 660/r, r* = (165/π)^(1/3) ≈ 3,74 cm et h = 2r.",
+  piege: "Il faut aussi regarder les bords du domaine : un maximum peut être atteint à une extrémité. Ici V = 0 aux deux bords, donc le maximum est intérieur. Et la deuxième racine de V′ (≈ 12,74 cm) est hors du domaine ]0 ; 10[.",
   build: function(k, S){
-    var c = k.canvas(390), sc = k.seg("Problème", [["box", "Boîte (carton 30 × 20 cm)"], ["can", "Canette 33 cL"]], "box", function(v){ setr(v); });
-    var xv = k.slider("Variable", 0.5, 9.5, 0.01, 2, "cm");
-    function setr(v){ if (v === "box"){ xv.el.min = 0.1; xv.el.max = 9.9; xv.set(2); } else { xv.el.min = 1.5; xv.el.max = 7; xv.set(2.5); } }
-    var ro = k.readouts(["Variable", "Grandeur", "Optimum", "Grandeur à l'optimum"]), nt = k.note("", "");
+    var c = k.canvas(0, {ratio: 0.66}); lay2(c, 0.66, 1.25);
+    var sc = k.seg("Problème", [["box", "Boîte (carton 30 × 20 cm)"], ["can", "Canette 33 cL"]], "box", function(v){ setr(v); won = false; });
+    var xv = k.slider("Variable", 0.1, 9.9, 0.01, 2, "cm");
+    function setr(v){ if (v === "box"){ xv.el.min = 0.2; xv.el.max = 9.8; xv.set(2); } else { xv.el.min = 1.5; xv.el.max = 7; xv.set(2.2); } fold = 0; tgt = 0; }
+    var fold = 0, tgt = 0, won = false, wins = 0, lp = k.loop(function(dt){ var d = tgt - fold; if (Math.abs(d) < 0.01){ fold = tgt; lp.pause(); } else fold += Math.sign(d) * Math.min(Math.abs(d), dt * 0.9); k.redraw(); });
+    k.button("Plier / déplier la boîte", function(){ if (sc.value !== "box") return; tgt = tgt > 0.5 ? 0 : 1; lp.play(); }, true);
+    var so = k.toggle("Montrer l'optimum théorique (f′ = 0)", false);
+    var ro = k.readouts(["Variable", "Grandeur", "Pente de la tangente f′", "Écart à l'optimum"]), nt = k.note("", "");
+    var Pj = null, G = null, grab = null; c.cv.style.touchAction = "none";
+    c.pointer(function(t, p){
+      if (t === "down"){ grab = null; if (Pj && Math.hypot(Pj.hx - p.x, Pj.hy - p.y) < 26) grab = "h"; else if (G && p.y > G.T && p.y < G.B && p.x > G.L && p.x < G.R) grab = "g"; if (grab === "h" && sc.value === "box" && fold > 0){ tgt = 0; lp.play(); } }
+      if ((t === "down" || t === "drag") && grab){ var v;
+        if (grab === "g") v = G.ix(p.x);
+        else if (sc.value === "box"){ var q = Pj.inv(p.x, p.y); v = (q[0] + q[1]) / 2; }
+        else v = (p.x - Pj.cx) / Pj.sk;
+        xv.set(Math.round(cl(v, +xv.el.min, +xv.el.max) * 100) / 100); k.redraw(); }
+      if (t === "up") grab = null;
+      if (t === "move") c.cv.style.cursor = Pj && Math.hypot(Pj.hx - p.x, Pj.hy - p.y) < 26 ? "grab" : "default";
+    });
     k.draw(function(){
-      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, box = sc.value === "box", X = xv.value, split = Math.min(W * 0.42, 230);
-      var gA = {x0: 0, x1: 0};
+      c.clear(); var ctx = c.ctx, box = sc.value === "box", X = xv.value, bx = split2(c, 0.5, 0.5), q = bx[0];
+      var f, df, xo, fo, rng0, ylo, yhi, ylab, unit;
       if (box){
-        var V = function(x){ return x * (30 - 2 * x) * (20 - 2 * x); }, xo = (200 - Math.sqrt(40000 - 28800)) / 24, s = (split - 24) / 34, ox = 12, oy = 40;
-        ctx.fillStyle = "#eaf0fb"; ctx.fillRect(ox, oy, 30 * s, 20 * s); ctx.strokeStyle = "#8aa0cc"; ctx.lineWidth = 1.6; ctx.strokeRect(ox, oy, 30 * s, 20 * s);
-        [[0, 0], [30 - X, 0], [0, 20 - X], [30 - X, 20 - X]].forEach(function(q){ ctx.fillStyle = "rgba(180,35,24,.35)"; ctx.fillRect(ox + q[0] * s, oy + q[1] * s, X * s, X * s); ctx.strokeStyle = P.red; ctx.strokeRect(ox + q[0] * s, oy + q[1] * s, X * s, X * s); });
-        lab(c, "30 cm", ox + 15 * s, oy - 12, P.ink, 12); lab(c, "20", ox - 2, oy + 10 * s, P.ink, 12, "right"); lab(c, "x = " + F(X, 2) + " cm", ox + 15 * s, oy + 10 * s, P.red, 13);
-        var bx = ox + 6, by = oy + 20 * s + 36, bw = (30 - 2 * X) * s * 0.8, bd = (20 - 2 * X) * s * 0.45, bh = X * s * 1.1; ctx.fillStyle = "rgba(30,63,143,.12)"; ctx.strokeStyle = P.acc; ctx.lineWidth = 2;
-        var x0 = bx + 20, y0 = by + 10; ctx.beginPath(); ctx.rect(x0, y0 + bd * 0.3, bw, bh); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x0, y0 + bd * 0.3); ctx.lineTo(x0 + bd * 0.6, y0 - bd * 0.2); ctx.lineTo(x0 + bw + bd * 0.6, y0 - bd * 0.2); ctx.lineTo(x0 + bw, y0 + bd * 0.3); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x0 + bw, y0 + bd * 0.3); ctx.lineTo(x0 + bw + bd * 0.6, y0 - bd * 0.2); ctx.lineTo(x0 + bw + bd * 0.6, y0 - bd * 0.2 + bh); ctx.lineTo(x0 + bw, y0 + bd * 0.3 + bh); ctx.closePath(); ctx.fill(); ctx.stroke();
-        lab(c, "boîte : " + F(30 - 2 * X, 1) + " × " + F(20 - 2 * X, 1) + " × " + F(X, 1), x0 + bw / 2, H - 16, P.acc, 12);
-        var ax = D.axes(c, {x0: 0, x1: 10, y0: 0, y1: 1300, stepX: 2, stepY: 250, l: split + 40, xl: "x (cm)", yl: "V (cm³)"}); D.fn(c, ax, V, P.acc, 3); vl(c, ax, X, "#c2c9d3"); pt(c, ax, xo, V(xo), P.green, 6); pt(c, ax, X, V(X), P.red, 6);
-        ro.set(0, F(X, 2) + " cm"); ro.set(1, "V = " + F(V(X), 1) + " cm³"); ro.set(2, "x* = " + F(xo, 3) + " cm"); ro.set(3, F(V(xo), 1) + " cm³");
-        nt.set("V(x) = x(30 − 2x)(20 − 2x) ; V′(x) = 12x² − 200x + 600 = 0 ⇒ x = (25 ± 5√7)/3. On garde x = (25 − 5√7)/3 ≈ " + F(xo, 3) + " cm ; l'autre racine (≈ 12,74 cm) est hors du domaine ]0 ; 10[.", "");
+        f = function(x){ return x * (30 - 2 * x) * (20 - 2 * x); }; df = function(x){ return 12 * x * x - 200 * x + 600; }; xo = (25 - 5 * Math.sqrt(7)) / 3; rng0 = [0, 10]; ylo = 0; yhi = 1300; ylab = "V (cm³)"; unit = "cm³";
+        /* carton plié en perspective cavalière (axe de profondeur vers le haut à droite) */
+        var th = fold * PI / 2, Lb = 30 - 2 * X, Wb = 20 - 2 * X, s = Math.min((q.w - 30) / 40, (q.h - 40) / (12 + 10 * fold + 1)), ox = q.x + 16 + (q.w - 32 - 40 * s) / 2, oy = q.y + q.h - 24;
+        var P3 = function(x, y, z){ return [ox + s * (x + 0.45 * y), oy - s * (z + 0.6 * y)]; };
+        Pj = {inv: function(px, py){ var y = (oy - py) / (0.6 * s), x = (px - ox) / s - 0.45 * y; return [x, y]; }};
+        var cth = Math.cos(th), sth = Math.sin(th), card = "#d9b27a", edge = "#8a6233";
+        function quad(pts, fill){ ctx.beginPath(); pts.forEach(function(p3, i){ var pp = P3(p3[0], p3[1], p3[2]); i ? ctx.lineTo(pp[0], pp[1]) : ctx.moveTo(pp[0], pp[1]); }); ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); ctx.strokeStyle = edge; ctx.lineWidth = 1.3; ctx.stroke(); }
+        var x0 = X, x1 = 30 - X, y0 = X, y1 = 20 - X;
+        if (fold < 0.02){ [[0, 0], [x1, 0], [0, y1], [x1, y1]].forEach(function(o){ quad([[o[0], o[1], 0], [o[0] + X, o[1], 0], [o[0] + X, o[1] + X, 0], [o[0], o[1] + X, 0]], "rgba(192,50,29,.22)"); }); }
+        quad([[x0, y1, 0], [x1, y1, 0], [x1, y1 + X * cth, X * sth], [x0, y1 + X * cth, X * sth]], "#c9a067");
+        quad([[x0, y0, 0], [x0, y1, 0], [x0 - X * cth, y1, X * sth], [x0 - X * cth, y0, X * sth]], "#c39a60");
+        quad([[x0, y0, 0], [x1, y0, 0], [x1, y1, 0], [x0, y1, 0]], card);
+        quad([[x1, y0, 0], [x1, y1, 0], [x1 + X * cth, y1, X * sth], [x1 + X * cth, y0, X * sth]], "#e2be8b");
+        quad([[x0, y0, 0], [x1, y0, 0], [x1, y0 - X * cth, X * sth], [x0, y0 - X * cth, X * sth]], "#e8c897");
+        if (fold < 0.02){ var a1 = P3(0, 0, 0), a2 = P3(30, 0, 0); D.text(c, "30 cm", (a1[0] + a2[0]) / 2, a1[1] + 12, {size: 10.5, color: edge}); var b2 = P3(0, 20, 0); D.text(c, "20 cm", (a1[0] + b2[0]) / 2 - 18, (a1[1] + b2[1]) / 2, {size: 10.5, color: edge}); }
+        var hp = P3(X, X, X * sth); Pj.hx = hp[0]; Pj.hy = hp[1]; if (fold < 0.02) hnd(c, hp[0], hp[1], P.red, "x = " + F(X, 2) + " cm");
+        else D.label(c, F(Lb, 1) + " × " + F(Wb, 1) + " × " + F(X, 1) + " cm", q.x + q.w / 2, q.y + 14, {color: edge});
       } else {
-        var V0 = 330, Sf = function(r){ return 2 * PI * r * r + 2 * V0 / r; }, ro2 = Math.pow(V0 / (2 * PI), 1 / 3), r = X, h = V0 / (PI * r * r), sk = Math.min((H - 100) / 14, (split - 24) / 9);
-        var cx = split / 2 + 4, cy = H / 2 + 10, rr = r * sk, hh = Math.min(h * sk, H - 60); ctx.fillStyle = "rgba(30,63,143,.10)"; ctx.strokeStyle = P.acc; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.rect(cx - rr, cy - hh / 2, 2 * rr, hh); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.ellipse(cx, cy - hh / 2, rr, rr * 0.28, 0, 0, 7); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.ellipse(cx, cy + hh / 2, rr, rr * 0.28, 0, 0, Math.PI); ctx.stroke();
-        lab(c, "r = " + F(r, 2) + " cm", cx, cy - hh / 2 - 22, P.red, 12); lab(c, "h = " + F(h, 2) + " cm", cx, cy + hh / 2 + 28, P.acc, 12);
-        var ax = D.axes(c, {x0: 1, x1: 7, y0: 150, y1: 700, stepX: 1, stepY: 100, l: split + 40, xl: "r (cm)", yl: "S (cm²)"}); D.fn(c, ax, Sf, P.acc, 3); vl(c, ax, X, "#c2c9d3"); pt(c, ax, ro2, Sf(ro2), P.green, 6); pt(c, ax, X, Sf(X), P.red, 6);
-        ro.set(0, "r = " + F(r, 2) + " cm"); ro.set(1, "S = " + F(Sf(r), 1) + " cm²"); ro.set(2, "r* = " + F(ro2, 3) + " cm (h = 2r)"); ro.set(3, F(Sf(ro2), 1) + " cm²");
-        nt.set("Volume fixé V = πr²h = 330 cm³ ⇒ h = 330/(πr²) ; S(r) = 2πr² + 2·330/r ; S′(r) = 4πr − 660/r² = 0 ⇒ r = (330/(2π))^(1/3) ≈ " + F(ro2, 3) + " cm et h = 2r. La canette optimale est aussi haute que large.", "");
+        var V0 = 330, r = X, h = V0 / (PI * r * r);
+        f = function(rr){ return 2 * PI * rr * rr + 2 * V0 / rr; }; df = function(rr){ return 4 * PI * rr - 2 * V0 / (rr * rr); }; xo = Math.pow(V0 / (2 * PI), 1 / 3); rng0 = [1, 7.5]; ylo = 150; yhi = 700; ylab = "S (cm²)"; unit = "cm²";
+        var sk = Math.min(30, (q.w - 120) / (2 * r), (q.h - 60) / (h + 0.6 * r)), cx = q.x + q.w / 2, rr = r * sk, hh = h * sk, top = q.y + (q.h - hh) / 2 + 6, ey = Math.max(4, rr * 0.25);
+        Pj = {cx: cx, sk: sk, hx: cx + rr, hy: top + hh * 0.5};
+        var gr = ctx.createLinearGradient(cx - rr, 0, cx + rr, 0); gr.addColorStop(0, "#9aa5b4"); gr.addColorStop(0.35, "#eef2f6"); gr.addColorStop(0.6, "#c7cfd9"); gr.addColorStop(1, "#7d8896");
+        ctx.save(); ctx.beginPath(); ctx.moveTo(cx - rr, top); ctx.lineTo(cx - rr, top + hh); ctx.ellipse(cx, top + hh, rr, ey, 0, PI, 0, true); ctx.lineTo(cx + rr, top); ctx.closePath(); ctx.fillStyle = gr; ctx.fill();
+        ctx.beginPath(); ctx.rect(cx - rr, top + hh * 0.3, 2 * rr, hh * 0.42); ctx.fillStyle = "rgba(192,50,29,.85)"; ctx.fill();
+        ctx.beginPath(); ctx.ellipse(cx, top, rr, ey, 0, 0, 7); ctx.fillStyle = "#dfe5ec"; ctx.fill(); ctx.strokeStyle = "#6b7684"; ctx.lineWidth = 1.4; ctx.stroke();
+        ctx.beginPath(); ctx.ellipse(cx + rr * 0.3, top, rr * 0.18, ey * 0.35, 0, 0, 7); ctx.strokeStyle = "#8a95a3"; ctx.stroke(); ctx.restore();
+        D.text(c, "33 cL", cx, top + hh * 0.51, {size: Math.max(10, Math.min(16, rr * 0.35)), color: "#fff", weight: 800});
+        D.arrow(c, cx, top + hh + ey + 10, cx + rr, top + hh + ey + 10, P.red, 1.8); D.text(c, "r = " + F(r, 2) + " cm", cx + rr / 2, top + hh + ey + 22, {size: 10.5, color: P.red});
+        D.line(c, cx - rr - 12, top, cx - rr - 12, top + hh, P.acc, 1.6); D.text(c, "h = " + F(h, 1), cx - rr - 16, top + hh / 2, {size: 10.5, color: P.acc, align: "right"});
+        hnd(c, Pj.hx, Pj.hy, P.red, "");
       }
+      /* graphe de la grandeur et tangente */
+      var g = bx[1], ax = axIn(c, g, {x0: rng0[0], x1: rng0[1], y0: ylo, y1: yhi, xl: box ? "x (cm)" : "r (cm)", yl: ylab, l: 48, t: 12});
+      G = ax; D.fn(c, ax, f, P.acc, 3);
+      var fx = f(X), sl = df(X), w = (rng0[1] - rng0[0]) * 0.18; D.line(c, ax.X(X - w), ax.Y(fx - sl * w), ax.X(X + w), ax.Y(fx + sl * w), P.amber, 2.4);
+      vl(c, ax, X, "#c2c9d3"); pt(c, ax, X, fx, P.red, 6);
+      fo = f(xo); var gap = box ? fo - fx : fx - fo, tol = box ? 1 : 0.5, ok = gap < tol;
+      if (ok || so.value){ pt(c, ax, xo, fo, P.green, 6); D.label(c, (box ? "max " : "min ") + F(fo, 1) + " " + unit, ax.X(xo), ax.Y(fo) + (box ? -16 : 18), {color: P.green}); }
+      D.label(c, "pente f′ = " + F(sl, 1), ax.X(X + w), ax.Y(fx + sl * w) + (sl > 0 ? -12 : 12), {color: P.amber, size: 10.5});
+      ro.set(0, (box ? "x = " : "r = ") + F(X, 2) + " cm"); ro.set(1, (box ? "V = " : "S = ") + F(fx, 1) + " " + unit); ro.set(2, F(sl, 2) + (box ? " cm³/cm" : " cm²/cm")); ro.set(3, ok || so.value ? F(gap, 2) + " " + unit : "?");
+      if (ok){ if (!won){ won = true; wins++; } nt.set("Défi réussi : " + (box ? "V = " + F(fx, 1) + " cm³, à moins de 1 cm³ du maximum " + F(fo, 1) + " cm³ (x* = (25 − 5√7)/3 ≈ " + F(xo, 3) + " cm). La tangente y est presque horizontale : V′(x*) = 0." : "S = " + F(fx, 1) + " cm², à moins de 0,5 cm² du minimum " + F(fo, 1) + " cm² (r* ≈ " + F(xo, 3) + " cm, h = 2r* ≈ " + F(2 * xo, 2) + " cm : la canette optimale est aussi haute que large). La tangente y est horizontale."), "ok"); }
+      else { won = false; nt.set("Défi : " + (box ? "trouve la découpe x qui donne le plus grand volume" : "trouve le rayon qui demande le moins de métal") + ", à " + (box ? "1 cm³" : "0,5 cm²") + " près. Indice : la pente de la tangente (orange) vaut " + F(sl, 1) + (sl > 0 ? (box ? " > 0 : augmente x." : " > 0 : diminue r.") : (box ? " < 0 : diminue x." : " < 0 : augmente r.")), ""); }
     });
     setr("box");
   }
@@ -141,26 +206,56 @@ var N4 = {
 SFA.sim({
   id: "um-c03-newton", ch: "c03", tag: "Méthode de Newton",
   titre: "Méthode de Newton : suivre la tangente jusqu'à l'axe",
-  resume: "On remplace la courbe par sa tangente : le point où elle coupe l'axe Ox donne l'approximation suivante. Le nombre de chiffres justes double à chaque pas.",
-  but: "Choisis la fonction et le point de départ, puis clique sur « Itérer » pour tracer la tangente et lire la nouvelle approximation. Teste x³ − 2x + 2 en 0 : la méthode échoue.",
-  aRetenir: "x<sub>n+1</sub> = x<sub>n</sub> − f(x<sub>n</sub>)/f′(x<sub>n</sub>). Si la racine est simple et le départ assez proche, la convergence est quadratique : l'erreur est à peu près élevée au carré à chaque pas.",
-  piege: "Si f′(x<sub>n</sub>) ≈ 0 la tangente est presque horizontale et le pas est énorme ; la méthode peut aussi osciller (cycle) ou diverger selon le point de départ.",
+  resume: "Glisse le point de départ, puis regarde le curseur monter jusqu'à la courbe et glisser le long de la tangente jusqu'à l'axe. En bas, le nombre de chiffres exacts double à chaque pas.",
+  but: "Glisse x₀ (poignée sur l'axe) puis clique « Itérer » : le point violet monte jusqu'à la courbe et redescend le long de la tangente ; son point d'arrivée sur l'axe est x₁, et ainsi de suite. En bas, une barre par itération donne le nombre de chiffres exacts. Défi : 8 chiffres exacts en au plus 3 itérations. Avec x³ − 2x + 2, trouve un x₀ qui ne tourne pas en rond.",
+  aRetenir: "x<sub>n+1</sub> = x<sub>n</sub> − f(x<sub>n</sub>)/f′(x<sub>n</sub>) : c'est l'abscisse où la tangente en x<sub>n</sub> coupe l'axe Ox. Si la racine est simple et le départ assez proche, la convergence est quadratique : l'erreur est à peu près élevée au carré à chaque pas, le nombre de chiffres exacts double.",
+  piege: "Si f′(x<sub>n</sub>) ≈ 0 la tangente est presque horizontale et le pas est énorme ; la méthode peut aussi osciller (cycle 0 → 1 → 0 pour x³ − 2x + 2) ou diverger selon le point de départ.",
   build: function(k, S){
-    var c = k.canvas(370), fs, st = {xs: []};
-    function reset(){ var T = N4[fs.value]; st.xs = [T.x0]; x0.set(T.x0); }
-    fs = k.select("Fonction", [["sq2", "x² − 2"], ["cosx", "cos x − x"], ["cub", "x³ − 2x + 2 (piège)"], ["ln", "ln x − 1"]], "sq2", function(){ reset(); });
-    var x0 = k.slider("Point de départ x₀", -2, 4, 0.1, 2, "", function(v){ st.xs = [v]; });
-    k.button("Itérer", function(){ it(); }, true); k.button("+5", function(){ for (var i = 0; i < 5; i++) it(); }); k.button("Recommencer", function(){ st.xs = [x0.value]; });
-    function it(){ var T = N4[fs.value], x = st.xs[st.xs.length - 1], d = T.d(x), y = T.f(x); if (!isFinite(x) || Math.abs(d) < 1e-12) return; var nx = x - y / d; if (st.xs.length < 30) st.xs.push(nx); }
-    var ro = k.readouts(["Itération n", "xₙ", "f(xₙ)", "Pas |xₙ − xₙ₋₁|"]), nt = k.note("", "");
-    k.draw(function(){
-      c.clear(); var T = N4[fs.value], ax = D.axes(c, {x0: T.xa, x1: T.xb, y0: T.ya, y1: T.yb, xl: "x", yl: "y"}); D.fn(c, ax, T.f, P.acc, 3);
-      var n = st.xs.length; for (var i = 0; i < n; i++){ var x = st.xs[i], y = T.f(x); if (!isFinite(y)) break; D.line(c, ax.X(x), ax.Y(0), ax.X(x), ax.Y(y), "#b9c2cf", 1.2, [3, 3]); if (i < n - 1){ var nx = st.xs[i + 1]; D.line(c, ax.X(x), ax.Y(y), ax.X(nx), ax.Y(0), i === n - 2 ? P.amber : "#e6c8a0", i === n - 2 ? 2.6 : 1.6); } pt(c, ax, x, 0, i === n - 1 ? P.red : "#c98a85", i === n - 1 ? 6 : 3.5); }
-      var xl = st.xs[n - 1], fl = T.f(xl); pt(c, ax, xl, fl, P.red, 5);
-      ro.set(0, String(n - 1)); ro.set(1, F(xl, 9)); ro.set(2, S.sci(fl)); ro.set(3, n > 1 ? S.sci(Math.abs(xl - st.xs[n - 2])) : "—");
-      nt.set(T.v, fs.value === "cub" ? "warn" : "");
+    var c = k.canvas(0, {ratio: 0.82}); lay2(c, 0.82, 1.2);
+    var ROOT = {sq2: Math.SQRT2, cosx: 0.7390851332151607, cub: -1.7692923542386314, ln: Math.E}, st = {xs: [], an: -1, ph: 0, auto: 0}, fs, won = false, wins = 0;
+    function reset(v){ st.xs = [v]; st.an = -1; st.ph = 0; st.auto = 0; }
+    fs = k.select("Fonction", [["sq2", "x² − 2 (calcul de √2)"], ["cosx", "cos x − x"], ["cub", "x³ − 2x + 2 (piège)"], ["ln", "ln x − 1 (calcul de e)"]], "sq2", function(){ x0.set(N4[fs.value].x0); reset(x0.value); won = false; });
+    var x0 = k.slider("Point de départ x₀", -3, 5, 0.01, 2, "", function(v){ reset(v); won = false; });
+    function next(){ var T = N4[fs.value], x = st.xs[st.xs.length - 1], d = T.d(x), y = T.f(x); if (!isFinite(x) || !isFinite(y) || Math.abs(d) < 1e-12 || st.xs.length > 12) return false; st.xs.push(x - y / d); return true; }
+    var lp = k.loop(function(dt){ if (st.an >= 0){ st.ph += dt * 1.3; if (st.ph >= 1){ st.an = -1; st.ph = 0; if (st.auto > 0){ st.auto--; go(); } } } if (st.an < 0 && st.auto <= 0) lp.pause(); k.redraw(); });
+    function go(){ if (st.an >= 0) return; if (next()){ st.an = st.xs.length - 2; st.ph = 0; lp.play(); } else st.auto = 0; }
+    k.button("Itérer", go, true); k.button("6 itérations", function(){ st.auto = 5; go(); }); k.button("Recommencer", function(){ reset(x0.value); });
+    var ro = k.readouts(["Itération n", "xₙ", "f(xₙ)", "Chiffres exacts"]), nt = k.note("", "");
+    var G = null, grab = false; c.cv.style.touchAction = "none";
+    c.pointer(function(t, p){
+      if (!G) return;
+      if (t === "down") grab = Math.abs(G.X(st.xs[0]) - p.x) < 22 && Math.abs(G.Y(0) - p.y) < 34;
+      else if (t === "drag" && grab){ var T = N4[fs.value]; x0.set(Math.round(cl(G.ix(p.x), Math.max(-3, T.xa), Math.min(5, T.xb)) * 100) / 100); reset(x0.value); won = false; k.redraw(); }
+      else if (t === "up") grab = false;
+      else if (t === "move") c.cv.style.cursor = Math.abs(G.X(st.xs[0]) - p.x) < 22 && Math.abs(G.Y(0) - p.y) < 34 ? "ew-resize" : "default";
     });
-    reset();
+    reset(x0.value);
+    function digits(x){ var r = ROOT[fs.value], e = Math.abs(x - r); if (!isFinite(e)) return 0; return e === 0 ? 16 : cl(-Math.log10(e / Math.abs(r)), 0, 16); }
+    k.draw(function(){
+      c.clear(); var ctx = c.ctx, T = N4[fs.value], H = c.H, h1 = Math.round(H * 0.66), xs = st.xs, n = xs.length, done = st.an < 0 ? n : st.an + 1;
+      var ax = axIn(c, {x: 0, y: 0, w: c.W, h: h1}, {x0: T.xa, x1: T.xb, y0: T.ya, y1: T.yb, xl: "x", yl: "y", t: 12, b: 26}); G = ax;
+      D.fn(c, ax, T.f, P.acc, 3); D.text(c, T.n, ax.R - 6, ax.T + 10, {size: 12, color: P.acc, align: "right", math: true, halo: true});
+      for (var i = 0; i < done - 1; i++){ var x = xs[i], y = T.f(x), nx = xs[i + 1]; D.line(c, ax.X(x), ax.Y(0), ax.X(x), ax.Y(y), "#b9c2cf", 1.2, [3, 3]); D.line(c, ax.X(x), ax.Y(y), ax.X(nx), ax.Y(0), i === done - 2 ? P.amber : "#e6c8a0", i === done - 2 ? 2.4 : 1.5); D.dot(c, ax.X(x), ax.Y(0), 3.5, "#c98a85"); }
+      if (st.an >= 0){ var xa = xs[st.an], ya = T.f(xa), xb = xs[st.an + 1], ph = st.ph, px, py;
+        var dA = T.d(xa); D.fn(c, ax, function(u){ return ya + dA * (u - xa); }, "rgba(224,122,31,.45)", 1.6, [6, 4]);
+        if (ph < 0.4){ var u = ph / 0.4; px = ax.X(xa); py = ax.Y(0) + (ax.Y(ya) - ax.Y(0)) * u; D.line(c, px, ax.Y(0), px, py, P.violet, 2); }
+        else { var v = (ph - 0.4) / 0.6; px = ax.X(xa) + (ax.X(xb) - ax.X(xa)) * v; py = ax.Y(ya) + (ax.Y(0) - ax.Y(ya)) * v; D.line(c, ax.X(xa), ax.Y(0), ax.X(xa), ax.Y(ya), P.violet, 1.6, [3, 3]); D.line(c, ax.X(xa), ax.Y(ya), px, py, P.violet, 2.6); }
+        D.glow(c, px, py, 16, P.violet, 0.5); D.dot(c, px, py, 6, P.violet); }
+      var cur = xs[done - 1]; if (isFinite(cur)){ D.dot(c, ax.X(cur), ax.Y(0), 6, P.red); var fc = T.f(cur); if (isFinite(fc)) pt(c, ax, cur, fc, P.red, 4); D.text(c, "x" + "₀₁₂₃₄₅₆₇₈₉"[Math.min(done - 1, 9)] + (done > 10 ? "…" : ""), ax.X(cur), ax.Y(0) + 16, {size: 12, color: P.red, halo: true, math: true}); }
+      hnd(c, ax.X(xs[0]), ax.Y(0), P.red, "x₀ (glisse)");
+      /* chiffres exacts par itération */
+      var bb = {x: 0, y: h1, w: c.W, h: H - h1}, L = 46, Rr = c.W - 12, T0 = h1 + 22, B0 = H - 24, nb = 7, bw = (Rr - L) / nb;
+      D.text(c, "Chiffres exacts de xₙ (la barre double à chaque pas quand ça converge)", 10, h1 + 8, {size: 10.5, color: "#5f6b7a", align: "left", weight: 700});
+      ctx.save(); ctx.font = "600 10px Mulish, system-ui"; ctx.fillStyle = "#7b8694"; ctx.textAlign = "right"; ctx.textBaseline = "middle"; [0, 4, 8, 12, 16].forEach(function(d){ var yy = B0 - d / 16 * (B0 - T0); ctx.strokeStyle = d === 8 ? "rgba(36,119,90,.5)" : "#eef1f5"; ctx.setLineDash(d === 8 ? [5, 4] : []); ctx.beginPath(); ctx.moveTo(L, yy); ctx.lineTo(Rr, yy); ctx.stroke(); ctx.fillText(d, L - 6, yy); }); ctx.restore();
+      for (i = 0; i < Math.min(done, nb); i++){ var dg = digits(xs[i]), hh = dg / 16 * (B0 - T0); ctx.fillStyle = dg >= 8 ? P.green : P.acc; D.rrect(c, L + i * bw + bw * 0.18, B0 - hh, bw * 0.64, Math.max(hh, 1.5), 3); ctx.fill(); D.text(c, "n = " + i, L + i * bw + bw / 2, B0 + 10, {size: 9.5, color: "#5f6b7a", weight: 600}); }
+      var dl = digits(cur), it = done - 1;
+      ro.set(0, String(it)); ro.set(1, F(cur, 10)); ro.set(2, S.sci(T.f(cur))); ro.set(3, F(dl, 1));
+      if (fs.value === "cub" && Math.abs(xs[0]) < 0.6 && it >= 2 && dl < 2) nt.set("Cycle : depuis x₀ ≈ 0, Newton saute 0 → 1 → 0 → 1… sans jamais converger. Défi : glisse x₀ vers la gauche (x₀ < −1) pour atteindre la racine ≈ −1,769.", "warn");
+      else if (dl >= 8 && it <= 3 && it > 0){ if (!won){ won = true; wins++; } nt.set("Défi réussi : " + F(dl, 1) + " chiffres exacts en " + it + " itération(s) depuis x₀ = " + F(xs[0], 2) + ". Les barres montrent la convergence quadratique : 1, 2, 4, 8… chiffres.", "ok"); }
+      else if (dl >= 8) nt.set("Racine atteinte (" + F(dl, 1) + " chiffres exacts) mais en " + it + " itérations. Défi : rapproche x₀ de la racine pour y arriver en 3 itérations au plus.", "");
+      else nt.set("Défi : choisis x₀ pour obtenir 8 chiffres exacts (ligne verte en bas) en au plus 3 itérations. " + T.v, fs.value === "cub" ? "warn" : "");
+    });
+    reset(x0.value); st.auto = 2; go();
   }
 });
 

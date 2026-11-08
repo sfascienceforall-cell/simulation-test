@@ -91,15 +91,10 @@ SFA.sim({
 });
 
 /* ---------- pilule ---------- */
-function pilule(m, pos){
+function pilule2(forg){                 /* forg[i] = true si le comprimé du jour i (29 à 49) est oublié */
   var days = 84, taken = [], i;
-  for (i = 1; i <= days; i++){ var pk = (i - 1) % 28; taken[i] = pk < 21; }
-  var s, e;
-  if (m > 0){
-    if (pos === "d"){ s = 29; } else if (pos === "m"){ s = 36; } else { s = 49 - m + 1; }
-    for (i = s; i < s + m && i <= 49; i++) taken[i] = false;
-  }
-  var F = 4, out = [], free = 0, runMax = 0, run = 0, ov = -1;
+  for (i = 1; i <= days; i++){ var pk = (i - 1) % 28; taken[i] = pk < 21 && !(forg[i]); }
+  var F = 4, out = [], runMax = 0, run = 0, ov = -1;
   for (i = 1; i <= days; i++){
     if (taken[i]){ F = Math.max(4, F - 1.5); run = 0; } else { F += 1.3; run++; runMax = i >= 25 && i <= 60 ? Math.max(runMax, run) : runMax; }
     if (F >= 18 && ov < 0 && i >= 29 && i <= 70) ov = i;
@@ -110,35 +105,86 @@ function pilule(m, pos){
 SFA.sim({
   id: "b5-c09-pilule", ch: "c09", tag: "Contraception",
   titre: "La pilule combinée : pourquoi un oubli peut compter",
-  resume: "Comprimés oubliés et position de l'oubli → jours sans hormone et croissance du follicule.",
-  but: "La pilule combinée (21 comprimés puis 7 jours de pause) contient des hormones synthétiques qui bloquent le cycle. Choisis combien de comprimés sont oubliés et à quel moment de la plaquette. Observe le nombre de jours consécutifs sans hormone et la croissance du follicule dans ce modèle.",
+  resume: "Touche les comprimés pour les « oublier » : jours sans hormone, freinage de l'hypophyse et croissance du follicule.",
+  but: "Voici la 2e plaquette (21 comprimés puis 7 jours de pause). Touche un comprimé pour l'oublier (ou utilise les réglages rapides), puis regarde les jours défiler : tant que les hormones de la pilule sont là, l'hypophyse est freinée et le follicule ne grandit pas. Défi : oublie 3 comprimés sans jamais dépasser 7 jours d'affilée sans hormone.",
   aRetenir: "La pilule apporte œstrogène et progestatif de synthèse : par rétrocontrôle négatif, FSH et LH restent bas, le follicule ne mûrit pas, il n'y a pas de pic de LH, donc pas d'ovulation ; la glaire cervicale est épaisse et l'endomètre mince. Ce qui compte, c'est la durée sans hormone : un oubli au début ou à la fin d'une plaquette allonge la pause et laisse un follicule croître.",
   piege: "La pilule n'agit pas seulement comme une « barrière » : elle empêche surtout l'ovulation. Cette simulation est pédagogique : les chiffres sont des illustrations, pas des règles. En cas d'oubli réel, il faut suivre la notice ou demander conseil à un médecin ou un pharmacien. La pilule ne protège pas des infections sexuellement transmissibles.",
   build: function(k, S){
-    var c = k.canvas(300), pal = S.draw.palette;
-    var m = k.slider("Comprimés oubliés (2e plaquette)", 0, 7, 1, 2, "");
-    var pos = k.seg("Où dans la plaquette ?", [["d", "début"], ["m", "milieu"], ["f", "fin"]], "d");
-    var ro = k.readouts(["Jours sans hormone d'affilée", "Taille max du follicule", "Ovulation possible ?", "Effet sur FSH et LH"]);
+    var c = k.canvas(560), pal = S.draw.palette, D = S.draw;
+    var forg = {}, i;
+    function preset(){ forg = {}; var mm = m.value, s0 = pos.value === "d" ? 29 : pos.value === "m" ? 36 : 49 - mm + 1; for (i = s0; i < s0 + mm && i <= 49; i++) forg[i] = true; }
+    var m = k.slider("Comprimés oubliés (réglage rapide)", 0, 7, 1, 2, "", function(){ preset(); });
+    var pos = k.seg("Où dans la plaquette ?", [["d", "début"], ["m", "milieu"], ["f", "fin"]], "d", function(){ preset(); });
+    var ro = k.readouts(["Comprimés oubliés", "Jours sans hormone d'affilée", "Taille max du follicule", "Ovulation possible ?"]);
     var nt = k.note("", "");
-    k.draw(function(){
-      c.clear();
-      var r = pilule(m.value, pos.value), W = c.W, i;
-      var x0 = 14, cw = (W - 28) / 28;
-      S.draw.text(c, "vert : pris · rouge : oublié · gris : pause (jours 29 à 56)", x0, 18, {align: "left", size: 12, color: pal.grey});
-      for (i = 29; i <= 56; i++){
-        var x = x0 + (i - 29) * cw, col = r.taken[i] ? pal.green : (((i - 1) % 28) >= 21 ? "#c8ceda" : pal.red);
-        B5.rect(c, x + 1, 40, cw - 2, 22, col, null);
+    preset();
+    var day = 22, an = 0, play = true, geo = {}, drag = false, rnd = B5.rng(3), Q = [];
+    for (i = 0; i < 20; i++) Q.push({o: rnd(), u: rnd()});
+    k.button("Lecture / pause des jours", function(){ play = !play; if (play && day >= 56.9) day = 22; }, true);
+    k.button("Aucun oubli", function(){ forg = {}; });
+    var lp = k.loop(function(dt){ an += dt; if (play){ day += dt * 2.5; if (day >= 56.99){ day = 56.99; play = false; } } k.redraw(); }); lp.play();
+    c.cv.style.touchAction = "none";
+    c.pointer(function(t, p){
+      if (t === "down"){
+        drag = false;
+        if (geo.ax && p.y > geo.gy){ drag = true; }
+        else if (geo.cs){ var col = Math.floor((p.x - geo.bx) / geo.cs), row = Math.floor((p.y - geo.by) / geo.cs); if (col >= 0 && col < 7 && row >= 0 && row < 3){ var d = 29 + row * 7 + col; forg[d] = !forg[d]; } }
       }
-      var ax = S.draw.axes(c, {x0: 29, x1: 56, y0: 0, y1: 24, xl: "jour", yl: "follicule (mm)", stepX: 3, stepY: 6, t: 76, l: 46});
-      c.ctx.fillStyle = "rgba(180,35,24,.08)"; c.ctx.fillRect(ax.X(29), ax.Y(24), ax.X(56) - ax.X(29), ax.Y(18) - ax.Y(24));
-      S.draw.line(c, ax.X(29), ax.Y(18), ax.X(56), ax.Y(18), pal.red, 1.4, [5, 4]); S.draw.text(c, "18 mm : ovulation possible", ax.R - 4, ax.Y(18) + 10, {align: "right", size: 12, color: pal.red});
-      var pts = r.F.filter(function(p){ return p[0] >= 29 && p[0] <= 56; });
-      B5.poly(c, ax, pts, pal.violet, 3);
-      var mx = Math.max.apply(null, pts.map(function(p){ return p[1]; }));
-      ro.set(0, r.run + " j"); ro.set(1, S.fmt(mx, 1) + " mm"); ro.set(2, mx >= 18 ? "oui (dans ce modèle)" : "non"); ro.set(3, r.run <= 7 ? "supprimées" : (mx >= 18 ? "échappent au freinage" : "freinage affaibli"));
-      if (r.run <= 7) nt.set("Pause de 7 jours maximum : le freinage hormonal est repris avant que le follicule ne mûrisse. Les règles de privation viennent de la chute d'hormones pendant la pause.", "ok");
+      if (drag && (t === "down" || t === "drag")){ day = B5.cl(geo.ax.ix(p.x), 22, 56.99); play = false; }
+      if (t === "up") drag = false;
+    });
+    k.draw(function(){
+      var r = pilule2(forg), nF = 0, d0 = Math.floor(day), Fd = r.F[d0 - 1][1] + (r.F[Math.min(83, d0)][1] - r.F[d0 - 1][1]) * (day - d0);
+      for (i = 29; i <= 49; i++) if (forg[i]) nF++;
+      var hormone = r.taken[d0], off = 0; for (i = d0; i >= 1 && !r.taken[i]; i--) off++;
+      var block = hormone ? 1 : off <= 7 ? 0.6 : 0;
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, sh = 250;
+      D.rrect(c, 6, 6, W - 12, sh, 12); ctx.fillStyle = "#f5f3f8"; ctx.fill();
+      /* plaquette */
+      var cs = Math.min(36, (W * 0.6 - 30) / 7), bx = 20, by = 46; geo.cs = cs; geo.bx = bx; geo.by = by;
+      D.text(c, "2e plaquette", bx, 22, {align: "left", size: 11.5, color: pal.ink, weight: 900});
+      D.rrect(c, bx - 8, by - 10, 7 * cs + 16, 4 * cs + 22, 10); var gm = ctx.createLinearGradient(0, by, 0, by + 4 * cs); gm.addColorStop(0, "#eef1f5"); gm.addColorStop(1, "#cfd6df"); ctx.fillStyle = gm; ctx.fill(); ctx.strokeStyle = "#9aa6b5"; ctx.lineWidth = 1.5; ctx.stroke();
+      for (i = 0; i < 28; i++){
+        var dd = 29 + i, col = i % 7, row = Math.floor(i / 7), X = bx + col * cs + cs / 2, Y = by + row * cs + cs / 2, rr = cs * 0.36;
+        B5.circ(c, X, Y, rr + 2, "rgba(255,255,255,.7)", "#aeb8c5", 1);
+        if (i < 21 && !forg[dd]){ var gp = ctx.createRadialGradient(X - rr * 0.3, Y - rr * 0.3, 1, X, Y, rr); gp.addColorStop(0, "#fff"); gp.addColorStop(1, dd < day ? "#e7b8c7" : "#f3c9d6"); ctx.fillStyle = gp; ctx.beginPath(); ctx.arc(X, Y, rr, 0, 6.283); ctx.fill(); ctx.strokeStyle = "#c27a95"; ctx.lineWidth = 1.2; ctx.stroke(); if (dd < day){ D.line(c, X - rr * 0.5, Y, X + rr * 0.5, Y, "rgba(120,60,80,.5)", 1.5); } }
+        else if (i < 21){ B5.circ(c, X, Y, rr, "#fff", pal.red, 2); D.text(c, "✕", X, Y + 0.5, {size: Math.max(10, rr), color: pal.red, weight: 900}); }
+        else { D.text(c, "–", X, Y, {size: 12, color: "#8a95a3", weight: 800}); }
+        if (dd === d0) { ctx.strokeStyle = pal.ink; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.arc(X, Y, rr + 4, 0, 6.283); ctx.stroke(); }
+      }
+      D.text(c, "touche un comprimé pour l'oublier", bx - 4, by + 4 * cs + 22, {size: 9.5, color: pal.grey, weight: 800, align: "left"});
+      /* hypophyse → ovaire */
+      var rx0 = bx + 7 * cs + 22, rw = W - rx0 - 14, rcx = rx0 + rw / 2;
+      ctx.fillStyle = "#f6c9d3"; ctx.strokeStyle = "#c27a8a"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(rcx, 32, Math.min(56, rw / 2), 18, 0, Math.PI, 2 * Math.PI); ctx.fill(); ctx.stroke();
+      B5.circ(c, rcx, 38, 7, "#e48aa2", "#9b2c4a", 1.6);
+      D.text(c, "hypophyse", rcx, 55, {size: 10, color: "#9b2c4a", weight: 800});
+      var oy = 184, fol = B5.cl(Fd, 4, 24);
+      ctx.fillStyle = "#f6cdd4"; ctx.strokeStyle = "#c27a8a"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(rcx, oy, Math.min(50, rw / 2 - 2), 30, 0, 0, 6.283); ctx.fill(); ctx.stroke();
+      var frp = 3 + fol * 0.9; B5.circ(c, rcx + 8, oy - 2, frp, "rgba(255,248,225,.95)", fol >= 18 ? pal.red : "#c99a3a", 2); B5.circ(c, rcx + 8 + frp * 0.35, oy - 2 - frp * 0.2, 3, "#f4b6c2", "#9b2c4a", 1);
+      D.text(c, "ovaire · follicule " + S.fmt(Fd, 0) + " mm", rcx, oy + 42, {size: 10, color: fol >= 18 ? pal.red : "#8a5a10", weight: 800});
+      var nP = Math.round((1 - block) * 10 + (block < 1 ? 2 : 1));
+      for (i = 0; i < nP; i++){ var f = (Q[i].o + an * 0.45) % 1, py = 60 + f * (oy - 40 - 60); if (block >= 1 && py > 96) continue; B5.circ(c, rcx - 14 + Q[i].u * 28, py, 3, i % 2 ? pal.teal : pal.blue, "#fff", 1); }
+      D.text(c, "FSH, LH", rcx + Math.min(46, rw / 2 - 4), 82, {size: 9.5, color: pal.teal, weight: 800, align: "right"});
+      if (block > 0){ D.rrect(c, rcx - Math.min(44, rw / 2 - 4), 104, 2 * Math.min(44, rw / 2 - 4), 10, 5); ctx.fillStyle = block >= 1 ? "rgba(192,50,29,.85)" : "rgba(192,50,29,.4)"; ctx.fill(); D.text(c, hormone ? "freinage par la pilule" : "freinage faiblit", rcx, 124, {size: 9.5, color: pal.red, weight: 800}); }
+      else D.text(c, "hypophyse libérée !", rcx, 124, {size: 9.5, color: pal.red, weight: 800});
+      D.label(c, (d0 < 29 ? "pause" : "jour " + (d0 - 28) + "/28") + (hormone ? " · hormone prise" : " · sans hormone : " + off + " j"), bx, by + 4 * cs + 42, {size: 10.5, color: hormone ? pal.green : pal.red, align: "left"});
+      /* ---------- courbe ---------- */
+      var gy = sh + 14; geo.gy = gy - 4; D.panel(c, 6, gy - 2, W - 12, H - gy - 2, {shadow: false, fill: "#fbfcfe"});
+      var ax = D.axes(c, {x0: 22, x1: 57, y0: 0, y1: 24, xl: "jour (1 = début de la 1re plaquette) · glisse", stepX: 7, stepY: 6, t: gy + 40, b: 34, l: 40, r: 16}); geo.ax = ax;
+      D.text(c, "follicule (mm)", 14, gy + 12, {size: 11, color: pal.grey, align: "left"});
+      for (i = 22; i <= 56; i++){ ctx.fillStyle = r.taken[i] ? "rgba(36,119,90,.75)" : (i >= 29 && i <= 49 ? pal.red : "#c8ceda"); ctx.fillRect(ax.X(i) + 0.5, gy + 22, Math.max(1, ax.X(i + 1) - ax.X(i) - 1), 8); }
+      D.text(c, "hormone prise", ax.R, gy + 12, {align: "right", size: 9.5, color: pal.green});
+      ctx.fillStyle = "rgba(180,35,24,.08)"; ctx.fillRect(ax.L, ax.Y(24), ax.R - ax.L, ax.Y(18) - ax.Y(24));
+      D.line(c, ax.L, ax.Y(18), ax.R, ax.Y(18), pal.red, 1.4, [5, 4]); D.text(c, "18 mm : ovulation possible", ax.R - 4, ax.Y(21), {align: "right", size: 10.5, color: pal.red});
+      var pts = r.F.filter(function(p){ return p[0] >= 22 && p[0] <= 57; });
+      B5.poly(c, ax, pts, "rgba(98,54,196,.25)", 2); B5.poly(c, ax, pts.filter(function(p){ return p[0] <= day; }).concat([[day, Fd]]), pal.violet, 3);
+      D.line(c, ax.X(day), ax.T, ax.X(day), ax.B, pal.ink, 1.2, [4, 3]); D.dot(c, ax.X(day), ax.Y(Fd), 5, pal.violet);
+      var mx = Math.max.apply(null, pts.filter(function(p){ return p[0] >= 29; }).map(function(p){ return p[1]; }));
+      ro.set(0, String(nF)); ro.set(1, r.run + " j"); ro.set(2, S.fmt(mx, 1) + " mm"); ro.set(3, mx >= 18 ? "oui (dans ce modèle)" : "non");
+      if (nF === 3 && r.run <= 7) nt.set("Défi réussi : 3 oublis, mais jamais plus de 7 jours d'affilée sans hormone. Les oublis loin de la pause sont les moins risqués ; ils restent des oublis (suivre la notice).", "ok");
+      else if (r.run <= 7) nt.set("Pause de 7 jours maximum : le freinage hormonal est repris avant que le follicule ne mûrisse. Les règles de privation viennent de la chute d'hormones pendant la pause." + (nF !== 3 ? " Défi : oublie exactement 3 comprimés en restant à 7 jours maximum." : ""), "ok");
       else if (mx >= 18) nt.set(r.run + " jours sans hormone : le follicule atteint " + S.fmt(mx, 1) + " mm dans ce modèle, une ovulation devient possible. En pratique, un oubli demande de suivre la notice (comprimé à prendre dès que possible, précautions supplémentaires) et parfois la contraception d'urgence.", "warn");
-      else nt.set(r.run + " jours sans hormone d'affilée (au lieu de 7 au maximum) : le follicule grandit jusqu'à " + S.fmt(mx, 1) + " mm : risque non négligeable. Demande conseil (notice, pharmacien).", "warn");
+      else nt.set(r.run + " jours sans hormone d'affilée (au lieu de 7 au maximum) : les oublis collés à la pause l'allongent. Le follicule grandit jusqu'à " + S.fmt(mx, 1) + " mm : risque non négligeable. Demande conseil (notice, pharmacien).", "warn");
     });
   }
 });
@@ -227,37 +273,90 @@ function hcg(d){ return d < 8 ? 0 : Math.min(1e5, 4 * Math.pow(2, (d - 9) / 1.8)
 SFA.sim({
   id: "b5-c09-hcg", ch: "c09", tag: "Biologie médicale",
   titre: "Test de grossesse : l'hCG double tous les 2 jours",
-  resume: "Jours après l'ovulation et sensibilité du test → hCG, bande test positive ou non.",
-  but: "Déplace le jour après l'ovulation et choisis la sensibilité du test (seuil de détection). Repère le premier jour où la bande « T » apparaît, et compare avec le jour attendu des règles (14 jours après l'ovulation).",
+  resume: "Nidation, sécrétion d'hCG par le trophoblaste, corps jaune maintenu ; test urinaire positif ou non.",
+  but: "Glisse le jour après l'ovulation sur le graphique : suis le blastocyste jusqu'à la nidation, puis l'hCG sécrétée par le trophoblaste qui maintient le corps jaune. Choisis la sensibilité du test et appuie sur « Faire le test » pour voir l'urine migrer sur la bandelette. Défi : trouve le premier jour où ce test devient positif.",
   aRetenir: "L'hCG est sécrétée par le trophoblaste de l'embryon après la nidation. Elle augmente d'environ le double tous les 2 jours au début : on la détecte dans le sang vers 8 à 10 jours après l'ovulation, et dans l'urine par un test dès le jour du retard de règles (seuil ≈ 25 mUI/mL). Elle maintient le corps jaune, qui continue de sécréter la progestérone.",
   piege: "Un test négatif très tôt ne prouve pas l'absence de grossesse (faux négatif) : l'hCG n'a pas encore atteint le seuil. Un test positif doit être confirmé par un médecin. Courbe : moyenne théorique, la variation individuelle est grande.",
   build: function(k, S){
-    var c = k.canvas(240), pal = S.draw.palette;
-    var d = k.slider("Jours après l'ovulation", 0, 42, 1, 14, "j");
-    var th = k.seg("Sensibilité du test", [["10", "10 mUI/mL"], ["25", "25 mUI/mL"], ["50", "50 mUI/mL"]], "25");
-    var ro = k.readouts(["hCG estimée", "Test", "Semaines d'aménorrhée (SA)", "Premier jour positif"]);
+    var c = k.canvas(560), pal = S.draw.palette, D = S.draw;
+    var d = k.slider("Jours après l'ovulation", 0, 42, 1, 6, "j", function(){ mig = -1; });
+    var th = k.seg("Sensibilité du test", [["10", "10 mUI/mL"], ["25", "25 mUI/mL"], ["50", "50 mUI/mL"]], "25", function(){ mig = -1; });
+    var ro = k.readouts(["hCG estimée", "Test", "Semaines d'aménorrhée (SA)", "Corps jaune"]);
     var nt = k.note("", "");
+    var an = 0, mig = -1, geo = {}, drag = false, rnd = B5.rng(8), Q = [], i;
+    for (i = 0; i < 30; i++) Q.push({o: rnd(), u: rnd()});
+    k.button("Faire le test ce jour-là", function(){ mig = 0; }, true);
+    var lp = k.loop(function(dt){ an += dt; if (mig >= 0 && mig < 1) mig = Math.min(1, mig + dt / 2.2); k.redraw(); }); lp.play();
+    c.cv.style.touchAction = "none";
+    c.pointer(function(t, p){
+      if (t === "down") drag = geo.ax && p.y > geo.gy;
+      if (drag && (t === "down" || t === "drag")){ var v = B5.cl(Math.round(geo.ax.ix(p.x)), 0, 42); if (v !== d.value){ d.set(v); mig = -1; } }
+      if (t === "up") drag = false;
+    });
     k.draw(function(){
-      c.clear();
-      var T = parseInt(th.value, 10), h = hcg(d.value), W = c.W;
-      var ax = S.draw.axes(c, {x0: 0, x1: 42, y0: 0, y1: 5.5, xl: "jours après l'ovulation", yl: "log₁₀ hCG (mUI/mL)", stepX: 7, stepY: 1, r: 150});
+      var T = parseInt(th.value, 10), dd = d.value, h = hcg(dd), pos = h >= T, first = null, j;
+      for (j = 8; j <= 42; j++) if (hcg(j) >= T){ first = j; break; }
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, sh = 250;
+      D.rrect(c, 6, 6, W - 12, sh, 12); ctx.fillStyle = "#f8f3f5"; ctx.fill();
+      /* utérus, trompe, ovaire */
+      var bw = Math.min(110, W * 0.28), bx = W - bw - 18, sw = Math.min(W - 150, 330), ux = 16 + sw * 0.45, uy = 120, uw = sw * 0.27;
+      ctx.fillStyle = "#e9a7b4"; ctx.strokeStyle = "#a94f63"; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(ux - uw, uy - 60); ctx.quadraticCurveTo(ux, uy - 78, ux + uw, uy - 60); ctx.quadraticCurveTo(ux + uw * 1.05, uy + 30, ux + 16, uy + 92); ctx.lineTo(ux - 16, uy + 92); ctx.quadraticCurveTo(ux - uw * 1.05, uy + 30, ux - uw, uy - 60); ctx.closePath(); ctx.fill(); ctx.stroke();
+      var endo = 0.55 + 0.45 * B5.cl(dd / 7, 0, 1);
+      ctx.fillStyle = "#f6d1d8"; ctx.beginPath(); ctx.moveTo(ux - uw * 0.62, uy - 48); ctx.quadraticCurveTo(ux, uy - 56, ux + uw * 0.62, uy - 48); ctx.quadraticCurveTo(ux + uw * 0.55, uy + 20, ux + 6, uy + 70); ctx.lineTo(ux - 6, uy + 70); ctx.quadraticCurveTo(ux - uw * 0.55, uy + 20, ux - uw * 0.62, uy - 48); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#fff4f6"; var cw = uw * (0.62 - 0.3 * endo); ctx.beginPath(); ctx.moveTo(ux - cw, uy - 40); ctx.quadraticCurveTo(ux, uy - 46, ux + cw, uy - 40); ctx.quadraticCurveTo(ux + cw * 0.8, uy + 20, ux + 2, uy + 64); ctx.lineTo(ux - 2, uy + 64); ctx.quadraticCurveTo(ux - cw * 0.8, uy + 20, ux - cw, uy - 40); ctx.closePath(); ctx.fill();
+      D.text(c, "utérus · endomètre", ux, uy + 104, {size: 9.5, color: "#a94f63", weight: 800});
+      /* trompe droite + ovaire avec corps jaune */
+      var tx0 = ux + uw, ty0 = uy - 58, ox = Math.min(bx - 34, ux + uw + 50), oy = uy - 24;
+      ctx.strokeStyle = "#d48a9c"; ctx.lineWidth = 9; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(tx0 - 6, ty0); ctx.quadraticCurveTo(ox - 10, ty0 - 34, ox + 6, oy - 26); ctx.stroke();
+      ctx.strokeStyle = "#f6d1d8"; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(tx0 - 6, ty0); ctx.quadraticCurveTo(ox - 10, ty0 - 34, ox + 6, oy - 26); ctx.stroke();
+      ctx.fillStyle = "#f6cdd4"; ctx.strokeStyle = "#c27a8a"; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(ox, oy, 26, 17, 0.3, 0, 6.283); ctx.fill(); ctx.stroke();
+      var cjAlive = dd < 12 || h >= 3, cjR = cjAlive ? 9 + Math.min(4, dd / 6) : Math.max(3, 9 - (dd - 12) * 0.8);
+      B5.circ(c, ox + 4, oy - 2, cjR, cjAlive ? "#f2c94c" : "#d8cfb8", cjAlive ? "#b58a10" : "#9a9280", 1.6);
+      D.text(c, "corps jaune", ox, oy + 28, {size: 9.5, color: "#8a6508", weight: 800});
+      if (cjAlive && dd >= 8){ for (i = 0; i < 4; i++){ var fp = (Q[i].o + an * 0.5) % 1; B5.circ(c, ox - 6 - fp * (ox - ux - 18), oy + 6 + fp * 40, 2.6, pal.amber); } D.text(c, "progestérone", (ox + ux) / 2 + 8, oy + 52, {size: 9, color: pal.amber, weight: 800}); }
+      /* l'embryon : trajet, nidation, trophoblaste */
+      var ex, ey, er;
+      if (dd < 5){ var f = dd / 5, u = 1 - f; ex = u * u * (ox + 6) + 2 * u * f * (ox - 10) + f * f * (tx0 - 6); ey = u * u * (oy - 26) + 2 * u * f * (ty0 - 34) + f * f * ty0; er = 4 + dd * 0.4; }
+      else if (dd < 7){ var f2 = (dd - 5) / 2; ex = tx0 - 6 - f2 * (tx0 - 6 - ux - cw * 0.5); ey = ty0 + f2 * 34; er = 6; }
+      else { ex = ux + cw * 0.55; ey = uy - 20; er = 6 + Math.min(14, (dd - 7) * 0.5); }
+      if (dd >= 7){ ctx.fillStyle = "rgba(196,58,122,.35)"; ctx.beginPath(); ctx.arc(ex + er * 0.4, ey, er + 6, -1.2, 1.2); ctx.fill(); }
+      B5.circ(c, ex, ey, er, "#fff6e6", "#c43a7a", 2); B5.circ(c, ex - er * 0.35, ey, er * 0.45, "#e6a7c3");
+      var lab = dd === 0 ? "ovocyte fécondé" : dd < 3 ? "segmentation" : dd < 5 ? "morula" : dd < 7 ? "blastocyste" : dd < 10 ? "nidation" : "embryon + trophoblaste";
+      D.label(c, lab, Math.min(Math.max(ex, 60), W - 190), ey - er - 14, {size: 10, color: "#c43a7a"});
+      var nh = h > 0 ? Math.min(18, Math.round(Math.log10(h + 1) * 4)) : 0;
+      for (i = 0; i < nh; i++){ var q = Q[i + 6], fh = (q.o + an * 0.4) % 1; var hx = ex + er + fh * (ox - ex - er - 20), hy = ey + Math.sin(fh * 3.14) * -24 + (q.u - 0.5) * 16; ctx.fillStyle = pal.violet; ctx.save(); ctx.translate(hx, hy); ctx.rotate(an + i); ctx.fillRect(-2.5, -2.5, 5, 5); ctx.restore(); }
+      if (nh) D.text(c, "hCG", (ex + ox) / 2, ey - 36, {size: 10.5, color: pal.violet, weight: 900});
+      D.label(c, "J" + dd + " après l'ovulation", 16, 22, {align: "left", size: 10.5, color: pal.ink});
+      /* bandelette de test */
+      var by = 24, bh = 212;
+      D.rrect(c, bx, by, bw, bh, 18); ctx.fillStyle = "#fdfdfd"; ctx.fill(); ctx.strokeStyle = "#8a95a3"; ctx.lineWidth = 1.5; ctx.stroke();
+      var wx = bx + bw * 0.3, ww = bw * 0.4, wy = by + 40, wh = 110;
+      D.rrect(c, wx, wy, ww, wh, 6); ctx.fillStyle = "#f4f6f9"; ctx.fill(); ctx.strokeStyle = "#aeb8c5"; ctx.stroke();
+      var fill = mig < 0 ? 0 : mig; if (fill > 0){ ctx.fillStyle = "rgba(244,197,66,.22)"; ctx.fillRect(wx + 2, wy + wh - 2 - (wh - 4) * fill, ww - 4, (wh - 4) * fill); }
+      var yT = wy + wh * 0.62, yC = wy + wh * 0.25;
+      if (fill > 0.5){ ctx.fillStyle = "#c2185b"; ctx.fillRect(wx + 4, yC - 3, ww - 8, 6); }
+      if (fill > 0.85 && pos){ ctx.globalAlpha = Math.min(1, 0.25 + 0.75 * Math.log10(h / T + 1) / 2) * Math.min(1, (fill - 0.85) / 0.15); ctx.fillStyle = "#c2185b"; ctx.fillRect(wx + 4, yT - 3, ww - 8, 6); ctx.globalAlpha = 1; }
+      D.text(c, "C", wx - 10, yC, {size: 11, color: pal.grey}); D.text(c, "T", wx - 10, yT, {size: 11, color: pal.grey});
+      D.rrect(c, bx + bw / 2 - 12, by + bh - 34, 24, 22, 6); ctx.fillStyle = "#e3e7ed"; ctx.fill();
+      D.text(c, "urine ↑", bx + bw / 2, by + bh - 46, {size: 9.5, color: pal.grey, weight: 800});
+      D.text(c, mig < 0 ? "« Faire le test »" : fill < 1 ? "migration…" : pos ? "POSITIF" : "négatif", bx + bw / 2, by + 20, {size: mig >= 1 ? 12 : 10, color: mig >= 1 ? (pos ? pal.red : pal.grey) : pal.grey, weight: 900});
+      /* ---------- courbe ---------- */
+      var gy = sh + 14; geo.gy = gy - 4; D.panel(c, 6, gy - 2, W - 12, H - gy - 2, {shadow: false, fill: "#fbfcfe"});
+      var ax = D.axes(c, {x0: 0, x1: 42, y0: 0, y1: 5.5, xl: "jours après l'ovulation · glisse", stepX: 7, stepY: 1, t: gy + 24, b: 34, l: 40, r: 16}); geo.ax = ax;
+      D.text(c, "log₁₀ hCG (mUI/mL)", 14, gy + 12, {size: 11, color: pal.grey, align: "left"});
+      ctx.fillStyle = "rgba(196,58,122,.08)"; ctx.fillRect(ax.X(7), ax.T, ax.X(10) - ax.X(7), ax.B - ax.T); D.text(c, "nidation", ax.X(8.5), ax.B - 10, {size: 9.5, color: "#c43a7a"});
       var pts = []; for (var x = 8; x <= 42; x += 0.5) pts.push([x, Math.log10(Math.max(1, hcg(x)))]);
       B5.poly(c, ax, pts, pal.violet, 2.8);
-      S.draw.line(c, ax.X(0), ax.Y(Math.log10(T)), ax.X(42), ax.Y(Math.log10(T)), pal.red, 1.5, [5, 4]); S.draw.text(c, "seuil " + T, ax.X(0) + 4, ax.Y(Math.log10(T)) - 9, {align: "left", size: 12, color: pal.red});
-      S.draw.line(c, ax.X(14), ax.T, ax.X(14), ax.B, pal.green, 1.2, [3, 4]); S.draw.text(c, "règles attendues", ax.X(14) + 3, ax.B - 10, {align: "left", size: 12, color: pal.green});
-      S.draw.line(c, ax.X(d.value), ax.T, ax.X(d.value), ax.B, pal.ink, 1.4, [5, 4]);
-      if (h > 0) S.draw.dot(c, ax.X(d.value), ax.Y(Math.log10(Math.max(1, h))), 6, pal.red);
-      var pos = h >= T;
-      /* bandelette */
-      var bx = ax.R + 24, by = ax.T + 6, bw = 90, bh = 150;
-      B5.rect(c, bx, by, bw, bh, "#fdfdfd", "#8a95a3", 1.5);
-      S.draw.text(c, "C", bx + 12, by + 28, {size: 12, color: pal.grey}); S.draw.text(c, "T", bx + 12, by + 88, {size: 12, color: pal.grey});
-      c.ctx.fillStyle = "#c2185b"; c.ctx.fillRect(bx + 28, by + 22, 52, 7);
-      if (pos){ var inten = Math.min(1, 0.25 + 0.75 * Math.log10(h / T + 1) / 2); c.ctx.globalAlpha = inten; c.ctx.fillRect(bx + 28, by + 82, 52, 7); c.ctx.globalAlpha = 1; }
-      S.draw.text(c, pos ? "positif" : "négatif", bx + bw / 2, by + bh + 20, {size: 12, color: pos ? pal.red : pal.grey});
-      var first = null; for (var j = 8; j <= 42; j++) if (hcg(j) >= T){ first = j; break; }
-      ro.set(0, h > 0 ? S.fmt(h, h < 10 ? 1 : 0) + " mUI/mL" : "indétectable (avant nidation)"); ro.set(1, pos ? "positif" : "négatif"); ro.set(2, S.fmt((14 + d.value) / 7, 1) + " SA (cycle de 28 j)"); ro.set(3, "jour " + first + " après l'ovulation");
-      nt.set(pos ? "hCG ≥ seuil : la bande T apparaît. Valeur moyenne ; doublement toutes les ≈ 2 jours au début." : (d.value < 8 ? "Avant la nidation, il n'y a pas d'hCG : un test est forcément négatif, même en cas de fécondation." : "Test encore négatif : l'hCG (" + S.fmt(h, 1) + " mUI/mL) est sous le seuil. Un test négatif trop précoce peut être un faux négatif : refaire 2 à 3 jours plus tard."), pos ? "ok" : "warn");
+      D.line(c, ax.L, ax.Y(Math.log10(T)), ax.R, ax.Y(Math.log10(T)), pal.red, 1.5, [5, 4]); D.label(c, "seuil du test " + T, ax.R - 4, ax.Y(Math.log10(T)) + 12, {align: "right", size: 10, color: pal.red});
+      D.line(c, ax.X(14), ax.T, ax.X(14), ax.B, pal.green, 1.2, [3, 4]); D.text(c, "règles attendues", ax.X(14) + 4, ax.T + 10, {align: "left", size: 10, color: pal.green});
+      D.line(c, ax.X(dd), ax.T, ax.X(dd), ax.B, pal.ink, 1.3, [5, 4]);
+      D.dot(c, ax.X(dd), ax.Y(Math.log10(Math.max(1, h))), 6, pos ? pal.red : pal.violet);
+      ro.set(0, h > 0 ? S.fmt(h, h < 10 ? 1 : 0) + " mUI/mL" : "indétectable (avant nidation)"); ro.set(1, mig >= 1 ? (pos ? "positif" : "négatif") : "pas encore fait"); ro.set(2, S.fmt((14 + dd) / 7, 1) + " SA (cycle de 28 j)"); ro.set(3, dd < 12 ? "actif (cycle normal)" : cjAlive ? "maintenu par l'hCG" : "régresse");
+      if (dd === first) nt.set("Défi réussi : avec un test à " + T + " mUI/mL, le premier jour positif est J" + first + " après l'ovulation" + (first > 14 ? ", soit " + (first - 14) + " jour(s) après le retard de règles." : first < 14 ? ", " + (14 - first) + " jour(s) avant les règles attendues : test très sensible." : ", le jour des règles attendues."), "ok");
+      else if (dd < 8) nt.set("Avant la nidation, il n'y a pas d'hCG : un test est forcément négatif, même en cas de fécondation. Défi : trouve le premier jour positif.", "warn");
+      else if (!pos) nt.set("hCG (" + S.fmt(h, 1) + " mUI/mL) encore sous le seuil : faux négatif possible. Refaire 2 à 3 jours plus tard.", "warn");
+      else nt.set("hCG ≥ seuil : la bande T apparaît. " + (first !== null && dd > first ? "Mais ce n'est pas le premier jour positif : recule." : ""), "ok");
     });
   }
 });

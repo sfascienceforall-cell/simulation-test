@@ -76,42 +76,108 @@ SFA.sim({
 SFA.sim({
   id: "p5-c08-charge-essai", ch: "c08", tag: "Défi",
   titre: "Charge d'essai : le champ est une somme de vecteurs",
-  resume: "Place la charge d'essai ; vois E₁, E₂, E total, et trouve le point où E = 0.",
-  but: "Fais glisser la petite charge d'essai ou règle ses coordonnées. Observe les champs E₁ et E₂ créés par chaque charge et leur somme. Défi : trouve un point où le champ total est nul (avec q₁ et q₂ de même signe).",
-  aRetenir: "Le champ en un point est E = F/q (N/C). Chaque charge source crée un champ E = k·|q|/r² (qui s'éloigne d'une charge +, vers une charge −) et on additionne les champs comme des vecteurs. La force sur une charge d'essai q est F = q·E.",
-  piege: "Champ ne veut pas dire force : le champ existe même sans charge d'essai. Et un champ nul au point P ne veut pas dire qu'il n'y a pas de charges autour : les contributions peuvent se compenser.",
+  resume: "Promène une petite charge d'essai entre deux sphères chargées : E₁ + E₂ donne le champ, F = q·E la force. Trouve le point où le champ s'annule.",
+  but: "Fais glisser la charge d'essai entre les deux sphères chargées. Les flèches E₁ et E₂ s'additionnent en E ; le graphe donne la valeur de E le long de la ligne pointillée. Lâche la charge pour voir la force F = q·E la mettre en mouvement. Défi : trouve le point où E = 0 pour trois couples de charges.",
+  aRetenir: "Une charge source Q crée en un point à la distance r un champ de valeur E = k·|Q|/r², qui s'éloigne d'une charge + et pointe vers une charge −. Le champ total est la somme vectorielle E = E₁ + E₂ ; une charge d'essai q y subit F = q·E (même sens que E si q > 0, sens opposé si q < 0).",
+  piege: "Champ ne veut pas dire force : le champ existe même sans charge d'essai, et il ne dépend pas de q. Un point où E = 0 n'est pas un point « sans charges autour » : les deux contributions s'y compensent exactement. Avec deux charges de signes contraires, ce point est en dehors du segment, du côté de la plus petite charge.",
   build: function(k, S){
-    var c = k.canvas(0, {ratio: 0.62});
-    var q1 = k.slider("Charge source q₁ (à gauche, x = −0,5 m)", -5, 5, 0.5, 3, "µC");
-    var q2 = k.slider("Charge source q₂ (à droite, x = +0,5 m)", -5, 5, 0.5, 3, "µC");
+    var K = 9.0e9;
+    var c = k.canvas(0, {ratio: 0.66}), g = k.canvas(170);
+    var q1 = k.slider("Charge source q₁ (à gauche, x = −0,5 m)", -5, 5, 0.5, 3, "µC", function(){ rel = null; });
+    var q2 = k.slider("Charge source q₂ (à droite, x = +0,5 m)", -5, 5, 0.5, 3, "µC", function(){ rel = null; });
     var qt = k.slider("Charge d'essai q", -5, 5, 0.5, 1, "nC");
-    var xt = k.slider("Position x de la charge d'essai", -1.5, 1.5, 0.05, 0.2, "m");
-    var yt = k.slider("Position y de la charge d'essai", -0.9, 0.9, 0.05, 0.5, "m");
-    k.button("Même signe", function(){ q1.set(3); q2.set(3); });
-    k.button("Dipôle", function(){ q1.set(3); q2.set(-3); });
-    var ro = k.readouts(["E₁", "E₂", "E total", "Direction de E", "Force sur la charge q"]);
-    var nt = k.note("", ""), f;
-    c.pointer(function(type, p){ if (!f || (type !== "down" && type !== "drag")) return; xt.set(P5.clamp(Math.round(f.ix(p.x) * 20) / 20, -1.5, 1.5)); yt.set(P5.clamp(Math.round(f.iy(p.y) * 20) / 20, -0.9, 0.9)); k.redraw(); });
+    var xt = k.slider("Position x de la charge d'essai", -1.5, 1.5, 0.01, 0.25, "m", function(){ rel = null; });
+    var yt = k.slider("Position y de la charge d'essai", -0.9, 0.9, 0.01, 0.35, "m", function(){ rel = null; });
+    var DEF = [[3, 3, "q₁ = q₂ = +3 µC"], [4, 1, "q₁ = +4 µC, q₂ = +1 µC"], [4, -1, "q₁ = +4 µC, q₂ = −1 µC"]], di = -1, found = [0, 0, 0];
+    k.button("Défi : où E = 0 ?", function(){ di = (di + 1) % 3; q1.set(DEF[di][0]); q2.set(DEF[di][1]); xt.set(-1.2); yt.set(0.5); rel = null; }, true);
+    var rel = null;   /* charge lâchée : {x, y, vx, vy, trail} (mouvement accéléré, masse fictive) */
+    var lp = k.loop(function(dt){
+      if (!rel){ lp.pause(); return; }
+      for (var i = 0; i < 20; i++){
+        var e = E(rel.x, rel.y), a = qt.value * 2e-5;   /* masse fictive : seuls le sens et l'allure comptent */
+        rel.vx += e[0] * a * dt / 20; rel.vy += e[1] * a * dt / 20;
+        var sp = Math.hypot(rel.vx, rel.vy); if (sp > 2.5){ rel.vx *= 2.5 / sp; rel.vy *= 2.5 / sp; }
+        rel.x += rel.vx * dt / 20; rel.y += rel.vy * dt / 20;
+      }
+      rel.trail.push([rel.x, rel.y]); rel.t += dt;
+      var hit = Math.hypot(rel.x + 0.5, rel.y) < 0.08 || Math.hypot(rel.x - 0.5, rel.y) < 0.08;
+      if (hit || Math.abs(rel.x) > 1.7 || Math.abs(rel.y) > 1.1 || rel.t > 6){ rel.end = hit ? "collée sur une sphère" : rel.t > 6 ? "presque immobile" : "sortie du cadre"; lp.pause(); }
+      k.redraw();
+    });
+    k.button("Lâcher la charge d'essai", function(){ rel = {x: xt.value, y: yt.value, vx: 0, vy: 0, trail: [[xt.value, yt.value]], t: 0}; lp.play(); });
+    var ro = k.readouts(["E₁", "E₂", "E total", "Force F = q·E", "Direction de E"]);
+    var nt = k.note("", ""), f, gx;
+    function E(x, y){
+      var ex = 0, ey = 0;
+      [[-0.5, q1.value], [0.5, q2.value]].forEach(function(s){ var dx = x - s[0], dy = y, r2 = dx * dx + dy * dy + 1e-6, r = Math.sqrt(r2), v = K * s[1] * 1e-6 / (r2 * r); ex += v * dx; ey += v * dy; });
+      return [ex, ey];
+    }
+    function E1(x, y, xs, q){ var dx = x - xs, dy = y, r2 = dx * dx + dy * dy + 1e-6, r = Math.sqrt(r2), v = K * q * 1e-6 / (r2 * r); return [v * dx, v * dy]; }
+    P5x.drag(c, k, function(){ return f ? [{x: f.X(xt.value), y: f.Y(yt.value), r: 34, set: function(px, py){ rel = null; xt.set(Math.round(P5.clamp(f.ix(px), -1.5, 1.5) * 100) / 100); yt.set(Math.round(P5.clamp(f.iy(py), -0.9, 0.9) * 100) / 100); }}] : null; });
+    P5x.drag(g, k, function(){ return gx ? [{x: gx.X(xt.value), y: gx.Y(Math.min(Math.hypot.apply(null, E(xt.value, yt.value)) / 1000, gx.y1)), r: 30, set: function(px){ rel = null; xt.set(Math.round(P5.clamp(gx.ix(px), -1.5, 1.5) * 100) / 100); }}] : null; });
+    function sphere(x, y, q){
+      var pal = S.draw.palette, col = q > 0 ? "#d6453a" : q < 0 ? "#2f64c8" : "#8a95a3";
+      if (q) S.draw.glow(c, x, y, 22 + 5 * Math.abs(q), col, 0.35);
+      P5x.ball(c, x, y, 15, col);
+      S.draw.text(c, q > 0 ? "+" : q < 0 ? "−" : "0", x, y + 1, {color: "#fff", size: 17});
+      P5x.tag(c, (q > 0 ? "+" : q < 0 ? "−" : "") + S.fmt(Math.abs(q), 1) + " µC", x, y + 30, col === "#8a95a3" ? "#4b5868" : col, {size: 11});
+    }
     k.draw(function(){
-      c.clear();
-      var pal = S.draw.palette, ctx = c.ctx;
-      f = P5.frame(c, {x0: -1.6, x1: 1.6, y0: -1, y1: 1}, {grid: true, axes: true});
-      var C1 = {x: -0.5, y: 0, q: q1.value * 1e-6}, C2 = {x: 0.5, y: 0, q: q2.value * 1e-6};
-      var e1 = Efield([C1], xt.value, yt.value), e2 = Efield([C2], xt.value, yt.value), et = [e1[0] + e2[0], e1[1] + e2[1]];
-      var n1 = Math.hypot(e1[0], e1[1]), n2 = Math.hypot(e2[0], e2[1]), nT = Math.hypot(et[0], et[1]);
-      [C1, C2].forEach(function(z){ var col = z.q > 0 ? pal.red : z.q < 0 ? pal.acc : pal.grey; S.draw.dot(c, f.X(z.x), f.Y(z.y), 13, col); S.draw.text(c, z.q > 0 ? "+" : z.q < 0 ? "−" : "0", f.X(z.x), f.Y(z.y), {color: "#fff", size: 15}); });
-      var X = f.X(xt.value), Y = f.Y(yt.value), mx = Math.max(n1, n2, nT, 1), sc = 70 / mx;
-      P5.vec(c, X, Y, X + e1[0] * sc, Y - e1[1] * sc, pal.acc, "E₁", {w: 2});
-      P5.vec(c, X, Y, X + e2[0] * sc, Y - e2[1] * sc, pal.amber, "E₂", {w: 2});
-      P5.vec(c, X, Y, X + et[0] * sc, Y - et[1] * sc, pal.green, "E", {w: 3.4});
-      S.draw.dot(c, X, Y, 7, qt.value >= 0 ? pal.red : pal.acc);
-      S.draw.text(c, "échelle : 70 px = " + (mx >= 1000 ? S.fmt(mx / 1000, 1) + " kN/C" : S.fmt(mx, 0) + " N/C"), c.W - 10, c.H - 12, {align: "right", size: 12, color: pal.grey});
-      var F = qt.value * 1e-9;
+      var pal = S.draw.palette, ctx = c.ctx, W = c.W, H = c.H;
+      ctx.fillStyle = P5x.lin(ctx, 0, 0, 0, H, [[0, "#f7f9fc"], [1, "#eaf0f7"]]); ctx.fillRect(0, 0, W, H);
+      f = P5.frame(c, {x0: -1.6, x1: 1.6, y0: -1, y1: 1}, {grid: true, axes: false});
+      /* carte du champ : petites flèches grises dont l'opacité suit la valeur */
+      var step = W < 420 ? 0.2 : 0.16;
+      for (var gx0 = -1.5; gx0 <= 1.51; gx0 += step) for (var gy0 = -0.9; gy0 <= 0.91; gy0 += step){
+        var e = E(gx0, gy0), n = Math.hypot(e[0], e[1]); if (n < 1) continue;
+        var a = Math.min(0.55, 0.08 + Math.log10(1 + n / 2e3) * 0.18), L = 9, ux = e[0] / n, uy = e[1] / n, X0 = f.X(gx0), Y0 = f.Y(gy0);
+        ctx.strokeStyle = "rgba(70,90,130," + a.toFixed(2) + ")"; ctx.fillStyle = ctx.strokeStyle; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(X0 - ux * L / 2, Y0 + uy * L / 2); ctx.lineTo(X0 + ux * L / 2, Y0 - uy * L / 2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(X0 + ux * L / 2 + ux * 3, Y0 - uy * L / 2 - uy * 3); ctx.lineTo(X0 + ux * L / 2 - uy * 2.5, Y0 - uy * L / 2 - ux * 2.5); ctx.lineTo(X0 + ux * L / 2 + uy * 2.5, Y0 - uy * L / 2 + ux * 2.5); ctx.fill();
+      }
+      /* ligne de profil (graphe) */
+      var py = rel ? rel.y : yt.value, px = rel ? rel.x : xt.value;
+      S.draw.line(c, f.X(-1.6), f.Y(py), f.X(1.6), f.Y(py), "rgba(194,106,12,.55)", 1.4, [6, 5]);
+      sphere(f.X(-0.5), f.Y(0), q1.value); sphere(f.X(0.5), f.Y(0), q2.value);
+      if (di >= 0){ var Dz = DEF[di]; if (found[di]) P5x.tag(c, "trouvé !", f.X(px), f.Y(py) - 26, pal.green, {size: 11}); }
+      if (rel){ ctx.strokeStyle = S.draw.tint(pal.violet, 0.7); ctx.lineWidth = 2; ctx.beginPath(); rel.trail.forEach(function(p, i){ if (i) ctx.lineTo(f.X(p[0]), f.Y(p[1])); else ctx.moveTo(f.X(p[0]), f.Y(p[1])); }); ctx.stroke(); }
+      var X = f.X(px), Y = f.Y(py);
+      var e1 = E1(px, py, -0.5, q1.value), e2 = E1(px, py, 0.5, q2.value), et = [e1[0] + e2[0], e1[1] + e2[1]];
+      var n1 = Math.hypot(e1[0], e1[1]), n2 = Math.hypot(e2[0], e2[1]), nT = Math.hypot(et[0], et[1]), mx = Math.max(n1, n2, nT, 1), sc = Math.min(W, H) * 0.2 / mx;
+      if (!rel){
+        S.draw.line(c, X + e1[0] * sc, Y - e1[1] * sc, X + et[0] * sc, Y - et[1] * sc, "#9bb0d8", 1.4, [4, 4]);
+        S.draw.line(c, X + e2[0] * sc, Y - e2[1] * sc, X + et[0] * sc, Y - et[1] * sc, "#e6b98a", 1.4, [4, 4]);
+        P5.vec(c, X, Y, X + e1[0] * sc, Y - e1[1] * sc, pal.acc, "E₁", {w: 2.2, size: 12});
+        P5.vec(c, X, Y, X + e2[0] * sc, Y - e2[1] * sc, pal.amber, "E₂", {w: 2.2, size: 12});
+        if (nT > 0.02 * mx) P5.vec(c, X, Y, X + et[0] * sc, Y - et[1] * sc, pal.green, "E", {w: 3.6, size: 13});
+      } else if (nT > 1){
+        var fs = qt.value >= 0 ? 1 : -1, Lf = 34;
+        P5.vec(c, X, Y, X + fs * et[0] / nT * Lf, Y - fs * et[1] / nT * Lf, pal.violet, "F", {w: 3, size: 12});
+      }
+      P5x.ball(c, X, Y, 7, qt.value >= 0 ? "#e2675c" : "#5a86d8");
+      if (!rel) P5x.handle(c, X, Y, pal.violet, 10, false);
+      S.draw.text(c, qt.value >= 0 ? "+" : "−", X, Y + 0.5, {size: 11, color: pal.violet});
+      P5x.hint(c, rel ? (rel.end ? "Charge " + rel.end + " · déplace-la pour recommencer" : "Mouvement sous F = q·E (accéléré)") : "Glisse la charge d'essai", {size: 11.5});
+      S.draw.text(c, "échelle des flèches : " + (mx >= 1e6 ? S.fmt(mx / 1e6, 2) + " MN/C" : mx >= 1000 ? S.fmt(mx / 1000, 0) + " kN/C" : S.fmt(mx, 0) + " N/C") + " = " + S.fmt(sc * mx, 0) + " px", W - 10, H - 12, {align: "right", size: 11, color: "#5f6b7a"});
+      /* graphe : ‖E‖ le long de la ligne pointillée */
+      g.clear();
+      var ymax = 20; for (var sx2 = -1.6; sx2 <= 1.6; sx2 += 0.02){ var es = E(sx2, py); ymax = Math.max(ymax, Math.hypot(es[0], es[1]) / 1000 * 1.15); } ymax = Math.min(400, ymax);
+      gx = S.draw.axes(g, {x0: -1.6, x1: 1.6, y0: 0, y1: ymax, xl: "x (m)", yl: "E (kN/C)", stepX: 0.5, l: 46});
+      S.draw.fn(g, gx, function(x){ var e = E(x, py); return Math.min(Math.hypot(e[0], e[1]) / 1000, ymax * 2); }, pal.green, 2.8);
+      [[-0.5, q1.value], [0.5, q2.value]].forEach(function(s){ S.draw.line(g, gx.X(s[0]), gx.Y(0), gx.X(s[0]), gx.Y(ymax), s[1] > 0 ? "rgba(214,69,58,.4)" : "rgba(47,100,200,.4)", 1.2, [3, 3]); });
+      P5x.handle(g, gx.X(px), gx.Y(Math.min(nT / 1000, ymax)), pal.violet, 7);
+      P5x.hint(g, "E le long du pointillé", {x: 8, y: 12, align: "left", size: 11});
       ro.set(0, S.sci(n1, 2) + " N/C"); ro.set(1, S.sci(n2, 2) + " N/C"); ro.set(2, S.sci(nT, 2) + " N/C");
-      ro.set(3, nT < 1 ? "—" : S.fmt(Math.atan2(et[1], et[0]) * 180 / Math.PI, 0) + " °"); ro.set(4, S.sci(Math.abs(F) * nT, 2) + " N");
-      var zero = nT < 0.03 * Math.max(n1, n2, 1) && (n1 > 1e4 || n2 > 1e4);
-      if (zero) nt.set("E ≈ 0 ici : E₁ et E₂ sont opposés et de même norme. Une charge d'essai placée là ne subirait aucune force (équilibre, instable).", "ok");
-      else nt.set("E = E₁ + E₂ (somme vectorielle) ; F = q·E = " + S.sci(Math.abs(F) * nT, 2) + " N, " + (F >= 0 ? "dans le sens de E (q > 0)" : "dans le sens opposé à E (q < 0)") + ". Cherche le point où les deux flèches s'annulent.", "");
+      ro.set(3, S.sci(Math.abs(qt.value) * 1e-9 * nT, 2) + " N"); ro.set(4, nT < 1 ? "—" : S.fmt(Math.atan2(et[1], et[0]) * 180 / Math.PI, 0) + " °");
+      var zero = nT < 0.05 * Math.max(n1, n2) && Math.max(n1, n2) > 1e3;
+      if (di >= 0 && !rel){
+        var match = q1.value === DEF[di][0] && q2.value === DEF[di][1];
+        if (zero && match) found[di] = 1;
+        var tot = found[0] + found[1] + found[2];
+        nt.set("<b>Défi " + (di + 1) + "/3 · " + DEF[di][2] + "</b> : place la charge d'essai là où E = 0 (moins de 5 % de E₁). " + (!match ? "Remets les charges du défi (bouton)." : zero ? "Trouvé en x = " + S.fmt(px, 2) + " m, y = " + S.fmt(py, 2) + " m : E₁ et E₂ sont opposés et égaux." + (di === 2 ? " Avec des charges de signes contraires, ce point est hors du segment, du côté de la plus petite charge." : "") : "Indice : cherche sur l'axe des charges (y = 0), là où la courbe du graphe touche zéro.") + " · " + tot + "/3 trouvés.", zero && match ? "ok" : "");
+      } else if (rel) nt.set("La charge d'essai " + (qt.value >= 0 ? "(q > 0) suit le sens de E" : "(q < 0) part dans le sens opposé à E") + " : F = q·E. Sa trajectoire ne suit pas forcément une ligne de champ (elle prend de la vitesse). Modèle simplifié : temps accéléré.", "");
+      else if (zero) nt.set("E ≈ 0 ici : E₁ et E₂ ont même valeur et des sens opposés. Une charge d'essai posée là ne subit aucune force (équilibre).", "ok");
+      else nt.set("E = E₁ + E₂ (somme vectorielle, construction du parallélogramme) ; F = q·E = " + S.sci(Math.abs(qt.value) * 1e-9 * nT, 2) + " N, " + (qt.value >= 0 ? "dans le sens de E (q > 0)." : "dans le sens opposé à E (q < 0)."), "");
     });
   }
 });

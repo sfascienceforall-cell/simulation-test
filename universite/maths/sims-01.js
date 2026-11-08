@@ -9,6 +9,32 @@ function vl(c, ax, x, col, dash, w){ D.line(c, ax.X(x), ax.T, ax.X(x), ax.B, col
 function hl(c, ax, y, col, dash, w){ D.line(c, ax.L, ax.Y(y), ax.R, ax.Y(y), col, w || 1.5, dash || [5, 4]); }
 function curve(c, ax, fx, fy, t0, t1, col, w, dash, n){ var ctx = c.ctx; n = n || 500; ctx.save(); ctx.beginPath(); ctx.rect(ax.L, ax.T - 2, ax.R - ax.L, ax.B - ax.T + 4); ctx.clip(); ctx.strokeStyle = col; ctx.lineWidth = w || 2.4; if (dash) ctx.setLineDash(dash); ctx.beginPath(); var st = false; for (var i = 0; i <= n; i++){ var t = t0 + (t1 - t0) * i / n, x = fx(t), y = fy(t); if (!isFinite(x) || !isFinite(y)){ st = false; continue; } if (!st){ ctx.moveTo(ax.X(x), ax.Y(y)); st = true; } else ctx.lineTo(ax.X(x), ax.Y(y)); } ctx.stroke(); ctx.restore(); }
 function fillArea(c, ax, f, g, a, b, col){ var ctx = c.ctx, n = 240; ctx.save(); ctx.beginPath(); ctx.rect(ax.L, ax.T, ax.R - ax.L, ax.B - ax.T); ctx.clip(); ctx.fillStyle = col; ctx.beginPath(); for (var i = 0; i <= n; i++){ var x = a + (b - a) * i / n; ctx.lineTo(ax.X(x), ax.Y(f(x))); } for (i = n; i >= 0; i--){ x = a + (b - a) * i / n; ctx.lineTo(ax.X(x), ax.Y(g(x))); } ctx.closePath(); ctx.fill(); ctx.restore(); }
+/* ---- aides de la refonte (novembre 2026) : dessin et graphe côte à côte (empilés sur téléphone), repère dans une boîte, poignées ---- */
+function lay2(c, wide, tall){ var r0 = c.resize; c.resize = function(){ c.ratio = (c.cv.parentNode && c.cv.parentNode.clientWidth < 560) ? tall : wide; r0(); }; c.resize(); }
+function split2(c, f, g){ var W = c.W, H = c.H; if (W < 560){ var h = Math.round(H * (g || f)); return [{x:0, y:0, w:W, h:h}, {x:0, y:h, w:W, h:H - h}]; } var w = Math.round(W * f); return [{x:0, y:0, w:w, h:H}, {x:w, y:0, w:W - w, h:H}]; }
+function axIn(c, b, o){ var q = {}, key; for (key in o) q[key] = o[key]; q.l = b.x + (o.l || 46); q.r = c.W - b.x - b.w + (o.r || 14); q.t = b.y + (o.t || 16); q.b = c.H - b.y - b.h + (o.b || 34); return D.axes(c, q); }
+function rnd(seed){ var s = seed >>> 0; return function(){ s = (s + 0x6D2B79F5) >>> 0; var t = s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function hnd(c, x, y, col, txt){ if (!isFinite(x) || !isFinite(y)) return; var ctx = c.ctx; D.glow(c, x, y, 20, col, 0.3); ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, 12, 0, 7); ctx.stroke(); ctx.restore(); D.dot(c, x, y, 7, col); if (txt) D.text(c, txt, x + 15, y - 15, {size:10.5, color:col, align:"left", weight:700, halo:true}); }
+function frame(c, b, title, col){ D.panel(c, b.x + 4, b.y + 4, b.w - 8, b.h - 8, {shadow:false, fill:"rgba(248,250,252,.9)", title:title, titleColor:col}); }
+/* repère dans une boîte avec graduations choisies : o.xt / o.yt = [[valeur, "texte"], …] */
+function axBox(c, b, o){
+  var L = b.x + (o.l || 40), R = b.x + b.w - (o.r || 12), T = b.y + (o.t || 14), B = b.y + b.h - (o.b || 28), ctx = c.ctx;
+  var ax = {x0: o.x0, x1: o.x1, y0: o.y0, y1: o.y1, L: L, R: R, T: T, B: B};
+  ax.X = function(x){ return L + (x - o.x0) / (o.x1 - o.x0) * (R - L); }; ax.Y = function(y){ return B - (y - o.y0) / (o.y1 - o.y0) * (B - T); };
+  ax.ix = function(px){ return o.x0 + (px - L) / (R - L) * (o.x1 - o.x0); }; ax.iy = function(py){ return o.y0 + (B - py) / (B - T) * (o.y1 - o.y0); };
+  var y0p = (!o.xb && o.y0 <= 0 && o.y1 >= 0) ? ax.Y(0) : B, x0p = (o.x0 <= 0 && o.x1 >= 0) ? ax.X(0) : L;
+  ctx.save(); ctx.lineWidth = 1; ctx.strokeStyle = "#eef1f5"; ctx.beginPath();
+  (o.xt || []).forEach(function(t){ var p = Math.round(ax.X(t[0])) + 0.5; ctx.moveTo(p, T); ctx.lineTo(p, B); });
+  (o.yt || []).forEach(function(t){ var p = Math.round(ax.Y(t[0])) + 0.5; ctx.moveTo(L, p); ctx.lineTo(R, p); }); ctx.stroke();
+  ctx.strokeStyle = "#a3adba"; ctx.lineWidth = 1.25; ctx.beginPath(); ctx.moveTo(L, y0p); ctx.lineTo(R, y0p); ctx.moveTo(x0p, T); ctx.lineTo(x0p, B); ctx.stroke();
+  ctx.font = "600 10.5px Mulish, system-ui, sans-serif"; ctx.fillStyle = "#7b8694"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+  (o.xt || []).forEach(function(t){ if (t[1]) ctx.fillText(t[1], ax.X(t[0]), Math.min(B, y0p) + 5); });
+  ctx.textAlign = "right"; ctx.textBaseline = "middle"; (o.yt || []).forEach(function(t){ if (t[1]) ctx.fillText(t[1], x0p - 5, ax.Y(t[0])); });
+  ctx.font = "700 11px Mulish, system-ui, sans-serif"; ctx.fillStyle = "#2c3a4e";
+  if (o.xl){ ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText(o.xl, R, y0p - 4); }
+  if (o.yl){ ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText(o.yl, x0p + 6, T); }
+  ctx.restore(); return ax;
+}
 /* Mathématiques BA1 · chapitre 1 : fonctions réelles et graphes */
 /* 1 ---- transformations ---- */
 var T1 = {
@@ -126,31 +152,85 @@ var DATA3 = [[0, 520], [1, 770], [2, 1190], [3, 1690], [4, 2650], [5, 3790], [6,
 SFA.sim({
   id: "um-c01-exp-ln", ch: "c01", tag: "Exponentielle et logarithme",
   titre: "Exponentielle, logarithme et papier semi-logarithmique",
-  resume: "Ajuste la base b : en haut bˣ et sa réciproque log_b ; en bas, des mesures de croissance bactérienne que l'échelle log redresse en droite.",
-  but: "Fais varier la base b et le départ N₀. Dans le graphe du bas, l'axe vertical est gradué en puissances de 10 : une exponentielle y devient une droite dont la pente est log₁₀ b. Cherche b et N₀ qui passent par les points.",
-  aRetenir: "bˣ = e<sup>x ln b</sup>. log<sub>b</sub> x = ln x / ln b est la réciproque de bˣ. ln(xy) = ln x + ln y ; ln(xʸ) = y ln x. Une croissance exponentielle N = N₀bᵗ devient une droite sur échelle log : pente = log b. Temps de doublement = ln 2 / ln b.",
-  piege: "ln(x + y) ≠ ln x + ln y. Et sur une échelle logarithmique, des écarts égaux représentent des rapports égaux (×10), pas des différences égales.",
+  resume: "Une culture de bactéries se divise sous tes yeux. Sur papier semi-logarithmique, ses comptages s'alignent : glisse la droite sur les points pour lire la base b et le temps de doublement.",
+  but: "Lance la culture : les bactéries se divisent et chaque comptage horaire s'ajoute au graphe. Compare l'échelle linéaire et l'échelle logarithmique, puis glisse les deux poignées de la droite N = N₀·bᵗ. Défi : erreur moyenne inférieure à 5 %, puis lis le temps de doublement.",
+  aRetenir: "bˣ = e<sup>x ln b</sup>. log<sub>b</sub> x = ln x / ln b est la réciproque de bˣ. ln(xy) = ln x + ln y ; ln(xʸ) = y ln x. Une croissance exponentielle N = N₀bᵗ devient une droite sur échelle log : log N = log N₀ + t·log b (ordonnée à l'origine log N₀, pente log b). Temps de doublement = ln 2 / ln b.",
+  piege: "ln(x + y) ≠ ln x + ln y. Et sur une échelle logarithmique, des écarts égaux représentent des rapports égaux (×10), pas des différences égales : le zéro n'y existe pas.",
   build: function(k, S){
-    var c1 = k.canvas(250), c2 = k.canvas(250);
-    var b = k.slider("Base b", 0.2, 3, 0.05, 1.5, ""), n0 = k.slider("Effectif de départ N₀", 100, 1000, 10, 500, "");
-    var ro = k.readouts(["ln b", "Pente log₁₀ b", "Doublement (ln 2 / ln b)", "Erreur moyenne sur les mesures"]), nt = k.note("", "");
-    k.draw(function(){
-      c1.clear(); c2.clear(); var B = b.value, ax = D.axes(c1, {x0: -4, x1: 4, y0: -3, y1: 5, equal: true, stepX: 1, stepY: 1, xl: "x", yl: "y"});
-      D.line(c1, ax.X(-8), ax.Y(-8), ax.X(8), ax.Y(8), "#aab2bd", 1.4, [6, 4]);
-      D.fn(c1, ax, function(x){ return Math.pow(B, x); }, P.acc, 3); D.fn(c1, ax, function(x){ return Math.log(x) / Math.log(B); }, P.red, 3);
-      lab(c1, "y = " + F(B, 2) + "ˣ", ax.R - 10, ax.T + 14, P.acc, 13, "right"); lab(c1, "y = log" + F(B, 2) + " x", ax.R - 10, ax.T + 32, P.red, 13, "right");
-      pt(c1, ax, 0, 1, P.acc, 4); pt(c1, ax, 1, 0, P.red, 4);
-      var L = 50, R = c2.W - 16, T = 14, Bt = c2.H - 34, ctx = c2.ctx; ctx.save(); ctx.font = "600 11px Mulish, system-ui"; ctx.fillStyle = "#5f6b7a";
-      function X(t){ return L + t / 8.4 * (R - L); } function Y(v){ return Bt - (Math.log10(v) - 1.7) / (4.5 - 1.7) * (Bt - T); }
-      for (var e = 2; e <= 4; e++){ [1, 2, 5].forEach(function(m){ var v = m * Math.pow(10, e); if (v > 40000) return; ctx.strokeStyle = m === 1 ? "#cfd6df" : "#edf0f4"; ctx.beginPath(); ctx.moveTo(L, Y(v)); ctx.lineTo(R, Y(v)); ctx.stroke(); if (m === 1){ ctx.textAlign = "right"; ctx.fillText("10" + ["", "", "²", "³", "⁴"][e], L - 6, Y(v) + 4); } }); }
-      for (var t = 0; t <= 8; t++){ ctx.textAlign = "center"; ctx.fillText(t, X(t), Bt + 16); ctx.strokeStyle = "#edf0f4"; ctx.beginPath(); ctx.moveTo(X(t), T); ctx.lineTo(X(t), Bt); ctx.stroke(); }
-      ctx.fillText("temps (h) — axe vertical logarithmique", (L + R) / 2, Bt + 30);
-      ctx.beginPath(); ctx.rect(L, T, R - L, Bt - T); ctx.clip(); ctx.strokeStyle = P.acc; ctx.lineWidth = 3; ctx.beginPath();
-      for (var i = 0; i <= 100; i++){ var tt = 8.4 * i / 100, v = n0.value * Math.pow(B, tt); i ? ctx.lineTo(X(tt), Y(v)) : ctx.moveTo(X(tt), Y(v)); } ctx.stroke();
-      var err = 0; DATA3.forEach(function(d){ D.dot(c2, X(d[0]), Y(d[1]), 5.5, P.red); err += Math.abs(Math.log(n0.value * Math.pow(B, d[0])) - Math.log(d[1])); }); ctx.restore();
-      err /= DATA3.length; ro.set(0, F(Math.log(B), 3)); ro.set(1, F(Math.log10(B), 3)); ro.set(2, B > 1 ? F(Math.log(2) / Math.log(B), 2) + " h" : "— (décroissance)"); ro.set(3, F((Math.exp(err) - 1) * 100, 1) + " %");
-      nt.set(Math.abs(B - 1) < 1e-9 ? "b = 1 : la fonction est constante, le logarithme de base 1 n'existe pas." : (err < 0.04 ? "Très bon ajustement : les points sont presque alignés sur la droite." : "Les points rouges sont des mesures. Ajuste la pente (b) puis le départ (N₀) pour les rejoindre."), Math.abs(B - 1) < 1e-9 ? "warn" : (err < 0.04 ? "ok" : ""));
+    var c = k.canvas(0, {ratio: 0.64}); lay2(c, 0.64, 1.45);
+    var sc = k.seg("Échelle verticale du graphe", [["log", "logarithmique"], ["lin", "linéaire"]], "log");
+    var b = k.slider("Base b (facteur par heure)", 0.5, 2.5, 0.01, 1.2, ""), n0 = k.slider("Effectif de départ N₀", 50, 1500, 10, 300, "");
+    var cul = {data: [], b: 1.48}, seed = 1, tt = 0, grab = -1, G = null, wins = 0;
+    function make(){
+      if (seed === 1) cul.data = DATA3.map(function(d){ return d.slice(); });
+      else { var r = rnd(seed * 7919), bb = 1.3 + 0.55 * r(), nn = 150 + 650 * r(); cul.data = []; for (var t = 0; t <= 8; t++) cul.data.push([t, Math.round(nn * Math.pow(bb, t) * Math.exp(0.1 * (r() - 0.5)))]); }
+      tt = 0; b.set(1.2); n0.set(300);
+    }
+    var R = rnd(11), cells = [], seeds = [[-0.32, -0.2], [0.35, 0.12], [-0.05, 0.45], [0.18, -0.48], [-0.52, 0.28]];
+    for (var i = 0; i < 300; i++){ var px, py; if (i < seeds.length){ px = seeds[i][0]; py = seeds[i][1]; } else { var p = cells[Math.floor(R() * i)], a = R() * 6.283, d = 0.055 + 0.05 * R(); px = p.x + Math.cos(a) * d; py = p.y + Math.sin(a) * d; var m = Math.hypot(px, py); if (m > 0.86){ px *= 0.86 / m; py *= 0.86 / m; } } cells.push({x: px, y: py, a: R() * PI}); }
+    function Ntrue(t){ var dd = cul.data, j = Math.min(7, Math.max(0, Math.floor(t))), f = cl(t - j, 0, 1); if (t >= 8) return dd[8][1]; return dd[j][1] * Math.pow(dd[j + 1][1] / dd[j][1], f); }
+    var lp = k.loop(function(dt){ tt += dt * 0.75; if (tt >= 8.4){ tt = 8.4; lp.pause(); } k.redraw(); });
+    k.button("▶ Lancer / arrêter la culture", function(){ if (tt >= 8.4) tt = 0; lp.running ? lp.pause() : lp.play(); }, true);
+    k.button("Nouvelle culture", function(){ seed++; make(); lp.play(); });
+    var ro = k.readouts(["Taux continu k = ln b", "Doublement ln 2 / ln b", "Erreur moyenne", "Comptage à t"]), nt = k.note("", "");
+    make(); c.cv.style.touchAction = "none";
+    c.pointer(function(t, p){
+      if (!G) return;
+      if (t === "down"){ grab = -1; [0, 1].forEach(function(q){ var hx = G.X(q ? 8 : 0), hy = G.Y(n0.value * (q ? Math.pow(b.value, 8) : 1)); if (Math.hypot(hx - p.x, hy - p.y) < 26) grab = q; }); }
+      else if (t === "drag" && grab >= 0){ var v = G.iY(p.y); if (!(v > 0)) v = 1; if (grab === 0) n0.set(cl(Math.round(v / 10) * 10, 50, 1500)); else b.set(cl(Math.pow(v / n0.value, 1 / 8), 0.5, 2.5)); k.redraw(); }
+      else if (t === "move"){ var on = false; [0, 1].forEach(function(q){ if (Math.hypot(G.X(q ? 8 : 0) - p.x, G.Y(n0.value * (q ? Math.pow(b.value, 8) : 1)) - p.y) < 26) on = true; }); c.cv.style.cursor = on ? "grab" : "default"; }
+      else if (t === "up") grab = -1;
     });
+    k.draw(function(){
+      c.clear(); var ctx = c.ctx, bx = split2(c, 0.4, 0.46), B = b.value, N0 = n0.value, dd = cul.data, Nmax = dd[8][1], tnow = Math.min(tt, 8), Nn = Ntrue(tnow);
+      /* --- la boîte de Petri --- */
+      var q = bx[0], cx = q.x + q.w / 2, cy = q.y + q.h / 2 + 4, rad = Math.min(q.w, q.h) / 2 - 22;
+      ctx.save(); ctx.shadowColor = "rgba(15,27,45,.18)"; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(cx, cy, rad + 8, 0, 7); ctx.fillStyle = "#eef3f8"; ctx.fill(); ctx.restore();
+      ctx.beginPath(); ctx.arc(cx, cy, rad + 8, 0, 7); ctx.strokeStyle = "#b8c4d2"; ctx.lineWidth = 2; ctx.stroke();
+      var gr = ctx.createRadialGradient(cx - rad * 0.3, cy - rad * 0.3, rad * 0.1, cx, cy, rad); gr.addColorStop(0, "#fbf0cf"); gr.addColorStop(1, "#ecd9a0");
+      ctx.beginPath(); ctx.arc(cx, cy, rad, 0, 7); ctx.fillStyle = gr; ctx.fill();
+      var unit = Nmax / 300, cnt = Math.min(300, Nn / unit), s = Math.max(0.7, rad / 120);
+      for (i = 0; i < Math.ceil(cnt); i++){
+        var ce = cells[i], fr = i < Math.floor(cnt) ? 1 : cnt - Math.floor(cnt), CXc = cx + ce.x * rad, CYc = cy + ce.y * rad;
+        ctx.save(); ctx.translate(CXc, CYc); ctx.rotate(ce.a); ctx.globalAlpha = 0.35 + 0.65 * fr;
+        var div = i >= Math.floor(cnt) - 3 && lp.running, gap = div ? 2.2 * s : 0;
+        [-1, 1].forEach(function(sg){ ctx.beginPath(); ctx.ellipse(sg * (2.6 * s + gap / 2), 0, 2.9 * s, 2.1 * s, 0, 0, 7); ctx.fillStyle = "#a63d74"; ctx.fill(); ctx.strokeStyle = "#6f2350"; ctx.lineWidth = 0.7; ctx.stroke(); });
+        ctx.restore();
+      }
+      ctx.globalAlpha = 1; ctx.beginPath(); ctx.arc(cx - rad * 0.45, cy - rad * 0.5, rad * 0.22, PI * 1.1, PI * 1.6); ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.lineWidth = 3; ctx.stroke();
+      D.label(c, "1 bâtonnet dessiné ≈ " + F(unit, 0) + " bactéries", cx, q.y + q.h - 10, {color: "#6f2350", size: 10.5});
+      D.display(c, F(tnow, 1) + " h", q.x + 50, q.y + 30, {w: 84, h: 44, caption: "TEMPS"});
+      D.display(c, F(Nn, 0), q.x + q.w - 58, q.y + 30, {w: 100, h: 44, caption: "BACTÉRIES", size: 17});
+      /* --- le graphe (log ou linéaire) --- */
+      var g = bx[1], L = g.x + 54, Rr = g.x + g.w - 14, T = g.y + 22, Bt = g.y + g.h - 40, lg = sc.value === "log";
+      var lo = Math.floor(Math.log10(dd[0][1] * 0.6)), hi = Math.ceil(Math.log10(Nmax * 1.6)), ymax = Nmax * 1.25;
+      function X(t){ return L + t / 8.4 * (Rr - L); }
+      function Yv(v){ return lg ? Bt - (Math.log10(Math.max(v, 1e-9)) - lo) / (hi - lo) * (Bt - T) : Bt - v / ymax * (Bt - T); }
+      G = {X: X, Y: Yv, iY: function(py){ return lg ? Math.pow(10, lo + (Bt - py) / (Bt - T) * (hi - lo)) : (Bt - py) / (Bt - T) * ymax; }};
+      ctx.save(); ctx.font = "600 10.5px Mulish, system-ui"; ctx.fillStyle = "#5f6b7a"; ctx.lineWidth = 1;
+      if (lg){ for (var e = lo; e <= hi; e++){ for (var mm = 1; mm <= 9; mm++){ var v = mm * Math.pow(10, e); if (e === hi && mm > 1) break; ctx.strokeStyle = mm === 1 ? "#cfd6df" : "#eef1f5"; ctx.beginPath(); ctx.moveTo(L, Yv(v)); ctx.lineTo(Rr, Yv(v)); ctx.stroke(); }
+          ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.fillText("10" + "⁰¹²³⁴⁵⁶⁷⁸⁹"[e], L - 6, Yv(Math.pow(10, e))); } }
+      else { var st = Math.pow(10, Math.floor(Math.log10(ymax / 4))), stp = ymax / st > 8 ? st * 2 : st; if (ymax / stp > 8) stp *= 2.5; for (var yv = 0; yv <= ymax; yv += stp){ ctx.strokeStyle = "#eef1f5"; ctx.beginPath(); ctx.moveTo(L, Yv(yv)); ctx.lineTo(Rr, Yv(yv)); ctx.stroke(); ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.fillText(F(yv, 0), L - 6, Yv(yv)); } }
+      ctx.textBaseline = "top"; ctx.textAlign = "center"; for (var tq = 0; tq <= 8; tq++){ ctx.strokeStyle = "#eef1f5"; ctx.beginPath(); ctx.moveTo(X(tq), T); ctx.lineTo(X(tq), Bt); ctx.stroke(); ctx.fillText(tq, X(tq), Bt + 5); }
+      ctx.fillStyle = "#2c3a4e"; ctx.font = "700 11px Mulish, system-ui"; ctx.fillText("t (h)", (L + Rr) / 2, Bt + 21); ctx.textAlign = "left"; ctx.fillText(lg ? "N (échelle log)" : "N (échelle linéaire)", L + 4, g.y + 4);
+      ctx.strokeStyle = "#a3adba"; ctx.lineWidth = 1.25; ctx.beginPath(); ctx.moveTo(L, T); ctx.lineTo(L, Bt); ctx.lineTo(Rr, Bt); ctx.stroke(); ctx.restore();
+      ctx.save(); ctx.beginPath(); ctx.rect(L, T - 4, Rr - L, Bt - T + 4); ctx.clip();
+      var err = 0, ne = 0;
+      ctx.strokeStyle = P.acc; ctx.lineWidth = 3; ctx.beginPath(); for (i = 0; i <= 120; i++){ var t2 = 8.4 * i / 120, yy = Yv(N0 * Math.pow(B, t2)); i ? ctx.lineTo(X(t2), yy) : ctx.moveTo(X(t2), yy); } ctx.stroke();
+      if (tt > 0.05){ ctx.strokeStyle = "rgba(166,61,116,.35)"; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.beginPath(); for (i = 0; i <= 80; i++){ var t3 = tnow * i / 80; i ? ctx.lineTo(X(t3), Yv(Ntrue(t3))) : ctx.moveTo(X(t3), Yv(Ntrue(t3))); } ctx.stroke(); ctx.setLineDash([]); }
+      dd.forEach(function(d){ if (d[0] > tt + 1e-9) return; D.dot(c, X(d[0]), Yv(d[1]), 5.5, "#a63d74"); err += Math.abs(Math.log(N0 * Math.pow(B, d[0])) - Math.log(d[1])); ne++; });
+      ctx.restore();
+      var done = ne === 9, er = ne ? (Math.exp(err / ne) - 1) * 100 : NaN, ok = done && er < 5, Td = B > 1 ? Math.log(2) / Math.log(B) : NaN;
+      if (ok && Td > 0.2){ var t0 = 0, n = N0; ctx.save(); ctx.strokeStyle = P.green; ctx.lineWidth = 2; for (i = 0; i < 12 && t0 + Td <= 8.4; i++){ ctx.beginPath(); ctx.moveTo(X(t0), Yv(n)); ctx.lineTo(X(t0 + Td), Yv(n)); ctx.lineTo(X(t0 + Td), Yv(2 * n)); ctx.stroke(); t0 += Td; n *= 2; } ctx.restore(); D.label(c, "× 2 toutes les " + F(Td, 2) + " h", X(Math.min(t0, 5)), Yv(n) - 18, {color: P.green}); }
+      hnd(c, X(0), Yv(N0), P.acc, "N₀"); hnd(c, X(8), Yv(N0 * Math.pow(B, 8)), P.acc, "");
+      D.label(c, "N = " + F(N0, 0) + " × " + F(B, 2) + " ^ t", Rr - 6, Bt - 16, {color: P.acc, align: "right", size: 11});
+      ro.set(0, F(Math.log(B), 3) + " h⁻¹"); ro.set(1, B > 1 ? F(Td, 2) + " h" : B < 1 ? "— (décroissance)" : "—"); ro.set(2, ne ? F(er, 1) + " %" : "—"); ro.set(3, F(Nn, 0) + " (t = " + F(tnow, 1) + " h)");
+      if (Math.abs(B - 1) < 1e-9) nt.set("b = 1 : la fonction est constante ; le logarithme de base 1 n'existe pas.", "warn");
+      else if (!done) nt.set(lg ? "Les comptages s'ajoutent heure par heure. Remarque : sur l'échelle log, ils s'alignent. Laisse la culture atteindre 8 h, puis glisse la poignée N₀ (à gauche) et celle de droite (la pente)." : "En échelle linéaire, la croissance paraît d'abord lente puis explosive. Repasse en échelle log pour voir une droite.", "");
+      else if (ok){ if (!c._won){ c._won = true; wins++; } nt.set("Défi réussi (" + wins + ") : erreur " + F(er, 1) + " %. b ≈ " + F(B, 2) + " par heure, donc k = ln b ≈ " + F(Math.log(B), 3) + " h⁻¹ et la population double toutes les ln 2 / ln b ≈ " + F(Td, 2) + " h (" + F(Td * 60, 0) + " min). Essaie une « Nouvelle culture ».", "ok"); }
+      else { c._won = false; nt.set("Défi : glisse la poignée N₀ (ordonnée à l'origine) puis celle de droite (la pente) pour que la droite passe par les points. Erreur actuelle " + F(er, 1) + " % (objectif : moins de 5 %)." + (lg ? "" : " Astuce : c'est bien plus facile en échelle log."), "warn"); }
+    });
+    lp.play();
   }
 });
 
@@ -158,33 +238,73 @@ SFA.sim({
 SFA.sim({
   id: "um-c01-trigo", ch: "c01", tag: "Fonctions trigonométriques",
   titre: "Du cercle à la sinusoïde : amplitude, période, phase",
-  resume: "Un point tourne sur un cercle ; sa hauteur trace y = D + A·sin(B(t − C)). Modifie A, B, C, D et lis chaque paramètre sur le graphe.",
-  but: "Lance l'animation puis fais varier les paramètres : l'amplitude A est le rayon, B la vitesse angulaire (période 2π/B), C le décalage dans le temps, D la ligne médiane.",
-  aRetenir: "y = D + A sin(B(t − C)) : amplitude |A|, période 2π/|B|, fréquence |B|/2π, déphasage C, valeur moyenne D. Applications : rythme circadien, pression artérielle, courant alternatif, oscillations de population.",
+  resume: "Une roue tourne ; la hauteur de sa nacelle rouge trace y = D + A·sin(B(t − C)). Glisse la crête et la ligne médiane sur le graphe, et fais épouser des signaux cibles.",
+  but: "La nacelle rouge tourne sur la roue (rayon A, axe à la hauteur D, vitesse angulaire B) ; sa hauteur se reporte sur le graphe. Glisse la crête (orange) et le point de la ligne médiane (vert) directement sur le graphe, ou utilise les curseurs. Défi : superpose ta sinusoïde à la courbe cible.",
+  aRetenir: "y = D + A sin(B(t − C)) : amplitude |A| (rayon de la roue), période 2π/|B|, fréquence |B|/2π, déphasage C, valeur moyenne D (hauteur de l'axe). Applications : rythme circadien, pression artérielle, courant alternatif, oscillations de population.",
   piege: "Dans sin(Bt − φ), le décalage dans le temps est φ/B, pas φ. Et sin(2t) a une période π, pas 4π.",
   build: function(k, S){
-    var c = k.canvas(340), A = k.slider("Amplitude A", 0.5, 2, 0.1, 1.5, ""), Bv = k.slider("Pulsation B", 0.5, 4, 0.25, 1, "rad/unité"), C = k.slider("Décalage C", -2, 2, 0.1, 0, ""), Dv = k.slider("Ligne médiane D", -1, 1, 0.1, 0, "");
-    if (c.W < 640){ c.ratio = 1.15; c.resize(); }
+    var c = k.canvas(0, {ratio: 0.46}); lay2(c, 0.46, 1.38);
+    var A = k.slider("Amplitude A (rayon)", 0.5, 2, 0.1, 1.5, ""), Bv = k.slider("Pulsation B", 0.5, 4, 0.25, 1, "rad/unité"), C = k.slider("Décalage C", -3, 3, 0.1, 0, ""), Dv = k.slider("Ligne médiane D", -1, 1, 0.1, 0, "");
     var tt = 0, lp = k.loop(function(dt){ tt += dt * 0.9; if (tt > 4 * PI) tt = 0; k.redraw(); });
     k.button("Lecture / pause", function(){ lp.running ? lp.pause() : lp.play(); }, true); k.button("Revenir à t = 0", function(){ tt = 0; });
-    var ro = k.readouts(["Période 2π/B", "Fréquence", "Hauteur y(t)", "Amplitude crête à crête"]);
+    var TG = [[1, 2, 0, 0], [1.5, 0.5, 1, 0.5], [2, 1, -1, -1], [0.8, 3, 0.5, 0.3], [1.2, 1.5, -2, 0.6]], ti = -1, wins = 0;
+    var gd = k.toggle("Défi : épouse la courbe cible (orange)", false, function(v){ if (v && ti < 0) ti = 0; });
+    k.button("Cible suivante", function(){ ti = (ti + 1) % TG.length; gd.set(true); });
+    var ro = k.readouts(["Période 2π/B", "Fréquence B/2π", "Hauteur y(t)", "Crête à crête 2A"]), nt = k.note("", "");
+    var G = null, grab = null; c.cv.style.touchAction = "none";
+    function wrapT(x){ var T = 2 * PI / Bv.value; while (x < 0.05) x += T; while (x > 4 * PI - 0.05 && x - T >= 0.05) x -= T; return x; }
+    function crest(){ var B = Bv.value, x = wrapT(C.value + PI / (2 * B)); return [x, Dv.value + A.value, x - C.value - PI / (2 * B)]; }
+    function mid(){ var x = wrapT(C.value); return [x, Dv.value, x - C.value]; }
+    var sh = 0;
+    c.pointer(function(t, p){
+      if (!G) return; var cr = crest(), md = mid();
+      if (t === "down"){ grab = null; if (Math.hypot(G.X(cr[0]) - p.x, G.Y(cr[1]) - p.y) < 24){ grab = "c"; sh = cr[2]; } else if (Math.hypot(G.X(md[0]) - p.x, G.Y(md[1]) - p.y) < 24){ grab = "m"; sh = md[2]; } }
+      else if (t === "drag" && grab){ var x = G.ix(p.x) - sh, y = G.iy(p.y); if (grab === "c"){ A.set(Math.round(cl(y - Dv.value, 0.5, 2) * 10) / 10); C.set(Math.round(cl(x - PI / (2 * Bv.value), -3, 3) * 10) / 10); } else { Dv.set(Math.round(cl(y, -1, 1) * 10) / 10); C.set(Math.round(cl(x, -3, 3) * 10) / 10); } k.redraw(); }
+      else if (t === "up") grab = null;
+      else if (t === "move") c.cv.style.cursor = (Math.hypot(G.X(cr[0]) - p.x, G.Y(cr[1]) - p.y) < 24 || Math.hypot(G.X(md[0]) - p.x, G.Y(md[1]) - p.y) < 24) ? "grab" : "default";
+    });
     k.draw(function(){
-      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, a = A.value, B = Bv.value, ph = C.value, d = Dv.value, stack = W < 640;
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, a = A.value, B = Bv.value, ph = C.value, d = Dv.value, stack = W < 560;
       var R, cx, cy, gx0, gx1, cyg;
-      if (stack){ R = Math.min((H * 0.25 - 8) / 3, W * 0.18); cx = W * 0.5; cy = H * 0.25; gx0 = 30; gx1 = W - 14; cyg = H * 0.75; }
-      else { R = (H / 2 - 10) / 3; cx = 2.6 * R + 8; cy = H / 2; gx0 = cx + 3 * R + 12; gx1 = W - 14; cyg = H / 2; }
-      ctx.save(); ctx.strokeStyle = "#dfe4ea"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(cx - 3 * R, cy); ctx.lineTo(cx + 3 * R, cy); ctx.moveTo(cx, cy - 3 * R); ctx.lineTo(cx, cy + 3 * R); ctx.stroke();
-      ctx.strokeStyle = P.acc; ctx.lineWidth = 2; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.arc(cx, cy - d * R, Math.abs(a) * R, 0, 7); ctx.stroke(); ctx.restore();
-      var th = B * (tt - ph), px = cx + Math.abs(a) * R * Math.cos(th), py = cy - d * R - a * R * Math.sin(th);
-      var X = function(t){ return gx0 + t / (4 * PI) * (gx1 - gx0); }, Y = function(v){ return cyg - v * R; }, tp = Math.min(tt, 4 * PI), yv = d + a * Math.sin(B * (tp - ph));
-      ctx.save(); ctx.strokeStyle = "#8a95a3"; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(gx0, cyg); ctx.lineTo(gx1, cyg); ctx.moveTo(gx0, cyg - 3 * R); ctx.lineTo(gx0, cyg + 3 * R); ctx.stroke();
-      ctx.strokeStyle = "#cfd6df"; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(gx0, Y(d)); ctx.lineTo(gx1, Y(d)); ctx.stroke(); ctx.setLineDash([]); ctx.font = "600 11px Mulish, system-ui"; ctx.fillStyle = "#5f6b7a"; ctx.textAlign = "center";
-      [["π", 1], ["2π", 2], ["3π", 3], ["4π", 4]].forEach(function(m){ ctx.fillText(m[0], X(m[1] * PI), cyg + 14); ctx.beginPath(); ctx.moveTo(X(m[1] * PI), cyg - 3); ctx.lineTo(X(m[1] * PI), cyg + 3); ctx.stroke(); });
-      ctx.beginPath(); ctx.strokeStyle = P.red; ctx.lineWidth = 3; for (var i = 0; i <= 300; i++){ var t = 4 * PI * i / 300; i ? ctx.lineTo(X(t), Y(d + a * Math.sin(B * (t - ph)))) : ctx.moveTo(X(t), Y(d + a * Math.sin(B * (t - ph)))); } ctx.stroke(); ctx.restore();
-      if (!stack) D.line(c, px, py, X(tp), Y(yv), "#e0a7a2", 1.4, [4, 4]); else D.line(c, px, py, gx0, Y(yv), "#e0a7a2", 1.4, [4, 4]);
-      D.line(c, cx, cy - d * R, px, py, P.acc, 2.4); D.dot(c, px, py, 6, P.acc); D.dot(c, X(tp), Y(yv), 6, P.red); D.line(c, px, py, px, cy, "#9fb0d6", 1.2, [3, 3]);
-      var T = 2 * PI / B; ctx.save(); ctx.strokeStyle = P.green; ctx.lineWidth = 2.2; var yb = Y(d + Math.abs(a)) - 12, x0 = X(ph), x1 = X(ph + T); if (x0 < gx0) { x0 = X(ph + T * Math.ceil((0 - ph) / T)); x1 = x0 + (X(T) - X(0)); } if (x1 <= gx1 + 1){ ctx.beginPath(); ctx.moveTo(x0, yb); ctx.lineTo(x1, yb); ctx.stroke(); lab(c, "T", (x0 + x1) / 2, yb - 9, P.green, 13); } ctx.restore();
+      if (stack){ R = Math.min((H * 0.46 - 10) / 6.2, W / 7); cx = W / 2; cy = H * 0.23; gx0 = 34; gx1 = W - 14; cyg = H * 0.74; }
+      else { R = (H - 34) / 6.6; cx = 3.3 * R + 6; cy = H / 2; gx0 = cx + 3.3 * R + 30; gx1 = W - 14; cyg = H / 2; }
+      var X = function(t){ return gx0 + t / (4 * PI) * (gx1 - gx0); }, Y = function(v){ return cyg - v * R; }, Yw = function(v){ return cy - v * R; };
+      G = {X: X, Y: Y, ix: function(px){ return (px - gx0) / (gx1 - gx0) * 4 * PI; }, iy: function(py){ return (cyg - py) / R; }};
+      /* --- la roue --- */
+      var th = B * (tt - ph), hub = Yw(d), rw = Math.abs(a) * R;
+      ctx.save(); ctx.fillStyle = "#e8edf3"; ctx.beginPath(); ctx.moveTo(cx - R * 0.9, Yw(-3.2)); ctx.lineTo(cx, hub); ctx.lineTo(cx + R * 0.9, Yw(-3.2)); ctx.closePath(); ctx.fill(); ctx.strokeStyle = "#aeb8c5"; ctx.lineWidth = 2; ctx.stroke();
+      ctx.strokeStyle = "#d5dbe3"; ctx.lineWidth = 1; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(cx - 3.2 * R, Yw(0)); ctx.lineTo(cx + 3.2 * R, Yw(0)); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle = P.acc; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.arc(cx, hub, rw, 0, 7); ctx.stroke(); ctx.strokeStyle = "rgba(31,75,158,.35)"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(cx, hub, rw * 0.82, 0, 7); ctx.stroke();
+      for (var i = 0; i < 8; i++){ var ang = th + i * PI / 4; D.line(c, cx, hub, cx + rw * Math.cos(ang), hub - rw * Math.sin(ang) * (a < 0 ? -1 : 1), "rgba(31,75,158,.45)", 1.3);
+        if (i){ var gx = cx + rw * Math.cos(ang), gy = hub - rw * Math.sin(ang) * (a < 0 ? -1 : 1); ctx.fillStyle = "#c9d3e3"; ctx.fillRect(gx - 5, gy + 1, 10, 8); ctx.strokeStyle = "#8ea0bd"; ctx.lineWidth = 1; ctx.strokeRect(gx - 5, gy + 1, 10, 8); } }
+      ctx.restore();
+      var px = cx + rw * Math.cos(th), py = hub - a * R * Math.sin(th);
+      ctx.save(); ctx.fillStyle = P.red; ctx.strokeStyle = "#7e1f12"; ctx.lineWidth = 1.2; ctx.fillRect(px - 7, py + 1, 14, 11); ctx.strokeRect(px - 7, py + 1, 14, 11); ctx.restore(); D.dot(c, px, py, 5, P.red);
+      D.dot(c, cx, hub, 4.5, P.ink);
+      if (rw > 20){ ctx.save(); ctx.strokeStyle = P.amber; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, hub, 16, 0, -(((th % (2 * PI)) + 2 * PI) % (2 * PI)) * (a < 0 ? -1 : 1), a >= 0); ctx.stroke(); ctx.restore(); }
+      D.text(c, stack ? "roue : rayon A, axe à la hauteur D" : "rayon A", cx, Math.min(hub + rw + 14, stack ? H * 0.4 - 8 : H - 10), {size: 10.5, color: P.acc});
+      /* --- le graphe --- */
+      var tp = Math.min(tt, 4 * PI), yv = d + a * Math.sin(B * (tp - ph));
+      ctx.save(); ctx.strokeStyle = "#a3adba"; ctx.lineWidth = 1.25; ctx.beginPath(); ctx.moveTo(gx0, Y(0)); ctx.lineTo(gx1, Y(0)); ctx.moveTo(gx0, Y(-3.2)); ctx.lineTo(gx0, Y(3.2)); ctx.stroke();
+      ctx.font = "600 10.5px Mulish, system-ui"; ctx.fillStyle = "#7b8694"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+      ["π", "2π", "3π", "4π"].forEach(function(m, j){ var xx = X((j + 1) * PI); ctx.fillText(m, xx, Y(0) + 5); ctx.strokeStyle = "#eef1f5"; ctx.beginPath(); ctx.moveTo(xx, Y(3.2)); ctx.lineTo(xx, Y(-3.2)); ctx.stroke(); });
+      ctx.textAlign = "right"; ctx.textBaseline = "middle"; [-3, -2, -1, 1, 2, 3].forEach(function(v){ ctx.fillText(v, gx0 - 5, Y(v)); });
+      ctx.textAlign = "left"; ctx.fillStyle = "#2c3a4e"; ctx.font = "700 11px Mulish, system-ui"; ctx.fillText("y", gx0 + 6, Y(3.1)); ctx.textAlign = "right"; ctx.fillText("t", gx1, Y(0) - 10);
+      ctx.strokeStyle = "rgba(36,119,90,.6)"; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(gx0, Y(d)); ctx.lineTo(gx1, Y(d)); ctx.stroke(); ctx.setLineDash([]); ctx.restore();
+      var ok = false;
+      if (gd.value && ti >= 0){ var q = TG[ti], ft = function(t){ return q[3] + q[0] * Math.sin(q[1] * (t - q[2])); }, worst = 0;
+        ctx.save(); ctx.strokeStyle = P.orange; ctx.lineWidth = 7; ctx.globalAlpha = 0.35; ctx.beginPath(); for (i = 0; i <= 300; i++){ var t5 = 4 * PI * i / 300; i ? ctx.lineTo(X(t5), Y(ft(t5))) : ctx.moveTo(X(t5), Y(ft(t5))); } ctx.stroke(); ctx.restore();
+        for (i = 0; i <= 200; i++){ var t6 = 4 * PI * i / 200; worst = Math.max(worst, Math.abs(ft(t6) - (d + a * Math.sin(B * (t6 - ph))))); } ok = worst < 0.16; }
+      ctx.save(); ctx.strokeStyle = ok ? P.green : P.red; ctx.lineWidth = 3; ctx.beginPath(); for (i = 0; i <= 400; i++){ var t = 4 * PI * i / 400, yy = Y(d + a * Math.sin(B * (t - ph))); i ? ctx.lineTo(X(t), yy) : ctx.moveTo(X(t), yy); } ctx.stroke(); ctx.restore();
+      if (!stack) D.line(c, px, py, X(tp), Y(yv), "rgba(192,50,29,.45)", 1.3, [4, 4]); else { D.line(c, px, py, gx0 - 2, py, "rgba(192,50,29,.35)", 1.2, [4, 4]); }
+      D.dot(c, X(tp), Y(yv), 6, P.red);
+      var T = 2 * PI / B, x0 = ph; while (x0 - T >= 0) x0 -= T; while (x0 < 0) x0 += T;
+      if (x0 + T <= 4 * PI){ var yb = Y(d - Math.abs(a)) + 14; D.line(c, X(x0), yb, X(x0 + T), yb, P.green, 2.2); D.line(c, X(x0), yb - 5, X(x0), yb + 5, P.green, 2); D.line(c, X(x0 + T), yb - 5, X(x0 + T), yb + 5, P.green, 2); D.label(c, "période " + F(T, 2), X(x0 + T / 2), yb + 13, {color: P.green, size: 10.5}); }
+      var cr = crest(), md = mid(); hnd(c, G.X(cr[0]), G.Y(cr[1]), P.orange, "crête"); hnd(c, G.X(md[0]), G.Y(md[1]), P.green, "ligne médiane");
       ro.set(0, F(T, 2)); ro.set(1, F(B / (2 * PI), 3)); ro.set(2, F(yv, 2)); ro.set(3, F(2 * Math.abs(a), 2));
+      if (gd.value && ti >= 0){ var tq = TG[ti]; if (ok){ if (!c._won){ c._won = true; wins++; } nt.set("Bravo (" + wins + " / " + TG.length + ") : A = " + F(tq[0], 1) + ", B = " + F(tq[1], 2) + ", C = " + F(tq[2], 1) + ", D = " + F(tq[3], 1) + ". Clique « Cible suivante ».", "ok"); }
+        else { c._won = false; nt.set("Lis la cible : ligne médiane (D), demi-hauteur crête-creux (A), longueur d'une période (2π/B), puis glisse la crête pour caler le décalage C.", "warn"); } }
+      else nt.set("Glisse la crête orange (règle A et C) ou le point vert (règle C et D). Observe que C décale la courbe vers la droite quand il augmente.", "");
     });
     lp.play();
   }
@@ -199,31 +319,70 @@ var C5 = {
 SFA.sim({
   id: "um-c01-cyclometriques", ch: "c01", tag: "arcsin, arccos, arctan",
   titre: "arcsin, arccos, arctan : choisir une seule solution parmi une infinité",
-  resume: "La droite horizontale y = v coupe le sinus une infinité de fois ; arcsin ne retient que la solution principale. Vois les autres solutions.",
-  but: "Choisis la fonction et fais varier v. En haut : le graphe de sin, cos ou tan avec toutes les solutions de f(x) = v ; la principale est en rouge. En bas : la fonction réciproque.",
+  resume: "Sur le cercle trigonométrique, la droite y = v coupe le cercle en deux points ; sur le graphe, en une infinité. arcsin ne retient que la solution principale : à toi de retrouver toutes les autres.",
+  but: "Glisse la droite rouge sur le cercle (ou le curseur v). Le cercle montre les deux angles, le graphe toutes les solutions ; la principale est en rouge, dans la zone autorisée (bande colorée). « Parcourir » fait tourner un point qui s'allume à chaque solution. Défi : clique sur le graphe toutes les solutions de [−2π ; 2π].",
   aRetenir: "arcsin : [−1 ; 1] → [−π/2 ; π/2] ; arccos : [−1 ; 1] → [0 ; π] ; arctan : ℝ → ]−π/2 ; π/2[. Les autres solutions de sin x = v sont x₀ + 2kπ et π − x₀ + 2kπ ; de cos x = v : ±x₀ + 2kπ ; de tan x = v : x₀ + kπ.",
   piege: "arcsin(sin x) = x seulement si x ∈ [−π/2 ; π/2] ; par exemple arcsin(sin(2π/3)) = π/3 et non 2π/3.",
   build: function(k, S){
-    var c1 = k.canvas(230), c2 = k.canvas(210), tp = k.seg("Fonction", [["arcsin", "arcsin"], ["arccos", "arccos"], ["arctan", "arctan"]], "arcsin");
-    var v = k.slider("Valeur v", -1, 1, 0.01, 0.5, "", null); var ro = k.readouts(["Solution principale (rad)", "En degrés", "Autres solutions", "Domaine → image"]), nt = k.note("", "");
-    function setRange(){ var T = C5[tp.value]; v.el.min = T.vmin; v.el.max = T.vmax; v.el.step = tp.value === "arctan" ? 0.05 : 0.01; v.set(Math.max(T.vmin, Math.min(T.vmax, v.value))); }
-    tp.el = null; var prev = "arcsin";
+    var c = k.canvas(0, {ratio: 0.5}); lay2(c, 0.5, 1.4);
+    var tp = k.seg("Fonction", [["arcsin", "arcsin"], ["arccos", "arccos"], ["arctan", "arctan"]], "arcsin", function(v){ var T = C5[v]; vs.el.min = T.vmin; vs.el.max = T.vmax; vs.el.step = v === "arctan" ? 0.05 : 0.01; vs.set(cl(vs.value, T.vmin, T.vmax)); if (game.on) newGame(); });
+    var vs = k.slider("Valeur v", -1, 1, 0.01, 0.5, "");
+    var sw = {on: false, th: -2 * PI, hit: []}, lp = k.loop(function(dt){ sw.th += dt * 1.6; if (sw.th > 2 * PI){ sw.th = 2 * PI; sw.on = false; lp.pause(); } k.redraw(); });
+    k.button("▶ Parcourir de −2π à 2π", function(){ sw.th = -2 * PI; sw.on = true; sw.hit = []; lp.play(); }, true);
+    var NICE = {arcsin: [[0.5, "1/2"], [Math.SQRT1_2, "√2/2"], [Math.sqrt(3) / 2, "√3/2"], [-0.5, "−1/2"], [-Math.sqrt(3) / 2, "−√3/2"]],
+                arccos: [[0.5, "1/2"], [-0.5, "−1/2"], [Math.SQRT1_2, "√2/2"], [-Math.SQRT1_2, "−√2/2"]],
+                arctan: [[1, "1"], [Math.sqrt(3), "√3"], [-1, "−1"], [1 / Math.sqrt(3), "√3/3"]]};
+    var game = {on: false, i: 0, found: [], miss: 0, wins: 0};
+    function newGame(){ var L = NICE[tp.value]; game.on = true; game.i = (game.i + 1) % L.length; game.found = []; game.miss = 0; vs.set(L[game.i][0]); }
+    k.button("Défi : trouver toutes les solutions", function(){ newGame(); });
+    var ro = k.readouts(["Solution principale", "En degrés", "Autres solutions", "Domaine → image"]), nt = k.note("", "");
+    function sols(){ var key = tp.value, x0 = C5[key].g(vs.value), out = []; for (var m = -3; m <= 3; m++){ if (key === "arcsin"){ out.push(x0 + 2 * m * PI, PI - x0 + 2 * m * PI); } else if (key === "arccos"){ out.push(x0 + 2 * m * PI, -x0 + 2 * m * PI); } else out.push(x0 + m * PI); } var u = []; out.forEach(function(s){ if (s > -2 * PI - 1e-9 && s < 2 * PI + 1e-9 && !u.some(function(q){ return Math.abs(q - s) < 1e-6; })) u.push(s); }); return u.sort(function(a, b){ return a - b; }); }
+    function pif(x){ var r = Math.round(x / PI * 12); if (Math.abs(r * PI / 12 - x) > 1e-6) return F(x, 3); if (r === 0) return "0"; var g = function(a, b){ return b ? g(b, a % b) : a; }, d = g(Math.abs(r), 12), nu = r / d, de = 12 / d; return (nu < 0 ? "−" : "") + (Math.abs(nu) === 1 ? "" : Math.abs(nu)) + "π" + (de === 1 ? "" : "/" + de); }
+    var Cc = null, G = null, drag = false; c.cv.style.touchAction = "none";
+    c.pointer(function(t, p){
+      if (!Cc) return; var key = tp.value, T = C5[key];
+      if (t === "down"){ drag = false; if (p.x >= Cc.bx && p.x <= Cc.bx + Cc.bw && p.y >= Cc.by && p.y <= Cc.by + Cc.bh) drag = true;
+        else if (game.on && G && p.x > G.L && p.x < G.R){ var x = G.ix(p.x), best = null, bd = 1e9; sols().forEach(function(s){ var d = Math.abs(G.X(s) - p.x); if (d < bd){ bd = d; best = s; } }); if (bd < 16 && !game.found.some(function(q){ return Math.abs(q - best) < 1e-6; })) game.found.push(best); else if (bd >= 16) game.miss++; k.redraw(); return; } }
+      if ((t === "down" || t === "drag") && drag){ var u = (p.x - Cc.cx) / Cc.r, w = (Cc.cy - p.y) / Cc.r, v = key === "arcsin" ? w : key === "arccos" ? u : w / 1; if (key === "arctan") v = (Cc.cy - p.y) / Cc.r; vs.set(Math.round(cl(v, T.vmin, T.vmax) * 100) / 100); if (game.on){ game.on = false; } k.redraw(); }
+      if (t === "up") drag = false;
+    });
     k.draw(function(){
-      if (tp.value !== prev){ prev = tp.value; setRange(); }
-      c1.clear(); c2.clear(); var T = C5[tp.value], x0 = T.g(v.value), V = v.value;
-      var ax1 = D.axes(c1, {x0: -2 * PI, x1: 2 * PI, y0: tp.value === "arctan" ? -6 : -1.6, y1: tp.value === "arctan" ? 6 : 1.6, stepX: PI / 2, stepY: tp.value === "arctan" ? 2 : 0.5, l: 40});
-      D.fn(c1, ax1, T.f, "#aab2bd", 2.2); curve(c1, ax1, function(t){ return t; }, T.f, T.ra + 0.001, T.rb - 0.001, P.acc, 3.4);
-      hl(c1, ax1, V, P.amber, [5, 4], 1.8);
-      var sols = [], key = tp.value;
-      for (var m = -3; m <= 3; m++){ if (key === "arcsin"){ sols.push(x0 + 2 * m * PI); sols.push(PI - x0 + 2 * m * PI); } else if (key === "arccos"){ sols.push(x0 + 2 * m * PI); sols.push(-x0 + 2 * m * PI); } else sols.push(x0 + m * PI); }
-      sols.forEach(function(s){ if (Math.abs(s - x0) > 1e-9 && s > -2 * PI - 1e-9 && s < 2 * PI + 1e-9) pt(c1, ax1, s, V, "#8a95a3", 4.5); });
-      pt(c1, ax1, x0, V, P.red, 6.5);
-      lab(c1, "f(x) = v", ax1.R - 6, ax1.Y(V) - 11, P.amber, 12, "right");
-      var xr = key === "arctan" ? 6.3 : 1.25, ax2 = D.axes(c2, {x0: -xr, x1: xr, y0: -PI * 0.8, y1: PI * 1.1, stepX: key === "arctan" ? 2 : 0.5, stepY: PI / 2, l: 40});
-      D.fn(c2, ax2, T.g, P.red, 3.4); vl(c2, ax2, V, "#e5b3ae"); hl(c2, ax2, x0, "#e5b3ae"); pt(c2, ax2, V, x0, P.red, 6.5); lab(c2, "y = " + T.n + " x", ax2.L + 8, ax2.T + 12, P.red, 13, "left");
-      var oth = key === "arcsin" ? "π − x₀ = " + F(PI - x0, 3) + " (+ 2kπ)" : key === "arccos" ? "−x₀ = " + F(-x0, 3) + " (+ 2kπ)" : "x₀ + kπ";
-      ro.set(0, F(x0, 4)); ro.set(1, F(x0 * 180 / PI, 2) + " °"); ro.set(2, oth); ro.set(3, T.dom + " → " + T.img);
-      nt.set("La calculatrice renvoie toujours la valeur principale ; pour résoudre l'équation il faut ajouter les autres solutions.", "");
+      c.clear(); var ctx = c.ctx, key = tp.value, T = C5[key], V = vs.value, x0 = T.g(V), bx = split2(c, 0.4, 0.44), sl = sols();
+      /* --- le cercle trigonométrique --- */
+      var q = bx[0], tan = key === "arctan", r = Math.min(q.w * (tan ? 0.3 : 0.38), q.h * (tan ? 0.3 : 0.4)), cx = q.x + q.w * (tan ? 0.42 : 0.5), cy = q.y + q.h / 2;
+      Cc = {cx: cx, cy: cy, r: r, bx: q.x, by: q.y, bw: q.w, bh: q.h};
+      var a0 = T.ra, a1 = T.rb;
+      ctx.save(); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r * 1.12, -a1, -a0); ctx.closePath(); ctx.fillStyle = "rgba(192,50,29,.07)"; ctx.fill(); ctx.restore();
+      D.line(c, cx - r * 1.3, cy, cx + r * 1.3, cy, "#a3adba", 1.2); D.line(c, cx, cy - r * 1.3, cx, cy + r * 1.3, "#a3adba", 1.2);
+      ctx.save(); ctx.strokeStyle = "#5f6b7a"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.stroke(); ctx.strokeStyle = P.red; ctx.lineWidth = 4; ctx.globalAlpha = 0.35; ctx.beginPath(); ctx.arc(cx, cy, r, -a1, -a0); ctx.stroke(); ctx.restore();
+      D.label(c, "zone de " + key + " : " + T.img, q.x + 10, q.y + 14, {size: 10.5, color: P.red, align: "left"});
+      var two = key === "arcsin" ? [x0, PI - x0] : key === "arccos" ? [x0, -x0] : [x0, x0 + PI];
+      if (key === "arcsin") D.line(c, cx - r * 1.25, cy - V * r, cx + r * 1.25, cy - V * r, P.red, 2.4);
+      else if (key === "arccos") D.line(c, cx + V * r, cy - r * 1.25, cx + V * r, cy + r * 1.25, P.red, 2.4);
+      else { D.line(c, cx + r, cy - r * 2.4, cx + r, cy + r * 2.4, "#9aa5b4", 1.4); D.line(c, cx - r * 1.2 * Math.cos(x0) * 1.6, cy + r * 1.2 * Math.sin(x0) * 1.6, cx + r, cy - V * r, "rgba(192,50,29,.6)", 1.6, [4, 3]); hnd(c, cx + r, cy - V * r, P.red, "tan = v"); D.text(c, "axe des tangentes", cx + r + 6, cy + r * 2.2, {size: 10, color: P.grey, align: "left"}); }
+      two.forEach(function(a, j){ var X = cx + r * Math.cos(a), Y = cy - r * Math.sin(a); D.line(c, cx, cy, X, Y, j ? "#9aa5b4" : P.red, j ? 1.6 : 2.6); D.dot(c, X, Y, j ? 5 : 6.5, j ? "#8a95a3" : P.red); });
+      ctx.save(); ctx.strokeStyle = P.red; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.arc(cx, cy, r * 0.28, 0, -x0, x0 > 0); ctx.stroke(); ctx.restore();
+      if (key !== "arctan") hnd(c, key === "arcsin" ? cx + r * 1.15 : cx + V * r, key === "arcsin" ? cy - V * r : cy - r * 1.15, P.red, "glisse");
+      if (sw.on || sw.th > -2 * PI){ var th = sw.th; D.dot(c, cx + r * Math.cos(th), cy - r * Math.sin(th), 5, P.violet); }
+      /* --- le graphe --- */
+      var g = bx[1], yr = tan ? 4 : 1.5, xt = [], yt = [];
+      [-2, -1.5, -1, -0.5, 0.5, 1, 1.5, 2].forEach(function(m){ xt.push([m * PI, {"-2": "−2π", "-1": "−π", "1": "π", "2": "2π", "-0.5": "−π/2", "0.5": "π/2", "-1.5": "", "1.5": ""}[String(m)]]); });
+      (tan ? [-4, -3, -2, -1, 1, 2, 3, 4] : [-1.5, -1, -0.5, 0.5, 1, 1.5]).forEach(function(v){ yt.push([v, F(v, 1)]); });
+      var ax = axBox(c, g, {x0: -2 * PI, x1: 2 * PI, y0: -yr, y1: yr, xt: xt, yt: yt, l: 30, t: 14, b: 12, xl: "x", yl: "y"});
+      G = {L: ax.L, R: ax.R, X: ax.X, ix: ax.ix};
+      ctx.save(); ctx.fillStyle = "rgba(192,50,29,.07)"; ctx.fillRect(ax.X(a0), ax.T, ax.X(a1) - ax.X(a0), ax.B - ax.T); ctx.restore();
+      D.fn(c, ax, T.f, "#8fa0b8", 2.2); curve(c, ax, function(t){ return t; }, T.f, a0 + 0.001, a1 - 0.001, P.acc, 3.4);
+      hl(c, ax, V, P.red, [6, 4], 1.8);
+      var reveal = !game.on || game.found.length === sl.length;
+      sl.forEach(function(s){ var f = game.found.some(function(qq){ return Math.abs(qq - s) < 1e-6; }), prin = Math.abs(s - x0) < 1e-9; if (reveal || f) pt(c, ax, s, V, prin ? P.red : f ? P.green : "#8a95a3", prin ? 6.5 : 5); if (game.on && f) D.text(c, pif(s), ax.X(s), ax.Y(V) - 14, {size: 10, color: P.green, halo: true}); });
+      if (sw.on || sw.th > -2 * PI){ var th2 = sw.th, yv = T.f(th2); if (isFinite(yv) && Math.abs(yv) < yr){ D.dot(c, ax.X(th2), ax.Y(yv), 5, P.violet); } vl(c, ax, th2, "rgba(98,54,196,.4)", [3, 3], 1.2); sl.forEach(function(s){ if (s <= th2 + 1e-9 && !sw.hit.some(function(qq){ return Math.abs(qq - s) < 1e-6; })) sw.hit.push(s); }); sw.hit.forEach(function(s){ D.glow(c, ax.X(s), ax.Y(V), 16, P.violet, 0.45); }); }
+      D.label(c, "y = " + (key === "arcsin" ? "sin" : key === "arccos" ? "cos" : "tan") + " x", ax.R - 6, ax.T + 10, {color: P.acc, align: "right", math: true, size: 12});
+      var oth = key === "arcsin" ? "π − x₀ + 2kπ = " + F(PI - x0, 3) + " + 2kπ" : key === "arccos" ? "−x₀ + 2kπ = " + F(-x0, 3) + " + 2kπ" : "x₀ + kπ";
+      ro.set(0, "x₀ = " + pif(x0)); ro.set(1, F(x0 * 180 / PI, 2) + " °"); ro.set(2, oth); ro.set(3, T.dom + " → " + T.img);
+      if (game.on){ var L = NICE[key][game.i], all = game.found.length === sl.length;
+        if (all){ if (!game.done){ game.done = true; game.wins++; } nt.set("Bravo : les " + sl.length + " solutions de " + (key === "arcsin" ? "sin" : key === "arccos" ? "cos" : "tan") + " x = " + L[1] + " dans [−2π ; 2π] sont " + sl.map(pif).join(" ; ") + " (" + game.miss + " clic" + (game.miss > 1 ? "s" : "") + " à côté). Relance le défi pour une autre valeur.", "ok"); }
+        else { game.done = false; nt.set("Défi : " + (key === "arcsin" ? "sin" : key === "arccos" ? "cos" : "tan") + " x = " + L[1] + ". La calculatrice donne x₀ = " + key + "(" + L[1] + ") = " + pif(x0) + ". Clique sur l'axe du graphe à l'abscisse de chaque solution de [−2π ; 2π] : " + game.found.length + " / " + sl.length + " trouvée(s), " + game.miss + " clic(s) à côté.", "warn"); } }
+      else nt.set("La calculatrice renvoie toujours la valeur principale (rouge) ; les autres solutions s'en déduisent par symétrie sur le cercle et périodicité.", "");
     });
   }
 });

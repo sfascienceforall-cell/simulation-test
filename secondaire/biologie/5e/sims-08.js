@@ -8,27 +8,80 @@ function sper(a){ return a <= 13 ? 0 : 1e8 * 365 * (a - 13); }
 SFA.sim({
   id: "b5-c08-gametes-age", ch: "c08", tag: "Ordres de grandeur",
   titre: "Ovocytes et spermatozoïdes : un stock contre une production",
-  resume: "Âge → stock d'ovocytes restants, spermatozoïdes produits depuis la puberté, ovulations.",
-  but: "Déplace l'âge de 0 à 60 ans. Compare le stock d'ovocytes (constitué avant la naissance et qui ne se renouvelle pas) à la production continue de spermatozoïdes. Calcule le nombre de spermatozoïdes produits en une seconde, et la part d'ovocytes réellement ovulés.",
+  resume: "Âge → follicules restants dans l'ovaire, production continue du testicule, ovulations cumulées.",
+  but: "Glisse l'âge sur le graphique (ou avec le curseur). À gauche, l'ovaire : chaque point représente 10 000 ovocytes, et un follicule mûrit puis libère son ovocyte à chaque cycle. À droite, le testicule produit des spermatozoïdes en continu dès la puberté (le compteur tourne en temps réel). Défi : trouve le premier âge où il reste moins de 1 % du stock de naissance.",
   aRetenir: "Les ovocytes sont formés avant la naissance (≈ 1 à 2 millions) puis disparaissent peu à peu : il en reste ≈ 300 000 à la puberté et ≈ 1 000 à la ménopause. Seuls ≈ 400 à 500 sont ovulés dans une vie. Les spermatozoïdes, eux, sont produits en continu depuis la puberté : de l'ordre de 100 millions par jour (≈ 1 000 par seconde).",
-  piege: "Ovule et ovocyte ne sont pas la même chose : ce qui est libéré à l'ovulation est un ovocyte II, qui ne devient un ovule qu'à la fécondation. Et les ovaires ne fabriquent pas de nouveaux ovocytes à l'âge adulte. Valeurs moyennes arrondies ; il existe de grandes variations individuelles.",
+  piege: "Ovule et ovocyte ne sont pas la même chose : ce qui est libéré à l'ovulation est un ovocyte II, qui ne devient un ovule qu'à la fécondation. Et les ovaires ne fabriquent pas de nouveaux ovocytes à l'âge adulte : presque tous les ovocytes disparaissent sans jamais être ovulés. Valeurs moyennes arrondies ; il existe de grandes variations individuelles.",
   build: function(k, S){
-    var c = k.canvas(280), pal = S.draw.palette;
+    var c = k.canvas(560), pal = S.draw.palette, D = S.draw;
     var a = k.slider("Âge", 0, 60, 1, 30, "ans");
     var ro = k.readouts(["Ovocytes restants", "Ovulations cumulées (≈ 12/an)", "Spermatozoïdes produits depuis la puberté", "Part du stock de naissance ovulée"]);
     var nt = k.note("", "");
+    var an = 0, geo = {}, drag = false, rnd = B5.rng(17), F = [], T = [], i, seen = 0;
+    for (i = 0; i < 100; i++){ var ang = rnd() * 6.283, rr = Math.sqrt(rnd()) * 0.86; F.push({x: Math.cos(ang) * rr, y: Math.sin(ang) * rr * 0.62, r: rnd()}); }
+    for (i = 0; i < 30; i++) T.push({o: rnd(), u: rnd(), v: rnd()});
+    var lp = k.loop(function(dt){ an += dt; if (a.value > 13) seen += dt * 1000; k.redraw(); }); lp.play();
+    c.cv.style.touchAction = "none";
+    c.pointer(function(t, p){
+      if (t === "down") drag = geo.ax && p.y > geo.gy;
+      if (drag && (t === "down" || t === "drag")) a.set(B5.cl(Math.round(geo.ax.ix(p.x)), 0, 60));
+      if (t === "up") drag = false;
+    });
+    var first = 0; for (i = 0; i <= 60; i++) if (ovo(i) < 1e4){ first = i; break; }
     k.draw(function(){
-      c.clear();
-      var ax = S.draw.axes(c, {x0: 0, x1: 60, y0: 0, y1: 14, xl: "âge (ans)", yl: "log₁₀ du nombre de cellules", stepX: 10, stepY: 2});
-      var po = [], ps = [], t;
-      for (t = 0; t <= 60; t += 1){ po.push([t, Math.log10(ovo(t))]); if (t > 13) ps.push([t, Math.log10(sper(t))]); }
-      B5.poly(c, ax, po, pal.red, 2.8); B5.poly(c, ax, ps, pal.teal, 2.8);
-      B5.leg(c, [["ovocytes (stock)", pal.red], ["spermatozoïdes (cumul produit)", pal.teal]], ax.L + 8, ax.T + 34);
-      S.draw.line(c, ax.X(a.value), ax.T, ax.X(a.value), ax.B, pal.ink, 1.4, [5, 4]);
-      var o = ovo(a.value), s = sper(a.value), ov = a.value < 12 ? 0 : Math.min(450, 12 * (Math.min(a.value, 51) - 12));
-      S.draw.dot(c, ax.X(a.value), ax.Y(Math.log10(o)), 6, pal.red); if (s > 0) S.draw.dot(c, ax.X(a.value), ax.Y(Math.log10(s)), 6, pal.teal);
-      ro.set(0, S.sci(Math.round(o), 2)); ro.set(1, S.fmt(ov, 0)); ro.set(2, s > 0 ? S.sci(s, 2) : "aucun"); ro.set(3, a.value >= 12 ? S.fmt(100 * ov / OV[0][1], 3) + " % (" + S.fmt(ov, 0) + " sur " + S.sci(OV[0][1], 2) + ")" : "—");
-      nt.set(a.value <= 13 ? "Avant la puberté, il n'y a pas encore de production de spermatozoïdes ; le stock d'ovocytes est déjà en place depuis la naissance." : "À " + a.value + " ans : il reste ≈ " + S.sci(Math.round(o), 2) + " ovocytes, alors que ≈ " + S.sci(s, 2) + " spermatozoïdes ont été produits en " + (a.value - 13) + " ans (≈ 10⁸ par jour).", "ok");
+      var A = a.value, o = ovo(A), s = sper(A), ov = A < 12 ? 0 : Math.min(450, 12 * (Math.min(A, 51) - 12)), fertile = A >= 12 && A < 51;
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, sh = 256, half = (W - 30) / 2;
+      /* ---------- ovaire ---------- */
+      var ox = 12, ow = half;
+      D.panel(c, ox, 8, ow, sh - 8, {shadow: false, fill: "#fdf3f4"});
+      D.text(c, "ovaire (coupe)", ox + ow / 2, 24, {size: 11.5, color: "#9b2c4a", weight: 900});
+      var ocx = ox + ow / 2, ocy = 104, orx = ow / 2 - 14, ory = 62;
+      ctx.fillStyle = "#f6cdd4"; ctx.strokeStyle = "#c27a8a"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.ellipse(ocx, ocy, orx, ory, 0, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,.35)"; ctx.beginPath(); ctx.ellipse(ocx, ocy, orx * 0.55, ory * 0.5, 0, 0, 2 * Math.PI); ctx.fill();
+      var nd = o / 1e4;
+      for (i = 0; i < Math.min(100, Math.ceil(nd)); i++){ var f = F[i], al = i + 1 <= nd ? 1 : nd - i; ctx.globalAlpha = Math.max(0.25, al); B5.circ(c, ocx + f.x * orx, ocy + f.y * ory * 1.45, 3.2, "#fff6d8", "#c99a3a", 1.2); B5.circ(c, ocx + f.x * orx, ocy + f.y * ory * 1.45, 1.2, "#9b2c4a"); ctx.globalAlpha = 1; }
+      if (fertile){
+        var cyc = (an / 3.2) % 1, fr = 6 + 18 * Math.min(1, cyc / 0.7), fxp = ocx + orx * 0.55, fyp = ocy - ory * 0.35;
+        if (cyc < 0.72){ B5.circ(c, fxp, fyp, fr, "rgba(255,248,225,.95)", "#c99a3a", 2); B5.circ(c, fxp + fr * 0.3, fyp - fr * 0.2, 4, "#f4b6c2", "#9b2c4a", 1.4); D.text(c, "follicule mûr", fxp, fyp + fr + 9, {size: 9.5, color: "#8a5a10", weight: 800}); }
+        else { var e = (cyc - 0.72) / 0.28; B5.circ(c, fxp, fyp, 10, "#f0d48a", "#c99a3a", 1.5); B5.circ(c, fxp + 14 + e * 40, fyp - 10 - e * 30, 4.5, "#f4b6c2", "#9b2c4a", 1.4); D.label(c, "ovulation", fxp + 6, fyp - 30, {color: "#9b2c4a", size: 9.5}); }
+      }
+      D.text(c, "• = 10 000 ovocytes", ox + ow / 2, ocy + ory + 16, {size: 10, color: "#8a5a10", weight: 800});
+      D.display(c, B5.sci(Math.round(o), 1), ox + ow / 2, sh - 34, {w: Math.min(120, ow - 16), h: 40, size: 15, caption: "stock restant", color: "#9b2c4a"});
+      /* ---------- testicule ---------- */
+      var tx = 18 + half, tw = half;
+      D.panel(c, tx, 8, tw, sh - 8, {shadow: false, fill: "#eef5fb"});
+      D.text(c, "testicule (coupe)", tx + tw / 2, 24, {size: 11.5, color: "#1f5fa8", weight: 900});
+      var tcx = tx + tw / 2, tcy = 104, trx = tw / 2 - 14, try_ = 62, act = A > 13;
+      ctx.fillStyle = "#d7e6f5"; ctx.strokeStyle = "#6b8fb8"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.ellipse(tcx, tcy, trx, try_, 0, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+      var tubes = [[-0.45, -0.3], [0.1, -0.42], [0.5, -0.05], [-0.25, 0.35], [0.25, 0.42], [-0.62, 0.15]], rt = Math.min(trx, try_) * 0.32;
+      tubes.forEach(function(q, j){
+        var X = tcx + q[0] * trx, Y = tcy + q[1] * try_ * 1.25;
+        B5.circ(c, X, Y, rt, "#f3e3ef", "#9a7bb8", 1.6);
+        for (var g = 0; g < 10; g++){ var ag = g / 10 * 6.283; B5.circ(c, X + Math.cos(ag) * rt * 0.78, Y + Math.sin(ag) * rt * 0.78, rt * 0.16, act ? "#c9b6ef" : "#ddd5ea"); }
+        B5.circ(c, X, Y, rt * 0.42, "#fff", null);
+        if (act) for (var z = 0; z < 3; z++){ var az = an * 2 + z * 2.1 + j, zx = X + Math.cos(az) * rt * 0.22, zy = Y + Math.sin(az) * rt * 0.22; B5.circ(c, zx, zy, 1.6, "#1f5fa8"); D.line(c, zx, zy, zx - Math.cos(az) * 5, zy - Math.sin(az) * 5, "#1f5fa8", 0.9); }
+      });
+      if (act){ for (i = 0; i < 12; i++){ var q = T[i], f2 = (q.o + an * 0.5) % 1, sx = tcx + trx * 0.2 + f2 * (trx * 0.85), sy = tcy + try_ + 6 - Math.sin(f2 * 3.14) * 10 + (q.u - 0.5) * 6; if (sx > tx + tw - 8) continue; B5.circ(c, sx, sy, 1.8, "#1f5fa8"); ctx.strokeStyle = "#1f5fa8"; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo(sx - 4, sy + 2 * Math.sin(an * 20 + i), sx - 8, sy); ctx.stroke(); } }
+      D.text(c, act ? "≈ 1 000 / seconde" : "pas encore de production", tx + tw / 2, tcy + try_ + 16 + (act ? 4 : 0), {size: 10, color: "#1f5fa8", weight: 800});
+      D.display(c, act ? B5.sci(s, 1) : "0", tx + tw / 2, sh - 34, {w: Math.min(120, tw - 16), h: 40, size: 15, caption: "produits depuis 13 ans", color: "#1f5fa8"});
+      if (act) D.text(c, "+" + S.fmt(Math.floor(seen), 0) + " depuis que tu regardes", tx + tw / 2, sh - 6 + 0, {size: 9, color: pal.grey, weight: 700});
+      /* ---------- courbe ---------- */
+      var gy = sh + 14; geo.gy = gy - 4; D.panel(c, 6, gy - 2, W - 12, H - gy - 2, {shadow: false, fill: "#fbfcfe"});
+      var ax = D.axes(c, {x0: 0, x1: 60, y0: 0, y1: 14, xl: "âge (ans) · glisse", stepX: 10, stepY: 2, t: gy + 24, b: 34, l: 40, r: 16}); geo.ax = ax;
+      D.text(c, "log₁₀ du nombre de cellules", 14, gy + 12, {size: 11, color: pal.grey, align: "left"});
+      ctx.fillStyle = "rgba(155,44,74,.08)"; ctx.fillRect(ax.L, ax.Y(4), ax.R - ax.L, ax.B - ax.Y(4));
+      D.line(c, ax.L, ax.Y(4), ax.R, ax.Y(4), "#9b2c4a", 1.2, [5, 4]); D.text(c, "1 % du stock de naissance (10⁴)", ax.L + 6, ax.Y(4) + 10, {align: "left", size: 10, color: "#9b2c4a"});
+      var po = [], ps2 = [], t;
+      for (t = 0; t <= 60; t += 0.5){ po.push([t, Math.log10(ovo(t))]); if (t > 13) ps2.push([t, Math.log10(sper(t))]); }
+      B5.poly(c, ax, po, "#c0321d", 2.8); B5.poly(c, ax, ps2, "#1f5fa8", 2.8);
+      D.legend(c, [["#c0321d", "ovocytes (stock)"], ["#1f5fa8", "spermatozoïdes (cumul)"]], ax.R - 2, ax.Y(9.6), {align: "right"});
+      D.line(c, ax.X(A), ax.T, ax.X(A), ax.B, pal.ink, 1.3, [5, 4]);
+      D.dot(c, ax.X(A), ax.Y(Math.log10(o)), 6, "#c0321d"); if (s > 0) D.dot(c, ax.X(A), ax.Y(Math.log10(s)), 6, "#1f5fa8");
+      D.label(c, A + " ans", ax.X(A), ax.T - 8, {size: 10.5, color: pal.ink});
+      ro.set(0, S.sci(Math.round(o), 2) + " (" + S.fmt(100 * o / OV[0][1], o < 1e4 ? 2 : 1) + " %)"); ro.set(1, S.fmt(ov, 0)); ro.set(2, s > 0 ? S.sci(s, 2) : "aucun"); ro.set(3, A >= 12 ? S.fmt(100 * ov / OV[0][1], 3) + " % (" + S.fmt(ov, 0) + " sur " + S.sci(OV[0][1], 2) + ")" : "—");
+      if (A === first) nt.set("Défi réussi : à " + A + " ans, il reste ≈ " + S.sci(Math.round(o), 2) + " ovocytes, moins de 1 % du million de la naissance (un an plus tôt : " + S.sci(Math.round(ovo(A - 1)), 2) + "). Pendant ce temps, ≈ " + S.sci(s, 2) + " spermatozoïdes ont été produits.", "ok");
+      else if (A <= 13) nt.set("Avant la puberté, il n'y a pas encore de production de spermatozoïdes ; le stock d'ovocytes est déjà en place depuis la naissance et diminue déjà. Défi : trouve l'âge où il en reste moins de 1 %.", "");
+      else nt.set("À " + A + " ans : il reste ≈ " + S.sci(Math.round(o), 2) + " ovocytes (" + S.fmt(100 * o / OV[0][1], 1) + " % du stock de naissance), alors que ≈ " + S.sci(s, 2) + " spermatozoïdes ont été produits en " + (A - 13) + " ans (≈ 10⁸ par jour)." + (A < first ? " Défi : avance encore." : " Défi : tu as dépassé l'âge cherché, recule."), "");
     });
   }
 });

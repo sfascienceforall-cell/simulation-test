@@ -30,40 +30,118 @@ var TAU = {h: 25, m: 35, b: 60};
 SFA.sim({
   id: "b5-c03-repas", ch: "c03", tag: "Classique",
   titre: "Un repas : glycémie, insuline et glucagon",
-  resume: "Glucides ingérés et type d'aliment → montée de la glycémie et réponse hormonale.",
-  but: "Fais varier la quantité de glucides et la vitesse d'absorption. Observe le pic de glycémie, le retour à la valeur de départ, et la courbe d'insuline qui suit la glycémie. Cherche une quantité de glucides qui garde la glycémie sous 1,4 g/L.",
+  resume: "Le glucose passe de l'intestin au sang ; le pancréas répond par l'insuline, le foie stocke le glycogène.",
+  but: "Choisis la quantité de glucides et le type d'aliment, puis lance le repas : regarde le glucose passer de l'intestin dans le sang, les cellules β du pancréas libérer l'insuline et le foie stocker le glycogène. Glisse sur les courbes pour revenir à un instant. Défi : un repas d'au moins 80 g de glucides dont le pic reste sous 1,4 g/L.",
   aRetenir: "La glycémie (≈ 0,7–1,1 g/L à jeun) est réglée par rétrocontrôle négatif : si elle monte, le pancréas sécrète de l'insuline, qui fait entrer le glucose dans les cellules et stocker le glycogène dans le foie et les muscles ; la glycémie redescend, la sécrétion d'insuline diminue. Si elle baisse trop, le glucagon fait libérer du glucose par le foie.",
   piege: "L'insuline ne fait pas monter la glycémie : elle la fait baisser. Et la sécrétion n'est pas « arrêtée définitivement » : elle s'ajuste en continu. Modèle simplifié, insuline en unités arbitraires ; pour de très gros repas rapides (plus de 100 g), le pic du modèle est exagéré : chez une personne en bonne santé, il dépasse rarement 1,6 à 1,8 g/L.",
   build: function(k, S){
-    var c1 = k.canvas(200), c2 = k.canvas(130), c3 = k.canvas(110), pal = S.draw.palette;
-    var D = k.slider("Glucides ingérés", 0, 150, 5, 50, "g");
-    var ali = k.seg("Aliment", [["h", "IG élevé"], ["m", "IG moyen"], ["b", "IG bas"]], "m");
+    var c = k.canvas(590), pal = S.draw.palette, D = S.draw;
+    var Dg = k.slider("Glucides ingérés", 0, 150, 5, 50, "g", function(){ tm = 0; play = true; });
+    var ali = k.seg("Aliment", [["h", "IG élevé (pain blanc, soda)"], ["m", "IG moyen"], ["b", "IG bas (légumineuses)"]], "m", function(){ tm = 0; play = true; });
     var ro = k.readouts(["Pic de glycémie", "Moment du pic", "Retour sous 1,1 g/L", "Pic d'insuline"]);
     var nt = k.note("", "");
+    var tm = 0, an = 0, play = true, geo = {}, drag = false, cache = {}, rnd = B5.rng(5), P = [], i;
+    for (i = 0; i < 90; i++) P.push({o: rnd(), y: rnd(), u: rnd(), v: rnd()});
+    k.button("Lecture / pause", function(){ play = !play; if (play && tm >= 359) tm = 0; }, true);
+    k.button("Recommencer le repas", function(){ tm = 0; play = true; });
+    var lp = k.loop(function(dt){ an += dt; if (play){ tm += dt * 30; if (tm >= 359){ tm = 359; play = false; } } k.redraw(); }); lp.play();
+    c.cv.style.touchAction = "none";
+    c.pointer(function(t, p){
+      if (t === "down") drag = geo.ax && p.y > geo.gy;
+      if (drag && (t === "down" || t === "drag")){ tm = B5.cl(geo.ax.ix(p.x), 0, 359); play = false; }
+      if (t === "up") drag = false;
+    });
+    function model(){
+      var key = Dg.value + ali.value; if (cache.key === key) return cache;
+      var tau = TAU[ali.value], r = gluco({meals: [[30, Dg.value]], tau: tau, T: 360}), Ra = [], gly = [], gl = 0, upt = [], gut = [], t;
+      for (t = 0; t < 360; t++){
+        var s = t - 30, ra = s > 0 ? (Dg.value * 0.9 / VG) * (s / (tau * tau)) * Math.exp(-s / tau) : 0;
+        Ra.push(ra); gut.push(t < 30 ? 0 : Dg.value * (1 - (1 + s / tau) * Math.exp(-s / tau)));
+        var u = Math.max(0, r.X[t] * r.G[t]); upt.push(u); gl += u * VG; gly.push(gl);
+      }
+      cache = {key: key, r: r, Ra: Ra, gly: gly, upt: upt, gut: gut, RaM: Math.max.apply(null, Ra) || 1, uM: Math.max.apply(null, upt) || 1, IM: Math.max.apply(null, r.I), AM: Math.max.apply(null, r.A), glM: Math.max(gl, 1)};
+      return cache;
+    }
     k.draw(function(){
-      var r = gluco({meals: [[30, D.value]], tau: TAU[ali.value], T: 360});
-      var G = r.G, pk = 0, ip = 0, i;
+      var m = model(), r = m.r, G = r.G, pk = 0, ip = 0, ix = Math.min(359, Math.round(tm));
       for (i = 0; i < G.length; i++) if (G[i] > pk){ pk = G[i]; ip = i; }
       var back = -1; if (pk > 1.1) for (i = ip; i < G.length; i++) if (G[i] <= 1.1){ back = i; break; }
-      c1.clear();
-      var ax = S.draw.axes(c1, {x0: 0, x1: 360, y0: 0, y1: 3, xl: "t (min)", yl: "glycémie (g/L)", stepX: 60, stepY: 0.5});
-      c1.ctx.fillStyle = "rgba(46,107,85,.12)"; c1.ctx.fillRect(ax.X(0), ax.Y(1.1), ax.X(360) - ax.X(0), ax.Y(0.7) - ax.Y(1.1));
-      S.draw.text(c1, "zone normale 0,7–1,1", ax.R - 6, ax.Y(0.9), {align: "right", size: 12, color: pal.green});
-      B5.poly(c1, ax, G.map(function(g, t){ return [t, g]; }), pal.violet, 2.8);
-      S.draw.line(c1, ax.X(30), ax.T, ax.X(30), ax.B, pal.amber, 1.5, [5, 4]); S.draw.text(c1, "repas", ax.X(30) + 4, ax.T + 10, {align: "left", size: 12, color: pal.amber});
-      c2.clear();
-      var maxI = Math.max.apply(null, r.I), maxA = Math.max.apply(null, r.A);
-      var ax2 = S.draw.axes(c2, {x0: 0, x1: 360, y0: 0, y1: Math.max(40, Math.ceil(maxI / 20) * 20), xl: "t (min)", yl: "insuline (u.a.)", stepX: 60, grid: true});
-      B5.poly(c2, ax2, r.I.map(function(v, t){ return [t, v]; }), pal.red, 2.6);
-      B5.leg(c2, [["insuline", pal.red]], ax2.L + 8, ax2.T + 34);
-      c3.clear();
-      var ax3 = S.draw.axes(c3, {x0: 0, x1: 360, y0: 0, y1: 4, xl: "t (min)", yl: "glucagon (base = 1)", stepX: 60, stepY: 1});
-      B5.poly(c3, ax3, r.A.map(function(a, t){ return [t, Math.min(a, 4)]; }), pal.amber, 2.6);
-      ro.set(0, S.fmt(pk, 2) + " g/L"); ro.set(1, D.value && ip >= 30 ? S.fmt(ip - 30, 0) + " min après le début" : "—");
-      ro.set(2, D.value === 0 || pk <= 1.1 ? "pas de dépassement" : back < 0 ? "> 5 h" : S.fmt(back - 30, 0) + " min après le début"); ro.set(3, S.fmt(maxI, 0) + " u.a. (repos : 8)");
-      if (D.value === 0) nt.set("Pas de repas : la glycémie reste à 0,9 g/L, l'insuline à sa valeur de base.", "");
-      else if (pk > 1.4) nt.set("Pic à " + S.fmt(pk, 2) + " g/L (> 1,4) : plus l'absorption est rapide (IG élevé) et la quantité grande, plus le pic est haut, et plus la sécrétion d'insuline est forte.", "warn");
-      else nt.set("Pic modéré (" + S.fmt(pk, 2) + " g/L) : l'insuline absorbe la hausse.", "ok");
+      var g = G[ix], I = r.I[ix], A = r.A[ix], ra = m.Ra[ix] / m.RaM, up = m.upt[ix] / Math.max(m.uM, 1e-9);
+      var beta = B5.cl((I - IB) / Math.max(30, m.IM - IB), 0, 1), alpha = B5.cl((A - 1) / 1.5, 0, 1);
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, sh = 262;
+      D.rrect(c, 6, 6, W - 12, sh, 12); var bg = ctx.createLinearGradient(0, 0, 0, sh); bg.addColorStop(0, "#fbf5ee"); bg.addColorStop(1, "#f1f4fa"); ctx.fillStyle = bg; ctx.fill();
+      /* vaisseau sanguin */
+      var vy = 116, vh = 42, x0 = 16, x1 = W - 16;
+      D.rrect(c, x0, vy, x1 - x0, vh, 21); ctx.fillStyle = "#f7cfc8"; ctx.fill(); ctx.strokeStyle = "#d9776b"; ctx.lineWidth = 2.5; ctx.stroke();
+      D.text(c, "sang →", x1 - 30, vy + vh - 9, {size: 10.5, color: "#a5463a", weight: 800});
+      /* intestin grêle (tube replié) */
+      var ix0 = 22, ix1 = Math.max(110, W * 0.36), iyc = 62;
+      ctx.save(); ctx.lineCap = "round"; ctx.lineJoin = "round";
+      function gutPath(){ ctx.beginPath(); for (var q = 0; q <= 40; q++){ var xx = ix0 + 8 + (ix1 - ix0 - 16) * q / 40, yy = iyc + Math.sin(q / 40 * Math.PI * 4) * 20; if (q) ctx.lineTo(xx, yy); else ctx.moveTo(xx, yy); } }
+      gutPath(); ctx.strokeStyle = "#c97a66"; ctx.lineWidth = 22; ctx.stroke(); gutPath(); ctx.strokeStyle = "#f3c3b0"; ctx.lineWidth = 17; ctx.stroke(); ctx.restore();
+      var ngut = Math.min(14, Math.round(m.gut[ix] > 0 ? (Dg.value - m.gut[ix]) / 150 * 14 + 0.5 : (tm < 30 ? Dg.value / 150 * 14 : 0)));
+      for (i = 0; i < ngut; i++){ var q2 = (P[i].o + an * 0.05) % 1, gx = ix0 + 8 + (ix1 - ix0 - 16) * q2; B5.circ(c, gx, iyc + Math.sin(q2 * Math.PI * 4) * 20, 3.4, "#f4c542", "#a56300", 1); }
+      D.text(c, "intestin grêle", (ix0 + ix1) / 2, 22, {size: 11, color: "#9a4a36", weight: 800});
+      /* absorption : glucose de l'intestin vers le sang */
+      var nab = Math.round(ra * 9);
+      for (i = 0; i < nab; i++){ var pa = P[i + 20], f = (pa.o + an * 0.6) % 1, ax0 = ix0 + 20 + pa.u * (ix1 - ix0 - 40); B5.circ(c, ax0, 84 + f * (vy + 10 - 84), 3.4, "#f4c542", "#a56300", 1); }
+      if (nab) D.arrow(c, ix1 - 6, 84, ix1 - 6, vy - 2, "#a56300", 1.6);
+      /* pancréas et îlot de Langerhans */
+      var pr = Math.min(58, W * 0.15), px = W - pr - 26, py = 58;
+      ctx.fillStyle = "#f4d2a8"; ctx.strokeStyle = "#c9954a"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.ellipse(px, py, pr, 28, -0.06, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+      D.glow(c, px - pr * 0.3, py, 26, pal.violet, 0.15 + 0.6 * beta); D.glow(c, px + pr * 0.42, py, 20, pal.orange, 0.1 + 0.7 * alpha);
+      for (i = 0; i < 5; i++) B5.circ(c, px - pr * 0.55 + i * pr * 0.17, py + (i % 2 ? 6 : -6), 6, "#9a7be0", "#5a3fb0", 1.4);
+      for (i = 0; i < 2; i++) B5.circ(c, px + pr * 0.32 + i * 13, py + (i ? 6 : -6), 5.5, "#f0a35a", "#b2620f", 1.4);
+      D.text(c, "pancréas", px, py - 38, {size: 11, color: "#8a5a2b", weight: 800});
+      D.text(c, "β : insuline", px - pr * 0.25, py + 40, {size: 10, color: pal.violet, weight: 800}); D.text(c, "α", px + pr * 0.4, py + 40, {size: 10, color: "#b2620f", weight: 800});
+      var nsec = Math.round(beta * 8);
+      for (i = 0; i < nsec; i++){ var ps = P[i + 40], fs = (ps.o + an * 0.7) % 1; B5.circ(c, px - pr * 0.5 + ps.u * pr * 0.6, py + 26 + fs * (vy + 6 - py - 26), 3.2, pal.violet, "#fff", 1); }
+      var nga = Math.round(alpha * 5);
+      for (i = 0; i < nga; i++){ var pg = P[i + 50], fg = (pg.o + an * 0.7) % 1; ctx.fillStyle = pal.orange; var gx2 = px + pr * 0.3 + pg.u * 16, gy2 = py + 26 + fg * (vy + 6 - py - 26); ctx.fillRect(gx2 - 3, gy2 - 3, 6, 6); }
+      /* afficheur de glycémie */
+      D.display(c, g.toFixed(2).replace(".", ","), (ix1 + px - pr) / 2, 52, {w: 78, h: 44, size: 16, caption: "glycémie g/L", color: g > 1.4 ? "#a31d0e" : g < 0.7 ? "#b2620f" : "#13233a"});
+      /* glucose et insuline dans le sang */
+      var ng = Math.min(48, Math.round(g * 15)), ni = Math.min(16, Math.round(I / Math.max(m.IM, 20) * 16));
+      for (i = 0; i < ng; i++){ var pb = P[i], fb = (pb.o + an * 0.06) % 1; B5.circ(c, x0 + 12 + fb * (x1 - x0 - 24), vy + 8 + pb.y * (vh - 16), 3.4, "#f4c542", "#a56300", 1); }
+      for (i = 0; i < ni; i++){ var pi = P[i + 60], fi = (pi.o + an * 0.08) % 1; B5.circ(c, x0 + 12 + fi * (x1 - x0 - 24), vy + 8 + pi.v * (vh - 16), 3, pal.violet, "#fff", 1); }
+      /* foie et muscle (cellules cibles) */
+      var ly = vy + vh + 18, lh = sh - ly - 6, lx1 = W * 0.5 - 6;
+      ctx.fillStyle = "#c46a55"; ctx.strokeStyle = "#8c3b2c"; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(20, ly + 14); ctx.bezierCurveTo(30, ly - 6, lx1 - 14, ly - 8, lx1, ly + 8); ctx.quadraticCurveTo(lx1 - 2, ly + lh * 0.75, (18 + lx1) * 0.55, ly + lh - 2); ctx.quadraticCurveTo(26, ly + lh + 2, 18, ly + lh * 0.55); ctx.closePath(); ctx.fill(); ctx.stroke();
+      var ngl = Math.round(m.gly[ix] / m.glM * 16 * Math.min(1, Dg.value / 60 + 0.2));
+      for (i = 0; i < ngl; i++){ var pl = P[i + 70], gx3 = 34 + pl.u * (lx1 - 70), gy3 = ly + 14 + pl.v * (lh - 34); for (var a = 0; a < 6; a++) B5.circ(c, gx3 + 4 * Math.cos(a), gy3 + 4 * Math.sin(a), 1.8, "#fbe6a2"); }
+      D.text(c, "foie : glycogène", (18 + lx1) / 2, ly + lh - 10, {size: 10.5, color: "#fff", weight: 800});
+      var mx0 = W * 0.5 + 8, mx1 = W - 18;
+      D.rrect(c, mx0, ly, mx1 - mx0, lh - 4, 12); ctx.fillStyle = "#e7a7a0"; ctx.fill(); ctx.strokeStyle = "#a9504a"; ctx.lineWidth = 2; ctx.stroke();
+      for (i = 1; i < 8; i++){ var sx = mx0 + (mx1 - mx0) * i / 8; D.line(c, sx, ly + 4, sx, ly + lh - 8, "rgba(140,50,45,.35)", 1.4); }
+      D.text(c, "muscle", (mx0 + mx1) / 2, ly + lh - 14, {size: 10.5, color: "#7a2b25", weight: 800});
+      var nup = Math.round(up * 10);
+      for (i = 0; i < nup; i++){ var pu = P[i + 5], fu = (pu.o + an * 0.55) % 1, ux = pu.u < 0.5 ? 40 + pu.v * (lx1 - 80) : mx0 + 12 + pu.v * (mx1 - mx0 - 24); B5.circ(c, ux, vy + vh - 4 + fu * 34, 3.2, "#f4c542", "#a56300", 1); }
+      if (alpha > 0.15){ for (i = 0; i < Math.round(alpha * 5); i++){ var pr2 = P[i + 80], fr = (pr2.o + an * 0.55) % 1; B5.circ(c, 40 + pr2.u * (lx1 - 80), ly + 4 - fr * 26, 3.2, "#f4c542", "#b2620f", 1.6); } D.label(c, "glucagon : le foie libère du glucose", (18 + lx1) / 2 + 20, ly - 8, {color: "#b2620f", size: 10}); }
+      else if (beta > 0.15) D.label(c, "insuline : le glucose entre dans les cellules", W / 2, ly - 9, {color: pal.violet, size: 10});
+      /* ---------- courbes ---------- */
+      var gy = sh + 14; geo.gy = gy - 4; D.panel(c, 6, gy - 2, W - 12, H - gy - 2, {shadow: false, fill: "#fbfcfe"});
+      var h1 = (H - gy) * 0.56;
+      var ax = D.axes(c, {x0: 0, x1: 360, y0: 0, y1: 3, xl: "", stepX: 60, stepY: 0.5, t: gy + 22, b: H - (gy + h1), l: 42, r: 16}); geo.ax = ax;
+      D.text(c, "glycémie (g/L)", 14, gy + 10, {size: 11, color: pal.grey, align: "left"});
+      ctx.fillStyle = "rgba(36,119,90,.12)"; ctx.fillRect(ax.L, ax.Y(1.1), ax.R - ax.L, ax.Y(0.7) - ax.Y(1.1));
+      D.line(c, ax.L, ax.Y(1.4), ax.R, ax.Y(1.4), pal.red, 1.2, [5, 4]); D.label(c, "défi : pic < 1,4", ax.R - 4, ax.Y(1.4) - 11, {color: pal.red, align: "right", size: 10});
+      B5.poly(c, ax, G.map(function(v, t){ return [t, v]; }), "rgba(98,54,196,.25)", 2);
+      B5.poly(c, ax, G.slice(0, ix + 1).map(function(v, t){ return [t, v]; }), pal.violet, 3);
+      D.line(c, ax.X(30), ax.T, ax.X(30), ax.B, pal.amber, 1.3, [4, 4]); D.text(c, "repas", ax.X(30) + 4, ax.T + 8, {align: "left", size: 10.5, color: pal.amber});
+      D.line(c, ax.X(tm), ax.T, ax.X(tm), ax.B, pal.ink, 1.2, [4, 3]); D.dot(c, ax.X(tm), ax.Y(g), 5, pal.violet);
+      var top2 = gy + h1 + 36, yM = Math.max(40, Math.ceil(m.IM / 20) * 20);
+      var ax2 = D.axes(c, {x0: 0, x1: 360, y0: 0, y1: yM, xl: "t (min) · glisse pour te déplacer", stepX: 60, stepY: yM / 2, t: top2, b: 32, l: 42, r: 16});
+      D.text(c, "insuline (u.a., tirets) · glucagon (×10, orange)", 14, top2 - 8, {size: 10.5, color: pal.grey, align: "left"});
+      B5.poly(c, ax2, r.I.slice(0, ix + 1).map(function(v, t){ return [t, v]; }), pal.violet, 2.4, [6, 3]);
+      B5.poly(c, ax2, r.A.slice(0, ix + 1).map(function(v, t){ return [t, Math.min(yM, 10 * v)]; }), pal.orange, 2.4);
+      D.line(c, ax2.X(tm), ax2.T, ax2.X(tm), ax2.B, pal.ink, 1.2, [4, 3]);
+      D.label(c, "t = " + Math.floor(tm / 60) + " h " + (Math.floor(tm % 60) < 10 ? "0" : "") + Math.floor(tm % 60), W - 18, gy + 10, {align: "right", size: 10.5, color: pal.ink});
+      ro.set(0, S.fmt(pk, 2) + " g/L"); ro.set(1, Dg.value && ip >= 30 ? S.fmt(ip - 30, 0) + " min après le début" : "—");
+      ro.set(2, Dg.value === 0 || pk <= 1.1 ? "pas de dépassement" : back < 0 ? "> 5 h" : S.fmt(back - 30, 0) + " min après le début"); ro.set(3, S.fmt(m.IM, 0) + " u.a. (repos : 8)");
+      if (Dg.value === 0) nt.set("Pas de repas : la glycémie reste à 0,9 g/L, l'insuline à sa valeur de base.", "");
+      else if (Dg.value >= 80 && pk < 1.4) nt.set("Défi réussi : " + Dg.value + " g de glucides et un pic de " + S.fmt(pk, 2) + " g/L seulement. Un aliment à IG bas libère son glucose lentement : l'insuline a le temps de suivre.", "ok");
+      else if (pk >= 1.4) nt.set("Pic à " + S.fmt(pk, 2) + " g/L (≥ 1,4) : plus l'absorption est rapide (IG élevé) et la quantité grande, plus le pic est haut, et plus la sécrétion d'insuline est forte." + (ali.value === "h" && pk > 1.2 ? " Remarque le rebond : la glycémie passe sous 0,85 g/L et le glucagon monte." : ""), "warn");
+      else nt.set("Pic modéré (" + S.fmt(pk, 2) + " g/L) : l'insuline absorbe la hausse. Défi : ose au moins 80 g de glucides en gardant le pic sous 1,4 g/L.", "");
     });
   }
 });
@@ -250,40 +328,107 @@ SFA.sim({
   id: "b5-c03-pompe", ch: "c03", tag: "Défi",
   titre: "Pompe à insuline : tiens la glycémie 24 h",
   resume: "Débit de base, ratio insuline/glucides, avance du bolus → temps passé dans la cible.",
-  but: "Une personne avec un diabète de type 1 mange trois repas. Règle le débit de base, la dose de bolus (1 unité pour X g de glucides) et l'avance du bolus. Objectif : au moins 90 % du temps entre 0,7 et 1,8 g/L, sans hypoglycémie (< 0,7 g/L).",
+  but: "Une personne avec un diabète de type 1 porte une pompe (insuline sous la peau) et un capteur de glucose. Règle le débit de base, la dose de bolus (1 unité pour X g de glucides) et l'avance du bolus, puis regarde la journée défiler. Défi 1 : au moins 90 % du temps entre 0,7 et 1,8 g/L sans hypoglycémie. Défi 2 (expert) : 100 % du temps entre 0,7 et 1,4 g/L.",
   aRetenir: "Dans le diabète de type 1, on remplace la sécrétion de base par un débit basal continu et la réponse aux repas par un bolus calculé sur les glucides. Trop d'insuline provoque une hypoglycémie (danger : malaise), trop peu une hyperglycémie. Prendre le bolus un peu avant le repas suit mieux la montée du glucose.",
   piege: "Plus d'insuline n'est pas toujours mieux : une dose trop forte fait chuter la glycémie sous 0,7 g/L. Simulation pédagogique et non outil médical : ne sert pas à régler un vrai traitement.",
   build: function(k, S){
-    var c = k.canvas(300), pal = S.draw.palette;
+    var c = k.canvas(560), pal = S.draw.palette, D = S.draw;
     var basal = k.slider("Débit de base", 0, 2, 0.1, 0.6, "U/h");
     var icr = k.slider("1 unité d'insuline pour…", 4, 30, 1, 25, "g de glucides");
     var adv = k.slider("Bolus pris avant le repas", 0, 30, 5, 0, "min");
     var m1 = k.slider("Petit-déjeuner (8 h)", 20, 100, 5, 60, "g");
     var m2 = k.slider("Déjeuner (12 h 30)", 20, 100, 5, 70, "g");
     var m3 = k.slider("Dîner (19 h)", 20, 100, 5, 80, "g");
-    var ro = k.readouts(["Temps dans la cible", "Glycémie min / max", "Hypo (< 0,7)", "Hyper (> 1,8)"]);
+    var ro = k.readouts(["Temps dans la cible 0,7–1,8", "Glycémie min / max", "Hypo (< 0,7)", "Hyper (> 1,8)"]);
     var nt = k.note("", "");
-    k.draw(function(){
+    var tm = 360, an = 0, play = true, geo = {}, drag = false, cache = {}, rnd = B5.rng(9), P = [], i;
+    for (i = 0; i < 40; i++) P.push({o: rnd(), y: rnd()});
+    k.button("Lecture / pause de la journée", function(){ play = !play; }, true);
+    var lp = k.loop(function(dt){ an += dt; if (play){ tm = (tm + dt * 90) % 1440; } k.redraw(); }); lp.play();
+    c.cv.style.touchAction = "none";
+    c.pointer(function(t, p){
+      if (t === "down") drag = geo.ax && p.y > geo.gy;
+      if (drag && (t === "down" || t === "drag")){ tm = B5.cl(geo.ax.ix(p.x) * 60, 0, 1439); play = false; }
+      if (t === "up") drag = false;
+    });
+    function model(){
+      var key = [basal.value, icr.value, adv.value, m1.value, m2.value, m3.value].join(); if (cache.key === key) return cache;
       var meals = [[480, m1.value], [750, m2.value], [1140, m3.value]];
-      var inj = function(t){
-        var r = basal.value * 0.96;
-        meals.forEach(function(m){ var s = t - (m[0] - adv.value); if (s > 0) r += (m[1] / icr.value) * 40 * (s / 1600) * Math.exp(-s / 40); });
-        return r;
-      };
-      var r = gluco({meals: meals, res: 0, cap: 0, base: basal.value * 0.96, T: 1440, inj: inj});
-      var G = r.G, inr = 0, hypo = 0, hyper = 0, mn = 9, mx = 0;
-      G.forEach(function(g){ if (g >= 0.7 && g <= 1.8) inr++; if (g < 0.7) hypo++; if (g > 1.8) hyper++; mn = Math.min(mn, g); mx = Math.max(mx, g); });
-      c.clear();
-      var ax = S.draw.axes(c, {x0: 0, x1: 24, y0: 0, y1: 4, xl: "heure", yl: "g/L", stepX: 4, stepY: 1});
-      c.ctx.fillStyle = "rgba(46,107,85,.12)"; c.ctx.fillRect(ax.X(0), ax.Y(1.8), ax.X(24) - ax.X(0), ax.Y(0.7) - ax.Y(1.8));
-      S.draw.text(c, "cible 0,7–1,8", ax.R - 6, ax.Y(1.25), {align: "right", size: 12, color: pal.green});
-      meals.forEach(function(m, i){ S.draw.line(c, ax.X(m[0] / 60), ax.T, ax.X(m[0] / 60), ax.B, pal.amber, 1.3, [4, 4]); S.draw.text(c, ["matin", "midi", "soir"][i], ax.X(m[0] / 60) + 3, ax.T + 10, {align: "left", size: 12, color: pal.amber}); });
-      B5.poly(c, ax, G.map(function(g, t){ return [t / 60, g]; }), pal.violet, 2.8);
-      var pc = 100 * inr / 1440;
-      ro.set(0, S.fmt(pc, 0) + " %"); ro.set(1, S.fmt(mn, 2) + " / " + S.fmt(mx, 2) + " g/L"); ro.set(2, S.fmt(hypo / 60, 1) + " h"); ro.set(3, S.fmt(hyper / 60, 1) + " h");
-      if (hypo > 0) nt.set("Hypoglycémie : " + S.fmt(hypo / 60, 1) + " h sous 0,7 g/L (minimum " + S.fmt(mn, 2) + "). Dose trop forte : réduis le bolus ou le débit de base.", "warn");
-      else if (pc >= 90) nt.set("Objectif atteint : " + S.fmt(pc, 0) + " % du temps dans la cible, sans hypoglycémie.", "ok");
-      else nt.set("Encore " + S.fmt(hyper / 60, 1) + " h au-dessus de 1,8 g/L : augmente le débit de base ou le bolus, ou prends-le plus tôt.", "warn");
+      var bol = function(t){ var r = 0; meals.forEach(function(m){ var s = t - (m[0] - adv.value); if (s > 0) r += (m[1] / icr.value) * 40 * (s / 1600) * Math.exp(-s / 40); }); return r; };
+      var inj = function(t){ return basal.value * 0.96 + bol(t); };
+      var r = gluco({meals: meals, res: 0, cap: 0, base: basal.value * 0.96, T: 1440, inj: inj}), B = [];
+      for (var t = 0; t < 1440; t++) B.push(bol(t));
+      var G = r.G, inr = 0, tight = 0, hypo = 0, hyper = 0, mn = 9, mx = 0;
+      G.forEach(function(g){ if (g >= 0.7 && g <= 1.8) inr++; if (g >= 0.7 && g <= 1.4) tight++; if (g < 0.7) hypo++; if (g > 1.8) hyper++; mn = Math.min(mn, g); mx = Math.max(mx, g); });
+      cache = {key: key, meals: meals, G: G, B: B, BM: Math.max.apply(null, B) || 1, inr: inr, tight: tight, hypo: hypo, hyper: hyper, mn: mn, mx: mx};
+      return cache;
+    }
+    k.draw(function(){
+      var m = model(), ix = Math.min(1439, Math.floor(tm)), g = m.G[ix], bo = m.B[ix], rate = basal.value + bo * 60 / 40 / 0.96;
+      var trend = m.G[Math.min(1439, ix + 10)] - m.G[Math.max(0, ix - 10)];
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, sh = 250;
+      D.rrect(c, 6, 6, W - 12, sh, 12); var bg = ctx.createLinearGradient(0, 0, 0, sh);
+      var night = tm < 420 || tm > 1320; bg.addColorStop(0, night ? "#e4e8f5" : "#f7f3ea"); bg.addColorStop(1, "#f2f5fa"); ctx.fillStyle = bg; ctx.fill();
+      /* personne (buste) */
+      var bx = Math.max(78, W * 0.22), skin = "#f1c9a5", skinD = "#c99068";
+      B5.circ(c, bx, 46, 24, skin, skinD, 2);
+      D.rrect(c, bx - 48, 74, 96, 150, 30); ctx.fillStyle = "#9fc1e6"; ctx.fill(); ctx.strokeStyle = "#5d86b5"; ctx.lineWidth = 2; ctx.stroke();
+      D.rrect(c, bx - 70, 80, 22, 110, 11); ctx.fillStyle = "#9fc1e6"; ctx.fill(); ctx.stroke();
+      D.rrect(c, bx + 48, 80, 22, 110, 11); ctx.fillStyle = "#9fc1e6"; ctx.fill(); ctx.stroke();
+      /* capteur de glucose sur le bras */
+      B5.circ(c, bx - 59, 104, 8, "#fff", "#5f6b7a", 2); B5.circ(c, bx - 59, 104, 3, pal.teal);
+      for (i = 1; i <= 3; i++){ var wr = ((an * 1.2 + i / 3) % 1) * 18; ctx.globalAlpha = 1 - wr / 18; ctx.strokeStyle = pal.teal; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(bx - 59, 104, 8 + wr, -0.9, 0.9); ctx.stroke(); ctx.globalAlpha = 1; }
+      D.text(c, "capteur", bx - 59, 126, {size: 9.5, color: "#2c3a4e", weight: 800});
+      /* pompe à la ceinture + cathéter */
+      var pX = bx + 10, pY = 196;
+      ctx.strokeStyle = "#7d8ea3"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(pX + 30, pY - 6); ctx.bezierCurveTo(pX + 46, pY - 50, bx + 10, 150, bx - 10, 158); ctx.stroke();
+      B5.circ(c, bx - 12, 158, 5, "#fff", "#5f6b7a", 1.6);
+      var nd = Math.max(1, Math.round(B5.cl(rate / 6, 0, 1) * 8));
+      for (i = 0; i < nd; i++){ var f = (P[i].o + an * (0.3 + rate * 0.12)) % 1, tt = f, u = 1 - tt;
+        var qx = u * u * u * (pX + 30) + 3 * u * u * tt * (pX + 46) + 3 * u * tt * tt * (bx + 10) + tt * tt * tt * (bx - 10), qy = u * u * u * (pY - 6) + 3 * u * u * tt * (pY - 50) + 3 * u * tt * tt * 150 + tt * tt * tt * 158;
+        B5.circ(c, qx, qy, 2.6, pal.violet); }
+      D.rrect(c, pX, pY - 8, 56, 40, 8); ctx.fillStyle = "#3a4656"; ctx.fill();
+      D.rrect(c, pX + 5, pY - 3, 46, 20, 4); ctx.fillStyle = bo > 0.05 ? "#ece4ff" : "#e8f3ec"; ctx.fill();
+      D.text(c, S.fmt(rate, 1) + " U/h", pX + 28, pY + 7, {size: 10, color: "#13233a", weight: 800, mono: true});
+      D.text(c, bo > 0.05 ? "bolus" : "basal", pX + 28, pY + 25, {size: 9, color: "#fff", weight: 800});
+      D.text(c, "pompe", pX + 28, pY + 44, {size: 10, color: "#2c3a4e", weight: 800});
+      /* horloge 24 h */
+      var cr = Math.min(52, (W - bx - 90) / 2 - 8), cx = W - cr - 22, cy = 66;
+      B5.circ(c, cx, cy, cr, "#fff", "#8a95a3", 2);
+      for (i = 0; i < 24; i++){ var aa = i / 24 * 2 * Math.PI - Math.PI / 2; D.line(c, cx + Math.cos(aa) * (cr - (i % 6 ? 4 : 8)), cy + Math.sin(aa) * (cr - (i % 6 ? 4 : 8)), cx + Math.cos(aa) * cr, cy + Math.sin(aa) * cr, "#8a95a3", i % 6 ? 1 : 2); }
+      [[0, "0 h"], [6, "6"], [12, "12"], [18, "18"]].forEach(function(q){ var aa = q[0] / 24 * 2 * Math.PI - Math.PI / 2; D.text(c, q[1], cx + Math.cos(aa) * (cr - 16), cy + Math.sin(aa) * (cr - 16), {size: 9.5, color: pal.grey}); });
+      m.meals.forEach(function(q, j){ var aa = q[0] / 1440 * 2 * Math.PI - Math.PI / 2, mx0 = cx + Math.cos(aa) * (cr + 9), my0 = cy + Math.sin(aa) * (cr + 9), on = tm >= q[0] && tm < q[0] + 40; B5.circ(c, mx0, my0, on ? 8 : 6, on ? pal.amber : "#fbe3c4", "#b2620f", 1.5); });
+      var ah = tm / 1440 * 2 * Math.PI - Math.PI / 2; D.line(c, cx, cy, cx + Math.cos(ah) * (cr - 10), cy + Math.sin(ah) * (cr - 10), pal.ink, 3); B5.circ(c, cx, cy, 3.5, pal.ink);
+      var hh = Math.floor(tm / 60), mm = Math.floor(tm % 60);
+      D.text(c, hh + " h " + (mm < 10 ? "0" : "") + mm, cx, cy + cr + 22, {size: 12, color: pal.ink, weight: 800});
+      /* lecteur de glycémie */
+      var zc = g < 0.7 ? "#b2620f" : g > 1.8 ? "#a31d0e" : "#13233a";
+      D.display(c, g.toFixed(2).replace(".", ",") + (trend > 0.05 ? " ↑" : trend < -0.05 ? " ↓" : " →"), cx, 186, {w: Math.min(128, 2 * cr + 20), h: 46, size: 16, caption: "glycémie (g/L)", color: zc, screen: g < 0.7 ? "#fde7cf" : g > 1.8 ? "#fbe0db" : "#e8f3ec"});
+      var cur = null; m.meals.forEach(function(q, j){ if (tm >= q[0] - adv.value - 5 && tm < q[0] + 60) cur = ["petit-déjeuner", "déjeuner", "dîner"][j] + " : " + q[1] + " g"; });
+      if (cur) D.label(c, cur, cx, 226, {color: pal.amber, size: 10.5});
+      else if (g < 0.7) D.label(c, "hypoglycémie !", cx, 226, {color: "#b2620f", size: 10.5});
+      /* ---------- courbe 24 h ---------- */
+      var gy = sh + 14; geo.gy = gy - 4; D.panel(c, 6, gy - 2, W - 12, H - gy - 2, {shadow: false, fill: "#fbfcfe"});
+      var ax = D.axes(c, {x0: 0, x1: 24, y0: 0, y1: 3.5, xl: "heure · glisse pour te déplacer", stepX: 4, stepY: 0.5, t: gy + 24, b: 58, l: 42, r: 16}); geo.ax = ax;
+      D.text(c, "glycémie (g/L)", 14, gy + 12, {size: 11, color: pal.grey, align: "left"});
+      ctx.fillStyle = "rgba(36,119,90,.10)"; ctx.fillRect(ax.L, ax.Y(1.8), ax.R - ax.L, ax.Y(0.7) - ax.Y(1.8));
+      ctx.fillStyle = "rgba(36,119,90,.10)"; ctx.fillRect(ax.L, ax.Y(1.4), ax.R - ax.L, ax.Y(0.7) - ax.Y(1.4));
+      ctx.fillStyle = "rgba(194,106,12,.12)"; ctx.fillRect(ax.L, ax.Y(0.7), ax.R - ax.L, ax.B - ax.Y(0.7));
+      D.text(c, "cible 0,7–1,8", ax.R - 6, ax.Y(1.62), {align: "right", size: 10.5, color: pal.green});
+      D.text(c, "hypo", ax.R - 6, ax.Y(0.35), {align: "right", size: 10.5, color: "#b2620f"});
+      m.meals.forEach(function(q, j){ D.line(c, ax.X(q[0] / 60), ax.T, ax.X(q[0] / 60), ax.B, pal.amber, 1.2, [4, 4]); });
+      B5.poly(c, ax, m.G.map(function(v, t){ return [t / 60, v]; }), pal.violet, 2.8);
+      /* insuline délivrée sous l'axe */
+      var by0 = H - 14, bh = 12;
+      for (var t2 = 0; t2 < 1440; t2 += 10){ var v = basal.value / 2 + m.B[t2] / m.BM; ctx.fillStyle = m.B[t2] > 0.05 ? pal.violet : "rgba(98,54,196,.35)"; var hb = Math.min(bh, 2 + v * bh); ctx.fillRect(ax.X(t2 / 60), by0 - hb, Math.max(1, ax.X(10 / 60) - ax.X(0) - 0.6), hb); }
+      D.text(c, "insuline", ax.L - 4, by0 - 6, {align: "right", size: 9.5, color: pal.violet});
+      D.line(c, ax.X(tm / 60), ax.T, ax.X(tm / 60), by0, pal.ink, 1.2, [4, 3]); D.dot(c, ax.X(tm / 60), ax.Y(Math.min(3.5, g)), 5, pal.violet);
+      var pc = 100 * m.inr / 1440, pt = 100 * m.tight / 1440;
+      ro.set(0, S.fmt(pc, 0) + " % (0,7–1,4 : " + S.fmt(pt, 0) + " %)"); ro.set(1, S.fmt(m.mn, 2) + " / " + S.fmt(m.mx, 2) + " g/L"); ro.set(2, S.fmt(m.hypo / 60, 1) + " h"); ro.set(3, S.fmt(m.hyper / 60, 1) + " h");
+      if (m.hypo > 0) nt.set("Hypoglycémie : " + S.fmt(m.hypo / 60, 1) + " h sous 0,7 g/L (minimum " + S.fmt(m.mn, 2) + "). Dose trop forte : réduis le bolus (plus de grammes par unité) ou le débit de base.", "warn");
+      else if (pt >= 99.95) nt.set("Défi expert réussi : toute la journée entre 0,7 et 1,4 g/L, sans hypoglycémie. Le bolus pris en avance compense le délai d'action de l'insuline injectée sous la peau.", "ok");
+      else if (pc >= 90) nt.set("Défi 1 réussi : " + S.fmt(pc, 0) + " % du temps dans la cible, sans hypoglycémie. Défi expert : 100 % entre 0,7 et 1,4 g/L (pense à l'avance du bolus).", "ok");
+      else nt.set("Seulement " + S.fmt(pc, 0) + " % dans la cible : encore " + S.fmt(m.hyper / 60, 1) + " h au-dessus de 1,8 g/L. Augmente le bolus (moins de grammes par unité), le débit de base, ou prends le bolus plus tôt.", "warn");
     });
   }
 });

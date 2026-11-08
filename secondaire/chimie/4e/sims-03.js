@@ -37,28 +37,82 @@ SFA.sim({
 SFA.sim({
   id:"c4-c03-balance", ch:"c03", tag:"Graphe",
   titre:"La balance et la droite m = n·M",
-  resume:"Pèse une substance : la masse est proportionnelle à la quantité de matière, la pente de la droite est M.",
-  but:"Choisis deux substances, règle la masse ou la quantité et compare les deux droites m en fonction de n.",
-  aRetenir:"n = m / M et m = n · M. Sur le graphique m(n), la pente est la masse molaire : plus M est grand, plus la droite est raide.",
-  piege:"Ne confonds pas g (masse), mol (quantité) et g/mol (masse molaire). Si tu obtiens des « g/mol » au lieu de « mol », tu as multiplié au lieu de diviser.",
+  resume:"Deux balances, deux substances, le même nombre de moles : les masses sont différentes. Sur le graphe m(n), la pente est la masse molaire.",
+  but:"Verse de la substance A sur la balance de gauche (glisse la cuillère ou le point du graphe). La balance de droite contient toujours la même quantité de matière de B. Compare les masses et les pentes. Défi : pèse exactement la quantité de matière demandée.",
+  aRetenir:"n = m / M et m = n · M. Une même quantité de matière (donc le même nombre d'entités) de deux substances différentes n'a pas la même masse. Sur le graphique m(n), chaque substance donne une droite passant par l'origine, de pente M : plus M est grand, plus la droite est raide.",
+  piege:"Ne confonds pas g (masse), mol (quantité) et g/mol (masse molaire). Si tu obtiens des « g/mol » au lieu de « mol », tu as multiplié au lieu de diviser. Et « 1 mol de fer » n'a pas la même masse que « 1 mol d'eau » : 56 g contre 18 g.",
   build:function(k, S){
-    var c = k.canvas(300);
-    var L = [["H2O","eau H₂O"],["NaCl","sel NaCl"],["CO2","dioxyde de carbone CO₂"],["CaCO3","calcaire CaCO₃"],["C6H12O6","glucose C₆H₁₂O₆"],["H2SO4","acide sulfurique H₂SO₄"],["Fe2O3","oxyde de fer Fe₂O₃"],["Fe","fer"],["Au","or"]];
-    var A = k.select("Substance A (bleu)", L.map(function(x){ return [x[0], x[1]]; }), "H2O");
-    var B = k.select("Substance B (rouge)", L.map(function(x){ return [x[0], x[1]]; }), "CaCO3");
-    var n = k.slider("Quantité de matière n", 0, 3, 0.05, 1, "mol");
-    var ro = k.readouts(["M(A)", "m(A)", "M(B)", "m(B)"]);
+    var c = k.canvas(280), g = k.canvas(200), P = S.draw.palette;
+    var L = [["H2O","eau H₂O","liq","#8fc3ea"],["NaCl","sel NaCl","pow","#f4f6f8"],["CaCO3","calcaire CaCO₃","pow","#ece6da"],["C6H12O6","glucose C₆H₁₂O₆","pow","#fbfbf6"],["CuSO4","sulfate de cuivre CuSO₄","pow","#3d8fd1"],["S","soufre S","pow","#f2d43c"],["Fe","fer Fe","pow","#7c838c"],["Cu","cuivre Cu","pow","#c27a42"],["Au","or Au","pow","#e2b53a"]];
+    function info(f){ return L.filter(function(x){ return x[0] === f; })[0]; }
+    var A = k.select("Substance A (balance de gauche)", L.map(function(x){ return [x[0], x[1]]; }), "H2O", function(){ dfOk = false; });
+    var B = k.select("Substance B (même n, à droite)", L.map(function(x){ return [x[0], x[1]]; }), "CaCO3");
+    var mA = k.slider("Masse de A versée", 0, 600, 0.5, 18, "g", function(){ dfOk = false; });
+    var ro = k.readouts(["M(A)", "n(A) = m/M", "M(B)", "m(B) pour le même n"]);
+    var nt = k.note("", "");
+    var dft = null, dfOk = false, won = 0, pour = 0;
+    var TARG = [0.25, 0.5, 1.5, 0.1, 2, 0.75];
+    k.button("Défi : pèse une quantité donnée", function(){ var t = TARG[Math.floor(Math.random() * TARG.length)], s = L[Math.floor(Math.random() * L.length)][0]; A.set(s); mA.set(0); dft = {n:t, f:s}; dfOk = false; }, true);
+    var lp = k.loop(function(dt){ pour = Math.max(0, pour - dt * 2.5); k.redraw(); if (pour <= 0) lp.pause(); });
+    var G = {}, gx = null;
+    function setM(m){ var old = mA.value; mA.set(Math.round(Math.max(0, Math.min(600, m)) * 2) / 2); if (mA.value > old){ pour = 1; lp.play(); } dfOk = false; }
+    /* cuillère : glisser vers le haut/bas au-dessus du plateau verse/retire de la substance */
+    c.pointer(function(type, p){
+      if (type === "down") G.drag = Math.abs(p.x - G.ax) < 70 && p.y < G.panY + 10 ? {y:p.y, m:mA.value} : null;
+      if (type === "drag" && G.drag){ setM(G.drag.m + (G.drag.y - p.y) * 3 * C4.M(A.value) / 220); k.redraw(); }
+      if (type === "up") G.drag = null;
+    });
+    g.pointer(function(type, p){ if (!gx || (type !== "down" && type !== "drag")) return; var n = Math.max(0, Math.min(3, gx.ix(p.x))); setM(n * C4.M(A.value)); k.redraw(); });
+    function balance(cx, base, w, mass, sub, col, lbl){
+      var ctx = c.ctx, inf = info(sub), h = Math.min(56, w * 0.36), panY = base - h - 6;
+      ctx.save();
+      ctx.fillStyle = P5c.lin(ctx, 0, base - h, 0, base, "#eef1f5", "#c5ccd6"); C4.rr(ctx, cx - w / 2, base - h, w, h, 8); ctx.fill(); ctx.strokeStyle = "#8a95a3"; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.fillStyle = "#9aa5b4"; ctx.fillRect(cx - 4, panY, 8, 8);
+      ctx.fillStyle = "#d7dde5"; ctx.beginPath(); ctx.ellipse(cx, panY, w * 0.42, 6, 0, 0, 7); ctx.fill(); ctx.strokeStyle = "#8a95a3"; ctx.stroke();
+      ctx.restore();
+      S.draw.display(c, S.fmt(mass, mass < 100 ? 2 : 1) + " g", cx, base - h / 2 + 2, {w:Math.min(112, w * 0.7), h:Math.min(34, h * 0.68), size:Math.min(16, w * 0.1)});
+      /* contenu : liquide dans un bécher, ou tas de poudre (volume ∝ masse / densité approximative) */
+      var top = panY - 4;
+      if (inf[2] === "liq"){ var bw = Math.min(w * 0.5, 64), bh = bw * 1.15, fr = Math.min(0.92, mass / 600 * 1.0 + (mass > 0 ? 0.03 : 0)); C4.beaker2(c, cx - bw / 2, top - bh, bw, bh, fr, "#5aa5de", {ticks:4}); }
+      else if (mass > 0){ var hh = Math.min(w * 0.42, 6 + 7 * Math.cbrt(mass)), ww = Math.min(w * 0.8, hh * 2.4);
+        ctx.save(); ctx.fillStyle = inf[3]; ctx.strokeStyle = "rgba(15,27,45,.3)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(cx - ww / 2, top + 2); ctx.quadraticCurveTo(cx, top - hh * 1.8, cx + ww / 2, top + 2); ctx.closePath(); ctx.fill(); ctx.stroke();
+        var r = C4.rnd(5); ctx.fillStyle = "rgba(255,255,255,.55)"; for (var i = 0; i < 18; i++){ var u = r() - .5, vv = r(); ctx.fillRect(cx + u * ww * 0.8 * (1 - vv * .6), top - vv * hh * 0.8, 1.6, 1.6); } ctx.restore(); }
+      C4.t(c, lbl, cx, base + 14, {size:12, color:col});
+      return panY;
+    }
+    var P5c = {lin:function(ctx, x0, y0, x1, y1, a, b){ var gg = ctx.createLinearGradient(x0, y0, x1, y1); gg.addColorStop(0, a); gg.addColorStop(1, b); return gg; }};
     k.draw(function(){
-      var MA = C4.M(A.value), MB = C4.M(B.value), nn = n.value, mx = Math.max(MA, MB) * 3 * 1.05;
-      c.clear(); C4.bg(c);
-      var ax = S.draw.axes(c, {x0:0, x1:3, y0:0, y1:mx, xl:"n (mol)", yl:"m (g)"});
-      S.draw.line(c, ax.X(0), ax.Y(0), ax.X(3), ax.Y(MA * 3), "#1f4b9e", 3);
-      S.draw.line(c, ax.X(0), ax.Y(0), ax.X(3), ax.Y(MB * 3), "#c0321d", 3);
-      [[MA, "#1f4b9e"], [MB, "#c0321d"]].forEach(function(p){
-        S.draw.line(c, ax.X(nn), ax.Y(0), ax.X(nn), ax.Y(p[0] * nn), p[1], 1, [3, 3]); S.draw.line(c, ax.X(0), ax.Y(p[0] * nn), ax.X(nn), ax.Y(p[0] * nn), p[1], 1, [3, 3]);
-        S.draw.dot(c, ax.X(nn), ax.Y(p[0] * nn), 6, p[1]);
-      });
-      ro.set(0, S.fmt(MA, 1) + " g/mol"); ro.set(1, S.fmt(nn * MA, 1) + " g"); ro.set(2, S.fmt(MB, 1) + " g/mol"); ro.set(3, S.fmt(nn * MB, 1) + " g");
+      var W = c.W, H = c.H, ctx = c.ctx, MA = C4.M(A.value), MB = C4.M(B.value), m = mA.value, n = m / MA, mB = n * MB, small = W < 420;
+      C4.bg(c, H - 26);
+      var bw = Math.min(W * 0.42, 200), base = H - 28, xa = W * 0.27, xb = W * 0.73;
+      G.ax = xa; G.panY = balance(xa, base, bw, m, A.value, "#1f4b9e", "A : " + C4.uni(A.value));
+      balance(xb, base, bw, mB, B.value, "#c0321d", "B : " + C4.uni(B.value));
+      /* cuillère et filet de poudre */
+      var sy = Math.max(30, G.panY - 120), sx = xa - bw * 0.08;
+      ctx.save(); ctx.strokeStyle = "#8a95a3"; ctx.lineWidth = 4; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(sx - 50, sy - 14); ctx.lineTo(sx - 8, sy); ctx.stroke();
+      ctx.fillStyle = "#b8c0cc"; ctx.beginPath(); ctx.ellipse(sx, sy + 2, 12, 6, 0.3, 0, 7); ctx.fill(); ctx.restore();
+      if (pour > 0){ var inf = info(A.value); for (var i = 0; i < 10; i++){ var yy = sy + 8 + ((i * 13 + (1 - pour) * 140) % (G.panY - sy - 10)); S.draw.dot(c, sx + Math.sin(i * 2.1) * 2.5, yy, 2.2, inf[2] === "liq" ? "#5aa5de" : C4.mix(inf[3], "#5f6b7a", 0.35)); } }
+      C4.t(c, "glisse la cuillère ↑ pour verser", xa, 14, {size:11.5, color:"#5f6b7a", weight:600});
+      /* même nombre d'entités */
+      S.draw.label(c, "même n = " + S.fmt(n, 3) + " mol", W / 2, small ? 40 : 36, {color:P.violet, size:12});
+      C4.t(c, "N = " + C4.sciU(n * 6.02e23, 2) + " entités", W / 2, small ? 60 : 56, {size:11.5, color:"#4b2a99", weight:600});
+      /* graphe m(n) */
+      g.clear();
+      var ymax = Math.max(MA, MB) * 3 * 1.05;
+      gx = S.draw.axes(g, {x0:0, x1:3, y0:0, y1:ymax, xl:"n (mol)", yl:"m (g)", stepX:0.5, l:48});
+      S.draw.line(g, gx.X(0), gx.Y(0), gx.X(3), gx.Y(MA * 3), "#1f4b9e", 3); S.draw.line(g, gx.X(0), gx.Y(0), gx.X(3), gx.Y(MB * 3), "#c0321d", 3);
+      C4.tag(g, "pente M(A) = " + S.fmt(MA, 1) + " g/mol", gx.X(0.55), 14, "#1f4b9e", 11, "left");
+      C4.tag(g, "pente M(B) = " + S.fmt(MB, 1) + " g/mol", gx.X(0.55), 32, "#c0321d", 11, "left");
+      if (dft && A.value === dft.f){ S.draw.line(g, gx.X(dft.n), gx.Y(0), gx.X(dft.n), gx.Y(ymax), P.amber, 1.8, [4, 4]); C4.tag(g, "cible " + S.fmt(dft.n, 2) + " mol", gx.X(dft.n) + 4, gx.Y(ymax * 0.55), "#8a5200", 11, "left"); }
+      var nn = Math.min(n, 3);
+      [[MA, "#1f4b9e"], [MB, "#c0321d"]].forEach(function(p){ S.draw.line(g, gx.X(nn), gx.Y(0), gx.X(nn), gx.Y(p[0] * nn), p[1], 1, [3, 3]); S.draw.line(g, gx.X(0), gx.Y(p[0] * nn), gx.X(nn), gx.Y(p[0] * nn), p[1], 1, [3, 3]); });
+      C4.ion(g, gx.X(nn), gx.Y(MB * nn), 6, "#c0321d", "", {}); C4.ion(g, gx.X(nn), gx.Y(MA * nn), 8, "#1f4b9e", "", {});
+      ro.set(0, S.fmt(MA, 1) + " g/mol"); ro.set(1, dft ? "?" : S.fmt(n, 3) + " mol"); ro.set(2, S.fmt(MB, 1) + " g/mol"); ro.set(3, S.fmt(mB, 1) + " g");
+      if (dft){
+        var need = dft.n * C4.M(dft.f), okk = A.value === dft.f && Math.abs(m - need) <= Math.max(0.5, need * 0.01);
+        if (okk && !dfOk){ dfOk = true; won++; }
+        nt.set("<b>Défi</b> : pèse " + S.fmt(dft.n, 2) + " mol de " + C4.uni(dft.f) + " (n est masqué). " + (A.value !== dft.f ? "Reprends la substance du défi." : okk ? "✅ Réussi : m = n × M = " + S.fmt(dft.n, 2) + " × " + S.fmt(C4.M(dft.f), 1) + " = " + S.fmt(need, 1) + " g. " + won + " défi(s) réussi(s)." : "La balance indique " + S.fmt(m, 1) + " g : " + (m < need ? "il en manque." : "il y en a trop.")), okk ? "ok" : "");
+      } else nt.set(m === 0 ? "Balance vide : verse de la substance A." : "A : n = m / M = " + S.fmt(m, 1) + " / " + S.fmt(MA, 1) + " = " + S.fmt(n, 3) + " mol. Pour le même nombre d'entités, B pèse " + S.fmt(mB, 1) + " g : " + (MB > MA ? "plus lourd, car M(B) > M(A)." : MB < MA ? "plus léger, car M(B) < M(A)." : "pareil, même masse molaire."), "");
     });
   }
 });

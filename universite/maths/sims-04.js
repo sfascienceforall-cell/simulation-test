@@ -9,6 +9,32 @@ function vl(c, ax, x, col, dash, w){ D.line(c, ax.X(x), ax.T, ax.X(x), ax.B, col
 function hl(c, ax, y, col, dash, w){ D.line(c, ax.L, ax.Y(y), ax.R, ax.Y(y), col, w || 1.5, dash || [5, 4]); }
 function curve(c, ax, fx, fy, t0, t1, col, w, dash, n){ var ctx = c.ctx; n = n || 500; ctx.save(); ctx.beginPath(); ctx.rect(ax.L, ax.T - 2, ax.R - ax.L, ax.B - ax.T + 4); ctx.clip(); ctx.strokeStyle = col; ctx.lineWidth = w || 2.4; if (dash) ctx.setLineDash(dash); ctx.beginPath(); var st = false; for (var i = 0; i <= n; i++){ var t = t0 + (t1 - t0) * i / n, x = fx(t), y = fy(t); if (!isFinite(x) || !isFinite(y)){ st = false; continue; } if (!st){ ctx.moveTo(ax.X(x), ax.Y(y)); st = true; } else ctx.lineTo(ax.X(x), ax.Y(y)); } ctx.stroke(); ctx.restore(); }
 function fillArea(c, ax, f, g, a, b, col){ var ctx = c.ctx, n = 240; ctx.save(); ctx.beginPath(); ctx.rect(ax.L, ax.T, ax.R - ax.L, ax.B - ax.T); ctx.clip(); ctx.fillStyle = col; ctx.beginPath(); for (var i = 0; i <= n; i++){ var x = a + (b - a) * i / n; ctx.lineTo(ax.X(x), ax.Y(f(x))); } for (i = n; i >= 0; i--){ x = a + (b - a) * i / n; ctx.lineTo(ax.X(x), ax.Y(g(x))); } ctx.closePath(); ctx.fill(); ctx.restore(); }
+/* ---- aides de la refonte (novembre 2026) : dessin et graphe côte à côte (empilés sur téléphone), repère dans une boîte, poignées ---- */
+function lay2(c, wide, tall){ var r0 = c.resize; c.resize = function(){ c.ratio = (c.cv.parentNode && c.cv.parentNode.clientWidth < 560) ? tall : wide; r0(); }; c.resize(); }
+function split2(c, f, g){ var W = c.W, H = c.H; if (W < 560){ var h = Math.round(H * (g || f)); return [{x:0, y:0, w:W, h:h}, {x:0, y:h, w:W, h:H - h}]; } var w = Math.round(W * f); return [{x:0, y:0, w:w, h:H}, {x:w, y:0, w:W - w, h:H}]; }
+function axIn(c, b, o){ var q = {}, key; for (key in o) q[key] = o[key]; q.l = b.x + (o.l || 46); q.r = c.W - b.x - b.w + (o.r || 14); q.t = b.y + (o.t || 16); q.b = c.H - b.y - b.h + (o.b || 34); return D.axes(c, q); }
+function rnd(seed){ var s = seed >>> 0; return function(){ s = (s + 0x6D2B79F5) >>> 0; var t = s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function hnd(c, x, y, col, txt){ if (!isFinite(x) || !isFinite(y)) return; var ctx = c.ctx; D.glow(c, x, y, 20, col, 0.3); ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x, y, 12, 0, 7); ctx.stroke(); ctx.restore(); D.dot(c, x, y, 7, col); if (txt) D.text(c, txt, x + 15, y - 15, {size:10.5, color:col, align:"left", weight:700, halo:true}); }
+function frame(c, b, title, col){ D.panel(c, b.x + 4, b.y + 4, b.w - 8, b.h - 8, {shadow:false, fill:"rgba(248,250,252,.9)", title:title, titleColor:col}); }
+/* repère dans une boîte avec graduations choisies : o.xt / o.yt = [[valeur, "texte"], …] */
+function axBox(c, b, o){
+  var L = b.x + (o.l || 40), R = b.x + b.w - (o.r || 12), T = b.y + (o.t || 14), B = b.y + b.h - (o.b || 28), ctx = c.ctx;
+  var ax = {x0: o.x0, x1: o.x1, y0: o.y0, y1: o.y1, L: L, R: R, T: T, B: B};
+  ax.X = function(x){ return L + (x - o.x0) / (o.x1 - o.x0) * (R - L); }; ax.Y = function(y){ return B - (y - o.y0) / (o.y1 - o.y0) * (B - T); };
+  ax.ix = function(px){ return o.x0 + (px - L) / (R - L) * (o.x1 - o.x0); }; ax.iy = function(py){ return o.y0 + (B - py) / (B - T) * (o.y1 - o.y0); };
+  var y0p = (!o.xb && o.y0 <= 0 && o.y1 >= 0) ? ax.Y(0) : B, x0p = (o.x0 <= 0 && o.x1 >= 0) ? ax.X(0) : L;
+  ctx.save(); ctx.lineWidth = 1; ctx.strokeStyle = "#eef1f5"; ctx.beginPath();
+  (o.xt || []).forEach(function(t){ var p = Math.round(ax.X(t[0])) + 0.5; ctx.moveTo(p, T); ctx.lineTo(p, B); });
+  (o.yt || []).forEach(function(t){ var p = Math.round(ax.Y(t[0])) + 0.5; ctx.moveTo(L, p); ctx.lineTo(R, p); }); ctx.stroke();
+  ctx.strokeStyle = "#a3adba"; ctx.lineWidth = 1.25; ctx.beginPath(); ctx.moveTo(L, y0p); ctx.lineTo(R, y0p); ctx.moveTo(x0p, T); ctx.lineTo(x0p, B); ctx.stroke();
+  ctx.font = "600 10.5px Mulish, system-ui, sans-serif"; ctx.fillStyle = "#7b8694"; ctx.textAlign = "center"; ctx.textBaseline = "top";
+  (o.xt || []).forEach(function(t){ if (t[1]) ctx.fillText(t[1], ax.X(t[0]), Math.min(B, y0p) + 5); });
+  ctx.textAlign = "right"; ctx.textBaseline = "middle"; (o.yt || []).forEach(function(t){ if (t[1]) ctx.fillText(t[1], x0p - 5, ax.Y(t[0])); });
+  ctx.font = "700 11px Mulish, system-ui, sans-serif"; ctx.fillStyle = "#2c3a4e";
+  if (o.xl){ ctx.textAlign = "right"; ctx.textBaseline = "bottom"; ctx.fillText(o.xl, R, y0p - 4); }
+  if (o.yl){ ctx.textAlign = "left"; ctx.textBaseline = "top"; ctx.fillText(o.yl, x0p + 6, T); }
+  ctx.restore(); return ax;
+}
 /* Mathématiques BA1 · chapitre 4 : intégrales */
 /* 1 ---- Riemann ---- */
 var R1 = {
@@ -21,25 +47,59 @@ var R1 = {
 SFA.sim({
   id: "um-c04-riemann", ch: "c04", tag: "Sommes de Riemann",
   titre: "L'intégrale comme limite de sommes de rectangles",
-  resume: "Coupe [a ; b] en n bandes : la somme des aires des rectangles (gauche, droite, milieu) ou des trapèzes converge vers l'intégrale.",
-  but: "Choisis la fonction, la méthode et le nombre n de rectangles. Compare la somme à la valeur exacte et regarde l'erreur diminuer quand n grandit.",
-  aRetenir: "∫<sub>a</sub><sup>b</sup> f(x) dx = lim<sub>n→∞</sub> Σ f(xᵢ)Δx avec Δx = (b − a)/n. Pour une fonction croissante, la somme de gauche sous-estime et celle de droite surestime ; la méthode du point milieu et celle des trapèzes convergent plus vite (erreur en 1/n²).",
-  piege: "L'intégrale est une aire algébrique : la partie sous l'axe Ox compte négativement. Une aire (positive) s'obtient avec ∫|f|.",
+  resume: "Coupe [a ; b] en n bandes et verse l'aire de chaque rectangle dans l'éprouvette : la somme se rapproche du trait « intégrale exacte ». Glisse le point d'échantillonnage et compare les vitesses de convergence.",
+  but: "Choisis la fonction, la méthode et n. « Remplir » verse les rectangles un à un dans l'éprouvette de droite. Glisse un point noir à l'intérieur d'un rectangle : tu passes en mode « libre » (point ξ placé à la fraction θ de chaque bande). En bas, l'erreur en fonction de n (échelles log) : la pente révèle 1/n ou 1/n². Défi : en mode libre, trouve θ qui donne l'intégrale à 0,1 % près.",
+  aRetenir: "∫<sub>a</sub><sup>b</sup> f(x) dx = lim<sub>n→∞</sub> Σ f(ξᵢ)Δx avec Δx = (b − a)/n et ξᵢ dans la i-ème bande. Pour une fonction croissante, la somme de gauche sous-estime et celle de droite surestime ; leur erreur décroît comme 1/n, celle du point milieu et des trapèzes comme 1/n² (droite deux fois plus pentue en échelle log).",
+  piege: "L'intégrale est une aire algébrique : la partie sous l'axe Ox compte négativement. Une aire (positive) s'obtient avec ∫|f|. Et le θ « parfait » trouvé pour un n ne marche plus pour un autre n.",
   build: function(k, S){
-    var c = k.canvas(370), fs = k.select("Fonction", [["x2", "x² sur [0 ; 3]"], ["sin", "sin x sur [0 ; π]"], ["exp", "eˣ sur [0 ; 2]"], ["inv", "1/x sur [1 ; 5]"], ["sqrt", "√x sur [0 ; 4]"]], "x2");
-    var md = k.seg("Méthode", [["g", "Gauche"], ["d", "Droite"], ["m", "Milieu"], ["t", "Trapèzes"]], "g"), n = k.slider("Nombre n de bandes", 1, 100, 1, 6, "");
-    var ro = k.readouts(["Somme Sₙ", "Intégrale exacte", "Erreur Sₙ − I", "Erreur relative"]), nt = k.note("", "");
-    function sum(T, m, N){ var h = (T.b - T.a) / N, s = 0; for (var i = 0; i < N; i++){ var x0 = T.a + i * h, x1 = x0 + h; s += m === "g" ? T.f(x0) : m === "d" ? T.f(x1) : m === "m" ? T.f(x0 + h / 2) : (T.f(x0) + T.f(x1)) / 2; } return s * h; }
+    var c = k.canvas(0, {ratio: 0.9}); lay2(c, 0.9, 1.3);
+    var fs = k.select("Fonction", [["x2", "x² sur [0 ; 3]"], ["sin", "sin x sur [0 ; π]"], ["exp", "eˣ sur [0 ; 2]"], ["inv", "1/x sur [1 ; 5]"], ["sqrt", "√x sur [0 ; 4]"]], "x2", function(){ won = false; });
+    var md = k.seg("Méthode", [["g", "Gauche"], ["d", "Droite"], ["m", "Milieu"], ["t", "Trapèzes"], ["l", "Libre θ"]], "g"), n = k.slider("Nombre n de bandes", 1, 100, 1, 6, "");
+    var th = 0.3, fill = {on: false, p: 1}, won = false;
+    var lp = k.loop(function(dt){ fill.p += dt * Math.max(0.6, 6 / n.value) * 0.5; if (fill.p >= 1){ fill.p = 1; lp.pause(); } k.redraw(); });
+    k.button("▶ Remplir l'éprouvette", function(){ fill.p = 0; lp.play(); }, true);
+    var ro = k.readouts(["Somme Sₙ", "Intégrale exacte I", "Erreur Sₙ − I", "Erreur relative"]), nt = k.note("", "");
+    function theta(m){ return m === "g" ? 0 : m === "d" ? 1 : m === "m" ? 0.5 : th; }
+    function sum(T, m, N){ var h = (T.b - T.a) / N, s = 0; for (var i = 0; i < N; i++){ var x0 = T.a + i * h; s += m === "t" ? (T.f(x0) + T.f(x0 + h)) / 2 : T.f(x0 + theta(m) * h); } return s * h; }
+    var G = null, grab = false; c.cv.style.touchAction = "none";
+    c.pointer(function(t, p){
+      if (!G) return; var T = R1[fs.value], N = n.value, h = (T.b - T.a) / N;
+      if (t === "down"){ grab = false; var x = G.ix(p.x); if (x > T.a && x < T.b && p.y > G.T && p.y < G.B){ grab = true; md.set("l"); } }
+      if ((t === "down" || t === "drag") && grab){ var x2 = G.ix(p.x), i = cl(Math.floor((x2 - T.a) / h), 0, N - 1); th = Math.round(cl((x2 - T.a - i * h) / h, 0, 1) * 1000) / 1000; md.set("l"); k.redraw(); }
+      if (t === "up") grab = false;
+    });
     k.draw(function(){
-      c.clear(); var T = R1[fs.value], N = n.value, h = (T.b - T.a) / N, ctx = c.ctx, ax = D.axes(c, {x0: T.a - (T.b - T.a) * 0.06, x1: T.b + (T.b - T.a) * 0.06, y0: -T.y1 * 0.06, y1: T.y1, xl: "x", yl: "y"});
-      ctx.save(); ctx.fillStyle = "rgba(180,83,9,.25)"; ctx.strokeStyle = P.amber; ctx.lineWidth = N > 40 ? 0.6 : 1.4;
-      for (var i = 0; i < N; i++){ var x0 = T.a + i * h, x1 = x0 + h; ctx.beginPath();
-        if (md.value === "t"){ ctx.moveTo(ax.X(x0), ax.Y(0)); ctx.lineTo(ax.X(x0), ax.Y(T.f(x0))); ctx.lineTo(ax.X(x1), ax.Y(T.f(x1))); ctx.lineTo(ax.X(x1), ax.Y(0)); ctx.closePath(); }
-        else { var y = md.value === "g" ? T.f(x0) : md.value === "d" ? T.f(x1) : T.f(x0 + h / 2); ctx.rect(ax.X(x0), ax.Y(y), ax.X(x1) - ax.X(x0), ax.Y(0) - ax.Y(y)); }
-        ctx.fill(); ctx.stroke(); }
-      ctx.restore(); D.fn(c, ax, T.f, P.acc, 3);
-      var s = sum(T, md.value, N); ro.set(0, F(s, 5)); ro.set(1, F(T.I, 5)); ro.set(2, S.sci(s - T.I)); ro.set(3, F(Math.abs(s - T.I) / T.I * 100, 3) + " %");
-      nt.set(md.value === "g" || md.value === "d" ? (T.f(T.a) < T.f(T.b) ? (md.value === "g" ? "f croissante : la somme de gauche sous-estime l'aire." : "f croissante : la somme de droite surestime l'aire.") : (md.value === "g" ? "f décroissante : la somme de gauche surestime l'aire." : "f décroissante : la somme de droite sous-estime l'aire.")) : "Le point milieu et les trapèzes compensent en partie les erreurs : très bonne précision dès n = 10.", "");
+      c.clear(); var ctx = c.ctx, T = R1[fs.value], N = n.value, h = (T.b - T.a) / N, m = md.value, H = c.H, h1 = Math.round(H * 0.62), gw = 64;
+      var ax = axIn(c, {x: 0, y: 0, w: c.W - gw, h: h1}, {x0: T.a - (T.b - T.a) * 0.05, x1: T.b + (T.b - T.a) * 0.05, y0: -T.y1 * 0.06, y1: T.y1, xl: "x", yl: "y", t: 12, b: 26}); G = ax;
+      var shown = Math.ceil(fill.p * N - 1e-9), part = 0, s = sum(T, m, N);
+      for (var i = 0; i < N; i++){ var x0 = T.a + i * h, x1 = x0 + h, on = i < shown, y, ar;
+        ctx.save(); ctx.globalAlpha = on ? 1 : 0.25; ctx.beginPath();
+        if (m === "t"){ ctx.moveTo(ax.X(x0), ax.Y(0)); ctx.lineTo(ax.X(x0), ax.Y(T.f(x0))); ctx.lineTo(ax.X(x1), ax.Y(T.f(x1))); ctx.lineTo(ax.X(x1), ax.Y(0)); ctx.closePath(); ar = (T.f(x0) + T.f(x1)) / 2 * h; }
+        else { y = T.f(x0 + theta(m) * h); ctx.rect(ax.X(x0), ax.Y(y), ax.X(x1) - ax.X(x0), ax.Y(0) - ax.Y(y)); ar = y * h; }
+        ctx.fillStyle = i === shown - 1 && fill.p < 1 ? "rgba(224,122,31,.55)" : "rgba(194,106,12,.25)"; ctx.fill(); ctx.strokeStyle = P.amber; ctx.lineWidth = N > 40 ? 0.6 : 1.3; ctx.stroke(); ctx.restore();
+        if (on) part += ar;
+        if (m !== "t" && N <= 40){ var xs = x0 + theta(m) * h; D.dot(c, ax.X(xs), ax.Y(T.f(xs)), N > 20 ? 2.5 : 3.5, P.ink); D.line(c, ax.X(xs), ax.Y(0), ax.X(xs), ax.Y(T.f(xs)), "rgba(15,27,45,.25)", 1, [2, 3]); }
+      }
+      D.fn(c, ax, T.f, P.acc, 3);
+      if (m === "l" && N <= 40){ var xh = T.a + th * h; hnd(c, ax.X(xh), ax.Y(T.f(xh)), P.ink, "θ = " + F(th, 2)); }
+      /* éprouvette */
+      var tx = c.W - gw + 18, tw = 26, tt = ax.T + 10, tb = ax.B, top = Math.max(T.I, s) * 1.2, lv = function(v){ return tb - v / top * (tb - tt); };
+      ctx.save(); ctx.fillStyle = "rgba(194,106,12,.55)"; ctx.fillRect(tx, lv(Math.max(0, part)), tw, tb - lv(Math.max(0, part))); ctx.strokeStyle = "#5f6b7a"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(tx, tt - 6); ctx.lineTo(tx, tb); ctx.lineTo(tx + tw, tb); ctx.lineTo(tx + tw, tt - 6); ctx.stroke(); ctx.restore();
+      D.line(c, tx - 6, lv(T.I), tx + tw + 6, lv(T.I), P.green, 2.4); D.text(c, "I", tx + tw + 9, lv(T.I), {size: 12, color: P.green, align: "left", math: true});
+      D.text(c, "Sₙ", tx + tw / 2, tt - 14, {size: 11, color: P.amber, math: true});
+      /* erreur relative en fonction de n (log-log) */
+      var bb = {x: 0, y: h1, w: c.W, h: H - h1}, xt = [[0, "1"], [Math.log10(2), "2"], [Math.log10(5), "5"], [1, "10"], [Math.log10(20), "20"], [Math.log10(50), "50"], [2, "100"]], yt = [[0, "100 %"], [-2, "1 %"], [-4, "0,01 %"], [-6, "10⁻⁴ %"], [-8, ""]];
+      var ax2 = axBox(c, bb, {x0: 0, x1: 2, y0: -8, y1: 0.3, xt: xt, yt: yt, l: 54, t: 22, b: 30, xb: true});
+      D.text(c, "n (échelle log)", ax2.R, ax2.B + 22, {size: 10.5, color: "#2c3a4e", align: "right"});
+      D.text(c, "Erreur relative |Sₙ − I| / I", 8, h1 + 8, {size: 10.5, color: "#5f6b7a", align: "left", weight: 700});
+      var meths = [["g", P.blue, "gauche"], ["m", P.green, "milieu"], ["t", P.violet, "trapèzes"]]; if (m === "d" || m === "l") meths.push([m, P.amber, m === "d" ? "droite" : "libre"]);
+      meths.forEach(function(q){ ctx.save(); ctx.beginPath(); ctx.rect(ax2.L, ax2.T, ax2.R - ax2.L, ax2.B - ax2.T); ctx.clip(); ctx.strokeStyle = q[1]; ctx.lineWidth = q[0] === m ? 3 : 1.6; ctx.globalAlpha = q[0] === m ? 1 : 0.55; ctx.beginPath(); var st = false; for (var j = 1; j <= 100; j++){ var e = Math.abs(sum(T, q[0], j) - T.I) / T.I, ly = Math.log10(Math.max(e, 1e-12)); st ? ctx.lineTo(ax2.X(Math.log10(j)), ax2.Y(ly)) : ctx.moveTo(ax2.X(Math.log10(j)), ax2.Y(ly)); st = true; } ctx.stroke(); ctx.restore(); });
+      D.legend(c, meths.map(function(q){ return [q[1], q[2]]; }), ax2.L + 6, ax2.B - 6 - meths.length * 17 - 10, {});
+      var er = Math.abs(s - T.I) / T.I; D.dot(c, ax2.X(Math.log10(N)), ax2.Y(Math.log10(Math.max(er, 1e-12))), 5.5, P.red);
+      ro.set(0, F(s, 5)); ro.set(1, F(T.I, 5)); ro.set(2, S.sci(s - T.I)); ro.set(3, F(er * 100, 3) + " %");
+      if (m === "l"){ if (er < 1e-3){ won = true; nt.set("Défi réussi : avec θ = " + F(th, 3) + " et n = " + N + ", Sₙ = " + F(s, 4) + " colle à I = " + F(T.I, 4) + " (erreur " + F(er * 100, 3) + " %). Le théorème des valeurs intermédiaires garantit qu'un tel θ existe entre la somme de gauche et celle de droite. Change n : ce θ ne marche plus exactement !", "ok"); }
+        else nt.set("Défi : glisse le point noir dans sa bande (θ entre 0 et 1) jusqu'à ce que Sₙ égale I à 0,1 % près. Actuellement " + (s < T.I ? "trop petit : " : "trop grand : ") + F(er * 100, 2) + " %.", "warn"); }
+      else nt.set(m === "g" || m === "d" ? (T.f(T.a) < T.f(T.b) ? (m === "g" ? "f croissante : la somme de gauche sous-estime l'aire ; erreur en 1/n (droite de pente −1 en bas)." : "f croissante : la somme de droite surestime l'aire ; erreur en 1/n.") : (m === "g" ? "f décroissante : la somme de gauche surestime l'aire." : "f décroissante : la somme de droite sous-estime l'aire.")) + " Glisse un point noir pour le mode libre (défi)." : "Le point milieu et les trapèzes compensent en partie les erreurs : leur courbe d'erreur descend deux fois plus vite (pente −2 : erreur en 1/n²).", "");
     });
   }
 });
@@ -83,23 +143,54 @@ var C3 = {
 SFA.sim({
   id: "um-c04-aire-entre-courbes", ch: "c04", tag: "Aire entre deux courbes",
   titre: "Aire entre deux courbes : intégrale algébrique contre aire géométrique",
-  resume: "Deux courbes se croisent : l'aire est ∫|f − g|. Si on oublie la valeur absolue, les morceaux au-dessus et en dessous se compensent.",
-  but: "Choisis un couple de courbes et ajuste les bornes a et b. Le vert marque f au-dessus de g, le rouge g au-dessus de f. Compare ∫(f − g) et l'aire.",
-  aRetenir: "Aire = ∫<sub>a</sub><sup>b</sup> |f(x) − g(x)| dx : on découpe aux points d'intersection (solutions de f = g) et on intègre « haut − bas » sur chaque morceau. Si f ≥ g sur [a ; b], l'aire est ∫(f − g).",
+  resume: "Une tranche verticale balaie l'espace entre deux courbes : vert quand f est au-dessus, rouge sinon. Deux compteurs cumulent ∫(f − g) et ∫|f − g| ; glisse les bornes pour les faire diverger.",
+  but: "Glisse les bornes a et b (poignées sur l'axe ; elles s'aimantent aux points d'intersection). « Balayer » fait défiler une tranche de hauteur f − g ; en bas, ses deux cumuls : l'intégrale algébrique (violet) et l'aire (noir). Défi 1 : place a et b sur deux intersections consécutives. Défi 2 : obtiens ∫(f − g) = 0 avec une aire d'au moins 0,5.",
+  aRetenir: "Aire = ∫<sub>a</sub><sup>b</sup> |f(x) − g(x)| dx : on découpe aux points d'intersection (solutions de f = g) et on intègre « haut − bas » sur chaque morceau. Si f ≥ g sur [a ; b], l'aire est ∫(f − g). La tranche verticale de hauteur f(x) − g(x) et de largeur dx est l'élément d'aire.",
   piege: "∫(x − x³) dx sur [−1 ; 1] vaut 0 (les deux boucles se compensent) alors que l'aire vaut 1/2.",
   build: function(k, S){
-    var c = k.canvas(380), fs = k.select("Couple de courbes", [["par", "x² et x + 2"], ["rac", "√x et x²"], ["sc", "sin x et cos x"], ["cub", "x et x³"]], "par", function(v){ var T = C3[v]; a.el.min = T.x0; a.el.max = T.x1; b.el.min = T.x0; b.el.max = T.x1; a.set(T.a); b.set(T.b); });
-    var a = k.slider("Borne a", -2, 3, 0.01, -1, ""), b = k.slider("Borne b", -2, 3, 0.01, 2, ""); var ro = k.readouts(["∫(f − g) (algébrique)", "Aire géométrique ∫|f − g|", "Aire exacte (a, b intersections)", "Écart"]), nt = k.note("", "");
+    var c = k.canvas(0, {ratio: 0.9}); lay2(c, 0.9, 1.3);
+    var DOM = {par: [-2, 3], rac: [0, 1.4], sc: [-0.3, 6.5], cub: [-1.6, 1.6]}, st = {a: -1, b: 2, sw: 1}, dfi = 0, wins = 0, won = false;
+    var fs = k.select("Couple de courbes", [["par", "x² et x + 2"], ["rac", "√x et x²"], ["sc", "sin x et cos x"], ["cub", "x et x³"]], "par", function(v){ var T = C3[v]; st.a = T.a; st.b = T.b; st.sw = 1; won = false; });
+    var lp = k.loop(function(dt){ st.sw += dt * 0.35; if (st.sw >= 1){ st.sw = 1; lp.pause(); } k.redraw(); });
+    k.button("▶ Balayer de a à b", function(){ st.sw = 0; lp.play(); }, true);
+    k.button("Défi suivant", function(){ dfi = dfi % 2 + 1; won = false; });
+    var ro = k.readouts(["∫(f − g) (algébrique)", "Aire ∫|f − g|", "Intersections f = g", "Écart aire − intégrale"]), nt = k.note("", "");
+    function inter(T, dom){ var out = [], N = 600, d = function(x){ return T.f(x) - T.g(x); }, p = d(dom[0]); if (Math.abs(p) < 1e-12) out.push(dom[0]); for (var i = 1; i <= N; i++){ var x = dom[0] + (dom[1] - dom[0]) * i / N, q = d(x); if (Math.abs(q) < 1e-12) out.push(x); else if (p * q < 0){ var lo = x - (dom[1] - dom[0]) / N, hi = x; for (var j = 0; j < 50; j++){ var mm = (lo + hi) / 2; if (d(lo) * d(mm) <= 0) hi = mm; else lo = mm; } out.push((lo + hi) / 2); } p = q; } return out.filter(function(v, i, a){ return !i || Math.abs(v - a[i - 1]) > 1e-6; }); }
+    var G = null, grab = null; c.cv.style.touchAction = "none";
+    c.pointer(function(t, p){
+      if (!G) return; var T = C3[fs.value], dom = DOM[fs.value];
+      if (t === "down"){ grab = null; var da = Math.abs(G.X(st.a) - p.x), db = Math.abs(G.X(st.b) - p.x); if (Math.min(da, db) < 22 && p.y > G.T && p.y < G.B) grab = da <= db ? "a" : "b"; }
+      else if (t === "drag" && grab){ var x = cl(G.ix(p.x), dom[0], dom[1]); inter(T, dom).forEach(function(q){ if (Math.abs(G.X(q) - G.X(x)) < 10) x = q; }); st[grab] = x; st.sw = 1; k.redraw(); }
+      else if (t === "up") grab = null;
+      else if (t === "move") c.cv.style.cursor = (Math.abs(G.X(st.a) - p.x) < 22 || Math.abs(G.X(st.b) - p.x) < 22) ? "ew-resize" : "default";
+    });
     k.draw(function(){
-      c.clear(); var T = C3[fs.value], A = Math.min(a.value, b.value), B = Math.max(a.value, b.value), ax = D.axes(c, {x0: T.x0, x1: T.x1, y0: T.y0, y1: T.y1, xl: "x", yl: "y"});
-      var d = function(x){ return T.f(x) - T.g(x); }, ctx = c.ctx;
-      var n = 400; ctx.save(); ctx.beginPath(); ctx.rect(ax.L, ax.T, ax.R - ax.L, ax.B - ax.T); ctx.clip();
-      for (var i = 0; i < n; i++){ var x0 = A + (B - A) * i / n, x1 = A + (B - A) * (i + 1) / n, xm = (x0 + x1) / 2; ctx.fillStyle = d(xm) >= 0 ? "rgba(46,107,85,.30)" : "rgba(180,35,24,.28)"; ctx.beginPath(); ctx.moveTo(ax.X(x0), ax.Y(T.f(x0))); ctx.lineTo(ax.X(x1), ax.Y(T.f(x1))); ctx.lineTo(ax.X(x1), ax.Y(T.g(x1))); ctx.lineTo(ax.X(x0), ax.Y(T.g(x0))); ctx.closePath(); ctx.fill(); }
-      ctx.restore(); D.fn(c, ax, T.f, P.acc, 3); D.fn(c, ax, T.g, P.violet, 3); vl(c, ax, A, "#8a95a3", [4, 4], 1.2); vl(c, ax, B, "#8a95a3", [4, 4], 1.2);
-      var alg = simpson(d, A, B, 800), geo = simpson(function(x){ return Math.abs(d(x)); }, A, B, 4000);
-      lab(c, "f = " + T.n.split(" et ")[0], ax.L + 8, ax.T + 12, P.acc, 13, "left"); lab(c, "g = " + T.n.split(" et ")[1], ax.L + 8, ax.T + 30, P.violet, 13, "left");
-      ro.set(0, F(alg, 4)); ro.set(1, F(geo, 4)); ro.set(2, F(T.ex, 4)); ro.set(3, F(geo - alg, 4));
-      nt.set(Math.abs(alg - geo) > 1e-3 ? "Attention : les deux signes se compensent partiellement. L'intégrale algébrique " + F(alg, 3) + " ne donne pas l'aire " + F(geo, 3) + "." : "f ≥ g (ou g ≥ f) partout sur [a ; b] : l'intégrale et l'aire coïncident.", Math.abs(alg - geo) > 1e-3 ? "warn" : "ok");
+      c.clear(); var ctx = c.ctx, T = C3[fs.value], dom = DOM[fs.value], A = Math.min(st.a, st.b), B = Math.max(st.a, st.b), H = c.H, h1 = Math.round(H * 0.6);
+      var d = function(x){ return T.f(x) - T.g(x); }, xc = A + (B - A) * st.sw, its = inter(T, dom);
+      var ax = axIn(c, {x: 0, y: 0, w: c.W, h: h1}, {x0: T.x0, x1: T.x1, y0: T.y0, y1: T.y1, xl: "x", yl: "y", t: 12, b: 26}); G = ax;
+      var n = 300; ctx.save(); ctx.beginPath(); ctx.rect(ax.L, ax.T, ax.R - ax.L, ax.B - ax.T); ctx.clip();
+      for (var i = 0; i < n; i++){ var x0 = A + (B - A) * i / n, x1 = A + (B - A) * (i + 1) / n, xm = (x0 + x1) / 2; if (xm > xc) break; ctx.fillStyle = d(xm) >= 0 ? "rgba(36,119,90,.30)" : "rgba(192,50,29,.28)"; ctx.beginPath(); ctx.moveTo(ax.X(x0), ax.Y(T.f(x0))); ctx.lineTo(ax.X(x1), ax.Y(T.f(x1))); ctx.lineTo(ax.X(x1), ax.Y(T.g(x1))); ctx.lineTo(ax.X(x0), ax.Y(T.g(x0))); ctx.closePath(); ctx.fill(); }
+      ctx.restore();
+      D.fn(c, ax, function(x){ return x < dom[0] - 1e-9 ? NaN : T.f(x); }, P.acc, 3); D.fn(c, ax, T.g, P.violet, 3);
+      if (st.sw < 1){ var w = Math.max(4, (ax.X(B) - ax.X(A)) / 40), up = d(xc) >= 0; ctx.save(); ctx.fillStyle = up ? P.green : P.red; ctx.globalAlpha = 0.8; ctx.fillRect(ax.X(xc) - w / 2, ax.Y(Math.max(T.f(xc), T.g(xc))), w, Math.abs(ax.Y(T.f(xc)) - ax.Y(T.g(xc)))); ctx.restore(); D.label(c, "f − g = " + F(d(xc), 2), ax.X(xc), ax.Y(Math.max(T.f(xc), T.g(xc))) - 14, {color: up ? P.green : P.red, size: 10.5}); }
+      its.forEach(function(q){ if (q >= T.x0 && q <= T.x1) D.dot(c, ax.X(q), ax.Y(T.f(q)), 4, P.ink); });
+      hnd(c, ax.X(A), ax.Y(0), P.amber, "a"); hnd(c, ax.X(B), ax.Y(0), P.amber, "b");
+      D.label(c, "f(x) = " + T.n.split(" et ")[0], ax.L + 8, ax.T + 10, {color: P.acc, align: "left", math: true, size: 12}); D.label(c, "g(x) = " + T.n.split(" et ")[1], ax.L + 8, ax.T + 30, {color: P.violet, align: "left", math: true, size: 12});
+      /* cumuls I(x) et A(x) */
+      var NN = 160, Ic = [0], Ac = [0], hx = (B - A) / NN; for (i = 0; i < NN; i++){ var xa = A + i * hx, xb = xa + hx, m1 = d(xa), m2 = d((xa + xb) / 2), m3 = d(xb); Ic.push(Ic[i] + hx * (m1 + 4 * m2 + m3) / 6); Ac.push(Ac[i] + hx * (Math.abs(m1) + 4 * Math.abs(m2) + Math.abs(m3)) / 6); }
+      var alg = Ic[NN], geo = Ac[NN], top = Math.max(geo, Math.abs(alg), 0.2) * 1.15, lo = Math.min(0, Math.min.apply(null, Ic)) * 1.15 - top * 0.05;
+      var ax2 = axIn(c, {x: 0, y: h1, w: c.W, h: H - h1}, {x0: T.x0, x1: T.x1, y0: lo, y1: top, xl: "x", t: 20, b: 24});
+      D.text(c, "Cumuls depuis a : ∫(f − g) (violet) et aire ∫|f − g| (noir)", 8, h1 + 8, {size: 10.5, color: "#5f6b7a", align: "left", weight: 700});
+      var upto = Math.round(NN * st.sw);
+      [[Ic, P.violet], [Ac, P.ink]].forEach(function(pr){ ctx.save(); ctx.strokeStyle = pr[1]; ctx.lineWidth = 2.6; ctx.beginPath(); for (var j = 0; j <= upto; j++){ var X = ax2.X(A + j * hx), Y = ax2.Y(pr[0][j]); j ? ctx.lineTo(X, Y) : ctx.moveTo(X, Y); } ctx.stroke(); ctx.restore(); D.dot(c, ax2.X(A + upto * hx), ax2.Y(pr[0][upto]), 4.5, pr[1]); });
+      ro.set(0, F(alg, 4)); ro.set(1, F(geo, 4)); ro.set(2, its.length ? its.map(function(q){ return F(q, 3); }).join(" ; ") : "aucune"); ro.set(3, F(geo - alg, 4));
+      if (dfi === 1){ var ok1 = false; for (i = 0; i + 1 < its.length; i++) if (Math.abs(A - its[i]) < 1e-6 && Math.abs(B - its[i + 1]) < 1e-6) ok1 = true;
+        if (ok1){ if (!won){ won = true; wins++; } nt.set("Défi 1 réussi : entre deux intersections consécutives, f − g garde un signe, donc l'aire vaut |∫(f − g)| = " + F(geo, 4) + (Math.abs(geo - T.ex) < 1e-3 ? " (valeur exacte " + F(T.ex, 4) + ")." : "."), "ok"); }
+        else { won = false; nt.set("Défi 1 : glisse a puis b sur deux points d'intersection consécutifs (points noirs : les poignées s'y aimantent).", "warn"); } }
+      else if (dfi === 2){ var ok2 = Math.abs(alg) < 0.01 && geo >= 0.5;
+        if (ok2){ if (!won){ won = true; wins++; } nt.set("Défi 2 réussi : ∫(f − g) = " + F(alg, 3) + " mais l'aire vaut " + F(geo, 3) + ". Les parties vertes et rouges se compensent exactement.", "ok"); }
+        else { won = false; nt.set("Défi 2 : obtiens ∫(f − g) = 0 (à 0,01 près) avec une aire d'au moins 0,5 : il faut que [a ; b] contienne une partie verte et une partie rouge de même aire. Actuellement ∫ = " + F(alg, 3) + ", aire = " + F(geo, 3) + "." + (fs.value === "rac" ? " (Impossible avec √x et x² dans cette fenêtre : la partie rouge est trop petite. Change de couple.)" : ""), "warn"); } }
+      else nt.set(Math.abs(alg - geo) > 1e-3 ? "Attention : les deux signes se compensent partiellement. L'intégrale algébrique " + F(alg, 3) + " ne donne pas l'aire " + F(geo, 3) + ". Clique « Défi suivant »." : "f ≥ g (ou g ≥ f) partout sur [a ; b] : l'intégrale et l'aire coïncident (au signe près). Clique « Défi suivant ».", Math.abs(alg - geo) > 1e-3 ? "warn" : "ok");
     });
   }
 });
@@ -167,23 +258,58 @@ SFA.sim({
 SFA.sim({
   id: "um-c04-auc-pharmaco", ch: "c04", tag: "Aire sous la courbe, valeur moyenne",
   titre: "Aire sous la courbe de concentration (AUC) et concentration moyenne",
-  resume: "Après une prise orale, la concentration monte puis redescend. L'intégrale donne l'exposition totale (AUC) ; divisée par la durée, elle donne la concentration moyenne.",
-  but: "Fais varier la dose, la vitesse d'absorption k_a, d'élimination k_e et le volume V ; choisis l'horizon T. Le rectangle orange a la même aire que la courbe : sa hauteur est la valeur moyenne.",
-  aRetenir: "C(t) = [D·kₐ/(V(kₐ − kₑ))]·(e<sup>−kₑt</sup> − e<sup>−kₐt</sup>). AUC(0 → T) = ∫₀ᵀ C dt ; AUC(0 → ∞) = D/(V·kₑ) = D/Cl (clairance Cl = V·kₑ). Valeur moyenne de C sur [0 ; T] : (1/T) ∫₀ᵀ C(t) dt = AUC/T. Intégrale impropre : ∫₀^∞ e<sup>−kt</sup> dt = 1/k.",
-  piege: "L'AUC dépend de la dose et de la clairance, pas de la vitesse d'absorption : changer kₐ modifie le pic mais pas D/(V·kₑ).",
+  resume: "Un comprimé se dissout dans l'intestin, le médicament passe dans le sang puis est éliminé par les reins. La courbe de concentration se trace en direct ; l'aire sous la courbe mesure l'exposition, le rectangle de même aire donne la moyenne.",
+  but: "Lance la prise : les points du schéma représentent le médicament (1 point ≈ 10 mg) dans l'intestin, le sang et l'urine. Glisse le curseur de temps ou l'horizon T directement sur le graphe. Défi : règle la dose et les constantes pour atteindre l'exposition ou la moyenne demandée.",
+  aRetenir: "C(t) = [D·kₐ/(V(kₐ − kₑ))]·(e<sup>−kₑt</sup> − e<sup>−kₐt</sup>). AUC(0 → T) = ∫₀ᵀ C dt ; AUC(0 → ∞) = D/(V·kₑ) = D/Cl (clairance Cl = V·kₑ). Valeur moyenne de C sur [0 ; T] : (1/T) ∫₀ᵀ C(t) dt = AUC/T : le rectangle de hauteur moyenne a la même aire que la courbe. Intégrale impropre : ∫₀^∞ e<sup>−kt</sup> dt = 1/k.",
+  piege: "L'AUC dépend de la dose et de la clairance, pas de la vitesse d'absorption : changer kₐ modifie le pic mais pas D/(V·kₑ). Modèle simplifié à un compartiment, absorption complète (biodisponibilité 100 %).",
   build: function(k, S){
-    var c = k.canvas(360), Dd = k.slider("Dose D", 100, 1000, 50, 500, "mg"), ka = k.slider("Absorption kₐ", 0.3, 3, 0.1, 1.2, "h⁻¹"), ke = k.slider("Élimination kₑ", 0.05, 0.6, 0.01, 0.2, "h⁻¹"), V = k.slider("Volume V", 20, 80, 5, 40, "L"), T = k.slider("Horizon T", 1, 24, 0.5, 12, "h");
+    var c = k.canvas(0, {ratio: 0.95}); lay2(c, 0.95, 1.4);
+    var Dd = k.slider("Dose D", 100, 1000, 50, 500, "mg"), ka = k.slider("Absorption kₐ", 0.3, 3, 0.1, 1.2, "h⁻¹"), ke = k.slider("Élimination kₑ", 0.05, 0.6, 0.01, 0.2, "h⁻¹"), V = k.slider("Volume de distribution V", 20, 80, 5, 40, "L"), T = k.slider("Horizon T", 1, 24, 0.5, 12, "h");
     var mv = k.toggle("Montrer le rectangle de valeur moyenne", true);
-    var ro = k.readouts(["C max (à t max)", "AUC(0 → T)", "AUC(0 → ∞) = D/(V·kₑ)", "Concentration moyenne sur [0 ; T]"]), nt = k.note("", "");
+    var tn = 0, lp = k.loop(function(dt){ tn += dt * 2.2; if (tn >= 24){ tn = 24; lp.pause(); } k.redraw(); });
+    k.button("▶ Prendre le comprimé", function(){ tn = 0; lp.play(); }, true);
+    var TG = [["auc", 100, 0, "AUC(0 → ∞) = 100 mg·h/L (± 2)"], ["moy", 5, 12, "concentration moyenne 5 mg/L sur [0 ; 12 h] (± 0,1)"], ["auc", 50, 0, "AUC(0 → ∞) = 50 mg·h/L avec un pic sous 6 mg/L"]], ti = -1, won = false, wins = 0;
+    k.button("Défi suivant", function(){ ti = (ti + 1) % TG.length; won = false; if (TG[ti][2]) T.set(TG[ti][2]); });
+    var ro = k.readouts(["C max (à t max)", "AUC(0 → T)", "AUC(0 → ∞) = D/(V·kₑ)", "Moyenne sur [0 ; T]"]), nt = k.note("", ""); lp.play();
+    var R = rnd(5), dots = []; for (var i = 0; i < 100; i++) dots.push([R(), R(), R() * 6.283]);
+    var G = null, grab = null; c.cv.style.touchAction = "none";
+    c.pointer(function(t, p){
+      if (!G) return;
+      if (t === "down"){ grab = null; if (p.y > G.T - 10 && p.y < G.B + 10){ grab = Math.abs(G.X(T.value) - p.x) < 14 ? "T" : "t"; lp.pause(); } }
+      if ((t === "down" || t === "drag") && grab){ var x = cl(G.ix(p.x), 0, 24); if (grab === "T") T.set(Math.max(1, Math.round(x * 2) / 2)); else tn = x; k.redraw(); }
+      if (t === "up") grab = null;
+    });
     k.draw(function(){
-      c.clear(); var d = Dd.value, a = ka.value, e = ke.value, v = V.value, TT = T.value; if (Math.abs(a - e) < 0.03) a = e + 0.03;
+      c.clear(); var ctx = c.ctx, d = Dd.value, a = ka.value, e = ke.value, v = V.value, TT = T.value; if (Math.abs(a - e) < 0.03) a = e + 0.03;
       var A = d * a / (v * (a - e)), C = function(t){ return t < 0 ? 0 : A * (Math.exp(-e * t) - Math.exp(-a * t)); }, tm = Math.log(a / e) / (a - e), Cm = C(tm);
       var auc = A * ((1 - Math.exp(-e * TT)) / e - (1 - Math.exp(-a * TT)) / a), aucInf = d / (v * e), moy = auc / TT;
-      var ax = D.axes(c, {x0: 0, x1: 24, y0: 0, y1: Math.max(10, Math.ceil(Cm * 1.25)), stepX: 2, xl: "t (h)", yl: "C (mg/L)"});
-      fillArea(c, ax, C, function(){ return 0; }, 0, TT, "rgba(30,63,143,.22)"); if (mv.value){ var ctx = c.ctx; ctx.fillStyle = "rgba(180,83,9,.16)"; ctx.fillRect(ax.X(0), ax.Y(moy), ax.X(TT) - ax.X(0), ax.Y(0) - ax.Y(moy)); hl(c, ax, moy, P.amber, [6, 4], 1.8); lab(c, "moyenne " + F(moy, 2), ax.X(TT) + 6, ax.Y(moy) - 10, P.amber, 12, TT > 18 ? "right" : "left"); }
-      D.fn(c, ax, C, P.acc, 3.2); vl(c, ax, TT, "#8a95a3", [4, 4], 1.3); pt(c, ax, tm, Cm, P.red, 5);
-      ro.set(0, F(Cm, 2) + " mg/L (t = " + F(tm, 2) + " h)"); ro.set(1, F(auc, 2) + " mg·h/L"); ro.set(2, F(aucInf, 2) + " mg·h/L"); ro.set(3, F(moy, 3) + " mg/L");
-      nt.set("À l'horizon T = " + F(TT, 1) + " h, " + F(auc / aucInf * 100, 1) + " % de l'exposition totale est déjà intégrée. Les 24 h affichées donnent " + F((A * ((1 - Math.exp(-e * 24)) / e - (1 - Math.exp(-a * 24)) / a)) / aucInf * 100, 1) + " %.", "");
+      var H = c.H, h1 = Math.round(H * 0.42), W = c.W, t = tn;
+      var gut = d * Math.exp(-a * t), blood = v * C(t), out = Math.max(0, d - gut - blood);
+      /* --- schéma : intestin → sang → reins / urine --- */
+      var bw = Math.min(150, (W - 60) / 3), gy = 30, bh = h1 - 64, xs = [14, (W - bw) / 2, W - bw - 14];
+      var boxes = [["INTESTIN", "#f1d9b5", "#b07a3c", gut], ["SANG (V = " + F(v, 0) + " L)", "#f6d0cc", "#b42318", blood], ["URINE (éliminé)", "#f4ecbf", "#9a7d12", out]];
+      boxes.forEach(function(bx, j){ var x = xs[j]; D.panel(c, x, gy, bw, bh, {fill: bx[1], stroke: bx[2], radius: 14, shadow: true}); D.text(c, bx[0], x + bw / 2, gy - 10, {size: 10, color: bx[2], weight: 800});
+        var nd = Math.min(100, Math.round(bx[3] / 10)), cols = j === 1 ? "#8d1b10" : j === 0 ? "#6236c4" : "#6236c4";
+        for (var q = 0; q < nd; q++){ var p = dots[q], jx = Math.sin(t * 3 + p[2] + j) * 2.5, jy = Math.cos(t * 2.3 + p[2] * 1.7) * 2.5; D.dot(c, x + 10 + p[0] * (bw - 20) + jx, gy + 12 + p[1] * (bh - 24) + jy, 2.6, cols); }
+        D.text(c, F(bx[3], 0) + " mg", x + bw / 2, gy + bh + 12, {size: 11, color: bx[2], weight: 800}); });
+      if (gut > 5){ var px = xs[0] + bw * 0.25, py = gy + bh * 0.3, sz = 6 + 10 * gut / d; ctx.save(); ctx.translate(px, py); ctx.rotate(-0.5); D.rrect(c, -sz, -sz * 0.45, 2 * sz, 0.9 * sz, sz * 0.45); ctx.fillStyle = "#ffffff"; ctx.fill(); ctx.strokeStyle = "#6236c4"; ctx.lineWidth = 1.4; ctx.stroke(); ctx.restore(); }
+      var fl1 = a * gut, fl2 = e * blood;
+      D.arrow(c, xs[0] + bw + 4, gy + bh / 2, xs[1] - 4, gy + bh / 2, "#6236c4", 1.5 + Math.min(5, fl1 / 60)); D.text(c, "kₐ", (xs[0] + bw + xs[1]) / 2, gy + bh / 2 - 12, {size: 12, color: "#6236c4", math: true, halo: true});
+      D.arrow(c, xs[1] + bw + 4, gy + bh / 2, xs[2] - 4, gy + bh / 2, "#9a7d12", 1.5 + Math.min(5, fl2 / 60)); D.text(c, "kₑ (reins)", (xs[1] + bw + xs[2]) / 2, gy + bh / 2 - 12, {size: 11, color: "#9a7d12", halo: true});
+      D.display(c, F(C(t), 2), xs[1] + bw / 2, gy + bh / 2, {w: Math.min(92, bw - 16), h: 40, caption: "C (mg/L)", size: 15});
+      /* --- courbe de concentration --- */
+      var ax = axIn(c, {x: 0, y: h1, w: W, h: H - h1}, {x0: 0, x1: 24, y0: 0, y1: Math.max(10, Math.ceil(Cm * 1.3)), stepX: 2, xl: "t (h)", yl: "C (mg/L)", t: 16}); G = ax;
+      if (mv.value){ ctx.save(); ctx.fillStyle = "rgba(194,106,12,.14)"; ctx.fillRect(ax.X(0), ax.Y(moy), ax.X(TT) - ax.X(0), ax.Y(0) - ax.Y(moy)); ctx.restore(); hl(c, ax, moy, P.amber, [6, 4], 1.6); D.label(c, "moyenne " + F(moy, 2) + " mg/L", ax.X(TT) + (TT > 16 ? -6 : 6), ax.Y(moy) - 11, {color: P.amber, size: 10.5, align: TT > 16 ? "right" : "left"}); }
+      fillArea(c, ax, C, function(){ return 0; }, 0, Math.min(TT, t), "rgba(31,75,158,.28)");
+      D.fn(c, ax, function(x){ return x <= t ? C(x) : NaN; }, P.acc, 3.2); D.fn(c, ax, function(x){ return x >= t ? C(x) : NaN; }, "rgba(31,75,158,.3)", 2, [4, 4]);
+      if (ti >= 0 && TG[ti][0] === "auc" && TG[ti][1] === 50) hl(c, ax, 6, P.red, [3, 3], 1.4);
+      vl(c, ax, TT, "#8a95a3", [4, 4], 1.4); hnd(c, ax.X(TT), ax.T + 8, P.ink, "T"); pt(c, ax, tm, Cm, P.red, 4.5);
+      D.dot(c, ax.X(t), ax.Y(C(t)), 6, P.red); D.line(c, ax.X(t), ax.B, ax.X(t), ax.Y(C(t)), "rgba(192,50,29,.4)", 1.2, [3, 3]);
+      ro.set(0, F(Cm, 2) + " mg/L (t = " + F(tm, 1) + " h)"); ro.set(1, F(auc, 1) + " mg·h/L"); ro.set(2, F(aucInf, 1) + " mg·h/L"); ro.set(3, F(moy, 2) + " mg/L");
+      if (ti >= 0){ var g = TG[ti], ok = g[0] === "auc" ? Math.abs(aucInf - g[1]) <= 2 && (g[1] !== 50 || Cm < 6) : Math.abs(TT - g[2]) < 1e-9 && Math.abs(moy - g[1]) <= 0.1;
+        if (ok){ if (!won){ won = true; wins++; } nt.set("Défi réussi (" + wins + ") : " + g[3] + ". " + (g[0] === "auc" ? "AUC(0 → ∞) = D/(V·kₑ) = " + F(d, 0) + "/(" + F(v, 0) + " × " + F(e, 2) + ") = " + F(aucInf, 1) + " mg·h/L." : "Moyenne = AUC(0 → 12)/12 = " + F(auc, 1) + "/12 = " + F(moy, 2) + " mg/L."), "ok"); }
+        else { won = false; nt.set("Défi : " + g[3] + ". " + (g[0] === "auc" ? (g[1] === 50 ? "Indice : kₐ ne change pas l'AUC mais abaisse le pic." : "Indice : AUC(0 → ∞) = D/(V·kₑ) ; kₐ n'y joue aucun rôle.") : "Garde T = 12 h ; la moyenne vaut AUC(0 → 12)/12."), "warn"); } }
+      else nt.set("À l'horizon T = " + F(TT, 1) + " h, " + F(auc / aucInf * 100, 1) + " % de l'exposition totale est intégrée. Le rectangle orange (hauteur = moyenne) a la même aire que la zone bleue sous la courbe. Clique « Défi suivant ».", "");
     });
   }
 });

@@ -117,87 +117,107 @@ SFA.sim({
 SFA.sim({
   id: "p5-c09-rc", ch: "c09", tag: "Charge et décharge",
   titre: "Charge et décharge d'un condensateur : la constante de temps RC",
-  resume: "R, C, E → courbes U(t) et I(t), constante de temps τ = RC.",
-  but: "Charge puis décharge le condensateur à travers la résistance. Regarde la tension et le courant. Que vaut la tension après un temps τ = RC ? Change R ou C : qu'est-ce qui change dans la courbe ?",
-  aRetenir: "Charge : U<sub>C</sub> = E·(1 − e<sup>−t/τ</sup>), le courant I = (E − U<sub>C</sub>)/R décroît ; décharge : U<sub>C</sub> = U₀·e<sup>−t/τ</sup>. τ = R·C : à t = τ, on a atteint 63 % de la charge (ou il reste 37 %). Au bout de 5τ, on est à moins de 1 % de la valeur finale. Charge stockée Q = C·U ; énergie ½·C·U².",
-  piege: "Le condensateur ne « se remplit » pas instantanément, et le courant n'est pas constant : il est maximal au début et tend vers 0. Et τ n'est pas la durée totale de charge : il faut environ 5τ.",
+  resume: "Bascule l'interrupteur : les charges s'accumulent sur les armatures, la tension monte en 1 − e^(−t/τ), le courant s'effondre. Règle R et C pour atteindre une constante de temps donnée.",
+  but: "Touche l'interrupteur du circuit pour charger puis décharger le condensateur. Regarde les charges s'accumuler sur les armatures et les courbes U_C(t) et I(t) se tracer. Glisse le curseur de lecture sur les graphes. Défis : règle R et C pour obtenir le comportement demandé.",
+  aRetenir: "Charge : U<sub>C</sub> = E·(1 − e<sup>−t/τ</sup>) et I = (E − U<sub>C</sub>)/R décroît ; décharge : U<sub>C</sub> = U₀·e<sup>−t/τ</sup>. τ = R·C : à t = τ, on a atteint 63 % de la charge (ou il reste 37 %) ; après 5τ, on est à moins de 1 % de la valeur finale. Charge stockée Q = C·U, énergie ½·C·U².",
+  piege: "Le condensateur ne se charge pas instantanément et le courant n'est pas constant : il est maximal (E/R) au début et tend vers 0. τ n'est pas la durée totale de la charge : il faut environ 5τ. Et aucune charge ne traverse l'isolant entre les armatures : le courant circule dans les fils.",
   build: function(k, S){
-    var c = k.canvas(215), gr = k.canvas(170), gi = k.canvas(135);
-    function restart(){ tt = 0; hist = [[0, Uc, ((mode === "charge" ? E.value : 0) - Uc) / (R.value * 1e3)]]; }
+    var c = k.canvas(260), gu = k.canvas(160), gi = k.canvas(140);
+    function restart(){ tt = 0; tc = null; hist = [[0, Uc, ((mode === "charge" ? E.value : 0) - Uc) / (R.value * 1e3)]]; }
     var R = k.slider("Résistance R", 1, 100, 1, 10, "kΩ", restart);
     var C = k.slider("Capacité C", 10, 1000, 10, 100, "µF", restart);
     var E = k.slider("Tension du générateur E", 1, 12, 0.5, 9, "V", restart);
-    var ro = k.readouts(["Constante de temps (R × C)", "Tension U_C", "Courant I", "Charge Q = C·U_C", "Énergie ½·C·U_C²"]);
-    var nt = k.note("", ""), Uc = 0, tt = 0, mode = "charge", hist = [[0, 0, 0]], flow = 0;
-    function reset(m){ mode = m; restart(); lp.play(); }
-    k.button("Charger (interrupteur sur E)", function(){ reset("charge"); }, true);
-    k.button("Décharger (court-circuit)", function(){ reset("decharge"); });
+    var ro = k.readouts(["τ = R·C", "t", "Tension U_C", "Courant I", "Charge Q = C·U_C", "Énergie ½·C·U_C²"]);
+    var nt = k.note("", "");
+    var Uc = 0, tt = 0, mode = "charge", hist = [[0, 0, 0]], flow = 0, tc = null, di = -1, won = [0, 0, 0];
+    var DEF = [[1.0, "τ = 1,0 s", "τ = R·C = 1,0 s"], [0.4, "chargé à 99 % en 2,0 s", "5τ = 2,0 s, donc τ = 0,40 s"], [1 / Math.LN2, "U_C = 50 % de E à t = 1,0 s", "e^(−1/τ) = 0,5, donc τ = 1/ln 2 ≈ 1,44 s"]];
+    function go(m){ mode = m; restart(); lp.play(); }
+    k.button("Basculer l'interrupteur", function(){ go(mode === "charge" ? "decharge" : "charge"); }, true);
+    k.button("Défi suivant", function(){ di = (di + 1) % 3; });
     var lp = k.loop(function(dt){
-      var tau = R.value * 1e3 * C.value * 1e-6, ts = dt * tau;
+      var tau = R.value * 1e3 * C.value * 1e-6, ts = dt * Math.max(tau, 0.05) * 0.9;
       var Ef = mode === "charge" ? E.value : 0; Uc = Ef + (Uc - Ef) * Math.exp(-ts / tau); tt += ts;
       hist.push([tt, Uc, (Ef - Uc) / (R.value * 1e3)]); if (tt > 6 * tau) lp.pause();
-      var Iv = (Ef - Uc) / (R.value * 1e3), Im = E.value / (R.value * 1e3); flow += Iv / Im * 120 * dt; k.redraw();
+      var Iv = (Ef - Uc) / (R.value * 1e3), Im = E.value / (R.value * 1e3); flow += Iv / Im * 90 * dt; k.redraw();
     });
-    /* manipulation directe : un appui près de l'interrupteur le bascule */
-    c.pointer(function(type, p){ if (type === "down" && p.x < c.W * 0.5 && Math.hypot(p.x - SW.x, p.y - SW.y) < 60){ reset(mode === "charge" ? "decharge" : "charge"); } });
-    var SW = {x: 0, y: 0};
-    reset("charge");
+    var SW = {x: 0, y: 0}, axU = null, axI = null;
+    c.pointer(function(type, p){ if (type === "down" && Math.hypot(p.x - SW.x, p.y - SW.y) < 44) go(mode === "charge" ? "decharge" : "charge"); });
+    function cursorDrag(ax){ return function(){ return ax() ? [{x: ax().X(tc === null ? Math.min(tt, 5 * tau0()) : tc), y: ax().T + 14, r: 40, set: function(px){ tc = P5.clamp(ax().ix(px), 0, Math.min(tt, 5 * tau0())); }}] : null; }; }
+    function tau0(){ return R.value * 1e3 * C.value * 1e-6; }
+    P5x.drag(gu, k, cursorDrag(function(){ return axU; })); P5x.drag(gi, k, cursorDrag(function(){ return axI; }));
     function polyAt(pts, s){ var L = 0, seg = []; for (var i = 0; i < pts.length - 1; i++){ var l = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); seg.push(l); L += l; }
       s = ((s % L) + L) % L; for (i = 0; i < seg.length; i++){ if (s <= seg[i]){ var f = s / seg[i]; return [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * f, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * f]; } s -= seg[i]; } return pts[0]; }
     function polyLen(pts){ var L = 0; for (var i = 0; i < pts.length - 1; i++) L += Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); return L; }
+    function at(t, col){ /* valeur interpolée de l'historique */ var h = hist, i = 0; while (i < h.length - 1 && h[i + 1][0] < t) i++; return h[i][col]; }
+    go("charge");
     k.draw(function(){
-      var pal = S.draw.palette, ctx = c.ctx, tau = R.value * 1e3 * C.value * 1e-6;
+      var pal = S.draw.palette, ctx = c.ctx, W = c.W, H = c.H, tau = tau0();
       var Ef = mode === "charge" ? E.value : 0, Ee = E.value, I = (Ef - Uc) / (R.value * 1e3), Imax = Ee / (R.value * 1e3);
-      /* ---- circuit ---- */
-      P5x.sky(c, "#f7fafd", "#edf2f8");
-      var W = c.W, sx = Math.min(1, W / 440), x1 = 34 * sx + 6, x2 = x1 + 56 * sx, x3 = x2 + 44 * sx, xr0 = x3 + 22 * sx, xr1 = xr0 + 86 * sx, x6 = xr1 + 34 * sx, yt = 38, yb = c.H - 30, ym = (yt + yb) / 2;
-      var wire = "#5b6676", lw = 3;
-      var pathCh = [[x1, yb], [x1, yt], [x2, yt], [x3, ym], [x6, ym], [x6, yb], [x1, yb]], pathDis = [[x3, ym], [x6, ym], [x6, yb], [x2, yb], [x3, ym]];
-      var pts = mode === "charge" ? pathCh : pathDis;
+      ctx.fillStyle = P5x.lin(ctx, 0, 0, 0, H, [[0, "#f8fafd"], [1, "#edf2f8"]]); ctx.fillRect(0, 0, W, H);
+      var x1 = 34, x2 = 74, x3 = 112, x6 = W - 46, yt = 46, yb = H - 26, yc = (yt + yb) / 2, rw = Math.min(110, (x6 - x3) * 0.5), xr0 = x3 + (x6 - x3 - rw) / 2 + 10, xr1 = xr0 + rw;
+      var wire = "#4b5563", lw = 2.6, c2y = yt + 44;
       ctx.lineCap = "round"; ctx.lineJoin = "round";
       /* fils */
-      S.draw.line(c, x1, yb, x6, yb, wire, lw); S.draw.line(c, x1, yt + 0, x2, yt, wire, lw); S.draw.line(c, x3, ym, xr0, ym, wire, lw); S.draw.line(c, xr1, ym, x6, ym, wire, lw);
-      S.draw.line(c, x1, yb, x1, ym + 20, wire, lw); S.draw.line(c, x1, ym - 20, x1, yt, wire, lw); S.draw.line(c, x2, yb, x2, yb - 0, wire, lw);
-      /* générateur */
-      S.draw.line(c, x1 - 16, ym - 20, x1 + 16, ym - 20, pal.red, 4); S.draw.line(c, x1 - 9, ym - 11, x1 + 9, ym - 11, "#33405a", 4);
-      S.draw.line(c, x1 - 16, ym + 2, x1 + 16, ym + 2, pal.red, 4); S.draw.line(c, x1 - 9, ym + 11, x1 + 9, ym + 11, "#33405a", 4); S.draw.line(c, x1, ym + 11, x1, ym + 20, wire, lw);
-      S.draw.text(c, "+", x1 + 24, ym - 24, {size: 13, color: pal.red}); P5x.tag(c, "E = " + S.fmt(Ee, 1) + " V", x1, ym + 38, pal.red, {size: 11.5});
-      /* interrupteur à deux positions */
-      var ya = yt, yB2 = yb; S.draw.dot(c, x2, ya, 4.5, "#33405a"); S.draw.dot(c, x2, yB2, 4.5, "#33405a"); S.draw.dot(c, x3, ym, 5, "#33405a");
-      var tipY = mode === "charge" ? ya : yB2; S.draw.line(c, x3, ym, x2, tipY, mode === "charge" ? pal.green : pal.amber, 3.4);
-      SW.x = (x2 + x3) / 2; SW.y = ym; P5x.tag(c, mode === "charge" ? "charge" : "décharge", x3 + 6, ym + 20, mode === "charge" ? pal.green : pal.amber, {size: 11.5});
-      P5x.hint(c, "Touche l'interrupteur pour le basculer", {x: 8, y: 12, size: 11});
-      /* résistance */
-      P5x.coil(c, xr0, ym, xr1, ym, 6, 9, "#33405a", 2.6); P5x.tag(c, "R = " + S.fmt(R.value, 0) + " kΩ", (xr0 + xr1) / 2, ym - 24, "#33405a", {size: 11.5});
-      /* condensateur : plaques, charges, champ */
-      var py1 = ym + 36, py2 = ym + 58, q = Math.max(0, Math.min(1, Uc / Math.max(Ee, 0.01)));
-      S.draw.line(c, x6, ym, x6, py1, wire, lw); S.draw.line(c, x6, py2, x6, yb, wire, lw);
-      ctx.fillStyle = S.draw.tint(pal.red, 0.06 + 0.2 * q); ctx.fillRect(x6 - 30, py1, 60, py2 - py1);
-      for (var j = 0; j < 7; j++){ var al = (j + 0.5) / 7 <= q * 1.0 + 0.001 ? 1 : 0.15; ctx.globalAlpha = al; S.draw.text(c, "+", x6 - 25 + j * 8.4, py1 - 8, {size: 12, color: pal.red}); S.draw.text(c, "−", x6 - 25 + j * 8.4, py2 + 9, {size: 13, color: pal.acc}); } ctx.globalAlpha = 1;
-      S.draw.line(c, x6 - 30, py1, x6 + 30, py1, pal.red, 5); S.draw.line(c, x6 - 30, py2, x6 + 30, py2, pal.acc, 5);
-      P5x.tag(c, "C = " + S.fmt(C.value, 0) + " µF", x6 - 38, ym + 47, "#33405a", {align: "right", size: 11.5});
-      /* électrons / courant conventionnel : points mobiles */
-      var L = polyLen(pts), n = Math.round(L / 26);
-      if (Math.abs(I) > Imax * 0.01) for (var i = 0; i < n; i++){ var p = polyAt(pts, flow * (mode === "charge" ? 1 : 1) + i * L / n); S.draw.dot(c, p[0], p[1], 3.2, "rgba(224,122,31," + Math.min(1, 0.35 + Math.abs(I) / Imax).toFixed(2) + ")"); }
-      /* afficheurs */
-      var dx = Math.min(W - 56, x6 + 88 * sx + 20);
-      S.draw.display(c, S.fmt(Uc, 2), dx, 60, {w: 84, h: 46, caption: "U_C (V)"});
-      S.draw.display(c, S.fmt(I * 1000, 2), dx, 128, {w: 84, h: 46, caption: "I (mA)"});
-      /* ---- courbes ---- */
-      gr.clear(); gi.clear();
-      var Um = Math.max(Ee, Uc), ax = S.draw.axes(gr, {x0: 0, x1: 5 * tau, y0: 0, y1: Um * 1.15, xl: "t (s)", yl: "U_C (V)", l: 46, stepX: tau});
-      var t63 = mode === "charge" ? 0.632 * Ee : 0.368 * (hist[0][1] || 0);
-      S.draw.line(gr, ax.X(0), ax.Y(Ee), ax.X(5 * tau), ax.Y(Ee), pal.grey, 1, [4, 4]); P5x.tag(gr, "E", ax.X(5 * tau) - 10, ax.Y(Ee) - 11, "#4b5868", {size: 11});
-      S.draw.line(gr, ax.X(tau), ax.Y(0), ax.X(tau), ax.Y(Um * 1.15), pal.amber, 1.4, [4, 4]); P5x.tag(gr, "τ = " + S.fmt(tau, 2) + " s", ax.X(tau) + 6, ax.T + 10, "#8a5200", {align: "left", size: 11});
-      var gx2 = gr.ctx; gx2.strokeStyle = pal.acc; gx2.lineWidth = 3; gx2.lineJoin = "round"; gx2.beginPath(); hist.forEach(function(p, i){ if (p[0] > 5 * tau) return; if (i === 0) gx2.moveTo(ax.X(p[0]), ax.Y(p[1])); else gx2.lineTo(ax.X(p[0]), ax.Y(p[1])); }); gx2.stroke();
-      if (hist[0][1] !== undefined && (mode === "charge" || hist[0][1] > 0)){ S.draw.dot(gr, ax.X(tau), ax.Y(t63), 4.5, pal.amber); P5x.tag(gr, mode === "charge" ? "63 %" : "37 %", ax.X(tau) + 8, ax.Y(t63) + 14, "#8a5200", {align: "left", size: 11}); }
-      S.draw.dot(gr, ax.X(Math.min(tt, 5 * tau)), ax.Y(Uc), 5.5, pal.red);
-      var Im = Math.max(Imax, Math.abs(I), Math.abs(hist[0][2])) * 1000, ax2 = S.draw.axes(gi, {x0: 0, x1: 5 * tau, y0: -Im * 1.15, y1: Im * 1.15, xl: "t (s)", yl: "I (mA)", l: 46, stepX: tau, stepY: Im / 2});
-      gi.ctx.strokeStyle = pal.red; gi.ctx.lineWidth = 3; gi.ctx.lineJoin = "round"; gi.ctx.beginPath(); hist.forEach(function(p, i){ if (p[0] > 5 * tau) return; if (i === 0) gi.ctx.moveTo(ax2.X(p[0]), ax2.Y(p[2] * 1000)); else gi.ctx.lineTo(ax2.X(p[0]), ax2.Y(p[2] * 1000)); }); gi.ctx.stroke();
-      S.draw.dot(gi, ax2.X(Math.min(tt, 5 * tau)), ax2.Y(I * 1000), 5, pal.red);
-      P5x.hint(gi, "1 s à l'écran = τ", {x: gi.W - 10, y: 10, align: "right", size: 11});
-      ro.set(0, S.fmt(tau, 3) + " s"); ro.set(1, S.fmt(Uc, 2) + " V"); ro.set(2, S.fmt(I * 1000, 2) + " mA"); ro.set(3, S.fmt(C.value * 1e-6 * Uc * 1e3, 2) + " mC"); ro.set(4, S.fmt(0.5 * C.value * 1e-6 * Uc * Uc * 1e3, 2) + " mJ");
-      nt.set(mode === "charge" ? "Charge : à t = τ, U_C = 63 % de E = " + S.fmt(0.632 * Ee, 2) + " V ; à 5τ, 99,3 %. Courant initial E/R = " + S.fmt(Imax * 1000, 2) + " mA." : "Décharge : à t = τ il reste 37 % de la tension initiale. Le courant est négatif : il circule en sens inverse du courant de charge.", "");
+      S.draw.line(c, x1, yt, x2, yt, wire, lw); S.draw.line(c, x3, yt, xr0, yt, wire, lw); S.draw.line(c, xr1, yt, x6, yt, wire, lw);
+      S.draw.line(c, x6, yt, x6, yc - 9, wire, lw); S.draw.line(c, x6, yc + 9, x6, yb, wire, lw); S.draw.line(c, x1, yb, x6, yb, wire, lw);
+      S.draw.line(c, x2, c2y, x2, yb, wire, lw); S.draw.line(c, x1, yt, x1, yc - 12, wire, lw); S.draw.line(c, x1, yc + 3, x1, yb, wire, lw);
+      /* générateur (symbole : grand trait = borne +) */
+      S.draw.line(c, x1 - 16, yc - 12, x1 + 16, yc - 12, pal.red, 3); S.draw.line(c, x1 - 8, yc + 6 - 6, x1 + 8, yc + 6 - 6, "#13233a", 6);
+      S.draw.text(c, "+", x1 + 22, yc - 18, {size: 13, color: pal.red});
+      P5x.tag(c, "E = " + S.fmt(Ee, 1) + " V", x1 + 2, yc + 26, pal.red, {size: 11});
+      /* interrupteur à deux positions : 1 = générateur (charge), 2 = court-circuit (décharge) */
+      S.draw.dot(c, x2, yt, 4.5, "#13233a"); S.draw.dot(c, x2, c2y, 4.5, "#13233a"); S.draw.dot(c, x3, yt, 5, "#13233a");
+      var tipY = mode === "charge" ? yt : c2y; S.draw.line(c, x3, yt, x2 + 3, tipY - (mode === "charge" ? 3 : 0), mode === "charge" ? pal.green : pal.amber, 4);
+      S.draw.text(c, "1", x2 - 10, yt - 10, {size: 11, color: "#4b5868"}); S.draw.text(c, "2", x2 - 10, c2y, {size: 11, color: "#4b5868"});
+      SW.x = (x2 + x3) / 2; SW.y = (yt + c2y) / 2; S.draw.glow(c, SW.x, SW.y, 30, mode === "charge" ? pal.green : pal.amber, 0.18);
+      P5x.tag(c, mode === "charge" ? "K en 1 : charge" : "K en 2 : décharge", (x2 + x3) / 2 + 6, yt - 20, mode === "charge" ? pal.green : pal.amber, {size: 11});
+      /* résistance (symbole européen : rectangle) avec anneaux de couleur */
+      ctx.fillStyle = "#efe2c6"; P5x.rr(ctx, xr0, yt - 9, rw, 18, 4); ctx.fill(); ctx.strokeStyle = "#13233a"; ctx.lineWidth = 2; ctx.stroke();
+      var bands = ["#7a4a1f", "#13233a", "#d4562b", "#c9a227"]; bands.forEach(function(bc, i){ ctx.fillStyle = bc; ctx.fillRect(xr0 + rw * (0.18 + i * 0.17), yt - 9, 5, 18); });
+      P5x.tag(c, "R = " + S.fmt(R.value, 0) + " kΩ", (xr0 + xr1) / 2, yt + 22, "#13233a", {size: 11});
+      /* condensateur : armatures, charges, champ */
+      var q = Math.max(0, Math.min(1, Uc / Math.max(Ee, 0.01))), pw = 30;
+      ctx.fillStyle = S.draw.tint(pal.violet, 0.05 + 0.18 * q); ctx.fillRect(x6 - pw, yc - 8, 2 * pw, 16);
+      for (var j = 0; j < 5; j++){ var fx = x6 - pw + 6 + j * (2 * pw - 12) / 4; ctx.globalAlpha = 0.15 + 0.85 * q; S.draw.arrow(c, fx, yc - 6, fx, yc + 6, pal.violet, 1.2); } ctx.globalAlpha = 1;
+      S.draw.line(c, x6 - pw, yc - 9, x6 + pw, yc - 9, "#c0321d", 4); S.draw.line(c, x6 - pw, yc + 9, x6 + pw, yc + 9, "#1f4b9e", 4);
+      var nq = Math.round(q * 7);
+      for (j = 0; j < 7; j++){ var on = j < nq; ctx.globalAlpha = on ? 1 : 0.12; S.draw.text(c, "+", x6 - pw + 3 + j * (2 * pw - 6) / 6, yc - 19, {size: 12, color: pal.red}); S.draw.text(c, "−", x6 - pw + 3 + j * (2 * pw - 6) / 6, yc + 20, {size: 13, color: pal.acc}); } ctx.globalAlpha = 1;
+      P5x.tag(c, "C = " + S.fmt(C.value, 0) + " µF", x6, yc + 38, "#13233a", {size: 11});
+      /* porteurs de charge animés (sens conventionnel du courant) */
+      var pts = mode === "charge" ? [[x1, yb], [x1, yt], [x3, yt], [x6, yt], [x6, yc - 9]] : [[x6, yc - 9], [x6, yt], [x3, yt], [x2, c2y], [x2, yb], [x6, yb], [x6, yc + 9]];
+      var pts2 = mode === "charge" ? [[x6, yc + 9], [x6, yb], [x1, yb]] : null;
+      var rel = Math.abs(I) / Math.max(Imax, 1e-12);
+      [pts, pts2].forEach(function(P){ if (!P || rel < 0.01) return; var L = polyLen(P), n = Math.max(2, Math.round(L / 24));
+        for (var i = 0; i < n; i++){ var pp = polyAt(P, ((flow * (mode === "charge" ? 1 : -1)) % (L / n) + L / n) % (L / n) + i * L / n); if (Math.abs(pp[1] - yc) < 10 && Math.abs(pp[0] - x6) < 2) continue; S.draw.dot(c, pp[0], pp[1], 3.2, "rgba(224,122,31," + Math.min(1, 0.3 + rel).toFixed(2) + ")"); } });
+      /* afficheurs au centre de la boucle */
+      var dxp = (x3 + x6 - pw) / 2 + 4, dw = Math.min(84, (x6 - pw - x3) * 0.62);
+      S.draw.display(c, Uc.toFixed(2).replace(".", ","), dxp, yc - 18, {w: dw, h: 42, caption: "U_C (V)"});
+      S.draw.display(c, (I * 1000).toFixed(2).replace(".", ",").replace("-", "−"), dxp, yc + 34, {w: dw, h: 42, caption: "I (mA)"});
+      P5x.hint(c, "Touche l'interrupteur K", {x: 8, y: 14, size: 11});
+      /* graphes */
+      gu.clear(); gi.clear();
+      var tmax = 5 * tau, tl = tc === null ? Math.min(tt, tmax) : tc;
+      axU = S.draw.axes(gu, {x0: 0, x1: tmax, y0: 0, y1: Ee * 1.18, xl: "t (s)", yl: "U_C (V)", l: 46});
+      S.draw.line(gu, axU.X(0), axU.Y(Ee), axU.X(tmax), axU.Y(Ee), pal.grey, 1, [4, 4]); P5x.tag(gu, "E", axU.X(tmax) - 8, axU.Y(Ee) - 10, "#4b5868", {size: 11});
+      S.draw.line(gu, axU.X(tau), axU.Y(0), axU.X(tau), axU.Y(Ee * 1.18), pal.amber, 1.3, [4, 4]); P5x.tag(gu, "τ", axU.X(tau) + 8, axU.B - 12, "#8a5200", {size: 11});
+      if (di === 2) { S.draw.line(gu, axU.X(1), axU.Y(0), axU.X(1), axU.Y(Ee * 1.18), pal.violet, 1.3, [2, 3]); S.draw.line(gu, axU.X(0), axU.Y(Ee / 2), axU.X(tmax), axU.Y(Ee / 2), pal.violet, 1.3, [2, 3]); }
+      var u0 = hist[0][1], lineU = gu.ctx; lineU.strokeStyle = pal.acc; lineU.lineWidth = 3; lineU.beginPath(); hist.forEach(function(p, i){ if (p[0] > tmax) return; if (i === 0) lineU.moveTo(axU.X(p[0]), axU.Y(p[1])); else lineU.lineTo(axU.X(p[0]), axU.Y(p[1])); }); lineU.stroke();
+      var t63 = mode === "charge" ? Ee - (Ee - u0) * Math.exp(-1) : u0 * Math.exp(-1);
+      if (tt >= tau && (mode === "charge" || u0 > 0.01)){ S.draw.dot(gu, axU.X(tau), axU.Y(t63), 4.5, pal.amber); P5x.tag(gu, mode === "charge" ? "63 %" : "37 %", axU.X(tau) + 8, axU.Y(t63) + (mode === "charge" ? 12 : -12), "#8a5200", {align: "left", size: 11}); }
+      var Im = Math.max(Imax, Math.abs(hist[0][2])) * 1000 * 1.15;
+      axI = S.draw.axes(gi, {x0: 0, x1: tmax, y0: -Im, y1: Im, xl: "t (s)", yl: "I (mA)", l: 46});
+      var lineI = gi.ctx; lineI.strokeStyle = pal.red; lineI.lineWidth = 3; lineI.beginPath(); hist.forEach(function(p, i){ if (p[0] > tmax) return; if (i === 0) lineI.moveTo(axI.X(p[0]), axI.Y(p[2] * 1000)); else lineI.lineTo(axI.X(p[0]), axI.Y(p[2] * 1000)); }); lineI.stroke();
+      /* curseur de lecture commun */
+      var uL = at(tl, 1), iL = at(tl, 2);
+      [[gu, axU, uL, pal.acc], [gi, axI, iL * 1000, pal.red]].forEach(function(z){ S.draw.line(z[0], z[1].X(tl), z[1].T, z[1].X(tl), z[1].B, "rgba(98,54,196,.55)", 1.5); S.draw.dot(z[0], z[1].X(tl), z[1].Y(z[2]), 5.5, z[3]); P5x.handle(z[0], z[1].X(tl), z[1].T + 14, pal.violet, 6); });
+      P5x.tag(gu, "t = " + S.fmt(tl, 2) + " s · U = " + S.fmt(uL, 2) + " V", gu.W - 10, 12, "#4b2a99", {align: "right", size: 11});
+      P5x.tag(gi, "I = " + S.fmt(iL * 1000, 2) + " mA", gi.W - 10, 12, "#4b2a99", {align: "right", size: 11});
+      ro.set(0, S.fmt(tau, 3) + " s"); ro.set(1, S.fmt(tt, 2) + " s"); ro.set(2, S.fmt(Uc, 2) + " V"); ro.set(3, S.fmt(I * 1000, 2) + " mA");
+      ro.set(4, S.fmt(C.value * Uc * 1e-3, 2) + " mC"); ro.set(5, S.fmt(0.5 * C.value * 1e-6 * Uc * Uc * 1e3, 2) + " mJ");
+      if (di >= 0){
+        var D = DEF[di], ok = Math.abs(tau - D[0]) / D[0] <= 0.03; if (ok) won[di] = 1;
+        nt.set("<b>Défi " + (di + 1) + "/3 : " + D[1] + ".</b> " + (ok ? "Réussi avec R = " + S.fmt(R.value, 0) + " kΩ et C = " + S.fmt(C.value, 0) + " µF : τ = " + S.fmt(tau, 3) + " s (" + D[2] + "). Lance une charge pour vérifier sur la courbe." : "Ici τ = " + S.fmt(tau, 3) + " s. Règle R et C (indice : " + D[2].split(",")[0] + ").") + " · " + (won[0] + won[1] + won[2]) + "/3 réussis.", ok ? "ok" : "");
+      } else nt.set(mode === "charge" ? "Charge : I démarre à E/R = " + S.fmt(Imax * 1000, 2) + " mA puis diminue ; à t = τ, U_C atteint 63 % de E, soit " + S.fmt(0.632 * Ee, 2) + " V (si on part de 0). Après 5τ = " + S.fmt(5 * tau, 2) + " s, c'est pratiquement fini." : "Décharge : le condensateur joue le rôle du générateur, le courant circule en sens inverse (I < 0). À t = τ, il reste 37 % de la tension initiale.", "");
     });
   }
 });

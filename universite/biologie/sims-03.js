@@ -125,93 +125,238 @@ SFA.sim({
 SFA.sim({
   id:"ub-c03-transporteur-saturation", ch:"c03", tag:"Transports",
   titre:"Diffusion simple contre transporteur : saturation et compétition",
-  resume:"Le flux d'un transporteur plafonne à Jmax ; la diffusion simple reste linéaire. Un compétiteur change Km.",
-  but:"Compare les deux flux selon la concentration extérieure. Ajoute un inhibiteur compétitif et observe Km apparent.",
-  aRetenir:"Diffusion simple : J = k·C (droite, jamais saturée). Transport facilité (uniport, symport) : J = Jmax·C / (Km + C), saturable et spécifique ; un compétiteur augmente Km apparent (Km·(1 + I/Ki)) sans changer Jmax. Un canal ou un transporteur facilité va dans le sens du gradient ; seul le transport actif (pompe) travaille CONTRE le gradient, au prix d'ATP (Na⁺/K⁺ : 3 Na⁺ sortent, 2 K⁺ entrent par ATP).",
+  resume:"Des transporteurs qui basculent un par un : quand ils sont tous occupés, le flux plafonne à Jmax ; un compétiteur leur vole la place.",
+  but:"Augmente la concentration extérieure (curseur ou point du graphique) : les transporteurs se remplissent jusqu'à la saturation, tandis que la diffusion simple à travers les lipides reste proportionnelle. Ajoute un compétiteur (rouge) et observe Km apparent.",
+  aRetenir:"Diffusion simple : J = k·C (droite, jamais saturée). Transport facilité (uniport, symport) : J = Jmax·C / (Km + C), saturable et spécifique ; Jmax = nombre de transporteurs × vitesse de cycle. Un compétiteur augmente Km apparent (Km·(1 + I/Ki)) sans changer Jmax. Un canal ou un transporteur facilité va dans le sens du gradient ; seul le transport actif (pompe) travaille CONTRE le gradient, au prix d'ATP (Na⁺/K⁺ : 3 Na⁺ sortent, 2 K⁺ entrent par ATP).",
   piege:"Le transport facilité est PASSIF : il n'utilise pas d'ATP et s'arrête à l'équilibre. Saturé ne veut pas dire actif.",
   build:function(k,S){
-    var P=S.draw.palette, c=k.canvas(330);
+    var P=S.draw.palette, B=S.bio, c=k.canvas(590);
     var jm=k.slider("Jmax (nombre de transporteurs × vitesse)",20,200,5,100,"µmol/min");
     var km=k.slider("Km du transporteur",0.5,10,0.5,2,"mmol/L");
     var kd=k.slider("Constante de diffusion simple k",0,10,0.1,2,"µmol/min par mmol/L");
     var I=k.slider("Concentration du compétiteur I",0,20,0.5,0,"mmol/L");
     var Ki=k.slider("Ki du compétiteur",0.5,10,0.5,2,"mmol/L");
     var C=k.slider("Concentration extérieure C",0,20,0.5,5,"mmol/L");
-    var ro=k.readouts(["Km apparent","Flux facilité","Flux diffusion simple","Saturation C/(Km'+C)","C pour 50 % de saturation"]);
-    k.draw(function(){
-      c.clear();
-      var kma=km.value*(1+I.value/Ki.value), ax=S.draw.axes(c,{t:28,x0:0,x1:20,y0:0,y1:210,stepX:5,stepY:50,xl:"C (mmol/L)",yl:"flux (µmol/min)"});
-      S.draw.fn(c,ax,function(x){return kd.value*x;},P.grey,2,[5,4]);
-      S.draw.fn(c,ax,function(x){return jm.value*x/(km.value+x);},P.acc,1.8);
-      if(I.value>0) S.draw.fn(c,ax,function(x){return jm.value*x/(kma+x);},P.red,2.6);
-      S.draw.line(c,ax.L,ax.Y(jm.value),ax.R,ax.Y(jm.value),P.green,1,[3,4]); S.draw.text(c,"Jmax",ax.R-4,ax.Y(jm.value)-8,{size:10,color:P.green,align:"right"});
-      var cv=C.value, jf=jm.value*cv/(kma+cv), jd=kd.value*cv;
-      S.draw.dot(c,ax.X(cv),ax.Y(jf),6,P.red); S.draw.dot(c,ax.X(cv),ax.Y(jd),5,P.ink);
-      S.draw.text(c,"bleu : transporteur · rouge : avec compétiteur · tirets : diffusion simple",c.W/2,c.H-12,{size:10,color:P.grey});
-      ro.set(0,S.fmt(kma,2)+" mmol/L"); ro.set(1,S.fmt(jf,1)+" µmol/min"); ro.set(2,S.fmt(jd,1)+" µmol/min"); ro.set(3,S.fmt(cv/(kma+cv)*100,0)+" %"); ro.set(4,S.fmt(kma,2)+" mmol/L");
-    });
+    var ro=k.readouts(["Km apparent","Flux facilité","Flux diffusion simple","Transporteurs occupés par le substrat"]);
+    var nt=k.note("","");
+    var t=0, ax=null, drag=false, rnd=B.rng(9), car=[], out=[], inside=[], cross=[], cnt={f:0,d:0,t0:0,F:0,Dd:0};
+    for(var q=0;q<70;q++) out.push({x:rnd(),y:rnd(),ph:rnd()*6.28});
+    for(var n=0;n<6;n++) car.push({s:0,st:"vide",tm:rnd()*0.8,load:null});
+    function M(){ var kma=km.value*(1+I.value/Ki.value), cv=C.value; return {kma:kma,jf:jm.value*cv/(kma+cv),jd:kd.value*cv,ths:(cv/km.value)/(1+cv/km.value+I.value/Ki.value),thi:(I.value/Ki.value)/(1+C.value/km.value+I.value/Ki.value)}; }
+    var df=B.defi(k,function(n){ var id=n%3;
+        if(id===0){ var ii=4+Math.floor(rnd()*7); I.set(ii); var F=Math.round(jm.value*(.35+.3*rnd())); return {id:0,F:F,txt:"compétiteur à "+ii+" mmol/L : règle C pour un flux facilité de "+F+" µmol/min (± 3 %)"}; }
+        if(id===1) return {id:1,txt:"trouve la concentration C où diffusion simple et transporteur donnent le même flux (± 3 %)"};
+        return {id:2,txt:"place C au demi-flux maximal (Jmax/2) : tu lis alors Km apparent (± 2 %)"}; },
+      function(d){ var m=M(); if(d.id===0) return {ok:Math.abs(m.jf-d.F)<=0.03*d.F};
+        if(d.id===1) return {ok:C.value>0&&m.jd>0&&Math.abs(m.jd-m.jf)<=0.03*m.jf};
+        return {ok:Math.abs(m.jf-jm.value/2)<=0.02*jm.value/2}; });
+    c.pointer(function(tp,p){ if(!ax) return; if(tp==="down") drag=ax.has(p,8);
+      if((tp==="down"||tp==="drag")&&drag){ C.set(Math.round(Math.max(0,Math.min(20,ax.ix(p.x)))*2)/2); k.redraw(); } if(tp==="up") drag=false; });
+    function carrier(x,y,s,w,h,load){
+      var ctx=c.ctx, gt=8*(1-s)+2, gb=2+8*s;
+      [-1,1].forEach(function(sg){ ctx.save(); ctx.beginPath(); ctx.moveTo(x+sg*gt/2,y-h/2); ctx.lineTo(x+sg*w/2,y-h/2+6); ctx.lineTo(x+sg*w/2,y+h/2-6); ctx.lineTo(x+sg*gb/2,y+h/2); ctx.closePath();
+        var g=ctx.createLinearGradient(x-w/2,0,x+w/2,0); g.addColorStop(0,"#8f7bd8"); g.addColorStop(1,"#5b43b0"); ctx.fillStyle=g; ctx.fill(); ctx.strokeStyle="#3f2d86"; ctx.lineWidth=1.2; ctx.stroke(); ctx.restore(); });
+      if(load) B.ball(c,x,y-h*.28+s*h*.56,5.5,load==="s"?P.green:P.red);
+    }
+    function frame(dt){
+      t+=dt; var ctx=c.ctx, W=c.W, L=B.split(c,.5), D=L.d, m=M();
+      c.clear(); B.bg(c,"#fbfdff","#eef3f9");
+      var top=D.y+40, my=top+(D.h-40)*.5, mx0=D.x+8, mx1=D.x+D.w-8, ep=30;
+      ctx.fillStyle="rgba(168,210,240,.25)"; ctx.fillRect(mx0,top,mx1-mx0,my-ep/2-top); ctx.fillStyle="rgba(190,230,205,.28)"; ctx.fillRect(mx0,my+ep/2,mx1-mx0,D.y+D.h-8-my-ep/2);
+      S.draw.text(c,"extérieur",mx0+6,top+10,{size:10.5,color:P.acc,align:"left"}); S.draw.text(c,"cytoplasme",mx0+6,D.y+D.h-18,{size:10.5,color:P.green,align:"left"});
+      var nC=car.length, gap=(mx1-mx0)/nC, cw=24, skips=car.map(function(_,i){ var x=mx0+gap*(i+.5); return [x-cw/2-2,x+cw/2+2]; });
+      B.membrane(c,mx0,mx1,my,{ep:ep,step:12,skip:skips});
+      /* transporteurs : cycle lier → basculer → libérer → revenir (durée visuelle ∝ 1/Jmax) */
+      var cyc=Math.max(.35,1.6*100/jm.value);
+      car.forEach(function(r,i){ var x=mx0+gap*(i+.5); r.tm+=dt;
+        if(r.st==="vide"&&r.tm>cyc*.25){ r.tm=0; var u=rnd(); if(u<m.ths){ r.st="aller"; r.load="s"; } else if(u<m.ths+m.thi){ r.st="bloque"; r.load="i"; } }
+        else if(r.st==="aller"){ r.s=Math.min(1,r.tm/(cyc*.35)); if(r.s>=1){ inside.push({x:x,y:my+ep/2+6,vy:12+rnd()*10,vx:(rnd()-.5)*14,a:1}); cnt.f++; r.load=null; r.st="retour"; r.tm=0; } }
+        else if(r.st==="retour"){ r.s=Math.max(0,1-r.tm/(cyc*.35)); if(r.s<=0){ r.st="vide"; r.tm=0; } }
+        else if(r.st==="bloque"&&r.tm>cyc*.9){ r.st="vide"; r.load=null; r.tm=0; }
+        carrier(x,my,r.s,cw,ep+12,r.load); });
+      /* diffusion simple à travers la bicouche */
+      if(rnd()<dt*kd.value*C.value/8) cross.push({x:mx0+rnd()*(mx1-mx0),u:0});
+      cross.forEach(function(q){ q.u+=dt*.7; B.ball(c,q.x,my-ep/2-8+q.u*(ep+16),3.6,"#6fbf8f"); if(q.u>=1){ inside.push({x:q.x,y:my+ep/2+8,vy:10,vx:(rnd()-.5)*10,a:1}); cnt.d++; } });
+      cross=cross.filter(function(q){ return q.u<1; });
+      inside.forEach(function(q){ q.x+=q.vx*dt; q.y+=q.vy*dt; q.a-=dt*.35; }); inside=inside.filter(function(q){ return q.a>0&&q.y<D.y+D.h-10; });
+      inside.forEach(function(q){ ctx.save(); ctx.globalAlpha=Math.max(0,q.a); B.ball(c,q.x,q.y,4,P.green); ctx.restore(); });
+      /* molécules extérieures : substrat (vert) et compétiteur (rouge) */
+      var nS=Math.round(C.value/20*34), nI=Math.round(I.value/20*24);
+      for(var j=0;j<nS+nI&&j<out.length;j++){ var o=out[j], x=mx0+8+((o.x+.02*Math.sin(t+o.ph))%1+1)%1*(mx1-mx0-16), y=top+22+((o.y+.03*Math.cos(t*.8+o.ph))%1+1)%1*(my-ep/2-top-34);
+        B.ball(c,x,y,j<nS?4.6:4.2,j<nS?P.green:P.red); }
+      if(t-cnt.t0>5){ cnt.F=cnt.f/(t-cnt.t0)*60; cnt.Dd=cnt.d/(t-cnt.t0)*60; cnt.f=0; cnt.d=0; cnt.t0=t; }
+      S.draw.label(c,"occupés : "+S.fmt(m.ths*100,0)+" % (substrat) · "+S.fmt(m.thi*100,0)+" % (compétiteur)",mx0+(mx1-mx0)/2,my-ep/2-12,{color:P.violet,size:10});
+      /* graphique J(C) */
+      ax=B.axes(c,L.g,{frame:true,t:24,b:36,l:42,x0:0,x1:20,y0:0,y1:210,stepX:5,stepY:50,xl:"C extérieure (mmol/L)",yl:"flux (µmol/min)"});
+      S.draw.fn(c,ax,function(x){ return kd.value*x; },"#6fbf8f",2,[5,4]);
+      S.draw.fn(c,ax,function(x){ return jm.value*x/(km.value+x); },P.violet,I.value>0?1.4:2.6,I.value>0?[3,3]:null);
+      if(I.value>0) S.draw.fn(c,ax,function(x){ return jm.value*x/(m.kma+x); },P.red,2.6);
+      S.draw.line(c,ax.L,ax.Y(jm.value),ax.R,ax.Y(jm.value),P.ink,1,[3,4]); S.draw.text(c,"Jmax",ax.R-4,ax.Y(jm.value)-8,{size:10,color:P.ink,align:"right",halo:true});
+      S.draw.line(c,ax.X(m.kma),ax.B,ax.X(m.kma),ax.Y(jm.value/2),P.amber,1.2,[4,3]); S.draw.text(c,"Km'",ax.X(m.kma),ax.B-8,{size:9.5,color:P.amber,halo:true});
+      S.draw.dot(c,ax.X(C.value),ax.Y(m.jd),5,"#3f9d6a"); S.draw.dot(c,ax.X(C.value),ax.Y(m.jf),8,I.value>0?P.red:P.violet);
+      S.draw.legend(c,[[P.violet,"transporteur"],[P.red,"avec compétiteur"],["#6fbf8f","diffusion simple",1]],ax.R-4,ax.T+18,{align:"right"});
+      var d=df.banner(c,13);
+      ro.set(0,S.fmt(m.kma,2)+" mmol/L"); ro.set(1,S.fmt(m.jf,1)+" µmol/min"); ro.set(2,S.fmt(m.jd,1)+" µmol/min"); ro.set(3,S.fmt(m.ths*100,0)+" %");
+      nt.set((d&&d.ok?"<b>Défi réussi.</b> ":"")+"Chaque transporteur bascule une molécule à la fois : quand presque tous sont occupés, ajouter du substrat n'accélère plus rien. Le compétiteur (rouge) occupe des transporteurs sans être transporté. Animation : vitesses de cycle ralenties ; occupations exactes (C/Km)/(1 + C/Km + I/Ki).",d&&d.ok?"ok":"ok");
+    }
+    k.draw(function(){ frame(0); });
+    var lp=k.loop(function(dt){ frame(dt); }); lp.play();
   }
 });
 
 SFA.sim({
   id:"ub-c03-nernst", ch:"c03", tag:"Potentiel d'équilibre",
   titre:"Équation de Nernst : le potentiel d'équilibre de K⁺, Na⁺, Cl⁻, Ca²⁺",
-  resume:"E = (RT/zF)·ln([X]ₒ/[X]ᵢ) : lis E pour chaque ion et le sens du flux net à un Vm donné.",
-  but:"Choisis l'ion, modifie les concentrations (facteurs) et la température. Place le potentiel membranaire Vm et lis la force motrice.",
-  aRetenir:"À 37 °C : E = (61,5 mV / z)·log₁₀([X]ₒ/[X]ᵢ). Valeurs usuelles (neurone) : E(K⁺) ≈ −89 mV, E(Na⁺) ≈ +67 mV, E(Cl⁻) ≈ −64 mV, E(Ca²⁺) ≈ +132 mV. Un ion circule si Vm ≠ E : le flux net est sortant si z(Vm − E) > 0, entrant si z(Vm − E) < 0. Pont : chimie ch. 14, pile de concentration (Nernst).",
-  piege:"Le signe de E dépend de z : pour un anion, il faut inverser le rapport (ou changer le signe). À l'équilibre électrochimique (Vm = E), il y a des flux, mais ils sont égaux et opposés (flux net nul).",
+  resume:"Ouvre des canaux sélectifs : les ions fuient selon leur gradient, des charges s'accumulent sur la membrane et le voltmètre se fige à E = (RT/zF)·ln([X]ₒ/[X]ᵢ).",
+  but:"Choisis l'ion et ses concentrations (curseurs ou point du graphique). En mode « libre », regarde le flux net charger la membrane jusqu'à l'équilibre ; en mode « Vm imposé », règle Vm et compare les flux sortant et entrant.",
+  aRetenir:"À 37 °C : E = (61,5 mV / z)·log₁₀([X]ₒ/[X]ᵢ). Valeurs usuelles (neurone) : E(K⁺) ≈ −89 mV, E(Na⁺) ≈ +67 mV, E(Cl⁻) ≈ −64 mV, E(Ca²⁺) ≈ +132 mV. À l'équilibre, la force chimique (gradient) et la force électrique (Vm) se compensent. Un ion circule si Vm ≠ E : le flux net est sortant si z(Vm − E) > 0, entrant si z(Vm − E) < 0. Pont : chimie ch. 14, pile de concentration (Nernst).",
+  piege:"Le signe de E dépend de z : pour un anion, il faut inverser le rapport (ou changer le signe). À l'équilibre électrochimique (Vm = E), il y a des flux, mais ils sont égaux et opposés (flux net nul). Les concentrations ne changent pratiquement pas : il suffit d'un tout petit nombre d'ions pour charger la membrane.",
   build:function(k,S){
-    var P=S.draw.palette, c=k.canvas(330);
-    var ION={K:["K⁺",1,140,5],Na:["Na⁺",1,12,145],Cl:["Cl⁻",-1,10,110],Ca:["Ca²⁺",2,1e-4,2]};
-    var ion=k.seg("Ion",[["K","K⁺"],["Na","Na⁺"],["Cl","Cl⁻"],["Ca","Ca²⁺"]],"K");
-    var fo=k.slider("Facteur sur [X] extérieur",0.1,10,0.1,1,"×");
-    var fi=k.slider("Facteur sur [X] intérieur",0.1,10,0.1,1,"×");
+    var P=S.draw.palette, B=S.bio, c=k.canvas(600);
+    var ION={K:["K⁺",1,140,5,"#c26a0c"],Na:["Na⁺",1,12,145,"#2f7fd1"],Cl:["Cl⁻",-1,10,110,"#24775a"],Ca:["Ca²⁺",2,1e-4,2,"#6236c4"]};
+    var ion=k.seg("Ion",[["K","K⁺"],["Na","Na⁺"],["Cl","Cl⁻"],["Ca","Ca²⁺"]],"K",function(){ V=0; });
+    var md=k.seg("Potentiel de membrane",[["free","Libre (seul cet ion passe)"],["clamp","Vm imposé"]],"free",function(){ if(md.value==="free") V=0; });
+    var fo=k.slider("Facteur sur [X] extérieur",0.1,10,0.1,1,"×",function(){ if(md.value==="free") V=0; });
+    var fi=k.slider("Facteur sur [X] intérieur",0.1,10,0.1,1,"×",function(){ if(md.value==="free") V=0; });
     var T=k.slider("Température",20,42,1,37,"°C");
-    var vm=k.slider("Potentiel membranaire Vm",-100,60,1,-70,"mV");
-    var ro=k.readouts(["[X] intérieur / extérieur (mmol/L)","E (mV)","Force motrice Vm − E","Flux net de l'ion"]);
-    k.draw(function(){
-      c.clear();
-      var d=ION[ion.value], z=d[1], Ci=d[2]*fi.value, Co=d[3]*fo.value, Tk=T.value+273.15, F=96485, R=8.314;
-      var E=1000*R*Tk/(z*F)*Math.log(Co/Ci), unit=1000*R*Tk/F*Math.LN10;
-      var ax=S.draw.axes(c,{t:28,x0:-3,x1:3,y0:-150,y1:150,stepX:1,stepY:50,xl:"log₁₀([X]ₒ/[X]ᵢ)",yl:"E (mV)"});
-      [[1,P.acc,"z = +1"],[2,P.violet,"z = +2"],[-1,P.teal,"z = −1"]].forEach(function(o){ S.draw.fn(c,ax,function(x){return unit/o[0]*x;},o[1],o[0]===z?2.8:1.4); S.draw.text(c,o[2],ax.X(2.3),ax.Y(unit/o[0]*2.3)-(o[0]===-1?-10:10),{size:10,color:o[1]}); });
-      var lx=Math.log10(Co/Ci); S.draw.dot(c,ax.X(Math.max(-3,Math.min(3,lx))),ax.Y(Math.max(-150,Math.min(150,E))),7,P.red);
-      S.draw.line(c,ax.L,ax.Y(vm.value),ax.R,ax.Y(vm.value),P.amber,1.6,[6,4]); S.draw.text(c,"Vm",ax.L+4,ax.Y(vm.value)-8,{size:11,color:P.amber,align:"left"});
-      var fm=vm.value-E, dir=Math.abs(fm)<0.5?"nul (équilibre)":(z*fm>0?"sortant":"entrant");
-      ro.set(0,S.sci(Ci,2)+" / "+S.sci(Co,2)); ro.set(1,S.fmt(E,1)+" mV"); ro.set(2,S.fmt(fm,1)+" mV"); ro.set(3,d[0]+" : "+dir);
-    });
-    k.note("Concentrations de départ typiques de cellule excitable de mammifère (en mmol/L) : K⁺ 140 / 5 ; Na⁺ 12 / 145 ; Cl⁻ 10 / 110 ; Ca²⁺ libre 0,0001 / 2. Elles varient selon le type cellulaire.","warn");
+    var vm=k.slider("Vm imposé (mode « Vm imposé »)",-100,60,1,-70,"mV");
+    var ro=k.readouts(["[X] intérieur / extérieur (mmol/L)","E (mV)","Vm − E (mV)","Flux net"]);
+    var nt=k.note("","");
+    var V=0, t=0, ax=null, drag=false, rnd=B.rng(13), ions=[], fly=[], acc={o:0,i:0};
+    for(var q=0;q<60;q++) ions.push({x:rnd(),y:rnd(),ph:rnd()*6.28});
+    function st(){ var d=ION[ion.value], z=d[1], Ci=d[2]*fi.value, Co=d[3]*fo.value, Tk=T.value+273.15, RTF=8.314*Tk/96485*1000; return {d:d,z:z,Ci:Ci,Co:Co,RTF:RTF,E:RTF/z*Math.log(Co/Ci)}; }
+    var df=B.defi(k,function(n){ var id=n%3;
+        if(id===0){ var s=st(), tg=Math.round(s.RTF/s.z*Math.log(s.d[3]*(0.25+rnd()*3.5)/s.Ci)/5)*5; if(Math.abs(tg-s.E)<6) tg+=(s.z>0?10:-10); return {id:0,E:tg,ion:ion.value,txt:"règle la concentration de "+s.d[0]+" pour que E("+s.d[0]+") = "+(tg>0?"+":"")+S.fmt(tg,0)+" mV (± 2 mV)"}; }
+        if(id===1) return {id:1,txt:"Vm imposé : trouve le potentiel où le flux net de Na⁺ s'annule (± 1 mV)"};
+        return {id:2,txt:"Vm imposé : fais ENTRER le K⁺ (flux net entrant) avec les concentrations normales"}; },
+      function(d){ var s=st(), cl=md.value==="clamp";
+        if(d.id===0) return {ok:ion.value===d.ion&&Math.abs(s.E-d.E)<=2};
+        if(d.id===1) return {ok:cl&&ion.value==="Na"&&Math.abs(vm.value-s.E)<=1};
+        return {ok:cl&&ion.value==="K"&&fo.value===1&&fi.value===1&&vm.value<s.E-0.5}; });
+    c.pointer(function(tp,p){ if(!ax) return; if(tp==="down") drag=ax.has(p,8);
+      if((tp==="down"||tp==="drag")&&drag){ var x=Math.max(-1,Math.min(1,ax.ix(p.x))); fo.set(Math.max(0.1,Math.min(10,Math.round(Math.pow(10,x)*10)/10))); if(md.value==="free") V=0; k.redraw(); } if(tp==="up") drag=false; });
+    function channel(x,y,h,col,open){ var ctx=c.ctx; [-1,1].forEach(function(sg){ ctx.save(); S.draw.rrect(c,x+sg*(open?7:4)-(sg<0?12:0),y-h/2,12,h,5); var g=ctx.createLinearGradient(x-14,0,x+14,0); g.addColorStop(0,B.mix(col,.25)); g.addColorStop(1,B.mix(col,-.25)); ctx.fillStyle=g; ctx.fill(); ctx.strokeStyle=B.mix(col,-.45); ctx.lineWidth=1.1; ctx.stroke(); ctx.restore(); }); }
+    function frame(dt){
+      t+=dt; var ctx=c.ctx, W=c.W, L=B.split(c,.55), D=L.d, s=st(), z=s.z, col=s.d[4];
+      if(md.value==="clamp") V=vm.value; else V+=(s.E-V)*Math.min(1,dt/0.9);
+      var u=V/s.RTF, rO=s.Ci*Math.exp(z*u/2), rI=s.Co*Math.exp(-z*u/2), sc=3.2/Math.max(rO,rI);
+      if(rnd()<dt*rO*sc) fly.push({u:0,dir:1,x:rnd()<.5?0:1}); if(rnd()<dt*rI*sc) fly.push({u:0,dir:-1,x:rnd()<.5?0:1});
+      c.clear(); B.bg(c,"#fbfdff","#eef3f9");
+      var top=D.y+44, my=top+(D.h-44)*.48, mx0=D.x+8, mx1=D.x+D.w-(L.wide?110:8), ep=26, mw=mx1-mx0;
+      ctx.fillStyle="rgba(168,210,240,.25)"; ctx.fillRect(mx0,top,mw,my-ep/2-top); ctx.fillStyle="rgba(240,220,190,.3)"; ctx.fillRect(mx0,my+ep/2,mw,D.y+D.h-6-my-ep/2);
+      S.draw.text(c,"extérieur · "+S.fmt(s.Co,s.Co<1?4:1)+" mmol/L",mx0+6,top+10,{size:10.5,color:P.acc,align:"left"});
+      S.draw.text(c,"intérieur · "+(s.Ci<0.01?S.bio.sci(s.Ci,1):S.fmt(s.Ci,1))+" mmol/L",mx0+6,D.y+D.h-16,{size:10.5,color:"#a2650c",align:"left"});
+      var chx=[mx0+mw*.3,mx0+mw*.62]; B.membrane(c,mx0,mx1,my,{ep:ep,step:12,skip:chx.map(function(x){ return [x-22,x+22]; })});
+      chx.forEach(function(x){ channel(x,my,ep+14,col,true); });
+      /* charges accumulées de part et d'autre (∝ |Vm|) */
+      var nq=Math.min(14,Math.round(Math.abs(V)/9)); for(var j=0;j<nq;j++){ var xx=mx0+12+(j+.5)*(mw-24)/nq; if(chx.some(function(x){ return Math.abs(x-xx)<26; })) continue;
+        S.draw.text(c,V<0?"+":"−",xx,my-ep/2-8,{size:13,color:V<0?P.red:P.acc}); S.draw.text(c,V<0?"−":"+",xx,my+ep/2+9,{size:13,color:V<0?P.acc:P.red}); }
+      /* ions libres : nombre ∝ concentration (le plus concentré = 24) */
+      var mxC=Math.max(s.Ci,s.Co), nO=Math.max(1,Math.round(24*s.Co/mxC)), nI=Math.round(24*s.Ci/mxC), r=z===2?6.6:6;
+      for(var i=0;i<nO+nI&&i<ions.length;i++){ var o=ions[i], outside=i<nO, x=mx0+10+((o.x+.025*Math.sin(t*.9+o.ph))%1+1)%1*(mw-20), y0=outside?top+24:my+ep/2+22, hh=outside?my-ep/2-top-40:D.y+D.h-6-my-ep/2-44;
+        B.ion(c,x,y0+((o.y+.03*Math.cos(t*.7+o.ph))%1+1)%1*hh,r,col,s.d[0]); }
+      if(nI===0) S.draw.text(c,"(presque aucun "+s.d[0]+" libre à l'intérieur)",mx0+mw/2,my+ep/2+34,{size:10,color:P.grey});
+      fly.forEach(function(f){ f.u+=dt*1.3; var x=chx[f.x], y=f.dir>0?my+ep/2+18-f.u*(ep+36):my-ep/2-18+f.u*(ep+36); B.ion(c,x,y,r,col,s.d[0]); if(f.u>=1){ if(f.dir>0) acc.o++; else acc.i++; } });
+      fly=fly.filter(function(f){ return f.u<1; });
+      /* forces sur l'ion au niveau du canal */
+      var ax0=chx[1]+34, sl=function(mv){ return Math.max(-46,Math.min(46,mv*.35)); };
+      if(ax0<mx1-30){ var aC=sl(Math.log(s.Ci/s.Co)*14/.35), aE=sl(z*V/s.RTF*14/.35);
+        S.draw.arrow(c,ax0,my,ax0,my-aC,P.teal,2.6); S.draw.arrow(c,ax0+20,my,ax0+20,my-aE,P.red,2.6);
+        S.draw.text(c,"chim.",ax0,my-aC+(aC>=0?-9:9),{size:8.5,color:P.teal,halo:true}); S.draw.text(c,"élec.",ax0+20,my-aE+(aE>=0?-9:9),{size:8.5,color:P.red,halo:true}); }
+      /* voltmètre */
+      var vx=L.wide?D.x+D.w-58:mx1-58, vy=top+52;
+      B.dial(c,vx,vy,34,V,-120,140,{unit:"mV",ticks:[-100,0,100],label:"Vm (int. − ext.)",fmt:function(v){ return (v>0?"+":"")+S.fmt(v,0); }});
+      /* graphique : E en fonction de [X] extérieur (échelle log) */
+      var base=s.d[3];
+      ax=B.axes(c,L.g,{frame:true,t:24,b:36,l:42,x0:-1,x1:1,y0:-200,y1:200,stepX:.5,stepY:50,xl:"[X] extérieur (mmol/L, échelle log)",yl:"E (mV)",fx:function(v){ var x=base*Math.pow(10,v); return x<0.1?S.fmt(x,2):x<10?S.fmt(x,1):S.fmt(x,0); }});
+      S.draw.line(c,ax.L,ax.Y(0),ax.R,ax.Y(0),"#c8d1de",1);
+      S.draw.fn(c,ax,function(x){ return s.RTF/z*Math.log(base*Math.pow(10,x)/s.Ci); },col,2.6);
+      S.draw.line(c,ax.L,ax.cy(V),ax.R,ax.cy(V),P.red,1.4,[6,4]); S.draw.text(c,"Vm",ax.L+6,ax.cy(V)-8,{size:10,color:P.red,align:"left",halo:true});
+      var lx=Math.log10(fo.value); S.draw.dot(c,ax.X(lx),ax.cy(s.E),8,col); S.draw.label(c,"E = "+(s.E>0?"+":"")+S.fmt(s.E,1)+" mV",Math.min(ax.R-60,ax.X(lx)+10),Math.max(ax.T+10,Math.min(ax.B-10,ax.cy(s.E)-14)),{color:col,align:"left",size:10.5});
+      var fm=V-s.E, dir=Math.abs(fm)<0.5?"nul (équilibre)":(z*fm>0?"sortant":"entrant");
+      var d=df.banner(c,13);
+      ro.set(0,(s.Ci<0.01?S.bio.sci(s.Ci,1):S.fmt(s.Ci,1))+" / "+S.fmt(s.Co,s.Co<1?3:1)); ro.set(1,(s.E>0?"+":"")+S.fmt(s.E,1)+" mV"); ro.set(2,(fm>0?"+":"")+S.fmt(fm,1)+" mV"); ro.set(3,s.d[0]+" : "+dir);
+      nt.set((d&&d.ok?"<b>Défi réussi.</b> ":"")+"Flèches à droite du canal : force chimique (gradient, bleu-vert) et force électrique (Vm, rouge) sur l'ion ; à l'équilibre elles s'annulent. Rapport flux sortant / flux entrant = exp[zF(Vm − E)/RT] = "+S.fmt(Math.exp(z*(V-s.E)/s.RTF),Math.abs(V-s.E)<50?2:0)+". Concentrations de départ typiques (mmol/L, int./ext.) : K⁺ 140/5 ; Na⁺ 12/145 ; Cl⁻ 10/110 ; Ca²⁺ libre 0,0001/2.",d&&d.ok?"ok":"ok");
+    }
+    k.draw(function(){ frame(0); });
+    var lp=k.loop(function(dt){ frame(dt); }); lp.play();
   }
 });
 
 SFA.sim({
   id:"ub-c03-goldman", ch:"c03", tag:"Potentiel de repos",
   titre:"Goldman : le potentiel de repos selon les perméabilités ioniques",
-  resume:"Vm tend vers le potentiel d'équilibre de l'ion le plus perméant. Hyperkaliémie et pic du potentiel d'action.",
-  but:"Choisis la perméabilité relative au sodium (pNa/pK) et au chlorure, puis fais varier [K⁺] extérieur. Compare avec E(K⁺).",
+  resume:"Un tir à la corde entre E(K⁺), E(Na⁺) et E(Cl⁻) : Vm se place là où les courants ioniques s'annulent. Hyperkaliémie et pic du potentiel d'action.",
+  but:"Ouvre plus ou moins les canaux Na⁺ et Cl⁻ (perméabilités relatives à K⁺) et change [K⁺] extérieur (curseur ou point du graphique). Les ions traversent la membrane : au potentiel de repos, la sortie de K⁺ compense exactement l'entrée de Na⁺.",
   aRetenir:"GHK à 37 °C : Vm = 61,5·log₁₀[(pK·Kₒ + pNa·Naₒ + pCl·Clᵢ) / (pK·Kᵢ + pNa·Naᵢ + pCl·Clₒ)]. Au repos pK ≫ pNa : Vm ≈ −69 mV, proche de E(K⁺) = −89 mV mais plus positif. Quand pNa/pK passe à ≈ 20 (canaux Na⁺ ouverts), Vm vire vers E(Na⁺) (≈ +67 mV) : phase ascendante du potentiel d'action. Hyperkaliémie : Kₒ augmente, E(K⁺) devient moins négatif : la cellule se dépolarise.",
-  piege:"Vm au repos n'est PAS égal à E(K⁺) : un peu de Na⁺ entre en permanence (pNa/pK ≈ 0,04), compensé par la pompe Na⁺/K⁺. Le potentiel de repos n'est pas un équilibre, c'est un état stationnaire.",
+  piege:"Vm au repos n'est PAS égal à E(K⁺) : un peu de Na⁺ entre en permanence (pNa/pK ≈ 0,04), compensé par la pompe Na⁺/K⁺. Le potentiel de repos n'est pas un équilibre, c'est un état stationnaire : courant net nul, mais flux de K⁺ et de Na⁺ non nuls.",
   build:function(k,S){
-    var P=S.draw.palette, c=k.canvas(330);
-    var pn=k.select("Perméabilité relative pNa/pK",[[0.01,"0,01 (très faible)"],[0.04,"0,04 (repos)"],[0.2,"0,2 (dépolarisé)"],[1,"1"],[20,"20 (pic du potentiel d'action)"]],0.04);
+    var P=S.draw.palette, B=S.bio, c=k.canvas(610);
+    var pn=k.slider("log₁₀(pNa/pK) : ouverture des canaux Na⁺",-2,1.5,0.05,-1.4,"");
     var pcl=k.slider("pCl/pK",0,1,0.05,0,"");
     var ko=k.slider("[K⁺] extérieur",1,40,0.5,5,"mmol/L");
-    var ro=k.readouts(["Vm (mV)","E(K⁺) (mV)","E(Na⁺) (mV)","Vm − E(K⁺)"]);
-    var Ki=140,Nai=12,Nao=145,Cli=10,Clo=110, U=61.54;
-    function vmf(K,pNa,pCl){ return U*Math.log10((1*K+pNa*Nao+pCl*Cli)/(1*Ki+pNa*Nai+pCl*Clo)); }
-    k.draw(function(){
-      c.clear();
-      var pN=parseFloat(pn.value), pC=pcl.value;
-      var ax=S.draw.axes(c,{t:28,x0:1,x1:40,y0:-140,y1:80,stepX:5,stepY:20,xl:"[K⁺] extérieur (mmol/L)",yl:"Vm (mV)"});
-      S.draw.fn(c,ax,function(x){return U*Math.log10(x/Ki);},P.grey,1.6,[5,4]);
-      S.draw.fn(c,ax,function(x){return vmf(x,pN,pC);},P.acc,2.8);
-      S.draw.text(c,"tirets : E(K⁺) seul",ax.X(25),ax.Y(U*Math.log10(25/Ki))+14,{size:10,color:P.grey});
-      var v=vmf(ko.value,pN,pC); S.draw.dot(c,ax.X(ko.value),ax.Y(v),7,P.red);
-      S.draw.text(c,S.fmt(v,1)+" mV",ax.X(ko.value)+10,ax.Y(v)-12,{size:12,color:P.red,align:"left"});
-      var EK=U*Math.log10(ko.value/Ki), ENa=U*Math.log10(Nao/Nai);
-      ro.set(0,S.fmt(v,1)); ro.set(1,S.fmt(EK,1)); ro.set(2,S.fmt(ENa,1)); ro.set(3,S.fmt(v-EK,1)+" mV");
-    });
-    k.note("Concentrations utilisées (mmol/L) : K⁺ᵢ = 140 ; Na⁺ᵢ = 12 ; Na⁺ₒ = 145 ; Cl⁻ᵢ = 10 ; Cl⁻ₒ = 110. Modèle à champ constant (GHK) ; 61,54 mV = 2,303·RT/F à 37 °C.","warn");
+    var ro=k.readouts(["pNa/pK","Vm (mV)","E(K⁺) / E(Na⁺) (mV)","Vm − E(K⁺)"]);
+    var nt=k.note("","");
+    var Ki=140,Nai=12,Nao=145,Cli=10,Clo=110, U=61.54, RTF=U/Math.LN10, t=0, ax=null, drag=false, rnd=B.rng(17), fly=[], Vd=-70;
+    var CK="#c26a0c", CN="#2f7fd1", CC="#24775a";
+    function vmf(K,pNa,pCl){ return U*Math.log10((K+pNa*Nao+pCl*Cli)/(Ki+pNa*Nai+pCl*Clo)); }
+    function ghk(p,z,ci,co,V){ var u=z*V/RTF; if(Math.abs(u)<1e-6) return p*z*(ci-co); return p*z*u*(ci-co*Math.exp(-u))/(1-Math.exp(-u)); }
+    var df=B.defi(k,function(n){ return [{id:0,txt:"hyperkaliémie : quelle [K⁺] extérieure dépolarise la cellule à −55 mV (seuil) ? (± 0,7 mV)"},
+        {id:1,txt:"pic du potentiel d'action : règle pNa/pK pour atteindre Vm = +30 mV (± 2 mV)"},
+        {id:2,txt:"retrouve le repos : Vm = −70 mV (± 1) avec [K⁺]ₒ = 5 mmol/L et sans Cl⁻"}][n%3]; },
+      function(d){ var V=vmf(ko.value,Math.pow(10,pn.value),pcl.value);
+        if(d.id===0) return {ok:Math.abs(V+55)<=0.7}; if(d.id===1) return {ok:Math.abs(V-30)<=2};
+        return {ok:ko.value===5&&pcl.value===0&&Math.abs(V+70)<=1}; });
+    k.button("Repos",function(){ pn.set(-1.4); pcl.set(0); ko.set(5); });
+    k.button("Pic du PA",function(){ pn.set(1.3); });
+    c.pointer(function(tp,p){ if(!ax) return; if(tp==="down") drag=ax.has(p,8);
+      if((tp==="down"||tp==="drag")&&drag){ ko.set(Math.round(Math.max(1,Math.min(40,ax.ix(p.x)))*2)/2); k.redraw(); } if(tp==="up") drag=false; });
+    function channel(x,y,h,col,open,lab){ var ctx=c.ctx, g=3+open*9; [-1,1].forEach(function(sg){ ctx.save(); S.draw.rrect(c,sg<0?x-g/2-11:x+g/2-1,y-h/2,12,h,5); var gr=ctx.createLinearGradient(x-14,0,x+14,0); gr.addColorStop(0,B.mix(col,.3)); gr.addColorStop(1,B.mix(col,-.25)); ctx.fillStyle=gr; ctx.fill(); ctx.strokeStyle=B.mix(col,-.45); ctx.lineWidth=1; ctx.stroke(); ctx.restore(); });
+      S.draw.text(c,lab,x,y+h/2+9,{size:9,color:col,halo:true}); }
+    function frame(dt){
+      t+=dt; var ctx=c.ctx, W=c.W, L=B.split(c,.55), D=L.d, pN=Math.pow(10,pn.value), pC=pcl.value, V=vmf(ko.value,pN,pC);
+      Vd+=(V-Vd)*Math.min(1,dt*3+(dt===0?1:0));
+      var EK=U*Math.log10(ko.value/Ki), ENa=U*Math.log10(Nao/Nai), ECl=-U*Math.log10(Clo/Cli);
+      var iK=ghk(1,1,Ki,ko.value,V), iN=ghk(pN,1,Nai,Nao,V), iC=ghk(pC,-1,Cli,Clo,V), mx=Math.max(Math.abs(iK),Math.abs(iN),Math.abs(iC),1e-9);
+      c.clear(); B.bg(c,"#fbfdff","#eef3f9");
+      var top=D.y+44, my=top+(D.h-44)*.46, sw=L.wide?D.w*.66:Math.max(200,W-122), mx0=D.x+8, mx1=mx0+sw, ep=26, mw=sw;
+      ctx.fillStyle="rgba(168,210,240,.25)"; ctx.fillRect(mx0,top,mw,my-ep/2-top); ctx.fillStyle="rgba(240,220,190,.3)"; ctx.fillRect(mx0,my+ep/2,mw,D.y+D.h-8-my-ep/2);
+      S.draw.text(c,"extérieur : Na⁺ 145 · Cl⁻ 110 · K⁺ "+S.fmt(ko.value,1),mx0+6,top+10,{size:10,color:P.acc,align:"left"});
+      S.draw.text(c,"intérieur : K⁺ 140 · Na⁺ 12 · Cl⁻ 10",mx0+6,D.y+D.h-18,{size:10,color:"#a2650c",align:"left"});
+      var ch=[[mx0+mw*.18,CK,"K⁺",1,iK],[mx0+mw*.43,CN,"Na⁺",pN,iN],[mx0+mw*.66,CC,"Cl⁻",pC,iC]], pumpX=mx0+mw*.88;
+      B.membrane(c,mx0,mx1,my,{ep:ep,step:12,skip:ch.map(function(o){ return [o[0]-22,o[0]+22]; }).concat([[pumpX-20,pumpX+20]])});
+      ch.forEach(function(o){ var open=Math.max(0,Math.min(1,(Math.log10(Math.max(o[3],1e-3))+2)/3.5)); channel(o[0],my,ep+14,o[1],o[3]>0?open:0,o[2]);
+        /* flux : courant de charge > 0 = sortie de charges + ; pour Cl⁻ le sens des ions est inversé */
+        var ionOut=o[4]*(o[2]==="Cl⁻"?-1:1), rate=Math.abs(o[4])/mx*3.5; if(o[3]>0&&rnd()<dt*rate) fly.push({x:o[0],c:o[1],l:o[2],dir:ionOut>0?1:-1,u:0}); });
+      /* pompe Na⁺/K⁺ (3 Na⁺ dehors, 2 K⁺ dedans) */
+      ctx.save(); S.draw.rrect(c,pumpX-17,my-ep/2-9,34,ep+18,9); var gp=ctx.createLinearGradient(0,my-20,0,my+20); gp.addColorStop(0,"#b9a6ef"); gp.addColorStop(1,"#6a4fc4"); ctx.fillStyle=gp; ctx.fill(); ctx.strokeStyle="#3f2d86"; ctx.stroke(); ctx.restore();
+      S.draw.text(c,"pompe",pumpX,my,{size:8.5,color:"#fff"}); var pu=(t*.6)%1; B.ion(c,pumpX-7,my+ep/2+14-pu*(ep+30),4,CN,""); B.ion(c,pumpX+7,my-ep/2-14+pu*(ep+30),4,CK,"");
+      fly.forEach(function(f){ f.u+=dt*1.2; var y=f.dir>0?my+ep/2+20-f.u*(ep+40):my-ep/2-20+f.u*(ep+40); B.ion(c,f.x,y,6,f.c,f.l); });
+      fly=fly.filter(function(f){ return f.u<1; });
+      var nq=Math.min(10,Math.round(Math.abs(Vd)/10)); for(var j=0;j<nq;j++){ var xx=mx0+10+(j+.5)*(mw-20)/nq; if(ch.some(function(o){ return Math.abs(o[0]-xx)<24; })||Math.abs(pumpX-xx)<22) continue;
+        S.draw.text(c,Vd<0?"+":"−",xx,my-ep/2-7,{size:12,color:Vd<0?P.red:P.acc}); S.draw.text(c,Vd<0?"−":"+",xx,my+ep/2+8,{size:12,color:Vd<0?P.acc:P.red}); }
+      /* tir à la corde : échelle des potentiels */
+      var sx=mx1+(L.wide?60:58), y0=top+10, y1=D.y+D.h-28, Yv=function(v){ return y0+(80-v)/200*(y1-y0); };
+      S.draw.line(c,sx,y0,sx,y1,"#9aa6b6",3);
+      [[ENa,CN,"E(Na⁺)",pN],[EK,CK,"E(K⁺)",1],[ECl,CC,"E(Cl⁻)",pC]].forEach(function(o,i){ var y=Yv(Math.max(-120,Math.min(80,o[0]))), w=Math.max(.6,Math.min(7,2.4*Math.log10(1+o[3]*20)));
+        if(o[3]>0) S.draw.line(c,sx,Yv(Vd),sx-20-i*6,y,o[1],w);
+        S.draw.line(c,sx-6,y,sx+6,y,o[1],2.5); S.draw.text(c,o[2],sx+9,y,{size:9.5,color:o[1],align:"left",halo:true}); });
+      S.draw.dot(c,sx,Yv(Vd),8,P.red); S.draw.label(c,"Vm "+S.fmt(Vd,0),sx+(W-sx>70?36:-40),Yv(Vd)+(Math.abs(Vd-EK)<12?14:0),{color:P.red,size:10});
+      S.draw.text(c,"+80",sx-10,y0,{size:8.5,color:P.grey,align:"right"}); S.draw.text(c,"−120 mV",sx-10,y1,{size:8.5,color:P.grey,align:"right"});
+      /* graphique : Vm en fonction de [K⁺] extérieur */
+      ax=B.axes(c,L.g,{frame:true,t:24,b:36,l:44,x0:1,x1:40,y0:-140,y1:80,stepX:5,stepY:20,xl:"[K⁺] extérieur (mmol/L)",yl:"potentiel (mV)"});
+      S.draw.fn(c,ax,function(x){ return U*Math.log10(x/Ki); },CK,1.6,[5,4]);
+      S.draw.line(c,ax.L,ax.Y(ENa),ax.R,ax.Y(ENa),CN,1.2,[5,4]); S.draw.text(c,"E(Na⁺)",ax.R-4,ax.Y(ENa)-8,{size:9.5,color:CN,align:"right",halo:true});
+      S.draw.line(c,ax.L,ax.Y(-55),ax.R,ax.Y(-55),"rgba(192,50,29,.45)",1,[2,4]); S.draw.text(c,"seuil ≈ −55",ax.L+6,ax.Y(-55)-8,{size:9,color:P.red,align:"left",halo:true});
+      S.draw.fn(c,ax,function(x){ return vmf(x,pN,pC); },P.ink,2.8);
+      S.draw.text(c,"E(K⁺)",ax.X(32),ax.Y(U*Math.log10(32/Ki))+12,{size:9.5,color:CK,halo:true});
+      S.draw.dot(c,ax.X(ko.value),ax.Y(V),8,P.red); S.draw.label(c,S.fmt(V,1)+" mV",Math.min(ax.R-40,ax.X(ko.value)+12),ax.Y(V)-14,{color:P.red,align:"left",size:10.5});
+      var d=df.banner(c,13);
+      ro.set(0,pN<0.1?S.fmt(pN,3):S.fmt(pN,2)); ro.set(1,S.fmt(V,1)); ro.set(2,S.fmt(EK,1)+" / +"+S.fmt(ENa,1)); ro.set(3,(V-EK>0?"+":"")+S.fmt(V-EK,1)+" mV");
+      nt.set((d&&d.ok?"<b>Défi réussi.</b> ":"")+"Cordes : plus un ion est perméant, plus sa corde est épaisse et plus il tire Vm vers son potentiel d'équilibre. Ions animés : flux GHK de chaque ion à Vm (le courant total est nul). Concentrations fixes (mmol/L) : K⁺ᵢ 140 ; Na⁺ 12/145 ; Cl⁻ 10/110 ; 61,54 mV = 2,303·RT/F à 37 °C.",d&&d.ok?"ok":"ok");
+    }
+    k.draw(function(){ frame(0); });
+    var lp=k.loop(function(dt){ frame(dt); }); lp.play();
   }
 });
 

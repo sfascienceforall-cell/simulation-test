@@ -151,29 +151,105 @@ SFA.sim({
 SFA.sim({
   id:"c4-c02-souffle", ch:"c02", tag:"Niche",
   titre:"Combien de molécules dans un souffle ?",
-  resume:"Un volume d'air respiré contient un nombre colossal de molécules : n = V / V_m, puis N = n·N_A.",
-  but:"Règle le volume d'air et la température. Observe n, N, la masse et la répartition en N₂, O₂, Ar.",
-  aRetenir:"Pour un gaz : n = V / V_m (V_m ≈ 24 L/mol à 20 °C et 1 atm), puis N = n · N_A. L'air contient environ 78 % de N₂, 21 % de O₂ et 1 % d'argon en nombre de molécules.",
-  piege:"Même un petit volume de gaz contient un nombre énorme de molécules, mais elles sont très espacées : la mole de gaz occupe 24 L, pas un dé à coudre.",
+  resume:"Souffle dans un ballon : la loupe montre les molécules d'air qui s'agitent, le compteur en annonce des milliers de milliards de milliards. n = V / V_m, puis N = n·N_A.",
+  but:"Souffle dans le ballon (bouton) ou étire-le à la main, change la température et le type d'air. La loupe montre la composition, le graphe relie le volume au nombre de molécules. Défis : remplis le ballon avec exactement ce qui est demandé.",
+  aRetenir:"Pour un gaz : n = V / V<sub>m</sub> (V<sub>m</sub> ≈ 24 L/mol à 20 °C et 1 atm), puis N = n · N<sub>A</sub> (N<sub>A</sub> = 6,02·10<sup>23</sup> mol<sup>−1</sup>). Le nombre de molécules est proportionnel au volume ; à volume égal, il diminue quand la température augmente (le gaz se dilate).",
+  piege:"Même un petit volume de gaz contient un nombre énorme de molécules, mais elles sont très espacées : une mole de gaz occupe 24 L, pas un dé à coudre. Et V<sub>m</sub> = 24 L/mol ne vaut qu'à 20 °C et 1 atm : à 37 °C (air expiré chaud), une mole occupe environ 25,4 L.",
   build:function(k, S){
-    var c = k.canvas(260);
-    var V = k.slider("Volume d'air", 0.1, 6, 0.1, 0.5, "L");
-    var T = k.slider("Température", 0, 40, 1, 20, "°C");
-    var ro = k.readouts(["V_m à cette T", "n", "N molécules", "Masse d'air", "N de O₂", "N de N₂"]);
-    var rnd = C4.rnd(7), pts = [];
-    for (var i = 0; i < 160; i++) pts.push([rnd(), rnd(), rnd()]);
-    k.draw(function(){
-      var Vm = 24 * (T.value + 273) / 293, n = V.value / Vm, N = n * 6.02e23, mass = n * 29;
-      c.clear(); C4.bg(c); var W = c.W, ctx = c.ctx;
-      ctx.strokeStyle = "#5f6b7a"; ctx.lineWidth = 2; C4.rr(ctx, 14, 14, W - 28, 190, 14); ctx.stroke(); ctx.fillStyle = "#f6f9fc"; ctx.fill();
-      pts.forEach(function(p){
-        var col = p[2] < 0.78 ? "#2f56b3" : p[2] < 0.99 ? "#c23a2f" : "#6c7d90";
-        S.draw.dot(c, 26 + p[0] * (W - 52), 26 + p[1] * 166, 3.2, col);
-      });
-      C4.label(c, "Chaque point ≈ 1/160 du contenu (proportions réelles)", W / 2, 224, "#5f6b7a", 12);
-      C4.label(c, "bleu : N₂ (78 %) · rouge : O₂ (21 %) · gris : Ar (1 %)", W / 2, 244, "#2c3a4e", 12);
-      ro.set(0, S.fmt(Vm, 1) + " L/mol"); ro.set(1, S.fmt(n, 4) + " mol"); ro.set(2, S.sci(N, 2)); ro.set(3, S.fmt(mass, 2) + " g"); ro.set(4, S.sci(0.21 * N, 2)); ro.set(5, S.sci(0.78 * N, 2));
+    var c = k.canvas(0, {ratio:.62}), g = k.canvas(170), P = S.draw.palette;
+    var V = k.slider("Volume d'air dans le ballon", 0.1, 6, 0.05, 0.5, "L");
+    var T = k.slider("Température du gaz", 0, 40, 1, 20, "°C");
+    var air = k.seg("Air", [["in","Air inspiré"],["ex","Air expiré"]], "in");
+    var ro = k.readouts(["V_m à cette température", "Quantité de matière n", "Nombre de molécules N", "Masse d'air", "dont O₂", "dont CO₂"]);
+    var nt = k.note("", "");
+    var COMP = {in:[["N₂", .78, 28, "#2f56b3"], ["O₂", .21, 32, "#c23a2f"], ["Ar", .01, 40, "#7b3fb0"], ["CO₂", 0.0004, 44, "#3b4656"]],
+                ex:[["N₂", .78, 28, "#2f56b3"], ["O₂", .17, 32, "#c23a2f"], ["CO₂", .04, 44, "#3b4656"], ["Ar", .01, 40, "#7b3fb0"]]};
+    var DEF = [["1,0·10²² molécules", function(v){ return v.N / 1e22; }], ["1,0 g d'air", function(v){ return v.m / 1; }], ["0,10 mol de gaz", function(v){ return v.n / 0.1; }]], di = -1, won = [0, 0, 0];
+    k.button("Défi suivant", function(){ di = (di + 1) % 3; });
+    var blow = null;
+    k.button("Souffler (+0,5 L)", function(){ if (V.value < 6) blow = {t:0, from:V.value, to:Math.min(6, V.value + 0.5)}; }, true);
+    k.button("Vider le ballon", function(){ V.set(0.1); blow = null; });
+    /* molécules de la loupe */
+    var rnd = C4.rnd(11), mol = [];
+    for (var i = 0; i < 46; i++) mol.push({x:rnd(), y:rnd(), vx:rnd() - .5, vy:rnd() - .5, a:rnd() * 6.28, w:(rnd() - .5) * 4, r:rnd()});
+    var lp = k.loop(function(dt){
+      var sp = 0.16 * Math.sqrt((T.value + 273) / 293);
+      mol.forEach(function(m){ m.x += m.vx * sp * dt; m.y += m.vy * sp * dt; m.a += m.w * dt; if (m.x < 0 || m.x > 1){ m.vx = -m.vx; m.x = Math.max(0, Math.min(1, m.x)); } if (m.y < 0 || m.y > 1){ m.vy = -m.vy; m.y = Math.max(0, Math.min(1, m.y)); } });
+      if (blow){ blow.t += dt / 1.1; V.set(Math.round(C4.lerp(blow.from, blow.to, C4.ease(blow.t)) * 100) / 100); if (blow.t >= 1){ V.set(blow.to); blow = null; } }
+      k.redraw();
     });
-    k.note("Modèle : V<sub>m</sub> = 24 L/mol à 20 °C, ajusté proportionnellement à la température absolue (gaz parfait) ; masse molaire moyenne de l'air ≈ 29 g/mol.", "");
+    lp.play();
+    function vals(){ var Vm = 24 * (T.value + 273) / 293, n = V.value / Vm, comp = COMP[air.value], M = 0; comp.forEach(function(q){ M += q[1] * q[2]; }); return {Vm:Vm, n:n, N:n * 6.02e23, m:n * M, M:M, comp:comp}; }
+    var G = {}, gx = null;
+    c.pointer(function(type, p){
+      if (!G.r || (type !== "down" && type !== "drag")) return;
+      if (type === "down") G.on = Math.abs(Math.hypot(p.x - G.bx, p.y - G.by) - G.r) < 30 || Math.hypot(p.x - G.bx, p.y - G.by) < G.r;
+      if (!G.on) return;
+      var rr = Math.max(6, Math.hypot(p.x - G.bx, p.y - G.by)), v = 6 * Math.pow(Math.min(1, rr / G.R0), 3);
+      blow = null; V.set(Math.round(Math.max(0.1, v) * 20) / 20); k.redraw();
+    });
+    g.pointer(function(type, p){ if (!gx || (type !== "down" && type !== "drag")) return; blow = null; V.set(Math.round(Math.max(0.1, Math.min(6, gx.ix(p.x))) * 20) / 20); k.redraw(); });
+    function molecule(ctx, x, y, a, s, kind, col){
+      ctx.save(); ctx.translate(x, y); ctx.rotate(a);
+      function at(dx, r, cc){ var gr = ctx.createRadialGradient(dx - r * .35, -r * .35, r * .1, dx, 0, r); gr.addColorStop(0, "rgba(255,255,255,.85)"); gr.addColorStop(.35, cc); gr.addColorStop(1, cc); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(dx, 0, r, 0, 7); ctx.fill(); }
+      if (kind === "Ar") at(0, s * 1.05, col);
+      else if (kind === "CO₂"){ at(-s * 1.1, s * .85, "#c23a2f"); at(s * 1.1, s * .85, "#c23a2f"); at(0, s * .9, "#3b4656"); }
+      else { at(-s * .55, s * .8, col); at(s * .55, s * .8, col); }
+      ctx.restore();
+    }
+    k.draw(function(){
+      var v = vals(), W = c.W, H = c.H, ctx = c.ctx, small = W < 420;
+      C4.bg(c, H - 18);
+      /* personne de profil */
+      var hx = small ? 46 : 70, hy = H * 0.5, hr = small ? 30 : 40;
+      ctx.save(); ctx.fillStyle = "#f0c8a0"; ctx.beginPath(); ctx.arc(hx, hy, hr, 0, 7); ctx.fill();
+      ctx.fillStyle = "#5b3b25"; ctx.beginPath(); ctx.arc(hx - 4, hy - 6, hr * 1.02, Math.PI * 0.95, Math.PI * 1.9); ctx.fill();
+      ctx.fillStyle = "#13233a"; ctx.beginPath(); ctx.arc(hx + hr * 0.45, hy - hr * 0.2, 3, 0, 7); ctx.fill();
+      var puff = blow ? 1 + 0.25 * Math.sin(Math.min(1, blow.t) * Math.PI) : 1;
+      ctx.fillStyle = "#e9a98a"; ctx.beginPath(); ctx.ellipse(hx + hr * 0.55, hy + hr * 0.38, 7 * puff, 6 * puff, 0, 0, 7); ctx.fill();
+      ctx.fillStyle = "#3f5f9f"; ctx.fillRect(hx - hr * 0.7, hy + hr * 0.85, hr * 1.3, H - 18 - hy - hr * 0.85); ctx.restore();
+      /* ballon : V ∝ r³ */
+      var R0 = Math.min(H * 0.44, (W - hx - hr - 30) * 0.42), r = R0 * Math.cbrt(V.value / 6), bx = hx + hr + 22 + r, by = hy;
+      G = {R0:R0, r:r, bx:bx, by:by, on:G.on};
+      ctx.save(); ctx.strokeStyle = "#a3271a"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(hx + hr * 0.62, hy + hr * 0.38); ctx.lineTo(bx - r - 2, by + 4); ctx.stroke();
+      var gb = ctx.createRadialGradient(bx - r * .35, by - r * .4, r * .1, bx, by, r); gb.addColorStop(0, "rgba(255,200,190,.75)"); gb.addColorStop(1, "rgba(224,80,70,.55)");
+      ctx.fillStyle = gb; ctx.beginPath(); ctx.arc(bx, by, r, 0, 7); ctx.fill(); ctx.strokeStyle = "rgba(160,40,30,.7)"; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
+      /* filet d'air pendant le souffle */
+      if (blow) for (var j = 0; j < 6; j++){ var f = ((blow.t * 3 + j / 6) % 1); S.draw.dot(c, C4.lerp(hx + hr * 0.62, bx - r, f), C4.lerp(hy + hr * 0.38, by + 4, f) + Math.sin(f * 9 + j) * 2, 2.6, "rgba(47,86,179,.55)"); }
+      /* loupe */
+      var lr = Math.min(small ? 62 : 86, H * 0.36), lx = W - lr - 12, ly = lr + 14;
+      S.draw.line(c, bx + r * 0.5, by - r * 0.3, lx - lr * 0.7, ly + lr * 0.6, "rgba(15,27,45,.35)", 1.5, [4, 4]);
+      ctx.save(); ctx.beginPath(); ctx.arc(lx, ly, lr, 0, 7); ctx.fillStyle = "#fbfcfe"; ctx.fill(); ctx.clip();
+      var cum = [], acc = 0; v.comp.forEach(function(q){ acc += q[1]; cum.push([acc, q]); });
+      var dens = Math.max(0.35, Math.min(1, 293 / (T.value + 273)));
+      mol.forEach(function(m, mi){
+        if (mi >= Math.round(46 * dens)) return;
+        var q = cum.filter(function(z){ return m.r < z[0]; })[0]; q = q ? q[1] : v.comp[0];
+        if (air.value === "in" && q[0] === "CO₂") q = v.comp[0];
+        molecule(ctx, lx - lr + 8 + m.x * (2 * lr - 16), ly - lr + 8 + m.y * (2 * lr - 16), m.a, small ? 3.6 : 4.6, q[0], q[3]);
+      });
+      ctx.restore(); ctx.save(); ctx.strokeStyle = "#5f6b7a"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(lx, ly, lr, 0, 7); ctx.stroke(); ctx.restore();
+      var lg = v.comp.filter(function(q){ return q[1] >= 0.01; });
+      lg.forEach(function(q, i){ var yy = ly + lr + 14 + Math.floor(i / 2) * 16, xx = lx - lr + (i % 2) * lr; molecule(ctx, xx + 6, yy, 0, 3.6, q[0], q[3]); S.draw.text(c, q[0] + " " + S.fmt(q[1] * 100, 0) + " %", xx + 15, yy, {size:11, align:"left", color:"#2c3a4e"}); });
+      S.draw.display(c, C4.sciU(v.N, 2), small ? 66 : 84, 28, {w:small ? 120 : 150, h:40, size:small ? 15 : 17, caption:"MOLÉCULES (N)"});
+      C4.t(c, "glisse le bord du ballon", bx, Math.min(H - 28, by + r + 16), {size:11.5, color:"#5f6b7a", weight:600});
+      /* graphe N(V) */
+      g.clear();
+      var Nmax = 6 / 24 * 293 / 273 * 6.02e23 / 1e22 * 1.02;
+      gx = S.draw.axes(g, {x0:0, x1:6, y0:0, y1:Nmax, xl:"V (L)", yl:"N (×10²²)", stepX:1, l:44});
+      S.draw.fn(g, gx, function(x){ return x / 24 * 6.02e23 / 1e22; }, "#b8c0cc", 1.6, [5, 4]);
+      S.draw.fn(g, gx, function(x){ return x / v.Vm * 6.02e23 / 1e22; }, P.acc, 3);
+      C4.tag(g, "pointillé : 20 °C · bleu : " + S.fmt(T.value, 0) + " °C", g.W - 12, gx.Y(2.2), "#2c3a4e", 11, "right");
+      if (di === 0) S.draw.line(g, gx.X(0), gx.Y(1), gx.X(6), gx.Y(1), P.amber, 1.6, [3, 3]);
+      S.draw.line(g, gx.X(V.value), gx.Y(0), gx.X(V.value), gx.Y(v.N / 1e22), "#b8c0cc", 1, [3, 3]);
+      C4.ion(g, gx.X(V.value), gx.Y(v.N / 1e22), 7, P.red, "", {});
+      ro.set(0, S.fmt(v.Vm, 1) + " L/mol"); ro.set(1, S.fmt(v.n, 4) + " mol"); ro.set(2, S.sci(v.N, 2)); ro.set(3, S.fmt(v.m, 3) + " g");
+      var o2 = v.comp.filter(function(q){ return q[0] === "O₂"; })[0][1], co2 = v.comp.filter(function(q){ return q[0] === "CO₂"; })[0][1];
+      ro.set(4, S.sci(o2 * v.N, 2)); ro.set(5, S.sci(co2 * v.N, 2));
+      var base = "Modèle : gaz parfait, V<sub>m</sub> = 24 L/mol à 20 °C proportionnel à la température absolue ; air sec (vapeur d'eau négligée), M moyenne = " + S.fmt(v.M, 1) + " g/mol.";
+      if (di >= 0){ var rr2 = DEF[di][1](v), okk = Math.abs(rr2 - 1) <= 0.03; if (okk) won[di] = 1;
+        nt.set("<b>Défi " + (di + 1) + "/3 : mets " + DEF[di][0] + " dans le ballon</b> (à " + S.fmt(T.value, 0) + " °C). " + (okk ? "✅ Réussi avec V = " + S.fmt(V.value, 2) + " L." : "Pour l'instant : " + S.fmt(rr2 * 100, 0) + " % de la cible.") + " · " + (won[0] + won[1] + won[2]) + "/3 réussis.", okk ? "ok" : "");
+      } else nt.set("Un ballon de " + S.fmt(V.value, 2) + " L contient " + S.sci(v.N, 2) + " molécules. " + base, "");
+    });
   }
 });

@@ -21,86 +21,271 @@ var B4 = window.B4 = {
     return S.fmt(m * 1e9, 2) + " nm";
   },
   /* graine pseudo-aléatoire reproductible */
-  rng: function(seed){ var s = seed >>> 0; return function(){ s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  rng: function(seed){ var s = seed >>> 0; return function(){ s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; },
+  /* bruit déterministe 0..1 pour une case (i, j) */
+  hash: function(i, j, s){ var x = Math.sin(i * 127.1 + j * 311.7 + (s || 0) * 74.7) * 43758.5453; return x - Math.floor(x); },
+  ease: function(x){ x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); },
+  /* hauteur du canevas adaptée à la largeur : ratio « étroit » sous la largeur bp (téléphone), « large » au-dessus */
+  adapt: function(c, rNarrow, rWide, bp){
+    try { Object.defineProperty(c, "ratio", {configurable:true, get:function(){ var w = c.cv.parentNode ? c.cv.parentNode.clientWidth : 600; return w < (bp || 480) ? rNarrow : rWide; }}); c.resize(); } catch (e){}
+  },
+  /* hexagone (cycle d'un sucre) */
+  hex: function(c, x, y, r, fill, stroke, lw){ var ctx = c.ctx; ctx.save(); ctx.beginPath(); for (var i = 0; i < 6; i++){ var a = i * Math.PI / 3 + Math.PI / 6; i ? ctx.lineTo(x + r * Math.cos(a), y + r * Math.sin(a)) : ctx.moveTo(x + r * Math.cos(a), y + r * Math.sin(a)); } ctx.closePath(); if (fill){ ctx.fillStyle = fill; ctx.fill(); } if (stroke){ ctx.strokeStyle = stroke; ctx.lineWidth = lw || 1.2; ctx.stroke(); } ctx.restore(); },
+  /* texte sur plusieurs lignes (largeur maxi en px) ; renvoie la hauteur utilisée */
+  wrap: function(c, s, x, y, maxW, opt){
+    opt = opt || {}; var ctx = c.ctx, size = opt.size || 11, lh = opt.lh || size * 1.3, words = String(s).split(" "), line = "", n = 0;
+    ctx.save(); ctx.font = (opt.weight || 600) + " " + size + "px Mulish, system-ui, sans-serif";
+    var lines = []; words.forEach(function(w){ var t = line ? line + " " + w : w; if (ctx.measureText(t).width > maxW && line){ lines.push(line); line = w; } else line = t; }); if (line) lines.push(line);
+    ctx.restore();
+    lines.forEach(function(L, i){ SFA.draw.text(c, L, x, y + i * lh, {size:size, color:opt.color || "#2c3a4e", align:opt.align || "left", weight:opt.weight || 600}); n++; });
+    return n * lh;
+  },
+  /* couleur (approchée) d'une longueur d'onde visible, en [r, g, b] */
+  lrgb: function(l){
+    var r = 0, g = 0, b = 0;
+    if (l < 440){ r = -(l - 440) / 60; b = 1; } else if (l < 490){ g = (l - 440) / 50; b = 1; } else if (l < 510){ g = 1; b = -(l - 510) / 20; } else if (l < 580){ r = (l - 510) / 70; g = 1; } else if (l < 645){ r = 1; g = -(l - 645) / 65; } else r = 1;
+    return [Math.round(255 * r), Math.round(255 * g), Math.round(255 * b)];
+  }
 };
 
 SFA.sim({
-  id:"b4-c01-microscope", ch:"c01", tag:"Classique",
+  id:"b4-c01-microscope", ch:"c01", tag:"Classique · microscope",
   titre:"Le microscope : grossir ou distinguer ?",
-  resume:"Calcule le grossissement, puis découvre pourquoi grossir plus ne suffit pas à voir plus fin.",
-  but:"Mode « Grossissement » : choisis objectif, oculaire et objet. Mode « Résolution » : écarte deux points et vois à quelle condition on les distingue.",
-  aRetenir:"Grossissement total = grossissement de l'objectif × grossissement de l'oculaire. Le pouvoir de résolution (d ≈ 0,61·λ / ON) est la plus petite distance entre deux points encore séparés : en lumière visible il ne descend pas sous ≈ 0,2 µm. Le microscope électronique descend beaucoup plus bas (de l'ordre du nanomètre pour des échantillons biologiques).",
-  piege:"Un fort grossissement ne rend pas l'image plus nette : si deux points sont plus proches que la résolution, les agrandir ne les sépare pas (« grossissement vide »).",
+  resume:"Pilote un microscope optique : clique un objectif, tourne la vis, observe le champ. La loupe et sa courbe d'intensité montrent pourquoi grossir plus ne suffit pas à voir plus fin.",
+  but:"Clique un objectif sur la tourelle, choisis l'oculaire et glisse la vis de mise au point (sur le dessin ou au curseur). Le champ montre la préparation ; la loupe et sa courbe disent si deux détails voisins sont séparés. Relève les défis chiffrés.",
+  aRetenir:"Grossissement total = grossissement de l'objectif × grossissement de l'oculaire. Le pouvoir de résolution (d ≈ 0,61·λ / ON) est la plus petite distance entre deux points encore séparés : il dépend de l'objectif (son ouverture numérique ON) et de la lumière, pas de l'oculaire. En lumière visible, il ne descend pas sous ≈ 0,2 µm ; le microscope électronique descend beaucoup plus bas.",
+  piege:"Un fort grossissement ne rend pas l'image plus nette : si deux points sont plus proches que la résolution, les agrandir ne les sépare pas (« grossissement vide »). Plus l'objectif est fort, plus la profondeur de champ est faible : il faut refaire la mise au point.",
   build:function(k, S){
-    var c = k.canvas(0, {ratio:.78});
-    var mode = k.seg("Mode", [["g","Grossissement"],["r","Résolution"]], "g");
+    var P = S.draw.palette, c = k.canvas(0, {ratio:1.2}); B4.adapt(c, 1.2, 1.02, 480);
     var obj = k.seg("Objectif", [[4,"×4"],[10,"×10"],[40,"×40"],[100,"×100"]], 40);
     var oc = k.seg("Oculaire", [[5,"×5"],[10,"×10"],[15,"×15"]], 10);
-    var spec = k.select("Objet (mode Grossissement)", [[250,"Cellule d'oignon (≈ 250 µm)"],[7,"Globule rouge (7 µm)"],[2,"Bactérie E. coli (2 µm)"],[1,"Mitochondrie (1 µm)"],[0.1,"Virus de la grippe (0,1 µm)"]], 250);
-    var dd = k.slider("Distance entre deux points (mode Résolution)", 0.05, 3, 0.05, 0.5, "µm");
-    var lam = k.seg("Lumière", [[650,"rouge"],[550,"verte"],[450,"bleue"]], 550);
-    var ro = k.readouts(["Grossissement total", "Taille de l'image", "Champ observé", "Résolution"]);
-    var nt = k.note("", "");
-    var NA = {4:0.10, 10:0.25, 40:0.65, 100:1.25};
-    function shape(name, cx, cy, L){
-      var ctx = c.ctx;
-      if (name === "250"){ B4.rr(c, cx - L / 2, cy - L * 0.22, L, L * 0.44, L * 0.04, "rgba(120,190,150,.35)", B4.pal.green, 2); B4.ell(c, cx - L * 0.2, cy, L * 0.07, L * 0.07, "rgba(30,63,143,.55)", B4.pal.acc, 1.5); }
-      else if (name === "7"){ B4.ell(c, cx, cy, L / 2, L / 2, "rgba(190,40,40,.55)", B4.pal.red, 2); B4.ell(c, cx, cy, L * 0.2, L * 0.2, "rgba(255,255,255,.55)"); }
-      else if (name === "2"){ B4.rr(c, cx - L / 2, cy - L * 0.18, L, L * 0.36, L * 0.18, "rgba(180,83,9,.35)", B4.pal.amber, 2); }
-      else if (name === "1"){ B4.ell(c, cx, cy, L / 2, L * 0.28, "rgba(91,33,182,.3)", B4.pal.violet, 2); }
-      else { B4.ell(c, cx, cy, L / 2, L / 2, "rgba(14,116,144,.5)", B4.pal.teal, 1.5); }
-    }
-    k.draw(function(){
-      var G = obj.value * oc.value, res = 0.61 * lam.value / NA[obj.value];   /* nm */
-      c.clear(); var ctx = c.ctx, W = c.W, H = c.H;
-      if (mode.value === "g"){
-        var size = parseFloat(spec.value), D = 18000 / obj.value;      /* champ réel en µm (numéro de champ 18 mm) */
-        var R = Math.min(W, H) * 0.42, cx = W / 2, cy = H / 2;
-        ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.fillStyle = "#fbfcfe"; ctx.fill(); ctx.clip();
-        var L = size / D * 2 * R, visible = size * 1000 >= res;
-        if (visible) shape(String(spec.value), cx, cy, L);
-        else { B4.ell(c, cx, cy, 5, 5, "rgba(120,130,150,.35)"); B4.ell(c, cx, cy, 2, 2, "rgba(120,130,150,.5)"); }
-        ctx.restore();
-        ctx.beginPath(); ctx.arc(cx, cy, R, 0, 2 * Math.PI); ctx.strokeStyle = "#13233a"; ctx.lineWidth = 3; ctx.stroke();
-        /* barre d'échelle */
-        var bar = B4.nice(D / 5), bpx = bar / D * 2 * R;
-        S.draw.line(c, cx - bpx / 2, cy + R - 14, cx + bpx / 2, cy + R - 14, B4.pal.ink, 3);
-        B4.txt(c, S.fmt(bar, bar < 1 ? 2 : 0) + " µm", cx, cy + R - 28, B4.pal.ink, 12);
-        B4.txt(c, "Champ : " + S.fmt(D, 0) + " µm", cx, cy - R - 0 + 14, "#5f6b7a", 12);
-        if (L > 2 * R) B4.txt(c, "dépasse le champ", cx, cy - 20, B4.pal.red, 13);
-        if (!visible) B4.txt(c, "non distinguable", cx, cy + 24, B4.pal.red, 13);
-        ro.set(0, "× " + G); ro.set(1, S.fmt(size * G / 1000, size * G / 1000 < 1 ? 3 : 1) + " mm"); ro.set(2, S.fmt(D, 0) + " µm"); ro.set(3, S.fmt(res, 0) + " nm");
-        var nb = D / size;
-        nt.set(visible ? (nb >= 1 ? "Dans le diamètre du champ, on peut aligner ≈ " + S.fmt(nb, nb < 10 ? 1 : 0) + " objets de cette taille (" + S.fmt(D, 0) + " ÷ " + S.fmt(size, size < 1 ? 1 : 0) + ")." : "L'objet est plus grand que le champ : on n'en voit qu'une partie. Passe à un objectif plus faible.") :
-          "L'objet mesure " + S.fmt(size * 1000, 0) + " nm, moins que la résolution (" + S.fmt(res, 0) + " nm) : on ne peut pas l'observer au microscope optique, quel que soit le grossissement.", visible ? "" : "warn");
-      } else {
-        var d = dd.value * 1000, sig = res / 2;                         /* nm */
-        var span = Math.max(d + 8 * sig, 6 * sig), x0 = -span / 2 + d / 2 * 0, mid = 0;
-        var xa = -d / 2, xb = d / 2, left = -span / 2, right = span / 2;
-        var L0 = 24, R0 = W - 24;
-        function PX(x){ return L0 + (x - left) / (right - left) * (R0 - L0); }
-        function I(x){ return Math.exp(-Math.pow(x - xa, 2) / (2 * sig * sig)) + Math.exp(-Math.pow(x - xb, 2) / (2 * sig * sig)); }
-        var stripH = H * 0.26, pTop = 26;
-        ctx.fillStyle = "#0b1220"; ctx.fillRect(L0, pTop, R0 - L0, stripH);
-        for (var px = L0; px < R0; px += 2){
-          var v = Math.min(1, I(left + (px - L0) / (R0 - L0) * (right - left))), g = Math.round(v * 255);
-          ctx.fillStyle = "rgb(" + g + "," + g + "," + Math.round(g * 0.9) + ")"; ctx.fillRect(px, pTop, 2, stripH);
+    var spec = k.select("Préparation sur la lame", [["oig","Épiderme d'oignon coloré (cellules ≈ 250 µm)"],["sang","Frottis de sang (globules rouges 7,5 µm)"],["bac","Bactéries E. coli (2 µm × 0,6 µm)"],["vir","Virus de la grippe (≈ 0,1 µm)"]], "oig");
+    var lam = k.seg("Couleur de la lumière", [[650,"rouge"],[550,"verte"],[450,"bleue"]], 550);
+    var foc = k.slider("Vis micrométrique (hauteur de la platine)", -30, 30, 0.5, 0, "µm");
+    var dd = k.slider("Écart entre deux détails voisins (loupe)", 0.1, 4, 0.05, 0.5, "µm");
+    var ro = k.readouts(["Grossissement total", "Champ observé (diamètre réel)", "Taille apparente de l'objet", "Résolution d = 0,61·λ/ON"]);
+    var nt = k.note("", ""), nd = k.note("", "");
+    var NA = {4:0.10, 10:0.25, 40:0.65, 100:1.25}, FN = {5:20, 10:18, 15:12}, RING = {4:"#d6453d", 10:"#e8b923", 40:"#5fb3e6", 100:"#f4f6f8"};
+    var SIZE = {oig:250, sang:7.5, bac:2, vir:0.1}, NAME = {oig:"cellule d'oignon", sang:"globule rouge", bac:"bactérie", vir:"virus"};
+    var st = {z0:0, t:0, defi:null, score:0, tot:0, hits:[], knob:null, drag:null, geo:{}}, cacheF = {}, cacheL = {};
+    /* ---------- défis ---------- */
+    var DEF = [
+      function(){ var g = [40, 50, 100, 150, 200, 400, 600, 1000, 1500][Math.floor(Math.random() * 9)]; return {txt:"Obtiens un grossissement total de ×" + g + ".", ok:function(){ return G() === g; }}; },
+      function(){ var o = [[7.5, 3, "un globule rouge (7,5 µm)"], [7.5, 0.75, "un globule rouge (7,5 µm)"], [2, 3, "une bactérie (2 µm)"], [250, 10, "une cellule d'oignon (250 µm)"], [2, 0.8, "une bactérie (2 µm)"]][Math.floor(Math.random() * 5)], g = Math.round(o[1] * 1000 / o[0]);
+        return {txt:"Calcule puis règle : quel grossissement total donne à " + o[2] + " une taille apparente de " + S.fmt(o[1], 2) + " mm ?", ok:function(){ return G() === g; }, sol:"×" + g + " (" + S.fmt(o[1] * 1000, 0) + " µm ÷ " + S.fmt(o[0], 1) + " µm)"}; },
+      function(){ var d = [0.3, 0.4, 0.6, 1, 1.5, 2.5][Math.floor(Math.random() * 6)]; dd.set(d); foc.set(st.z0);
+        return {txt:"Sépare deux détails distants de " + S.fmt(d, 1) + " µm avec l'objectif le plus faible possible (la couleur de lumière compte).", ok:function(){ if (Math.abs(dd.value - d) > 1e-6 || !sep()) return false; var mn = [4, 10, 40, 100].filter(function(o){ return 0.61 * lam.value / 1000 / NA[o] <= d; })[0]; return +obj.value === mn; }}; },
+      function(){ obj.set(40); var z; do { z = Math.round((Math.random() * 40 - 20) * 2) / 2; } while (Math.abs(z - foc.value) < 6); st.z0 = z; cacheF = {};
+        return {txt:"La platine est déréglée : avec l'objectif ×40, tourne la vis jusqu'à une image nette (puis essaie ×100 : il faudra peut-être retoucher).", ok:function(){ return defocus() === 0 && +obj.value >= 40; }}; }
+    ];
+    k.button("Défi suivant", function(){ st.defi = DEF[Math.floor(Math.random() * DEF.length)](); st.defi.done = false; st.tot++; }, true);
+    k.button("Mise au point parfaite", function(){ foc.set(st.z0); });
+    function G(){ return +obj.value * +oc.value; }
+    function res(){ return 0.61 * lam.value / 1000 / NA[obj.value]; }           /* µm */
+    function dof(){ return lam.value / 1000 / (NA[obj.value] * NA[obj.value]); }  /* µm */
+    function defocus(){ return Math.max(0, Math.abs(foc.value - st.z0) - dof() / 2) * 2 * NA[obj.value]; }   /* diamètre de flou (µm) */
+    function sigma(){ var s0 = res() / 2, b = defocus() / 2; return Math.sqrt(s0 * s0 + b * b); }
+    function sep(){ return dd.value >= 2 * sigma() - 1e-9; }
+    /* ---------- préparation (en µm, centrée) ---------- */
+    function specimen(ctx, sp, D, s){
+      var h = B4.hash, R = D / 2 + 20, lw = 1 / s;
+      if (sp === "oig"){
+        var rh = 55;
+        if (rh * s < 3){ ctx.fillStyle = "#ecd59b"; ctx.fillRect(-R, -R, 2 * R, 2 * R); ctx.strokeStyle = "rgba(150,105,45,.35)"; ctx.lineWidth = lw; for (var y = -R; y < R; y += rh){ ctx.beginPath(); ctx.moveTo(-R, y); ctx.lineTo(R, y); ctx.stroke(); } return; }
+        for (var j = Math.floor(-R / rh); j * rh < R; j++){
+          var x = -R - 300 * h(j, 3, 1);
+          for (var i = 0; x < R; i++){
+            var L = 210 + 90 * h(i, j, 2), y0 = j * rh;
+            if (x + L > -R){
+              ctx.fillStyle = "#f2dfa6"; ctx.fillRect(x, y0, L, rh);
+              ctx.strokeStyle = "#9c6b2e"; ctx.lineWidth = Math.max(2.2, 1.2 * lw); ctx.strokeRect(x, y0, L, rh);
+              var nx = x + L * (0.2 + 0.6 * h(i, j, 5)), ny = y0 + rh * (0.3 + 0.4 * h(i, j, 6));
+              ctx.fillStyle = "#93591f"; ctx.beginPath(); ctx.ellipse(nx, ny, 10, 8, 0, 0, 6.2832); ctx.fill();
+              ctx.fillStyle = "#5c3510"; ctx.beginPath(); ctx.arc(nx + 2, ny - 1.5, 2.6, 0, 6.2832); ctx.fill();
+            }
+            x += L;
+          }
         }
-        B4.txt(c, "Ce que l'œil voit", L0 + 4, pTop - 12, B4.pal.ink, 12, "left");
-        var gy0 = pTop + stripH + 36, gy1 = H - 34;
-        function PY(v){ return gy1 - v / 2.05 * (gy1 - gy0); }
-        ctx.strokeStyle = "#8a95a3"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(L0, gy1); ctx.lineTo(R0, gy1); ctx.stroke();
-        B4.txt(c, "Intensité reçue", L0 + 4, gy0 - 12, B4.pal.ink, 12, "left");
-        ctx.beginPath(); ctx.strokeStyle = B4.pal.acc; ctx.lineWidth = 2.6;
-        for (px = L0; px <= R0; px += 2){ var yy = PY(I(left + (px - L0) / (R0 - L0) * (right - left))); if (px === L0) ctx.moveTo(px, yy); else ctx.lineTo(px, yy); }
-        ctx.stroke();
-        S.draw.line(c, PX(xa), gy1 + 2, PX(xa), gy1 + 14, B4.pal.red, 3); S.draw.line(c, PX(xb), gy1 + 2, PX(xb), gy1 + 14, B4.pal.red, 3);
-        B4.txt(c, "points réels (écart " + S.fmt(dd.value, 2) + " µm)", W / 2, H - 8, B4.pal.red, 12);
-        var ok = d >= res;
-        ro.set(0, "× " + G + " (sans effet ici)"); ro.set(1, "—"); ro.set(2, "—"); ro.set(3, S.fmt(res, 0) + " nm");
-        nt.set(ok ? "d = " + S.fmt(d, 0) + " nm ≥ résolution " + S.fmt(res, 0) + " nm : on voit deux pics, les points sont distingués." :
-          "d = " + S.fmt(d, 0) + " nm < résolution " + S.fmt(res, 0) + " nm : les deux taches se fondent en une seule. Change d'objectif ou de couleur, pas d'oculaire !", ok ? "ok" : "bad");
+      } else if (sp === "sang"){
+        var g = 9.2;
+        if (3.75 * s < 1.2){ ctx.fillStyle = "#f0c3c6"; ctx.fillRect(-R, -R, 2 * R, 2 * R); }
+        else for (var a = Math.floor(-R / g); a * g < R; a++) for (var b = Math.floor(-R / g); b * g < R; b++){
+          if (h(a, b, 9) < 0.08) continue;
+          var px = a * g + (h(a, b, 1) - 0.5) * 4, py = b * g + (h(a, b, 2) - 0.5) * 4;
+          var gr = ctx.createRadialGradient(px, py, 0.5, px, py, 3.75); gr.addColorStop(0, "#f7d9da"); gr.addColorStop(0.55, "#e9a5ab"); gr.addColorStop(1, "#c9636f");
+          ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(px, py, 3.75, 0, 6.2832); ctx.fill();
+        }
+        var gw = 70;
+        for (a = Math.floor(-R / gw); a * gw < R; a++) for (b = Math.floor(-R / gw); b * gw < R; b++){
+          var wx = a * gw + 20 * h(a, b, 4), wy = b * gw + 20 * h(a, b, 5);
+          if (h(a, b, 7) < 0.25){ ctx.fillStyle = "#e3d4ee"; ctx.beginPath(); ctx.arc(wx, wy, 6, 0, 6.2832); ctx.fill(); ctx.fillStyle = "#5e3392"; [[-2, -1.5], [1.8, -2], [0.5, 2.2]].forEach(function(q){ ctx.beginPath(); ctx.arc(wx + q[0], wy + q[1], 1.9, 0, 6.2832); ctx.fill(); }); }
+          if (h(a, b, 8) < 0.6){ ctx.fillStyle = "#7d4fb0"; ctx.beginPath(); ctx.arc(wx + 30, wy - 12, 1.2, 0, 6.2832); ctx.fill(); }
+        }
+      } else if (sp === "bac"){
+        var gb = 5;
+        ctx.fillStyle = "#fbf4f6"; ctx.fillRect(-R, -R, 2 * R, 2 * R);
+        if (2 * s < 0.8){ ctx.fillStyle = "rgba(208,86,127,.18)"; ctx.fillRect(-R, -R, 2 * R, 2 * R); return; }
+        ctx.strokeStyle = "#cc4f7c"; ctx.lineCap = "round"; ctx.lineWidth = 0.6;
+        for (a = Math.floor(-R / gb); a * gb < R; a++) for (b = Math.floor(-R / gb); b * gb < R; b++){
+          if (h(a, b, 3) > 0.55) continue;
+          var bx = a * gb + (h(a, b, 1) - 0.5) * 3, by = b * gb + (h(a, b, 2) - 0.5) * 3, an = h(a, b, 4) * 3.1416;
+          ctx.beginPath(); ctx.moveTo(bx - 0.7 * Math.cos(an), by - 0.7 * Math.sin(an)); ctx.lineTo(bx + 0.7 * Math.cos(an), by + 0.7 * Math.sin(an)); ctx.stroke();
+        }
+      } else {
+        ctx.fillStyle = "#faf8fc"; ctx.fillRect(-R, -R, 2 * R, 2 * R);
+        var gv = 2.5, al = Math.min(1, Math.pow(0.1 / res(), 2));
+        if (gv * s < 2){ ctx.fillStyle = "rgba(107,74,160," + (0.12 * al) + ")"; ctx.fillRect(-R, -R, 2 * R, 2 * R); return; }
+        ctx.fillStyle = "rgba(107,74,160," + al + ")";
+        for (a = Math.floor(-R / gv); a * gv < R; a++) for (b = Math.floor(-R / gv); b * gv < R; b++){ if (h(a, b, 3) > 0.5) continue; ctx.beginPath(); ctx.arc(a * gv + h(a, b, 1), b * gv + h(a, b, 2), Math.max(0.05, 0.5 / s), 0, 6.2832); ctx.fill(); }
       }
+    }
+    function fieldImage(R){
+      var D = FN[oc.value] * 1000 / obj.value, M = Math.max(40, Math.round(2 * R)), s = M / D, blur = Math.sqrt(Math.pow(res() * s, 2) + Math.pow(defocus() * s, 2));
+      var key = [spec.value, obj.value, oc.value, M, Math.round(blur * 4), lam.value].join("|");
+      if (cacheF.key === key) return cacheF.cv;
+      var cv = document.createElement("canvas"); cv.width = cv.height = M; var x = cv.getContext("2d");
+      x.fillStyle = "#fffdf7"; x.fillRect(0, 0, M, M);
+      x.save(); x.translate(M / 2, M / 2); x.scale(s, s); specimen(x, spec.value, D, s); x.restore();
+      if (blur > 1.15){
+        var N = Math.max(6, Math.round(M / blur)), sm = document.createElement("canvas"); sm.width = sm.height = N; var y = sm.getContext("2d");
+        y.imageSmoothingEnabled = true; y.drawImage(cv, 0, 0, N, N);
+        x.imageSmoothingEnabled = true; x.clearRect(0, 0, M, M); x.drawImage(sm, 0, 0, M, M);
+      }
+      var rgb = B4.lrgb(+lam.value); x.globalCompositeOperation = "multiply"; x.fillStyle = "rgba(" + Math.round(205 + rgb[0] * 0.196) + "," + Math.round(205 + rgb[1] * 0.196) + "," + Math.round(205 + rgb[2] * 0.196) + ",1)"; x.fillRect(0, 0, M, M); x.globalCompositeOperation = "source-over";
+      cacheF = {key:key, cv:cv, D:D}; return cv;
+    }
+    function loupeImage(Lp){
+      var ppu = G() * 0.12, sg = sigma(), d = dd.value, key = [Lp, ppu, sg.toFixed(4), d, lam.value].join("|");
+      if (cacheL.key === key) return cacheL.cv;
+      var n = Math.max(30, Math.round(Lp)), cv = document.createElement("canvas"); cv.width = cv.height = n; var x = cv.getContext("2d"), im = x.createImageData(n, n), rgb = B4.lrgb(+lam.value);
+      var base = [255 - (255 - rgb[0]) * 0.45, 255 - (255 - rgb[1]) * 0.45, 255 - (255 - rgb[2]) * 0.45], k2 = 1 / (2 * sg * sg), amp = 0.42 * Math.pow(res() / 2 / sg, 2);
+      for (var j = 0; j < n; j++) for (var i = 0; i < n; i++){
+        var ux = (i - n / 2) / ppu, uy = (j - n / 2) / ppu, A = Math.exp(-((ux + d / 2) * (ux + d / 2) + uy * uy) * k2) + Math.exp(-((ux - d / 2) * (ux - d / 2) + uy * uy) * k2), I = 1 - amp * A, o = (j * n + i) * 4;
+        im.data[o] = base[0] * I; im.data[o + 1] = base[1] * I; im.data[o + 2] = base[2] * I; im.data[o + 3] = 255;
+      }
+      x.putImageData(im, 0, 0); cacheL = {key:key, cv:cv}; return cv;
+    }
+    function profile(u){ var sg = sigma(), d = dd.value, k2 = 1 / (2 * sg * sg); return 1 - 0.42 * Math.pow(res() / 2 / sg, 2) * (Math.exp(-(u + d / 2) * (u + d / 2) * k2) + Math.exp(-(u - d / 2) * (u - d / 2) * k2)); }
+    /* ---------- dessin du microscope ---------- */
+    function scope(ox, oy, u, cw){
+      var ctx = c.ctx, X = function(v){ return ox + v * u; }, Y = function(v){ return oy + v * u; }, dz = Math.max(-1, Math.min(1, foc.value / 30)) * 2.2, o = +obj.value;
+      st.hits = [];
+      /* faisceau lumineux animé */
+      ctx.save(); ctx.strokeStyle = "rgba(244,197,66,.55)"; ctx.lineWidth = 2.2 * u; ctx.setLineDash([2.2 * u, 3 * u]); ctx.lineDashOffset = -st.t * 18 * u; ctx.beginPath(); ctx.moveTo(X(24), Y(88)); ctx.lineTo(X(24), Y(2)); ctx.stroke(); ctx.restore();
+      /* socle, lampe, potence */
+      S.draw.rrect(c, X(5), Y(89), 50 * u, 9 * u, 2.5 * u); ctx.fillStyle = "#2f3e55"; ctx.fill();
+      S.draw.glow(c, X(24), Y(89), 7 * u, P.yellow, 0.9); ctx.beginPath(); ctx.arc(X(24), Y(89.5), 2.4 * u, 0, 6.2832); ctx.fillStyle = "#ffe08a"; ctx.fill();
+      ctx.save(); ctx.strokeStyle = "#3d4f6b"; ctx.lineWidth = 6 * u; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(X(48), Y(89)); ctx.lineTo(X(48), Y(42)); ctx.quadraticCurveTo(X(48), Y(27), X(33), Y(25)); ctx.stroke(); ctx.restore();
+      /* condenseur + platine (monte et descend avec la vis) */
+      ctx.fillStyle = "#56677f"; ctx.beginPath(); ctx.moveTo(X(19), Y(70 + dz)); ctx.lineTo(X(29), Y(70 + dz)); ctx.lineTo(X(27), Y(76 + dz)); ctx.lineTo(X(21), Y(76 + dz)); ctx.closePath(); ctx.fill();
+      S.draw.rrect(c, X(7), Y(65 + dz), 41 * u, 3.4 * u, u); ctx.fillStyle = "#2f3e55"; ctx.fill();
+      S.draw.rrect(c, X(12), Y(63.6 + dz), 25 * u, 1.5 * u, 0.4 * u); ctx.fillStyle = "rgba(170,215,240,.9)"; ctx.fill(); ctx.strokeStyle = "#7fb2cf"; ctx.lineWidth = 1; ctx.stroke();
+      ctx.beginPath(); ctx.arc(X(24), Y(64.3 + dz), 1.6 * u, 0, 6.2832); ctx.fillStyle = spec.value === "oig" ? "#c9a35a" : spec.value === "sang" ? "#d9737d" : spec.value === "bac" ? "#cc4f7c" : "#8a6bbd"; ctx.fill();
+      ctx.fillStyle = "#56677f"; ctx.fillRect(X(9), Y(62.2 + dz), 6 * u, 1.4 * u); ctx.fillRect(X(33), Y(62.2 + dz), 6 * u, 1.4 * u);
+      /* vis macro / micrométrique (à glisser) */
+      var kx = X(48), ky = Y(70), kr = 5 * u, rot = foc.value / 30 * 3.1416;
+      ctx.beginPath(); ctx.arc(kx, ky, kr, 0, 6.2832); ctx.fillStyle = "#506380"; ctx.fill(); ctx.strokeStyle = st.drag === "knob" ? P.red : "#24324a"; ctx.lineWidth = st.drag === "knob" ? 2.5 : 1.5; ctx.stroke();
+      for (var q = 0; q < 10; q++){ var a = rot + q * 0.628; ctx.beginPath(); ctx.moveTo(kx + Math.cos(a) * kr * 0.55, ky + Math.sin(a) * kr * 0.55); ctx.lineTo(kx + Math.cos(a) * kr * 0.95, ky + Math.sin(a) * kr * 0.95); ctx.strokeStyle = "rgba(255,255,255,.45)"; ctx.lineWidth = 1; ctx.stroke(); }
+      ctx.beginPath(); ctx.arc(kx, ky, kr * 0.42, 0, 6.2832); ctx.fillStyle = "#7489a8"; ctx.fill();
+      st.knob = {x:kx, y:ky, r:kr + 10};
+      /* tube et oculaire */
+      S.draw.rrect(c, X(20), Y(9), 8 * u, 18 * u, u); ctx.fillStyle = "#3d4f6b"; ctx.fill();
+      S.draw.rrect(c, X(20.8), Y(2), 6.4 * u, 7.5 * u, u); ctx.fillStyle = "#24324a"; ctx.fill();
+      ctx.fillStyle = "#c9d3df"; ctx.fillRect(X(20.8), Y(6.2), 6.4 * u, 0.9 * u);
+      /* tourelle et objectifs */
+      ctx.beginPath(); ctx.moveTo(X(15), Y(27)); ctx.lineTo(X(33), Y(27)); ctx.lineTo(X(30), Y(33)); ctx.lineTo(X(18), Y(33)); ctx.closePath(); ctx.fillStyle = "#56677f"; ctx.fill();
+      var others = [4, 10, 40, 100].filter(function(v){ return v !== o; }), ang = [-0.62, 0.62, 0.0];
+      var LEN = {4:9, 10:11, 40:14, 100:16};
+      function objective(v, angle, active){
+        var len = LEN[v] * (active ? 1 : 0.78), w = (active ? 4.4 : 3.6) * u;
+        ctx.save(); ctx.translate(X(24), Y(32.5)); ctx.rotate(angle);
+        ctx.globalAlpha = active ? 1 : 0.9;
+        S.draw.rrect(c, -w / 2, 0, w, len * u, 0.8 * u); var gg = ctx.createLinearGradient(-w / 2, 0, w / 2, 0); gg.addColorStop(0, "#c9d3df"); gg.addColorStop(0.5, "#f4f6f8"); gg.addColorStop(1, "#9aa6b6"); ctx.fillStyle = gg; ctx.fill(); ctx.strokeStyle = active ? "#13233a" : "#7b8694"; ctx.lineWidth = active ? 1.6 : 1; ctx.stroke();
+        ctx.fillStyle = RING[v]; ctx.fillRect(-w / 2, len * u * 0.55, w, 1.4 * u); if (v === 100){ ctx.strokeStyle = "#13233a"; ctx.lineWidth = 0.8; ctx.strokeRect(-w / 2, len * u * 0.55, w, 1.4 * u); }
+        S.draw.rrect(c, -w * 0.32, len * u - 0.4 * u, w * 0.64, 1.6 * u, 0.5 * u); ctx.fillStyle = "#56677f"; ctx.fill();
+        ctx.restore();
+        var tipx = X(24) + Math.sin(-angle) * len * u * 0.6, tipy = Y(32.5) + Math.cos(angle) * len * u * 0.6;
+        st.hits.push({v:v, x:tipx, y:tipy, r:Math.max(14, 4 * u)});
+        return {x:tipx, y:tipy, len:len};
+      }
+      objective(others[2], 0.0, false); objective(others[0], -0.62, false); objective(others[1], 0.62, false);
+      var act = objective(o, 0, true);
+      if (o === 100){ ctx.beginPath(); ctx.arc(X(24), Y(32.5 + LEN[100]) + 0.4 * u, 1.1 * u, 0, 3.1416); ctx.fillStyle = "rgba(240,220,140,.8)"; ctx.fill(); }
+      /* étiquettes (dessinées après le champ) */
+      st.lab = {X:X, Y:Y, o:o, dz:dz, kx:kx, ky:ky, kr:kr, cw:cw};
+    }
+    function scopeLabels(){
+      var L = st.lab, X = L.X, Y = L.Y, o = L.o, dz = L.dz, kx = L.kx, ky = L.ky, kr = L.kr, cw = L.cw, fs = cw < 150 ? 9 : 10.5;
+      S.draw.label(c, (cw < 150 ? "oc. ×" : "oculaire ×") + oc.value, X(29), Y(5), {color:P.ink, size:fs, align:"left"});
+      S.draw.label(c, (cw < 150 ? "obj. ×" : "objectif ×") + o, X(29), Y(47.5), {color:"#1f4b9e", size:fs, align:"left"});
+      S.draw.label(c, "platine", X(7.5), Y(60.5 + dz), {color:"#5f6b7a", size:fs, align:"left"});
+      S.draw.label(c, "vis", kx, ky + kr + 9, {color:st.drag === "knob" ? P.red : "#5f6b7a", size:fs});
+      S.draw.label(c, "lampe", X(13), Y(84.5), {color:"#8a6d1a", size:fs});
+      S.draw.text(c, "clique un objectif", X(14), Y(51), {size:fs - 0.5, color:"#5f6b7a", weight:600});
+    }
+    var lp = k.loop(function(dt){ st.t += dt; k.redraw(); }); lp.play();
+    c.pointer(function(type, p){
+      if (type === "down"){
+        if (st.knob && Math.hypot(p.x - st.knob.x, p.y - st.knob.y) < st.knob.r){ st.drag = "knob"; st.px = p.x; st.f0 = foc.value; return; }
+        var g = st.geo; if (g.lx !== undefined && p.x >= g.lx && p.x <= g.lx + g.lp && p.y >= g.ly && p.y <= g.ly + g.lp){ st.drag = "loupe"; }
+        else { var best = null; st.hits.forEach(function(hh){ if (Math.hypot(p.x - hh.x, p.y - hh.y) < hh.r) best = hh; }); if (best){ obj.set(best.v); k.redraw(); return; } }
+      }
+      if (type === "drag" && st.drag === "knob"){ foc.set(Math.round((st.f0 + (p.x - st.px) * 0.2) * 2) / 2); k.redraw(); }
+      if ((type === "down" || type === "drag") && st.drag === "loupe"){ var gg = st.geo, u = Math.abs(p.x - (gg.lx + gg.lp / 2)) * 2 / (G() * 0.12); dd.set(Math.round(Math.max(0.1, Math.min(4, u)) * 20) / 20); k.redraw(); }
+      if (type === "up") st.drag = null;
+    });
+    c.cv.style.touchAction = "pan-y";
+    k.draw(function(){
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, wide = W >= 480;
+      var topH = wide ? H * 0.6 : H * 0.56, cw = W * (wide ? 0.33 : 0.38);
+      /* microscope */
+      var u = Math.min(cw / 58, (topH - 8) / 100); scope(4 + (cw - 58 * u) / 2, 4 + (topH - 8 - 100 * u) / 2, u, cw);
+      /* champ */
+      var fx = cw + (W - cw) / 2, fy = topH / 2 + 2, Rmax = Math.min((W - cw) / 2 - 8, topH / 2 - 16), R = Rmax * Math.min(1, FN[oc.value] * oc.value / 180);
+      var D = FN[oc.value] * 1000 / obj.value;
+      ctx.save(); ctx.beginPath(); ctx.arc(fx, fy, Rmax + 6, 0, 6.2832); ctx.fillStyle = "#0b1220"; ctx.fill(); ctx.restore();
+      var img = fieldImage(R);
+      ctx.save(); ctx.beginPath(); ctx.arc(fx, fy, R, 0, 6.2832); ctx.clip(); ctx.imageSmoothingEnabled = true; ctx.drawImage(img, fx - R, fy - R, 2 * R, 2 * R);
+      var vg = ctx.createRadialGradient(fx, fy, R * 0.65, fx, fy, R); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(10,18,32,.35)"); ctx.fillStyle = vg; ctx.fillRect(fx - R, fy - R, 2 * R, 2 * R);
+      var bar = B4.nice(D / 4), bpx = bar / D * 2 * R; S.draw.line(c, fx - bpx / 2, fy + R * 0.78, fx + bpx / 2, fy + R * 0.78, "#13233a", 3); S.draw.label(c, (bar >= 1000 ? S.fmt(bar / 1000, 1) + " mm" : S.fmt(bar, bar < 1 ? 2 : 0) + " µm"), fx, fy + R * 0.78 - 12, {color:P.ink, size:10});
+      ctx.restore();
+      ctx.beginPath(); ctx.arc(fx, fy, R, 0, 6.2832); ctx.strokeStyle = "#13233a"; ctx.lineWidth = 2; ctx.stroke();
+      S.draw.text(c, "champ vu dans l'oculaire · " + S.fmt(D >= 1000 ? D / 1000 : D, D >= 1000 ? 2 : 0) + (D >= 1000 ? " mm" : " µm"), fx, topH - 4, {size:wide ? 11 : 9.5, color:"#5f6b7a", weight:600});
+      scopeLabels();
+      var blurF = defocus();
+      if (blurF > 0.3 * res() + 0.05) S.draw.label(c, "flou : tourne la vis", fx, fy - R + 16, {color:P.red, size:10});
+      /* loupe + courbe d'intensité */
+      var by = topH + 16, bh = H - by - 6, lp2 = Math.min(bh - 18, W * (wide ? 0.3 : 0.36)), lx = 10, ly = by + 14;
+      st.geo = {lx:lx, ly:ly, lp:lp2};
+      S.draw.text(c, wide ? "Loupe sur deux détails (glisse dessus)" : "Loupe (glisse)", lx, by + 2, {size:wide ? 11 : 9.5, color:P.ink, align:"left"});
+      ctx.save(); S.draw.rrect(c, lx, ly, lp2, lp2, 10); ctx.clip(); ctx.drawImage(loupeImage(lp2), lx, ly, lp2, lp2); ctx.restore();
+      S.draw.rrect(c, lx, ly, lp2, lp2, 10); ctx.strokeStyle = st.drag === "loupe" ? P.red : "#13233a"; ctx.lineWidth = 2; ctx.stroke();
+      var ppu = G() * 0.12, wl = lp2 / ppu, d = dd.value, rr = res(), sg = sigma(), ok = sep();
+      [-d / 2, d / 2].forEach(function(xx){ var px = lx + lp2 / 2 + xx * ppu; if (px > lx && px < lx + lp2){ S.draw.line(c, px, ly + lp2 - 9, px, ly + lp2 - 2, P.red, 2.5); } });
+      S.draw.label(c, "largeur " + (wl >= 1 ? S.fmt(wl, 1) : S.fmt(wl, 2)) + " µm", lx + lp2 / 2, ly + 12, {color:P.ink, size:9.5});
+      var gx0 = lx + lp2 + 10;
+      var pf = function(x){ return profile(x - wl / 2); };
+      var ax = S.draw.axes(c, {x0:0, x1:wl, y0:0, y1:1.1, l:gx0 + 26, r:10, t:ly + 4, b:H - (ly + lp2) + 2, xl:"x (µm)", yl:"intensité", stepY:0.5});
+      S.draw.area(c, ax, pf, 0, wl, ok ? P.green : P.amber, 0.12);
+      S.draw.fn(c, ax, pf, ok ? P.green : P.amber, 2.6);
+      [-d / 2, d / 2].forEach(function(xx){ if (xx > -wl / 2 && xx < wl / 2) S.draw.line(c, ax.X(xx + wl / 2), ax.B - 1, ax.X(xx + wl / 2), ax.B - 9, P.red, 2.5); });
+      S.draw.label(c, ok ? "deux creux : séparés" : "un creux : confondus", W - 8, by + 2, {color:ok ? P.green : P.red, size:wide ? 10.5 : 9.5, align:"right"});
+      /* lectures */
+      var g = G(), size = SIZE[spec.value];
+      ro.set(0, "×" + g + " (" + obj.value + " × " + oc.value + ")");
+      ro.set(1, D >= 1000 ? S.fmt(D / 1000, 2) + " mm" : S.fmt(D, 0) + " µm");
+      var app = size * g / 1000; ro.set(2, (app < 1 ? S.fmt(app, 2) : S.fmt(app, 1)) + " mm");
+      ro.set(3, S.fmt(rr * 1000, 0) + " nm (ON " + S.fmt(NA[obj.value], 2) + ")");
+      var vis = size >= rr, msg;
+      if (!vis) msg = "Un " + NAME[spec.value] + " mesure ≈ " + S.fmt(size * 1000, 0) + " nm, moins que la résolution (" + S.fmt(rr * 1000, 0) + " nm) : au microscope optique on n'en voit au mieux qu'un vague grain, quel que soit le grossissement.";
+      else if (size > D) msg = "L'objet (" + S.fmt(size, 0) + " µm) est plus grand que le champ (" + S.fmt(D, 0) + " µm) : on n'en voit qu'une partie. Prends un objectif plus faible.";
+      else msg = "Taille apparente = " + S.fmt(size, size < 10 ? 1 : 0) + " µm × " + g + " = " + (app < 1 ? S.fmt(app, 2) : S.fmt(app, 1)) + " mm. On aligne ≈ " + S.fmt(D / size, D / size < 10 ? 1 : 0) + " " + NAME[spec.value] + "s dans le diamètre du champ.";
+      msg += " Loupe : écart " + S.fmt(d, 2) + " µm " + (ok ? "≥" : "<") + " " + (sg > rr / 2 * 1.02 ? "résolution effective (flou compris) " + S.fmt(2 * sg, 2) : "résolution " + S.fmt(rr, 2)) + " µm : " + (ok ? "les deux détails sont séparés." : "ils se fondent en une tache. Change d'objectif ou de couleur, pas d'oculaire !");
+      nt.set(msg, ok && vis ? "ok" : "warn");
+      if (st.defi){
+        if (!st.defi.done && st.defi.ok()){ st.defi.done = true; st.score++; }
+        nd.set("<b>Défi " + st.tot + "</b> · " + st.defi.txt + (st.defi.done ? "<br><b>Réussi !</b>" + (st.defi.sol ? " Réponse : " + st.defi.sol + "." : "") : "") + " Score : " + st.score + " / " + st.tot + ".", st.defi.done ? "ok" : "warn");
+      } else nd.set("Clique sur « Défi suivant » pour un objectif chiffré (grossissement, taille apparente, séparation, mise au point).", "");
     });
   }
 });

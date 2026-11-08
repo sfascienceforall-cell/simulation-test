@@ -90,12 +90,12 @@ function sat(P, p50){ var n = 2.7, a = Math.pow(P, n), b = Math.pow(p50, n); ret
 SFA.sim({
   id: "b5-c10-placenta", ch: "c10", tag: "Échanges",
   titre: "Le placenta : diffusion de l'oxygène et hémoglobine fœtale",
-  resume: "Surface, épaisseur, PO₂ des sangs, CO → flux d'O₂ et saturation des hémoglobines.",
-  but: "Le sang de la mère et celui du fœtus ne se mélangent pas : les gaz diffusent à travers la barrière placentaire. Règle surface, épaisseur et pressions d'O₂ ; compare les courbes de saturation de l'hémoglobine maternelle (HbA) et fœtale (HbF). Observe l'effet du monoxyde de carbone (tabagisme).",
+  resume: "Villosité choriale : surface, épaisseur, PO₂ des deux sangs, CO → flux d'O₂ et saturation des hémoglobines.",
+  but: "Le sang de la mère baigne les villosités ; le sang du fœtus circule dans leurs capillaires : l'O₂ diffuse à travers la barrière sans que les sangs se mélangent. Règle la surface et l'épaisseur, et glisse les points des deux courbes de saturation pour changer les PO₂. Défi : avec une barrière d'au moins 15 µm (placenta abîmé), obtiens un flux d'au moins 100 % et une saturation fœtale d'au moins 70 %.",
   aRetenir: "Les échanges respectent la loi de diffusion : flux ≈ surface × différence de pression / épaisseur. Plus la surface est grande, la barrière fine, le gradient fort, plus le flux est élevé. L'hémoglobine fœtale a plus d'affinité pour l'O₂ que l'hémoglobine maternelle (courbe décalée vers la gauche) : à PO₂ égale, elle capte davantage d'O₂.",
   piege: "Le sang de la mère et celui du fœtus ne se mélangent pas (ils sont séparés par la barrière placentaire, sauf accident). Le fœtus ne respire pas par ses poumons : le sang oxygéné arrive par la veine ombilicale. Modèle simplifié : P50 = 27 mmHg (HbA) et 19 mmHg (HbF), exposant 2,7.",
   build: function(k, S){
-    var c1 = k.canvas(210), c2 = k.canvas(160), pal = S.draw.palette;
+    var c = k.canvas(590), pal = S.draw.palette, D = S.draw;
     var sf = k.slider("Surface d'échange du placenta", 2, 14, 1, 12, "m²");
     var ep = k.slider("Épaisseur de la barrière", 2, 25, 1, 5, "µm");
     var pm = k.slider("PO₂ du sang maternel (espace intervilleux)", 25, 60, 1, 40, "mmHg");
@@ -103,28 +103,79 @@ SFA.sim({
     var co = k.slider("Monoxyde de carbone (tabagisme) : Hb fœtale occupée", 0, 15, 1, 0, "%");
     var ro = k.readouts(["Flux d'O₂ (référence = 100 %)", "Saturation mère (HbA)", "Saturation fœtus (HbF)", "O₂ transporté (fœtus)"]);
     var nt = k.note("", "");
+    var an = 0, geo = {}, drag = 0, rnd = B5.rng(12), Q = [], i;
+    for (i = 0; i < 60; i++) Q.push({o: rnd(), u: rnd(), v: rnd()});
+    var lp = k.loop(function(dt){ an += dt; k.redraw(); }); lp.play();
+    c.cv.style.touchAction = "none";
+    c.pointer(function(t, p){
+      if (t === "down"){ drag = 0; if (geo.ax && p.y > geo.gy){ var dM = Math.abs(p.x - geo.ax.X(pm.value)), dF = Math.abs(p.x - geo.ax.X(pf.value)); drag = dM <= dF ? 1 : 2; } }
+      if (drag && (t === "down" || t === "drag")){ var v = Math.round(geo.ax.ix(p.x)); if (drag === 1) pm.set(B5.cl(v, 25, 60)); else pf.set(B5.cl(v, 12, 40)); }
+      if (t === "up") drag = 0;
+    });
     k.draw(function(){
-      c1.clear();
-      var ax = S.draw.axes(c1, {x0: 0, x1: 80, y0: 0, y1: 100, xl: "PO₂ (mmHg)", yl: "saturation (%)", stepX: 10, stepY: 25}), a = [], b = [], x;
-      for (x = 0; x <= 80; x += 1){ a.push([x, 100 * sat(x, 27)]); b.push([x, 100 * sat(x, 19)]); }
-      B5.poly(c1, ax, a, pal.red, 2.6); B5.poly(c1, ax, b, pal.violet, 2.6);
-      B5.leg(c1, [["HbA (mère)", pal.red], ["HbF (fœtus)", pal.violet]], ax.L + 8, ax.T + 34);
-      var sM = sat(pm.value, 27), sF = sat(pf.value, 19);
-      S.draw.dot(c1, ax.X(pm.value), ax.Y(100 * sM), 7, pal.red); S.draw.dot(c1, ax.X(pf.value), ax.Y(100 * sF), 7, pal.violet);
-      var flux = (sf.value / 12) * ((pm.value - pf.value) / 10) / (ep.value / 5) * 100;
+      var sM = sat(pm.value, 27), sF = sat(pf.value, 19), flux = Math.max(0, (sf.value / 12) * ((pm.value - pf.value) / 10) / (ep.value / 5) * 100);
       var cM = 1.34 * 12.5 * sM + 0.003 * pm.value, cF = (1.34 * 16 * sF + 0.003 * pf.value) * (1 - co.value / 100);
-      c2.clear();
-      var W = c2.W, x0 = 14, bw = W - 28;
-      S.draw.text(c2, "Flux d'O₂ relatif : " + S.fmt(Math.max(0, flux), 0) + " %", x0, 16, {align: "left", size: 12});
-      B5.bar(c2, x0, 26, bw, 16, Math.max(0, flux) / 200, flux < 70 ? pal.red : pal.green); S.draw.line(c2, x0 + bw / 2, 22, x0 + bw / 2, 46, pal.ink, 1.5);
-      S.draw.text(c2, "O₂ pour 100 mL de sang :", x0, 62, {align: "left", size: 12});
-      S.draw.text(c2, "mère " + S.fmt(cM, 1) + " mL · fœtus " + S.fmt(cF, 1) + " mL", x0, 78, {align: "left", size: 12});
-      B5.bar(c2, x0, 90, bw / 2 - 4, 14, cM / 25, pal.red); B5.bar(c2, x0 + bw / 2 + 4, 90, bw / 2 - 4, 14, cF / 25, pal.violet);
-      B5.wrap(c2, "(échelle 0 à 25 mL ; Hb mère 12,5 g/dL, Hb fœtus 16 g/dL)", x0, 128, W - 28, 15, {size: 12, color: pal.grey});
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, sh = 262;
+      /* espace intervilleux : sang maternel */
+      D.rrect(c, 6, 6, W - 12, sh, 12); var gm = ctx.createLinearGradient(0, 40, 0, sh); gm.addColorStop(0, "#f7c6c0"); gm.addColorStop(1, "#ef9f95"); ctx.fillStyle = gm; ctx.fill();
+      ctx.save(); D.rrect(c, 6, 6, W - 12, sh, 12); ctx.clip();
+      var sw = Math.min(W - 150, 330), x0 = 6;
+      for (i = 0; i < 18; i++){ var q = Q[i], rx = x0 + 10 + ((q.o * sw + an * 10 * (0.5 + q.v)) % sw), ry = 60 + q.u * (sh - 80); ctx.fillStyle = "rgba(192,50,29,.45)"; ctx.beginPath(); ctx.ellipse(rx, ry, 7, 4.5, q.v * 3, 0, 6.283); ctx.fill(); }
+      /* plaque choriale (côté fœtus) */
+      ctx.fillStyle = "#e2d6f2"; ctx.fillRect(6, 6, W - 12, 34); ctx.strokeStyle = "#9a7bb8"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(6, 40); ctx.lineTo(W - 6, 40); ctx.stroke();
+      ctx.restore();
+      D.text(c, "côté fœtus : cordon ombilical ↑", 16, 22, {align: "left", size: 10.5, color: "#5a3f8a", weight: 800});
+      /* villosité choriale */
+      var vx = 6 + sw * 0.5, vw = Math.min(64, sw * 0.24), vtop = 40, vbot = sh - 38, bt = 3 + (ep.value - 2) / 23 * 13;
+      function finger(off){ ctx.beginPath(); ctx.moveTo(vx - vw + off, vtop); ctx.lineTo(vx - vw + off, vbot - vw + off); ctx.arc(vx, vbot - vw + off, vw - off, Math.PI, 0, true); ctx.lineTo(vx + vw - off, vtop); ctx.closePath(); }
+      finger(0); ctx.fillStyle = "#c9a6d9"; ctx.fill(); ctx.strokeStyle = "#7a4f96"; ctx.lineWidth = 2; ctx.stroke();
+      finger(bt); ctx.fillStyle = "#f4ecf8"; ctx.fill();
+      D.text(c, "barrière " + ep.value + " µm", vx - vw - 4, vbot - 20, {size: 9.5, color: "#5a3f8a", weight: 800, align: "right"});
+      /* capillaire fœtal en boucle */
+      var cw = Math.max(6, (vw - bt) * 0.28), cl = vx - (vw - bt) * 0.45, cr = vx + (vw - bt) * 0.45, cb = vbot - vw * 0.6;
+      ctx.strokeStyle = "#9b3b6b"; ctx.lineWidth = cw + 4; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(cl, vtop - 8); ctx.lineTo(cl, cb); ctx.arc(vx, cb, (cr - cl) / 2, Math.PI, 0, true); ctx.lineTo(cr, vtop - 8); ctx.stroke();
+      ctx.strokeStyle = "rgb(" + Math.round(150 + 60 * sF) + ",60," + Math.round(140 - 40 * sF) + ")"; ctx.lineWidth = cw; ctx.beginPath(); ctx.moveTo(cl, vtop - 8); ctx.lineTo(cl, cb); ctx.arc(vx, cb, (cr - cl) / 2, Math.PI, 0, true); ctx.lineTo(cr, vtop - 8); ctx.stroke();
+      D.arrow(c, cl, vtop + 22, cl, vtop + 44, "#fff", 1.6); D.arrow(c, cr, vtop + 44, cr, vtop + 22, "#fff", 1.6);
+      D.text(c, "sang fœtal", vx + vw + 6, vtop + 12, {size: 9.5, color: "#5a3f8a", weight: 800, align: "left"});
+      /* O₂ maternel, diffusion, O₂ fœtal */
+      var nO = Math.round(pm.value / 60 * 26);
+      for (i = 0; i < nO; i++){ var q2 = Q[i + 20], ox = x0 + 14 + ((q2.u * sw + an * 14 * (0.4 + q2.o)) % (sw - 10)), oy = 52 + q2.v * (sh - 70); if (Math.abs(ox - vx) < vw + 6 && oy > vtop && oy < vbot + 6) continue; B5.circ(c, ox, oy, 2.8, "#2f7fd1", "#fff", 0.8); }
+      var nd = Math.round(B5.cl(flux / 200, 0, 1) * 10);
+      for (i = 0; i < nd; i++){ var q3 = Q[i + 40], fdif = (q3.o + an * 0.7) % 1, side = i % 2 ? 1 : -1, yy = vtop + 40 + q3.u * (vbot - vw - vtop - 40), xa = vx + side * (vw + 14), xb = side > 0 ? cr : cl; B5.circ(c, xa + (xb - xa) * fdif, yy, 2.8, "#2f7fd1", "#fff", 0.8); }
+      var nfo = Math.round(sF * 10);
+      for (i = 0; i < nfo; i++){ var fo = (Q[i].u + an * 0.25) % 1, py = cb - fo * (cb - vtop + 8); B5.circ(c, cr, py, 2.6, "#2f7fd1", "#fff", 0.8); }
+      var nco = Math.round(co.value / 15 * 5);
+      for (i = 0; i < nco; i++){ var fc = (Q[i + 10].v + an * 0.25) % 1, pyc = cb - fc * (cb - vtop + 8); B5.circ(c, cl, pyc, 3, "#5f6b7a", "#fff", 0.8); }
+      if (nco) D.text(c, "CO", cl - cw - 8, cb - 20, {size: 9.5, color: "#3a4656", weight: 900, align: "right"});
+      D.text(c, "sang maternel", x0 + 14, sh - 22, {align: "left", size: 10, color: "#8a1d10", weight: 800});
+      D.text(c, "• O₂", x0 + 14, sh - 8, {align: "left", size: 10, color: "#2f7fd1", weight: 900});
+      /* panneau de mesures */
+      var px = 6 + sw + 8, pw = W - px - 14;
+      D.panel(c, px, 60, pw, sh - 66, {shadow: false, fill: "rgba(255,255,255,.93)"});
+      D.text(c, "Flux d'O₂ : " + S.fmt(flux, 0) + " %", px + pw / 2, 76, {size: 11, color: flux < 70 ? pal.red : pal.green, weight: 900});
+      D.rrect(c, px + 10, 86, pw - 20, 12, 6); ctx.fillStyle = "#e3e7ed"; ctx.fill(); var fw = (pw - 20) * B5.cl(flux / 200, 0, 1); if (fw > 1){ D.rrect(c, px + 10, 86, Math.max(6, fw), 12, 6); ctx.fillStyle = flux < 70 ? pal.red : pal.green; ctx.fill(); }
+      D.line(c, px + 10 + (pw - 20) / 2, 82, px + 10 + (pw - 20) / 2, 102, pal.ink, 1.4); D.text(c, "100 %", px + pw / 2, 110, {size: 9, color: pal.grey});
+      D.display(c, S.fmt(sM * 100, 0) + " %", px + pw / 2, 142, {w: Math.min(110, pw - 12), h: 38, size: 14, caption: "sat. mère (HbA)", color: "#a31d0e"});
+      D.display(c, S.fmt(sF * 100, 0) + " %", px + pw / 2, 186, {w: Math.min(110, pw - 12), h: 38, size: 14, caption: "sat. fœtus (HbF)", color: "#5a3f8a"});
+      D.text(c, "O₂ fœtal : " + S.fmt(cF, 1) + " mL/dL", px + pw / 2, 224, {size: 9.5, color: "#5a3f8a", weight: 800});
+      /* ---------- courbes de saturation ---------- */
+      var gy = sh + 14; geo.gy = gy - 4; D.panel(c, 6, gy - 2, W - 12, H - gy - 2, {shadow: false, fill: "#fbfcfe"});
+      var ax = D.axes(c, {x0: 0, x1: 80, y0: 0, y1: 100, xl: "PO₂ (mmHg) · glisse les points", stepX: 10, stepY: 25, t: gy + 24, b: 34, l: 40, r: 16}); geo.ax = ax;
+      D.text(c, "saturation de l'hémoglobine (%)", 14, gy + 12, {size: 11, color: pal.grey, align: "left"});
+      ctx.fillStyle = "rgba(36,119,90,.08)"; ctx.fillRect(ax.X(pf.value), ax.T, ax.X(Math.max(pf.value, pm.value)) - ax.X(pf.value), ax.B - ax.T);
+      if (pm.value > pf.value) D.text(c, "gradient " + (pm.value - pf.value) + " mmHg", (ax.X(pm.value) + ax.X(pf.value)) / 2, ax.B - 10, {size: 9.5, color: pal.green});
+      var a = [], b = [], x;
+      for (x = 0; x <= 80; x += 1){ a.push([x, 100 * sat(x, 27)]); b.push([x, 100 * sat(x, 19)]); }
+      B5.poly(c, ax, a, pal.red, 2.6); B5.poly(c, ax, b, pal.violet, 2.6);
+      D.legend(c, [[pal.red, "HbA (mère)"], [pal.violet, "HbF (fœtus)"]], ax.R - 2, ax.Y(42), {align: "right"});
+      D.line(c, ax.X(pm.value), ax.Y(0), ax.X(pm.value), ax.Y(100 * sM), pal.red, 1, [3, 3]); D.line(c, ax.X(pf.value), ax.Y(0), ax.X(pf.value), ax.Y(100 * sF), pal.violet, 1, [3, 3]);
+      D.dot(c, ax.X(pm.value), ax.Y(100 * sM), 8, pal.red); D.dot(c, ax.X(pf.value), ax.Y(100 * sF), 8, pal.violet);
       ro.set(0, pm.value > pf.value ? S.fmt(flux, 0) + " %" : "nul ou inversé"); ro.set(1, S.fmt(sM * 100, 0) + " %"); ro.set(2, S.fmt(sF * 100, 0) + " %"); ro.set(3, S.fmt(cF, 1) + " mL / 100 mL");
+      var defi = ep.value >= 15 && flux >= 100 && sF >= 0.7;
       if (pm.value <= pf.value) nt.set("Pas de gradient de pression (PO₂ maternelle ≤ fœtale) : l'O₂ ne diffuse plus de la mère vers le fœtus.", "warn");
+      else if (defi) nt.set("Défi réussi : malgré une barrière de " + ep.value + " µm, flux de " + S.fmt(flux, 0) + " % et HbF saturée à " + S.fmt(sF * 100, 0) + " %. Il a fallu une grande surface et un fort gradient : c'est le compromis de la diffusion.", "ok");
       else if (flux < 70) nt.set("Flux réduit à " + S.fmt(flux, 0) + " % de la référence : surface trop petite, barrière trop épaisse ou gradient trop faible (hypoxie fœtale possible).", "warn");
-      else nt.set("À PO₂ du fœtus de " + pf.value + " mmHg, l'HbF est saturée à " + S.fmt(sF * 100, 0) + " % alors que l'HbA le serait à " + S.fmt(sat(pf.value, 27) * 100, 0) + " % : l'hémoglobine fœtale capte mieux l'O₂ à faible pression.", "ok");
+      else nt.set("À PO₂ du fœtus de " + pf.value + " mmHg, l'HbF est saturée à " + S.fmt(sF * 100, 0) + " % alors que l'HbA le serait à " + S.fmt(sat(pf.value, 27) * 100, 0) + " % : l'hémoglobine fœtale capte mieux l'O₂ à faible pression." + (co.value > 0 ? " Le CO occupe " + co.value + " % de l'Hb fœtale : moins d'O₂ transporté." : "") + (ep.value < 15 ? " Défi : épaissis la barrière à 15 µm ou plus et compense." : ""), "ok");
     });
   }
 });

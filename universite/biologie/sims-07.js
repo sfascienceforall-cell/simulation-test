@@ -10,8 +10,8 @@ var AA3 = {F:"Phe",L:"Leu",S:"Ser",Y:"Tyr","*":"Stop",C:"Cys",W:"Trp",P:"Pro",H:
 SFA.sim({
   id:"ub-c07-traduction-mutations", ch:"c07", tag:"Mutations",
   titre:"Lire le code : mutations ponctuelles et décalage du cadre",
-  resume:"Mute un ARNm et classe : silencieuse, faux-sens, non-sens, décalage.",
-  but:"Choisis un fragment d'ARNm, une mutation (substitution, insertion, délétion), sa position, et compare les protéines.",
+  resume:"Mute un ARNm en touchant un nucléotide, regarde le ribosome traduire l'ARNm muté et classe la mutation : silencieuse, faux-sens, non-sens, décalage.",
+  but:"Touche un nucléotide de l'ARNm normal (ou règle la position), choisis la mutation et regarde le ribosome lire l'ARNm muté codon par codon. Relève les défis : reproduire la mutation de la drépanocytose, faire une mutation silencieuse, un non-sens, un indel sans décalage.",
   aRetenir:"Substitution : silencieuse (même acide aminé, code dégénéré), faux-sens (autre acide aminé) ou non-sens (codon stop prématuré). Insertion/délétion d'un nombre de nucléotides non multiple de 3 : décalage du cadre, tout l'aval change. Multiple de 3 : le cadre est conservé (acide aminé en plus ou en moins). Exemple réel : Glu→Val en position 6 de la β-globine (GAG→GUG) = drépanocytose (position 6 sans compter la Met initiale ; c'est le 7<sup>e</sup> codon du fragment ici, nucléotides 19 à 21).",
   piege:"Une mutation silencieuse change la séquence d'ADN mais pas la protéine (elle peut cependant affecter l'épissage ou la vitesse de traduction). Une substitution au 3<sup>e</sup> nucléotide d'un codon est le plus souvent silencieuse (dégénérescence), au 2<sup>e</sup> rarement. Le code est lu sur l'ARNm 5'→3' à partir de l'AUG.",
   build:function(k,S){
@@ -19,15 +19,25 @@ SFA.sim({
       a:{n:"Peptide fictif", s:"AUGGCUGAACGUAAAUUCGGACCUUGGAAGUGA"},
       b:{n:"Début de β-globine (fragment, stop ajouté)", s:"AUGGUGCACCUGACUCCUGAGGAGAAGUCUUAA"}
     };
-    var c = k.canvas(300);
+    var c = k.canvas(330), di = 0, tr = 0, geo = null;
+    c.cv.style.touchAction = "manipulation";
     var sel = k.select("Fragment d'ARNm", [["a",seqs.a.n],["b",seqs.b.n]], "b");
     var typ = k.seg("Mutation", [["s","Substitution"],["i","Insertion"],["d","Délétion"]], "s");
     var pos = k.slider("Position (nucléotide)", 1, 33, 1, 20, "");
     var base = k.select("Nucléotide", ["A","C","G","U"], "U");
     var sz = k.slider("Taille de l'indel", 1, 3, 1, 1, "nt");
+    k.button("Défi suivant", function(){ di = (di + 1) % DEF.length; }, true);
     var ro = k.readouts(["Type","Protéine normale","Protéine mutée"]);
     var note = k.note("", "ok");
-    k.draw(function(){
+    var DEF = [
+      {t:"reproduis la mutation de la drépanocytose : Glu → Val dans le fragment de β-globine (7<sup>e</sup> codon du fragment).", ok:function(r){ return sel.value === "b" && typ.value === "s" && r.a0[6] === "E" && r.a1[6] === "V"; }},
+      {t:"fais une mutation silencieuse (la séquence change, pas la protéine).", ok:function(r){ return r.res === "Silencieuse"; }},
+      {t:"crée un codon stop prématuré (mutation non-sens).", ok:function(r){ return r.res === "Non-sens"; }},
+      {t:"insère ou supprime des nucléotides sans décaler le cadre de lecture.", ok:function(r){ return typ.value !== "s" && sz.value === 3; }}
+    ];
+    c.pointer(function(t, p){ if (t !== "down" || !geo) return; if (p.y > geo.y0 - 22 && p.y < geo.y0 + 50){ var i = Math.floor((p.x - 10) / geo.w); if (i >= 0 && i < geo.n){ var off = Math.max(0, Math.min(2, Math.floor((p.x - 10 - i * geo.w) / ((geo.w - 3) / 3)))); pos.set(Math.min(33, i * 3 + off + 1)); k.redraw(); } } });
+    function render(dt){
+      tr += (dt || 0) * 1.4;
       c.clear();
       var s0 = seqs[sel.value].s, p = Math.min(pos.value, s0.length) - 1, t = typ.value, n = sz.value, b = base.value, s1;
       if (t === "s") s1 = s0.slice(0, p) + b + s0.slice(p + 1);
@@ -35,18 +45,21 @@ SFA.sim({
       else s1 = s0.slice(0, p) + s0.slice(p + n);
       var c0 = codons(s0), c1 = codons(s1), p0 = prot(c0), p1 = prot(c1);
       var m = Math.max(p0.length, p1.length, 1), w = Math.min(56, (c.W - 70) / m), ctx = c.ctx;
-      var rows = [["Normal", c0, p0, 70], ["Muté", c1, p1, 190]];
-      rows.forEach(function(r){
-        S.draw.text(c, r[0], 6, r[3] - 28, {align:"left", size:12});
+      var rows = [["Normal (touche un nucléotide)", c0, p0, 62], ["Muté : le ribosome lit l'ARNm codon par codon", c1, p1, 196]], m1 = p1.length, rib = tr % (m1 + 2);
+      geo = {y0:62, w:w, n:c0.length};
+      rows.forEach(function(r, ri){
+        S.draw.text(c, r[0], 6, r[3] - 30, {align:"left", size:11.5});
         for (var i = 0; i < r[2].length; i++){
-          var cdn = r[1][i], other = (r[0] === "Normal" ? c1 : c0)[i], pr = (r[0] === "Normal" ? p1 : p0)[i];
-          var diff = cdn !== other, adiff = r[2][i] !== pr;
+          var cdn = r[1][i], other = (ri === 0 ? c1 : c0)[i], pr = (ri === 0 ? p1 : p0)[i];
+          var diff = cdn !== other, adiff = r[2][i] !== pr, x0 = 10 + i * w, shown = ri === 0 || i < rib;
           ctx.fillStyle = adiff ? "#fdd8d4" : diff ? "#fff0c2" : "#eef2f8";
-          ctx.fillRect(10 + i * w, r[3] - 18, w - 3, 66);
-          S.draw.text(c, cdn, 10 + i * w + (w - 3) / 2, r[3], {size: w > 40 ? 13 : 10, math:true});
-          S.draw.text(c, r[2][i] === "*" ? "Stop" : AA3[r[2][i]], 10 + i * w + (w - 3) / 2, r[3] + 26, {size: w > 40 ? 12 : 9});
+          ctx.fillRect(x0, r[3] - 18, w - 3, 66);
+          for (var q = 0; q < 3; q++){ var nt = cdn[q], gpos = i * 3 + q, hit = ri === 0 && gpos === p; if (hit){ ctx.fillStyle = "rgba(31,75,158,.18)"; ctx.fillRect(x0 + q * (w - 3) / 3, r[3] - 12, (w - 3) / 3, 22); }
+            S.draw.text(c, nt, x0 + (q + 0.5) * (w - 3) / 3, r[3], {size: w > 40 ? 13 : 10, math:true, color:hit ? pal0.acc : "#0f1b2d"}); }
+          if (shown){ var aa = r[2][i] === "*" ? "Stop" : AA3[r[2][i]]; ctx.fillStyle = r[2][i] === "*" ? "#c0321d" : adiff ? "#e8806f" : "#7fa7d9"; ctx.beginPath(); ctx.arc(x0 + (w - 3) / 2, r[3] + 28, Math.min(13, w * 0.3), 0, 6.2832); ctx.fill(); S.draw.text(c, aa, x0 + (w - 3) / 2, r[3] + 28.5, {size: w > 40 ? 10.5 : 8, color:"#fff"}); }
         }
       });
+      if (rib < m1 + 0.5){ var rx = 10 + Math.min(m1 - 1, Math.floor(rib)) * w + (w - 3) / 2, ry = 196; ctx.save(); ctx.globalAlpha = 0.55; ctx.fillStyle = "#6b7a8f"; ctx.beginPath(); ctx.ellipse(rx, ry - 27, w * 0.7, 9, 0, 0, 6.2832); ctx.fill(); ctx.fillStyle = "#8d9bb0"; ctx.beginPath(); ctx.ellipse(rx, ry + 56, w * 0.6, 7, 0, 0, 6.2832); ctx.fill(); ctx.restore(); S.draw.text(c, "ribosome", rx, ry + 70, {size:9, color:"#6b7a8f"}); }
       var res;
       if (t === "s"){
         var ci = Math.floor(p / 3), a0 = aaOf(c0[ci]), a1 = aaOf(c1[ci]);
@@ -56,7 +69,12 @@ SFA.sim({
       var l0 = p0.length - (p0[p0.length - 1] === "*" ? 1 : 0), l1 = p1.length - (p1[p1.length - 1] === "*" ? 1 : 0);
       ro.set(0, res); ro.set(1, l0 + " aa"); ro.set(2, l1 + " aa" + (p1[p1.length - 1] === "*" ? "" : " (pas de stop)"));
       note.set(t !== "s" && n % 3 !== 0 ? "Décalage : tous les codons en aval changent ; un stop apparaît vite par hasard (3 codons stop sur 64)." : res === "Silencieuse" ? "Code dégénéré : plusieurs codons pour le même acide aminé." : res === "Faux-sens" ? "Un acide aminé est remplacé : l'effet dépend de sa position et de sa nature (ex. Glu→Val en β-globine)." : res === "Non-sens" ? "Codon stop prématuré : protéine tronquée, souvent dégradée (NMD)." : "Rouge = acide aminé différent, jaune = codon différent mais même acide aminé.", "ok");
-    });
+      var d = DEF[di], ok = d.ok({res:res, a0:p0, a1:p1});
+      note.set((ok ? "✓ <b>Défi " + (di + 1) + "/4 réussi</b>. " : "◎ <b>Défi " + (di + 1) + "/4</b> : " + d.t + " ") + note.el.innerHTML, ok ? "ok" : "");
+    }
+    var pal0 = S.draw.palette;
+    k.draw(function(){ render(0); });
+    var lp = k.loop(function(dt){ render(dt); }); lp.play();
   }
 });
 

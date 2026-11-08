@@ -2,44 +2,110 @@
 (function(){
 var REST = -70, THR = -55;
 
+function somRun(nE, nI, f){
+  var T = 200, J = 2 * (nE - nI), per = 1000 / f, tau = 10, V = REST, vmax = REST, nap = 0, pts = [], spikes = [], pre = [], pi = 0;
+  for (var t0 = 5; t0 <= T; t0 += per) pre.push(t0);
+  for (var t = 0; t <= T; t += 0.1){
+    V = REST + (V - REST) * Math.exp(-0.1 / tau);
+    while (pi < pre.length && pre[pi] <= t + 1e-9){ V += J; pi++; }
+    if (V < REST - 15) V = REST - 15;
+    if (V >= THR - 1e-9){ nap++; spikes.push(t); vmax = Math.max(vmax, THR); V = REST; pts.push([t, 40]); pts.push([t + 0.1, REST]); continue; }
+    if (V > vmax) vmax = V;
+    pts.push([t, V]);
+  }
+  return {pts: pts, spikes: spikes, pre: pre, nap: nap, vmax: vmax, J: J};
+}
 SFA.sim({
   id: "b5-c02-sommation", ch: "c02", tag: "Classique",
   titre: "La synapse additionne : sommation spatiale et temporelle",
-  resume: "Nombre de synapses excitatrices/inhibitrices et fréquence → le neurone décharge-t-il ?",
-  but: "Un neurone reçoit des messages de plusieurs synapses. Chaque synapse excitatrice ajoute +2 mV, chaque synapse inhibitrice retire 2 mV (la dépolarisation s'efface avec une constante de temps de 10 ms). Trouve une combinaison qui déclenche des potentiels d'action, puis la plus petite fréquence qui y parvient avec 4 synapses.",
-  aRetenir: "Un seul message est presque toujours insuffisant. Le neurone additionne les potentiels postsynaptiques : sommation spatiale (plusieurs synapses en même temps) et sommation temporelle (messages rapprochés, qui s'ajoutent avant de s'éteindre). Les synapses inhibitrices éloignent du seuil. Le neurone décharge si le total atteint −55 mV.",
-  piege: "Les neurones ne se touchent pas : la fente synaptique (≈ 20 nm) est franchie par un neurotransmetteur, et le message arrivant n'est pas « tout ou rien » au niveau du neurone suivant : les petits potentiels postsynaptiques s'additionnent. Modèle simplifié.",
+  resume: "Touche les synapses pour les activer, règle la fréquence : le neurone atteint-il le seuil au cône d'émergence ?",
+  but: "Un neurone reçoit des messages de 10 synapses excitatrices (vertes, +2 mV chacune) et 6 inhibitrices (rouges, −2 mV), qui déchargent ensemble à la fréquence choisie. Touche une synapse pour l'activer ou la couper, et regarde les petits potentiels voyager jusqu'au cône d'émergence. Défi : avec 4 synapses excitatrices et aucune inhibitrice, trouve la plus petite fréquence qui déclenche un potentiel d'action.",
+  aRetenir: "Un seul message est presque toujours insuffisant. Le neurone additionne les potentiels postsynaptiques : sommation spatiale (plusieurs synapses en même temps) et sommation temporelle (messages rapprochés, qui s'ajoutent avant de s'éteindre). Les synapses inhibitrices éloignent du seuil. Le neurone décharge si le total atteint −55 mV au cône d'émergence.",
+  piege: "Les neurones ne se touchent pas : la fente synaptique (≈ 20 nm) est franchie par un neurotransmetteur, et le message arrivant n'est pas « tout ou rien » au niveau du neurone suivant : les petits potentiels postsynaptiques s'additionnent. Modèle simplifié (constante de temps 10 ms, synapses synchrones, position des synapses non prise en compte).",
   build: function(k, S){
-    var c = k.canvas(300), pal = S.draw.palette;
-    var nE = k.slider("Synapses excitatrices actives", 0, 10, 1, 4, "");
-    var nI = k.slider("Synapses inhibitrices actives", 0, 6, 1, 0, "");
+    var c = k.canvas(530), pal = S.draw.palette, D = S.draw;
+    var aE = [], aI = [], i;
+    var nE = k.slider("Synapses excitatrices actives", 0, 10, 1, 4, "", function(v){ for (i = 0; i < 10; i++) aE[i] = i < v; });
+    var nI = k.slider("Synapses inhibitrices actives", 0, 6, 1, 0, "", function(v){ for (i = 0; i < 6; i++) aI[i] = i < v; });
     var f = k.slider("Fréquence des PA présynaptiques", 5, 200, 5, 50, "Hz");
-    var ro = k.readouts(["Effet d'une salve", "PA postsynaptiques / 200 ms", "Potentiel max."]);
+    for (i = 0; i < 10; i++) aE[i] = i < 4; for (i = 0; i < 6; i++) aI[i] = false;
+    var ro = k.readouts(["Effet d'une salve", "PA postsynaptiques / 200 ms", "Potentiel max. au cône", "Sommation"]);
     var nt = k.note("", "");
-    k.draw(function(){
-      c.clear();
-      var T = 200, J = 2 * (nE.value - nI.value), per = 1000 / f.value, tau = 10, V = REST, vmax = REST, nap = 0, pts = [], spikes = [], pre = [];
-      for (var t0 = 5; t0 <= T; t0 += per) pre.push(t0);
-      var pi = 0;
-      for (var t = 0; t <= T; t += 0.1){
-        V = REST + (V - REST) * Math.exp(-0.1 / tau);
-        while (pi < pre.length && pre[pi] <= t + 1e-9){ V += J; pi++; }
-        if (V < REST - 15) V = REST - 15;
-        if (V >= THR - 1e-9){ nap++; spikes.push(t); vmax = Math.max(vmax, THR); V = REST; pts.push([t, 40]); pts.push([t + 0.1, REST]); continue; }
-        if (V > vmax) vmax = V;
-        pts.push([t, V]);
+    var tm = 0, an = 0, play = true, geo = {}, drag = false, syn = [];
+    k.button("Lecture / pause", function(){ play = !play; }, true);
+    var lp = k.loop(function(dt){ an += dt; if (play){ tm += dt * 40; if (tm > 200) tm = 0; } k.redraw(); }); lp.play();
+    c.cv.style.touchAction = "none";
+    c.pointer(function(t, p){
+      if (t === "down"){
+        drag = false;
+        if (geo.ax && p.y > geo.gy){ drag = true; }
+        else syn.forEach(function(s){ if (Math.hypot(p.x - s.x, p.y - s.y) < 15){ if (s.e){ aE[s.i] = !aE[s.i]; nE.set(aE.filter(Boolean).length); } else { aI[s.i] = !aI[s.i]; nI.set(aI.filter(Boolean).length); } } });
       }
-      var ax = S.draw.axes(c, {x0: 0, x1: T, y0: -90, y1: 50, xl: "t (ms)", yl: "V (mV)", stepX: 20, stepY: 20});
-      S.draw.line(c, ax.X(0), ax.Y(THR), ax.X(T), ax.Y(THR), pal.red, 1.5, [6, 4]);
-      S.draw.text(c, "seuil −55", ax.X(T) - 4, ax.Y(THR) + 10, {size: 12, color: pal.red, align: "right"});
-      pre.forEach(function(p){ S.draw.line(c, ax.X(p), ax.B, ax.X(p), ax.B - 12, pal.amber, 1.5); });
-      S.draw.text(c, "PA présynaptiques", ax.L + 4, ax.B - 22, {align: "left", size: 12, color: pal.amber});
-      B5.poly(c, ax, pts, pal.violet, 2.2);
-      ro.set(0, (J >= 0 ? "+" : "−") + S.fmt(Math.abs(J), 0) + " mV"); ro.set(1, String(nap)); ro.set(2, S.fmt(vmax, 1) + " mV");
-      if (nE.value === 0 && nI.value === 0) nt.set("Aucune synapse active : rien ne perturbe le potentiel de repos.", "");
-      else if (nap) nt.set("Le total atteint le seuil : " + nap + " potentiels d'action postsynaptiques en 200 ms.", "ok");
+      if (drag && (t === "down" || t === "drag")){ tm = B5.cl(geo.ax.ix(p.x), 0, 200); play = false; }
+      if (t === "up") drag = false;
+    });
+    k.draw(function(){
+      var r = somRun(nE.value, nI.value, f.value), idx = Math.min(r.pts.length - 1, Math.round(tm * 10)), V = REST, j;
+      for (j = 0; j < r.pts.length && r.pts[j][0] <= tm; j++) V = r.pts[j][1];
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, sh = 236;
+      D.rrect(c, 6, 6, W - 12, sh, 12); ctx.fillStyle = "#f4f2fa"; ctx.fill();
+      /* neurone postsynaptique */
+      var sx = Math.max(150, W * 0.5), sy = 120, sr = 30;
+      var dends = [[24, 30], [16, 96], [24, 170], [70, 222], [80, 18]];
+      ctx.strokeStyle = "#b6a4e0"; ctx.lineCap = "round";
+      dends.forEach(function(e, n){ ctx.lineWidth = 9; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.quadraticCurveTo((sx + e[0]) / 2 + 10, (sy + e[1]) / 2 + (n % 2 ? 12 : -12), e[0] + 14, e[1]); ctx.stroke(); });
+      var ax0 = sx + sr + 18, axy = sy;
+      ctx.fillStyle = "#b6a4e0"; ctx.beginPath(); ctx.moveTo(sx + sr - 6, sy - 16); ctx.lineTo(ax0, sy - 5); ctx.lineTo(ax0, sy + 5); ctx.lineTo(sx + sr - 6, sy + 16); ctx.fill();
+      ctx.strokeStyle = "#b6a4e0"; ctx.lineWidth = 8; ctx.beginPath(); ctx.moveTo(ax0, axy); ctx.lineTo(W - 20, axy); ctx.stroke();
+      for (var mx = ax0 + 18; mx < W - 40; mx += 40){ D.rrect(c, mx, axy - 7, 30, 14, 7); ctx.fillStyle = "#f6e7b4"; ctx.fill(); ctx.strokeStyle = "#c9a43a"; ctx.lineWidth = 1; ctx.stroke(); }
+      var vc = B5.cl((V - REST) / (THR - REST), -1, 1.3), sc = vc >= 0 ? "rgb(" + Math.round(200 + 50 * Math.min(1, vc)) + "," + Math.round(190 - 60 * Math.min(1, vc)) + "," + Math.round(230 - 150 * Math.min(1, vc)) + ")" : "rgb(" + Math.round(200 + 60 * vc) + "," + Math.round(190 + 20 * vc) + ",235)";
+      B5.circ(c, sx, sy, sr, sc, "#6236c4", 2.5); B5.circ(c, sx - 6, sy - 4, 10, "#8a62c6");
+      D.text(c, "corps cellulaire", sx, sy + sr + 12, {size: 9.5, color: pal.violet, weight: 800});
+      /* jauge au cône d'émergence */
+      var gx = ax0 - 4, gy0 = sy - 66, gh = 44;
+      D.rrect(c, gx - 5, gy0, 10, gh, 5); ctx.fillStyle = "#fff"; ctx.fill(); ctx.strokeStyle = "#8a95a3"; ctx.lineWidth = 1.2; ctx.stroke();
+      var lv = gy0 + gh - B5.cl((V + 85) / 35, 0, 1) * gh; ctx.fillStyle = V >= THR ? pal.red : pal.violet; ctx.fillRect(gx - 3, lv, 6, gy0 + gh - lv);
+      var ty = gy0 + gh - (THR + 85) / 35 * gh; D.line(c, gx - 9, ty, gx + 9, ty, pal.red, 1.6);
+      D.text(c, "seuil", gx + 12, ty, {size: 9, color: pal.red, align: "left", weight: 800});
+      D.text(c, "cône d'émergence", gx, gy0 - 10, {size: 9.5, color: pal.ink, weight: 800});
+      D.line(c, gx, gy0 + gh, gx, sy - 8, "#8a95a3", 1, [2, 2]);
+      /* PA postsynaptiques le long de l'axone */
+      r.spikes.forEach(function(t0){ var s = tm - t0; if (s < 0 || s > 6) return; var x = ax0 + s / 6 * (W - 20 - ax0); D.glow(c, x, axy, 22, pal.red, 0.8); });
+      if (r.spikes.some(function(t0){ return tm - t0 >= 0 && tm - t0 < 6; })) D.label(c, "potentiel d'action !", Math.min(W - 70, ax0 + 70), axy + 26, {size: 10, color: pal.red});
+      /* synapses (boutons présynaptiques) */
+      syn = [];
+      var lastPre = null; r.pre.forEach(function(p){ if (p <= tm) lastPre = p; });
+      var since = lastPre === null ? 99 : tm - lastPre;
+      for (i = 0; i < 10; i++){ var e = dends[i % 5], n5 = i % 5, fr = i < 5 ? 0.9 : 0.55, cxq = (sx + e[0]) / 2 + 10, cyq = (sy + e[1]) / 2 + (n5 % 2 ? 12 : -12), ex = e[0] + 14, u = 1 - fr;
+        var bx = u * u * sx + 2 * u * fr * cxq + fr * fr * ex, by = u * u * sy + 2 * u * fr * cyq + fr * fr * e[1]; syn.push({x: bx, y: by - 11, e: true, i: i}); }
+      for (i = 0; i < 6; i++){ var aa = Math.PI * (0.62 + i * 0.15), bx2 = sx + Math.cos(aa) * (sr + 13), by2 = sy - Math.sin(aa) * (sr + 13) * (i % 2 ? -1 : 1); syn.push({x: bx2, y: by2, e: false, i: i, dx: sx + Math.cos(aa) * sr, dy: sy - Math.sin(aa) * sr * (i % 2 ? -1 : 1)}); }
+      syn.forEach(function(s){
+        var on = s.e ? aE[s.i] : aI[s.i], col = s.e ? pal.green : pal.red;
+        if (on && since < 3) D.glow(c, s.x, s.y, 18, col, 0.7 * (1 - since / 3));
+        B5.circ(c, s.x, s.y, 8.5, on ? (s.e ? "#9fd6bd" : "#f2a7a0") : "#eef0f4", on ? col : "#b5bdc8", 2);
+        D.text(c, s.e ? "+" : "−", s.x, s.y + 0.5, {size: 11, color: on ? col : "#9aa3b0", weight: 900});
+        if (on && since < 8){ var q = since / 8, px = s.x + (sx - s.x) * q, py = s.y + (sy - s.y) * q; B5.circ(c, px, py, 4 * (1 - q) + 2, s.e ? "rgba(36,119,90,.7)" : "rgba(192,50,29,.7)"); }
+      });
+      D.label(c, "touche une synapse : + excitatrice, − inhibitrice", 16, sh - 10, {align: "left", size: 10, color: pal.grey});
+      D.label(c, "V = " + S.fmt(V, 1) + " mV", W - 18, 20, {align: "right", size: 10.5, color: V >= THR ? pal.red : pal.violet});
+      /* ---------- courbe ---------- */
+      var gy = sh + 14; geo.gy = gy - 4; D.panel(c, 6, gy - 2, W - 12, H - gy - 2, {shadow: false, fill: "#fbfcfe"});
+      var ax = D.axes(c, {x0: 0, x1: 200, y0: -90, y1: 50, xl: "t (ms) · glisse", stepX: 20, stepY: 20, t: gy + 24, b: 34, l: 44, r: 16}); geo.ax = ax;
+      D.text(c, "V au cône d'émergence (mV)", 14, gy + 12, {size: 11, color: pal.grey, align: "left"});
+      D.line(c, ax.L, ax.Y(THR), ax.R, ax.Y(THR), pal.red, 1.5, [6, 4]); D.text(c, "seuil −55", ax.R - 4, ax.Y(THR) + 10, {size: 10.5, color: pal.red, align: "right"});
+      r.pre.forEach(function(p){ D.line(c, ax.X(p), ax.B, ax.X(p), ax.B - 10, pal.amber, 1.5); });
+      D.text(c, "PA présynaptiques", ax.L + 4, ax.B - 18, {align: "left", size: 10, color: pal.amber});
+      B5.poly(c, ax, r.pts, "rgba(98,54,196,.22)", 1.6);
+      B5.poly(c, ax, r.pts.slice(0, idx + 1), pal.violet, 2.2);
+      D.line(c, ax.X(tm), ax.T, ax.X(tm), ax.B, pal.ink, 1.2, [4, 3]);
+      var J = r.J, prev = f.value > 5 ? somRun(nE.value, nI.value, f.value - 5).nap : 0;
+      ro.set(0, (J >= 0 ? "+" : "−") + S.fmt(Math.abs(J), 0) + " mV"); ro.set(1, String(r.nap)); ro.set(2, S.fmt(r.vmax, 1) + " mV");
+      ro.set(3, nE.value + nI.value > 1 ? "spatiale" + (f.value >= 40 ? " + temporelle" : "") : f.value >= 40 ? "temporelle" : "faible");
+      if (nE.value === 0 && nI.value === 0) nt.set("Aucune synapse active : rien ne perturbe le potentiel de repos. Touche une synapse verte.", "");
+      else if (r.nap && nE.value === 4 && nI.value === 0 && prev === 0) nt.set("Défi réussi : avec 4 synapses, il faut au moins " + f.value + " Hz. Les messages arrivent alors toutes les " + S.fmt(1000 / f.value, 1) + " ms, avant que la dépolarisation précédente ne s'efface : sommation temporelle.", "ok");
+      else if (r.nap) nt.set("Le total atteint le seuil : " + r.nap + " potentiels d'action postsynaptiques en 200 ms." + (nE.value === 4 && nI.value === 0 ? " Défi : baisse la fréquence au minimum qui marche encore." : ""), "ok");
       else if (J <= 0) nt.set("Les inhibiteurs compensent ou dépassent les excitateurs : le neurone ne peut pas atteindre le seuil.", "warn");
-      else nt.set("Pas de PA : le potentiel maximal (" + S.fmt(vmax, 1) + " mV) reste sous −55 mV. Augmente le nombre de synapses (sommation spatiale) ou la fréquence (sommation temporelle).", "warn");
+      else nt.set("Pas de PA : le potentiel maximal (" + S.fmt(r.vmax, 1) + " mV) reste sous −55 mV. Active d'autres synapses (sommation spatiale) ou augmente la fréquence (sommation temporelle).", "warn");
     });
   }
 });

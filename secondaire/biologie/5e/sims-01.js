@@ -193,46 +193,102 @@ function thr2(dt){ return dt < 2 ? Infinity : 15 + 60 * Math.exp(-(dt - 2) / 2);
 SFA.sim({
   id: "b5-c01-refractaire", ch: "c01", tag: "Oscilloscope",
   titre: "Deux stimuli : période réfractaire",
-  resume: "Écart entre deux stimuli → le deuxième déclenche-t-il un potentiel d'action ?",
-  but: "Deux stimuli sont appliqués au même point de l'axone. Règle l'écart Δt et l'intensité du second. Cherche le plus petit écart pour lequel un second potentiel d'action est possible, puis la fréquence maximale du neurone.",
+  resume: "Écart entre deux stimuli → les canaux Na⁺ sont-ils prêts pour un deuxième potentiel d'action ?",
+  but: "Deux stimuli sont appliqués au même point de l'axone. Regarde les canaux Na⁺ de la membrane pendant le balayage de l'oscilloscope : ouverts, puis inactivés, puis de nouveau prêts. Glisse le point sur le graphique du seuil (écart Δt et intensité du 2e stimulus). Défi : pour l'intensité choisie, trouve le plus petit écart qui donne un second PA.",
   aRetenir: "Juste après un potentiel d'action, les canaux Na⁺ sont inactivés : période réfractaire absolue (≈ 2 ms ici), aucun stimulus ne déclenche de PA. Ensuite vient la période réfractaire relative : il faut un stimulus plus fort que d'habitude. Cela impose une fréquence maximale (≈ 1/2 ms = 500 Hz) et force l'influx à avancer dans un seul sens.",
   piege: "La période réfractaire n'est pas de la fatigue du neurone : c'est l'état des canaux ioniques juste après le PA. Valeurs d'un modèle simplifié.",
   build: function(k, S){
-    var c1 = k.canvas(190), c2 = k.canvas(190), pal = S.draw.palette;
-    var dt = k.slider("Écart Δt entre les deux stimuli", 0.5, 12, 0.5, 6, "ms");
-    var I2 = k.slider("Intensité du 2e stimulus", 10, 60, 1, 20, "mV");
-    var ro = k.readouts(["Seuil du 2e stimulus", "2e PA ?", "Fréquence max."]);
+    var c = k.canvas(600), pal = S.draw.palette, D = S.draw;
+    var dt = k.slider("Écart Δt entre les deux stimuli", 0.5, 12, 0.5, 3, "ms");
+    var I2 = k.slider("Intensité du 2e stimulus", 10, 60, 1, 30, "mV");
+    var ro = k.readouts(["Seuil du 2e stimulus", "2e PA ?", "Canaux Na⁺ prêts au 2e stimulus", "Fréquence max."]);
     var nt = k.note("", "");
+    var tt = -1, an = 0, play = true, geo = {}, drag = 0, rnd = B5.rng(2), Q = [], i;
+    for (i = 0; i < 40; i++) Q.push({o: rnd(), u: rnd(), v: rnd()});
+    k.button("Lecture / pause du balayage", function(){ play = !play; }, true);
+    var lp = k.loop(function(t){ an += t; if (play){ tt += t * 4; if (tt > 16) tt = -1; } k.redraw(); }); lp.play();
+    c.cv.style.touchAction = "none";
+    c.pointer(function(t, p){
+      if (t === "down"){ drag = 0; if (geo.axT && p.y > geo.yT) drag = 2; else if (geo.axO && p.y > geo.yO) drag = 1; }
+      if (drag === 2 && (t === "down" || t === "drag")){ dt.set(B5.cl(Math.round(geo.axT.ix(p.x) * 2) / 2, 0.5, 12)); I2.set(B5.cl(Math.round(geo.axT.iy(p.y)), 10, 60)); }
+      if (drag === 1 && (t === "down" || t === "drag")){ tt = B5.cl(geo.axO.ix(p.x), -1, 16); play = false; }
+      if (t === "up") drag = 0;
+    });
+    function ready(s){ return s < 0.7 ? 0 : s < 2 ? 0 : 1 - Math.exp(-(s - 2) / 2); }
     k.draw(function(){
-      var d = dt.value, i2 = I2.value, th = thr2(d), ok = i2 >= th;
-      c1.clear();
-      var ax = S.draw.axes(c1, {x0: 0, x1: 12, y0: 0, y1: 80, xl: "Δt (ms)", yl: "seuil du 2e stimulus (mV)", stepX: 1, stepY: 20});
-      var pts = []; for (var x = 2; x <= 12; x += 0.1) pts.push([x, thr2(x)]);
-      B5.poly(c1, ax, pts, pal.violet, 2.6);
-      c1.ctx.fillStyle = "rgba(138,42,26,.12)"; c1.ctx.fillRect(ax.X(0), ax.T, ax.X(2) - ax.X(0), ax.B - ax.T);
-      S.draw.text(c1, "absolue", ax.X(1), ax.T + 14, {size: 12, color: pal.red});
-      S.draw.text(c1, "relative", ax.X(4.2), ax.T + 14, {size: 12, color: pal.amber});
-      S.draw.dot(c1, ax.X(d), ax.Y(i2), 7, ok ? pal.green : pal.red);
-      c2.clear();
-      var ax2 = S.draw.axes(c2, {x0: -1, x1: 16, y0: -90, y1: 50, xl: "t (ms)", yl: "V (mV)", stepY: 40, stepX: 2});
-      S.draw.line(c2, ax2.X(-1), ax2.Y(THR), ax2.X(16), ax2.Y(THR), pal.red, 1.2, [5, 4]);
-      var p2 = [], tc1 = 15 * 0.4 / 40, tcc = 15 * 0.4 / i2;
-      for (var t = 0; t <= 16; t += 0.05){
-        var v = t < tc1 ? REST + 40 * t / 0.4 : ap(t - tc1);
-        if (t >= d){
-          var s2 = t - d;
-          if (ok) v = s2 < tcc ? v + i2 * s2 / 0.4 : ap(s2 - tcc);
-          else v = v + Math.min(i2, 14) * (s2 < 0.4 ? s2 / 0.4 : Math.exp(-(s2 - 0.4) / 2));
-        }
-        p2.push([t, v]);
+      var d = dt.value, i2 = I2.value, th = thr2(d), ok = i2 >= th, tc1 = 15 * 0.4 / 40, tcc = 15 * 0.4 / i2, t2 = d + tcc;
+      var p2 = [], vNow = REST, t;
+      for (t = -1; t <= 16.001; t += 0.05){
+        var v = t < 0 ? REST : t < tc1 ? REST + 40 * t / 0.4 : ap(t - tc1);
+        if (t >= d){ var s2 = t - d; if (ok) v = s2 < tcc ? v + i2 * s2 / 0.4 : ap(s2 - tcc); else v = v + Math.min(i2, 14) * (s2 < 0.4 ? s2 / 0.4 : Math.exp(-(s2 - 0.4) / 2)); }
+        p2.push([t, v]); if (t <= tt) vNow = v;
       }
-      B5.poly(c2, ax2, p2, pal.violet, 2.4);
-      S.draw.text(c2, "stimulus 1", ax2.X(0) + 4, ax2.B - 8, {align: "left", size: 12, color: pal.grey});
-      S.draw.text(c2, "stimulus 2", ax2.X(d) + 4, ax2.B - 22, {align: "left", size: 12, color: pal.grey});
-      ro.set(0, isFinite(th) ? S.fmt(th, 0) + " mV" : "impossible"); ro.set(1, ok ? "oui" : "non"); ro.set(2, "≈ 500 Hz");
-      if (d < 2) nt.set("Période réfractaire absolue (Δt < 2 ms) : quelle que soit l'intensité, pas de second PA.", "warn");
-      else if (ok) nt.set("Période réfractaire relative : le seuil vaut " + S.fmt(th, 0) + " mV et ton stimulus (" + S.fmt(i2, 0) + " mV) le dépasse : second PA.", "ok");
-      else nt.set("Seuil encore relevé à " + S.fmt(th, 0) + " mV : ton stimulus de " + S.fmt(i2, 0) + " mV est insuffisant. Augmente l'intensité ou l'écart.", "warn");
+      /* état des canaux au point stimulé à l'instant tt */
+      var st, frac;
+      var last = ok && tt >= t2 ? t2 : tt >= tc1 ? tc1 : null;
+      if (last === null){ st = "fermés, prêts"; frac = 1; }
+      else { var s = tt - last; if (s < 0.7){ st = "ouverts : Na⁺ entre"; frac = -1; } else if (s < 2){ st = "inactivés (réfractaire absolue)"; frac = 0; } else { frac = ready(s); st = frac > 0.97 ? "fermés, prêts" : "en récupération (réfractaire relative)"; } }
+      var atS2 = ready(d - tc1);
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, sh = 214;
+      D.rrect(c, 6, 6, W - 12, sh, 12); ctx.fillStyle = "#f3f5fa"; ctx.fill();
+      /* axone + électrodes */
+      var ay = 44, ah = 26, x0 = 20, x1 = W - 20;
+      D.rrect(c, x0, ay, x1 - x0, ah, 13); ctx.fillStyle = "#f6e7b4"; ctx.fill(); ctx.strokeStyle = "#b58a10"; ctx.lineWidth = 2; ctx.stroke();
+      var sx = x0 + 50, rx = sx + 26;
+      D.line(c, sx, 12, sx, ay + 2, pal.red, 2.5); D.text(c, "S", sx - 9, 16, {size: 11, color: pal.red, weight: 900});
+      D.line(c, rx, 12, rx, ay + 2, pal.teal, 2.5); D.text(c, "R → oscilloscope", rx + 6, 16, {size: 10, color: pal.teal, weight: 800, align: "left"});
+      [tc1, ok ? t2 : null].forEach(function(t0){ if (t0 === null || tt < t0) return; var xx = sx + (tt - t0) * (x1 - sx) / 12; if (xx > x1 - 10) return; D.glow(c, xx, ay + ah / 2, 26, pal.red, 0.6); D.text(c, "PA", xx, ay + ah + 12, {size: 10, color: pal.red, weight: 900}); });
+      if (tt >= 0 && tt < 0.5) D.glow(c, sx, ay, 18, pal.yellow, 0.9);
+      if (tt >= d && tt < d + 0.5) D.glow(c, sx, ay, 18, pal.yellow, 0.9);
+      D.text(c, "axone", x1 - 26, ay + ah / 2, {size: 10, color: "#8a6508", weight: 800});
+      /* zoom sur la membrane au point stimulé */
+      var my = 132, mh = 22, n = 7, zx0 = 20, zx1 = W - 20;
+      D.line(c, sx, ay + ah, zx0 + 30, my - 34, "#aeb8c5", 1, [3, 3]); D.line(c, sx, ay + ah, zx1 - 30, my - 34, "#aeb8c5", 1, [3, 3]);
+      D.text(c, "membrane au point S (zoom)", W / 2, my - 40, {size: 10, color: pal.grey, weight: 800});
+      D.text(c, "extérieur", zx0 + 2, my - 24, {size: 9.5, color: pal.grey, align: "left"}); D.text(c, "cytoplasme", zx0 + 2, my + mh + 22, {size: 9.5, color: pal.grey, align: "left"});
+      for (var hx = zx0; hx <= zx1; hx += 7){ B5.circ(c, hx, my, 3, "#e9b4a6"); B5.circ(c, hx, my + mh, 3, "#e9b4a6"); D.line(c, hx, my + 3, hx, my + mh - 3, "#efd9c9", 1.2); }
+      var gap = (zx1 - zx0) / (n + 1), nReady = frac < 0 ? 0 : Math.round(frac * n);
+      for (i = 0; i < n; i++){
+        var cx = zx0 + gap * (i + 1), open = frac < 0, rdy = i < nReady, inact = !open && !rdy;
+        ctx.fillStyle = open ? "#7fc4a4" : rdy ? "#9fd0b6" : "#e7a69b"; ctx.strokeStyle = open ? "#24775a" : rdy ? "#24775a" : "#a83a2b"; ctx.lineWidth = 1.5;
+        var gw = open ? 9 : 4; D.rrect(c, cx - gw - 9, my - 6, 9, mh + 12, 3); ctx.fill(); ctx.stroke(); D.rrect(c, cx + gw, my - 6, 9, mh + 12, 3); ctx.fill(); ctx.stroke();
+        if (inact){ D.line(c, cx + gw + 4, my + mh + 6, cx + 2, my + mh + 14, "#a83a2b", 1.4); B5.circ(c, cx, my + mh + 4, 5, "#c0321d", "#7a1d10", 1.2); }
+        if (open){ for (var q = 0; q < 2; q++){ var f = (Q[i * 2 + q].o + an * 1.6) % 1; B5.circ(c, cx, my - 12 + f * (mh + 34), 3, "#2f7fd1", "#fff", 0.8); } }
+      }
+      for (i = 0; i < 16; i++){ var qx = zx0 + 10 + Q[i + 16].u * (zx1 - zx0 - 20), qy = my - 18 + Math.sin(an * 2 + i) * 2; B5.circ(c, qx, qy, 2.6, "#2f7fd1"); }
+      D.text(c, "Na⁺", zx1 - 4, my - 24, {size: 10, color: "#2f7fd1", weight: 900, align: "right"});
+      D.label(c, "canaux Na⁺ : " + st, W / 2, my + mh + 44, {size: 10.5, color: frac < 0 ? pal.green : frac === 0 ? pal.red : frac > 0.97 ? pal.green : pal.amber});
+      D.label(c, "t = " + S.fmt(Math.max(0, tt), 1) + " ms", W - 18, 24, {align: "right", size: 10, color: pal.ink});
+      /* ---------- oscilloscope ---------- */
+      var yO = sh + 10; geo.yO = yO;
+      D.rrect(c, 6, yO, W - 12, 168, 10); ctx.fillStyle = "#0f2a24"; ctx.fill();
+      var axO = {x0: -1, x1: 16, y0: -90, y1: 50}, L = 44, R = W - 20, T = yO + 22, B = yO + 140;
+      axO.X = function(x){ return L + (x + 1) / 17 * (R - L); }; axO.Y = function(y){ return B - (y + 90) / 140 * (B - T); }; axO.ix = function(px){ return -1 + (px - L) / (R - L) * 17; }; geo.axO = axO;
+      ctx.strokeStyle = "rgba(120,220,170,.15)"; ctx.lineWidth = 1; for (var gx = 0; gx <= 16; gx += 2){ ctx.beginPath(); ctx.moveTo(axO.X(gx), T); ctx.lineTo(axO.X(gx), B); ctx.stroke(); D.text(c, gx, axO.X(gx), B + 10, {size: 9.5, color: "#8fd9b6", weight: 600}); }
+      [-70, -55, 0, 40].forEach(function(v){ ctx.beginPath(); ctx.moveTo(L, axO.Y(v)); ctx.lineTo(R, axO.Y(v)); ctx.stroke(); D.text(c, v, L - 6, axO.Y(v), {size: 9.5, color: "#8fd9b6", weight: 600, align: "right"}); });
+      D.line(c, L, axO.Y(THR), R, axO.Y(THR), "rgba(255,120,100,.7)", 1.2, [5, 4]);
+      D.text(c, "V (mV) · t (ms) · glisse", L + 4, yO + 11, {size: 10, color: "#8fd9b6", align: "left"});
+      ctx.save(); ctx.strokeStyle = "rgba(127,255,190,.25)"; ctx.lineWidth = 2; ctx.beginPath(); p2.forEach(function(p, j){ if (j) ctx.lineTo(axO.X(p[0]), axO.Y(p[1])); else ctx.moveTo(axO.X(p[0]), axO.Y(p[1])); }); ctx.stroke();
+      ctx.strokeStyle = "#7fffbe"; ctx.lineWidth = 2.4; ctx.shadowColor = "#7fffbe"; ctx.shadowBlur = 6; ctx.beginPath(); p2.filter(function(p){ return p[0] <= tt; }).forEach(function(p, j){ if (j) ctx.lineTo(axO.X(p[0]), axO.Y(p[1])); else ctx.moveTo(axO.X(p[0]), axO.Y(p[1])); }); ctx.stroke(); ctx.restore();
+      [[0, "S1"], [d, "S2"]].forEach(function(q){ ctx.fillStyle = "#ffd36e"; ctx.beginPath(); ctx.moveTo(axO.X(q[0]), B + 18); ctx.lineTo(axO.X(q[0]) - 5, B + 26); ctx.lineTo(axO.X(q[0]) + 5, B + 26); ctx.fill(); D.text(c, q[1], axO.X(q[0]) + 8, B + 22, {size: 9.5, color: "#ffd36e", align: "left"}); });
+      ctx.fillStyle = "rgba(255,90,70,.12)"; ctx.fillRect(axO.X(tc1), T, axO.X(2) - axO.X(tc1), B - T);
+      /* ---------- seuil du 2e stimulus ---------- */
+      var yT = yO + 178; geo.yT = yT; D.panel(c, 6, yT, W - 12, H - yT - 4, {shadow: false, fill: "#fbfcfe"});
+      var ax = D.axes(c, {x0: 0, x1: 12, y0: 0, y1: 80, xl: "Δt (ms) · glisse le point", stepX: 1, stepY: 20, t: yT + 24, b: 34, l: 44, r: 16}); geo.axT = ax;
+      D.text(c, "seuil du 2e stimulus (mV)", 14, yT + 12, {size: 11, color: pal.grey, align: "left"});
+      ctx.fillStyle = "rgba(192,50,29,.12)"; ctx.fillRect(ax.X(0), ax.T, ax.X(2) - ax.X(0), ax.B - ax.T);
+      D.area(c, ax, function(x){ return Math.min(80, thr2(x)); }, 2, 12, pal.green, 0.08, function(){ return 80; });
+      var pts = []; for (var x = 2; x <= 12; x += 0.1) pts.push([x, Math.min(80, thr2(x))]);
+      B5.poly(c, ax, pts, pal.violet, 2.6);
+      D.text(c, "absolue", ax.X(1), ax.T + 12, {size: 10.5, color: pal.red}); D.text(c, "relative", ax.X(4.5), ax.T + 12, {size: 10.5, color: pal.amber});
+      D.text(c, "2e PA", ax.X(9), ax.Y(55), {size: 10.5, color: pal.green});
+      D.dot(c, ax.X(d), ax.Y(i2), 8, ok ? pal.green : pal.red);
+      ro.set(0, isFinite(th) ? S.fmt(th, 0) + " mV" : "impossible"); ro.set(1, ok ? "oui" : "non"); ro.set(2, d - tc1 < 2 ? "0 % (inactivés)" : S.fmt(100 * atS2, 0) + " %"); ro.set(3, "≈ 500 Hz");
+      var best = ok && !(i2 >= thr2(d - 0.5));
+      if (d < 2) nt.set("Période réfractaire absolue (Δt < 2 ms) : les canaux Na⁺ sont inactivés ; quelle que soit l'intensité, pas de second PA.", "warn");
+      else if (best) nt.set("Défi réussi : avec " + i2 + " mV, Δt = " + S.fmt(d, 1) + " ms est le plus petit écart qui marche (" + S.fmt(100 * atS2, 0) + " % des canaux prêts). À " + S.fmt(d - 0.5, 1) + " ms, le seuil vaudrait " + S.fmt(thr2(d - 0.5), 0) + " mV.", "ok");
+      else if (ok) nt.set("Période réfractaire relative : le seuil vaut " + S.fmt(th, 0) + " mV et ton stimulus (" + i2 + " mV) le dépasse : second PA. Défi : rapproche les stimuli autant que possible.", "ok");
+      else nt.set("Seuil encore relevé à " + S.fmt(th, 0) + " mV : seuls " + S.fmt(100 * atS2, 0) + " % des canaux sont prêts, ton stimulus de " + i2 + " mV est insuffisant. Augmente l'intensité ou l'écart.", "warn");
     });
   }
 });

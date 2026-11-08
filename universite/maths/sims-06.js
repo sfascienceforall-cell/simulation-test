@@ -124,14 +124,16 @@ SFA.sim({
 /* ---------- 2. multiplication = rotation + dilatation ---------- */
 SFA.sim({
   id:"um-c06-multiplication-rotation", ch:"c06", titre:"Multiplier, c'est tourner et dilater", tag:"Nombres complexes",
-  resume:"Déplace z₁ et z₂ : les modules se multiplient, les arguments s'additionnent.",
-  but:"Glisse z₁ (bleu) et z₂ (violet). Le produit p = z₁·z₂ (rouge) a pour module |z₁||z₂| et pour argument θ₁ + θ₂ ; le triangle (0, 1, z₁) est semblable au triangle (0, z₂, p). Passe en mode quotient ou en mode z².",
+  resume:"Déplace z₁ et z₂ : les modules se multiplient, les arguments s'additionnent. Défi : fais tomber le produit sur une étoile.",
+  but:"Glisse z₁ (bleu) et z₂ (violet). Le produit p = z₁·z₂ (rouge) a pour module |z₁||z₂| et pour argument θ₁ + θ₂ ; le triangle (0, 1, z₁) est semblable au triangle (0, z₂, p). Passe en mode quotient ou en mode z². Défi : place z₂ pour que z₁·z₂ atteigne l'étoile.",
   aRetenir:"|z₁z₂| = |z₁||z₂| et arg(z₁z₂) = arg z₁ + arg z₂ ; |z₁/z₂| = |z₁|/|z₂| et arg(z₁/z₂) = arg z₁ − arg z₂. Multiplier par i = tourner de 90°.",
   piege:"Les arguments s'additionnent mais se comptent modulo 360° : θ₁ + θ₂ peut dépasser 180° ; on le ramène dans ]−180° ; 180°].",
   build:function(k, S){
     var U = UMB, C = U.C, fx = U.fx, c = k.canvas(0, {ratio:0.72}), z1 = {x:1.5, y:1, lim:4.6}, z2 = {x:0.8, y:1.6, lim:4.6}, PN;
     var md = k.seg("Opération", [["mul", "z₁ × z₂"], ["div", "z₁ ÷ z₂"], ["sq", "z₁²"], ["i", "i × z₁"]], "mul");
     var ts = k.toggle("Montrer le triangle semblable", true), tg = k.toggle("Aimanter aux demi-entiers", false);
+    var TGM = [[-2, 2], [0, -3], [3, 1], [-1.5, -2.5], [2.5, -1]], gi = -1, gwins = 0, gwon = false;
+    k.button("Défi : atteindre l'étoile", function(){ gi = (gi + 1) % TGM.length; gwon = false; md.set("mul"); }, true);
     var ro = k.readouts(["|z₁|", "|z₂|", "θ₁ (°)", "θ₂ (°)", "Résultat", "Module résultat", "Argument résultat (°)"]);
     var nt = k.note("", "ok");
     function wrap(a){ while (a > Math.PI + 1e-9) a -= 2 * Math.PI; while (a <= -Math.PI + 1e-9) a += 2 * Math.PI; return a; }
@@ -160,6 +162,12 @@ SFA.sim({
       if (w) U.pt(c, PN, w.x, w.y, C.red, "", 4.5);
       var deg = 180 / Math.PI;
       ro.set(0, fx(r1, 3)); ro.set(1, m === "sq" || m === "i" ? "—" : fx(r2, 3)); ro.set(2, fx(t1 * deg, 1)); ro.set(3, m === "sq" || m === "i" ? "—" : fx(t2 * deg, 1));
+      if (gi >= 0 && m === "mul" && w){ var tg = TGM[gi], ctxg = c.ctx, sx = PN.X(tg[0]), sy = PN.Y(tg[1]); ctxg.save(); ctxg.beginPath(); for (var si = 0; si < 10; si++){ var rr = si % 2 ? 6 : 14, aa = -Math.PI / 2 + si * Math.PI / 5; ctxg.lineTo(sx + rr * Math.cos(aa), sy + rr * Math.sin(aa)); } ctxg.closePath(); ctxg.fillStyle = "#f4c542"; ctxg.fill(); ctxg.strokeStyle = "#B45309"; ctxg.lineWidth = 1.5; ctxg.stroke(); ctxg.restore();
+        var dg = Math.hypot(w.x - tg[0], w.y - tg[1]), rt = Math.hypot(tg[0], tg[1]), at = Math.atan2(tg[1], tg[0]) * 180 / Math.PI;
+        ro.set(0, fx(r1, 3)); ro.set(1, fx(r2, 3)); ro.set(2, fx(t1 * 180 / Math.PI, 1)); ro.set(3, fx(t2 * 180 / Math.PI, 1)); ro.set(4, U.cstr(w.x, w.y, 2)); ro.set(5, fx(Math.hypot(w.x, w.y), 3)); ro.set(6, fx(Math.atan2(w.y, w.x) * 180 / Math.PI, 1));
+        if (dg < 0.15){ if (!gwon){ gwon = true; gwins++; } nt.set("Défi réussi (" + gwins + ") : z₁·z₂ ≈ " + U.cstr(w.x, w.y, 2) + " est sur l'étoile. Il fallait |z₂| = " + fx(rt, 2) + "/|z₁| = " + fx(rt / r1, 2) + " et arg z₂ = " + fx(at, 0) + "° − θ₁ = " + fx(((at - t1 * 180 / Math.PI + 540) % 360) - 180, 0) + "°. Clique à nouveau pour une autre étoile.", "ok"); }
+        else { gwon = false; nt.set("Défi : sans toucher z₁, glisse z₂ pour que le produit z₁·z₂ (rouge) tombe sur l'étoile " + U.cstr(tg[0], tg[1], 1) + ". Pense « module × module, angle + angle » : vise |z₂| = " + fx(rt, 2) + " ÷ " + fx(r1, 2) + ".", "warn"); }
+        return; }
       if (!w){ ro.set(4, "z₂ = 0"); ro.set(5, "—"); ro.set(6, "—"); nt.set("On ne divise pas par z₂ = 0 : éloigne z₂ de l'origine.", "bad"); return; }
       var rw2 = Math.hypot(w.x, w.y), tw2 = Math.atan2(w.y, w.x), raw = m === "mul" ? t1 + t2 : m === "div" ? t1 - t2 : m === "sq" ? 2 * t1 : t1 + Math.PI / 2;
       ro.set(4, U.cstr(w.x, w.y, 2)); ro.set(5, fx(rw2, 3)); ro.set(6, fx(tw2 * deg, 1));
@@ -174,17 +182,21 @@ SFA.sim({
 /* ---------- 3. racines n-ièmes ---------- */
 SFA.sim({
   id:"um-c06-racines-nieme", ch:"c06", titre:"Les racines n-ièmes : un polygone régulier", tag:"Nombres complexes",
-  resume:"Les n solutions de zⁿ = w forment un polygone régulier ; fais tourner w et regarde-les glisser.",
-  but:"Choisis w = r·e<sup>iφ</sup> et n. Les n racines sont sur le cercle de rayon r<sup>1/n</sup>, espacées de 360°/n. Anime w : quand φ augmente de 360°, chaque racine avance d'un cran. Clique sur un point de la vue de gauche pour voir sa puissance n-ième dans la vue de droite.",
+  resume:"Les n solutions de zⁿ = w forment un polygone régulier ; glisse w et regarde-les tourner ensemble. Défi : poser une racine sur une étoile.",
+  but:"Choisis w = r·e<sup>iφ</sup> et n. Les n racines sont sur le cercle de rayon r<sup>1/n</sup>, espacées de 360°/n. Glisse w dans la vue de droite (ou anime-le) : quand φ augmente de 360°, chaque racine avance d'un cran. Défi : place w pour qu'une racine tombe sur l'étoile.",
   aRetenir:"zₖ = r<sup>1/n</sup>·e<sup>i(φ + 2kπ)/n</sup>, k = 0, 1, …, n − 1. Leur somme est nulle (n ≥ 2) et leur produit vaut (−1)ⁿ⁺¹·w.",
   piege:"Il y a exactement n racines n-ièmes (pas seulement une). Pour w réel positif, la racine « principale » n'est que l'une d'elles.",
   build:function(k, S){
-    var U = UMB, C = U.C, fx = U.fx, c = k.canvas(0, {ratio:0.58}), sel = 0, PL, PR;
+    var U = UMB, C = U.C, fx = U.fx, c = k.canvas(0, {ratio:0.64}), sel = 0, PL, PR;
     var sn = k.slider("n", 2, 12, 1, 5, ""), sr = k.slider("Module de w : r", 0.2, 8, 0.1, 2, ""), sp = k.slider("Argument de w : φ", -180, 180, 1, 60, "°");
     var sk = k.slider("Racine mise en évidence : k", 0, 11, 1, 0, "", function(v){ sel = v; });
     var ro = k.readouts(["Module des racines", "Écart angulaire", "zₖ choisi", "(zₖ)ⁿ calculé", "Somme des racines"]);
+    var nt = k.note("", "");
     var lp = k.loop(function(dt){ var v = sp.value + 40 * dt; if (v > 180) v -= 360; sp.set(v); k.redraw(); });
     k.button("▶ Faire tourner w", function(){ if (lp.running) lp.pause(); else lp.play(); }, true);
+    var wpt = {x:1, y:1, lim:8}, star = null, swins = 0, swon = false, SR = U.rng(7);
+    k.button("Défi : une racine sur l'étoile", function(){ lp.pause(); var n = sn.value; star = {r:0.75 + 0.5 * SR(), a:(SR() * 2 - 1) * Math.PI}; swon = false; });
+    U.dragPts(k, c, function(){ return PR; }, [wpt], function(){ var rr = Math.hypot(wpt.x, wpt.y), ph = Math.atan2(wpt.y, wpt.x) * 180 / Math.PI; sr.set(Math.round(Math.max(0.2, Math.min(8, rr)) * 10) / 10); sp.set(Math.round(ph)); lp.pause(); });
     k.draw(function(){
       c.clear(); var n = sn.value, r = sr.value, phi = sp.value * Math.PI / 180, rho = Math.pow(r, 1 / n), W = c.W, H = c.H, kk = Math.min(sel, n - 1);
       var half = W / 2 - 4; PL = U.Pane(c, 0, 0, half, H, 1.25 * Math.max(1, rho) , 1.25 * Math.max(1, rho), {xl:"Re", yl:"Im", ticks:false, step:Math.max(1, Math.round(rho / 2))});
@@ -202,12 +214,19 @@ SFA.sim({
       U.arc(c, PR, 0, 0, 34, 0, powAng, C.violet, 2.2);
       U.vec(c, PR, 0, 0, r * Math.cos(phi), r * Math.sin(phi), C.red, 3, "w");
       U.seg(c, PR, 0, 0, r * Math.cos(phi), r * Math.sin(phi), C.red, 3);
-      U.pt(c, PR, r * Math.cos(phi), r * Math.sin(phi), C.red, "", 6);
+      U.pt(c, PR, r * Math.cos(phi), r * Math.sin(phi), C.red, "", 6); wpt.x = r * Math.cos(phi); wpt.y = r * Math.sin(phi);
+      ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = C.red; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(PR.X(wpt.x), PR.Y(wpt.y), 12, 0, 7); ctx.stroke(); ctx.restore(); S.draw.text(c, "glisse w", PR.X(wpt.x) + 14, PR.Y(wpt.y) + 16, {size:10.5, color:C.red, align:"left", halo:true});
       ctx.restore(); S.draw.text(c, "racines zₖ", half / 2, H - 14, {size:13, color:C.blue}); S.draw.text(c, "w = zₖⁿ", W / 2 + 4 + half / 2, H - 14, {size:13, color:C.red});
       S.draw.text(c, "n·arg(zₖ) = " + fx(powAng * 180 / Math.PI, 0) + "° ≡ " + fx(sp.value, 0) + "° (mod 360°)", W / 2 + 4 + half / 2, H - 34, {size:12, color:C.violet});
       var zk = pts[kk], re = 0, im = 0; pts.forEach(function(q){ re += q[0]; im += q[1]; });
       var pr = Math.pow(rho, n), pa = n * Math.atan2(zk[1], zk[0]);
+      if (star){ var sx = PL.X(star.r * Math.cos(star.a)), sy = PL.Y(star.r * Math.sin(star.a)); ctx.save(); ctx.beginPath(); for (var si = 0; si < 10; si++){ var rr2 = si % 2 ? 5 : 12, aa = -Math.PI / 2 + si * Math.PI / 5; ctx.lineTo(sx + rr2 * Math.cos(aa), sy + rr2 * Math.sin(aa)); } ctx.closePath(); ctx.fillStyle = "#f4c542"; ctx.fill(); ctx.strokeStyle = "#B45309"; ctx.lineWidth = 1.4; ctx.stroke(); ctx.restore();
+        var dbest = 1e9; pts.forEach(function(q){ dbest = Math.min(dbest, Math.hypot(q[0] - star.r * Math.cos(star.a), q[1] - star.r * Math.sin(star.a))); }); c._sd = dbest; } else c._sd = null;
       ro.set(0, fx(rho, 3)); ro.set(1, fx(360 / n, 1) + "°"); ro.set(2, U.cstr(zk[0], zk[1], 3)); ro.set(3, U.cstr(pr * Math.cos(pa), pr * Math.sin(pa), 3) + " (w = " + U.cstr(r * Math.cos(phi), r * Math.sin(phi), 3) + ")"); ro.set(4, U.cstr(Math.abs(re) < 1e-9 ? 0 : re, Math.abs(im) < 1e-9 ? 0 : im, 2));
+      if (star){ var wr = Math.pow(star.r, n), wa = n * star.a * 180 / Math.PI; while (wa > 180) wa -= 360; while (wa <= -180) wa += 360;
+        if (c._sd < 0.07){ if (!swon){ swon = true; swins++; } nt.set("Défi réussi (" + swins + ") : une racine " + n + "-ième de w tombe sur l'étoile. Il fallait w = (étoile)ⁿ : module " + fx(star.r, 2) + "ⁿ = " + fx(wr, 2) + ", argument n × " + fx(star.a * 180 / Math.PI, 0) + "° ≡ " + fx(wa, 0) + "°. Les " + (n - 1) + " autres racines suivent, régulièrement espacées.", "ok"); }
+        else { swon = false; nt.set("Défi : glisse w (à droite) pour qu'une des racines (à gauche) se pose sur l'étoile. Indice : le module des racines est r^(1/n) ; tourner w de " + 360 + "° fait avancer chaque racine de 360°/" + n + ".", "warn"); } }
+      else nt.set("Glisse w dans la vue de droite : les " + n + " racines se déplacent ensemble, en polygone régulier. Lance le défi pour viser une étoile.", "");
     });
   }
 });

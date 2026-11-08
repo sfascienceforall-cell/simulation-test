@@ -84,26 +84,88 @@ SFA.sim({
 SFA.sim({
   id:"c4-c06-methane", ch:"c06", tag:"Graphe",
   titre:"Combustion du méthane : proportionnalité",
-  resume:"Plus on brûle de méthane, plus on consomme d'air et on rejette de CO₂ et d'eau, proportionnellement.",
-  but:"Fais varier la masse de CH₄ et lis les masses de produits et le volume d'air nécessaire sur les droites.",
-  aRetenir:"CH₄ + 2 O₂ → CO₂ + 2 H₂O. Toutes les masses sont proportionnelles à la masse de CH₄ : m(CO₂) = 2,75 × m(CH₄) ; m(H₂O) = 2,25 × m(CH₄) ; m(O₂) = 4 × m(CH₄).",
-  piege:"L'air ne contient que 21 % de dioxygène en volume : il faut environ 5 fois plus d'air que de O₂, soit 9,5 fois le volume de CH₄ à même T et p.",
+  resume:"Allume le brûleur : le méthane brûle, le compteur tourne, et les masses d'O₂ consommé, de CO₂ et d'eau formés suivent trois droites. Réactifs et produits pèsent toujours autant.",
+  but:"Choisis la masse de méthane à brûler (curseur ou point du graphe), puis allume le brûleur : la loupe montre la réaction molécule par molécule et les balances comparent réactifs et produits. Défis : trouve la masse de CH₄ qui donne la quantité demandée.",
+  aRetenir:"CH₄ + 2 O₂ → CO₂ + 2 H₂O. En masse : 16 g de CH₄ réagissent avec 64 g de O₂ pour donner 44 g de CO₂ et 36 g d'eau. Toutes les masses sont proportionnelles à la masse de CH₄ : m(O₂) = 4 × m(CH₄) ; m(CO₂) = 2,75 × m(CH₄) ; m(H₂O) = 2,25 × m(CH₄). Et 16 + 64 = 44 + 36 : la masse se conserve (Lavoisier).",
+  piege:"Les coefficients (1, 2, 1, 2) sont des rapports de moles, pas de masses : 1 g de CH₄ ne donne pas 1 g de CO₂. Et l'air ne contient que 21 % de dioxygène en volume : il faut environ 9,5 fois le volume de CH₄ en air.",
   build:function(k, S){
-    var c = k.canvas(280);
-    var m = k.slider("Masse de CH₄ brûlé", 1, 200, 1, 16, "g");
-    var ro = k.readouts(["O₂ nécessaire", "Air nécessaire", "CO₂ émis", "H₂O formée"]);
+    var c = k.canvas(0, {ratio:.72}), g = k.canvas(200), P = S.draw.palette;
+    var m = k.slider("Masse de CH₄ à brûler", 1, 200, 1, 16, "g", function(){ burn = null; });
+    var ro = k.readouts(["n(CH₄)", "O₂ consommé", "Air nécessaire", "CO₂ formé", "H₂O formée"]);
     var nt = k.note("", "");
+    var DEF = [["produire 110 g de CO₂", function(x){ return 2.75 * x; }, 110, "g de CO₂"], ["former 72 g d'eau", function(x){ return 2.25 * x; }, 72, "g d'eau"], ["consommer 256 g de O₂", function(x){ return 4 * x; }, 256, "g de O₂"], ["utiliser 1 000 L d'air", function(x){ return 2 * x / 16 * 24 / 0.21; }, 1000, "L d'air"]], di = -1, won = [0, 0, 0, 0];
+    var burn = null, tt = 0;
+    var lp = k.loop(function(dt){ tt += dt; if (burn){ burn.p = Math.min(1, burn.p + dt / 3.2); } k.redraw(); });
+    lp.play();
+    k.button("Allumer le brûleur", function(){ burn = {p:0}; }, true);
+    k.button("Défi suivant", function(){ di = (di + 1) % 4; burn = null; });
+    var gx = null;
+    g.pointer(function(type, p){ if (!gx || (type !== "down" && type !== "drag")) return; m.set(Math.round(Math.max(1, Math.min(200, gx.ix(p.x))))); burn = null; k.redraw(); });
+    function atom(ctx, x, y, r, col){ var gr = ctx.createRadialGradient(x - r * .35, y - r * .35, r * .1, x, y, r); gr.addColorStop(0, "rgba(255,255,255,.9)"); gr.addColorStop(.35, col); gr.addColorStop(1, col); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); }
+    var CC = "#3b4656", OO = "#c23a2f", HH = "#e8ecf1";
+    function mol(ctx, kind, x, y, s, a){
+      ctx.save(); ctx.translate(x, y); ctx.rotate(a || 0);
+      if (kind === "CH4"){ [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function(d){ atom(ctx, d[0] * s * .75, d[1] * s * .75, s * .5, HH); }); atom(ctx, 0, 0, s * .8, CC); }
+      else if (kind === "O2"){ atom(ctx, -s * .5, 0, s * .7, OO); atom(ctx, s * .5, 0, s * .7, OO); }
+      else if (kind === "CO2"){ atom(ctx, -s * 1.05, 0, s * .7, OO); atom(ctx, s * 1.05, 0, s * .7, OO); atom(ctx, 0, 0, s * .75, CC); }
+      else { atom(ctx, -s * .6, s * .45, s * .45, HH); atom(ctx, s * .6, s * .45, s * .45, HH); atom(ctx, 0, 0, s * .72, OO); }
+      ctx.restore();
+    }
     k.draw(function(){
-      var x = m.value, n = x / 16;
-      c.clear(); C4.bg(c);
-      var ax = S.draw.axes(c, {x0:0, x1:200, y0:0, y1:820, xl:"m(CH₄) en g", yl:"masse en g", l:48});
-      S.draw.line(c, ax.X(0), ax.Y(0), ax.X(200), ax.Y(800), "#1f4b9e", 2.5); S.draw.line(c, ax.X(0), ax.Y(0), ax.X(200), ax.Y(550), "#c0321d", 2.5); S.draw.line(c, ax.X(0), ax.Y(0), ax.X(200), ax.Y(450), "#24775a", 2.5);
-      C4.tag(c, "O₂ (×4)", ax.X(120), ax.Y(480) - 10, "#1f4b9e", 12); C4.tag(c, "CO₂ (×2,75)", ax.X(140), ax.Y(385) - 12, "#c0321d", 12); C4.tag(c, "H₂O (×2,25)", ax.X(150), ax.Y(337) + 14, "#24775a", 12);
-      [[4 * x, "#1f4b9e"], [2.75 * x, "#c0321d"], [2.25 * x, "#24775a"]].forEach(function(p){ S.draw.dot(c, ax.X(x), ax.Y(p[0]), 6, p[1]); });
-      S.draw.line(c, ax.X(x), ax.Y(0), ax.X(x), ax.Y(4 * x), "#b8c0cc", 1, [3, 3]);
-      ro.set(0, S.fmt(64 * n, 1) + " g (" + S.fmt(2 * n * 24, 1) + " L)"); ro.set(1, S.fmt(2 * n * 24 / 0.21, 0) + " L"); ro.set(2, S.fmt(44 * n, 1) + " g"); ro.set(3, S.fmt(36 * n, 1) + " g");
-      nt.set("n(CH₄) = " + S.fmt(n, 3) + " mol. Volumes à 20 °C et 1 atm (V<sub>m</sub> = 24 L/mol) ; l'eau est supposée liquide ; air = 21 % de O₂ en volume.", "");
+      var W = c.W, H = c.H, ctx = c.ctx, small = W < 420, x = m.value, f = burn ? burn.p : 0, xb = burn ? x * f : x, n = x / 16;
+      C4.bg(c, H - 20);
+      /* brûleur + casserole */
+      var bx = small ? W * 0.26 : W * 0.2, by = H - 20, z = small ? 1 : 1.35;
+      ctx.save(); ctx.translate(bx, by); ctx.scale(z, z); ctx.translate(-bx, -by);
+      ctx.fillStyle = "#5f6b7a"; C4.rr(ctx, bx - 40, by - 22, 80, 22, 4); ctx.fill(); ctx.fillStyle = "#2c3a4e"; ctx.fillRect(bx - 22, by - 30, 44, 8);
+      var on = burn && f < 1;
+      if (on){ for (var j = -3; j <= 3; j++){ var fh = 18 + 6 * Math.sin(tt * 14 + j * 1.7), fx = bx + j * 6;
+        var fg = ctx.createLinearGradient(0, by - 30 - fh, 0, by - 30); fg.addColorStop(0, "rgba(120,170,255,0)"); fg.addColorStop(0.6, "rgba(70,120,240,.75)"); fg.addColorStop(1, "rgba(40,80,220,.95)");
+        ctx.fillStyle = fg; ctx.beginPath(); ctx.moveTo(fx - 4, by - 30); ctx.quadraticCurveTo(fx, by - 30 - fh * 1.3, fx + 4, by - 30); ctx.fill(); } }
+      ctx.fillStyle = "#8a95a3"; ctx.fillRect(bx - 50, by - 62, 100, 6); ctx.fillStyle = P5cGrad(ctx, by - 110, by - 62); C4.rr(ctx, bx - 44, by - 112, 88, 52, 6); ctx.fill();
+      if (on) for (j = 0; j < 4; j++){ var sy = by - 118 - ((tt * 30 + j * 14) % 50); ctx.strokeStyle = "rgba(160,170,185," + (0.5 - ((tt * 30 + j * 14) % 50) / 110).toFixed(2) + ")"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(bx - 20 + j * 13, sy); ctx.quadraticCurveTo(bx - 14 + j * 13, sy - 8, bx - 20 + j * 13, sy - 16); ctx.stroke(); }
+      ctx.restore();
+      /* compteur de méthane brûlé */
+      S.draw.display(c, S.fmt(xb, 1) + " g", bx, small ? 24 : 28, {w:small ? 98 : 116, h:36, size:15, caption:"CH₄ BRÛLÉ"});
+      /* loupe : la réaction molécule par molécule (cycle) */
+      var lr = small ? 54 : 86, lx = small ? W - lr - 10 : W * 0.52, ly = lr + (small ? 10 : 18), cyc = (tt % 2.4) / 2.4, s = lr * 0.14;
+      ctx.save(); ctx.beginPath(); ctx.arc(lx, ly, lr, 0, 7); ctx.fillStyle = on ? "#fff7e8" : "#f7f9fc"; ctx.fill(); ctx.clip();
+      if (on){
+        var a = C4.ph(cyc, 0, 0.35), b = C4.ph(cyc, 0.45, 0.8), fade = 1 - C4.ph(cyc, 0.85, 1);
+        ctx.globalAlpha = 1 - b;
+        mol(ctx, "CH4", C4.lerp(lx - lr * 0.7, lx - s * 1.5, a), ly, s, 0); mol(ctx, "O2", C4.lerp(lx + lr * 0.6, lx + s * 1.6, a), C4.lerp(ly - lr * 0.5, ly - s * 1.6, a), s, 0.5); mol(ctx, "O2", C4.lerp(lx + lr * 0.6, lx + s * 1.6, a), C4.lerp(ly + lr * 0.5, ly + s * 1.6, a), s, -0.5);
+        ctx.globalAlpha = b * fade;
+        mol(ctx, "CO2", lx, C4.lerp(ly, ly - lr * 0.45, b), s, 0); mol(ctx, "H2O", C4.lerp(lx, lx - lr * 0.5, b), C4.lerp(ly, ly + lr * 0.45, b), s, 0); mol(ctx, "H2O", C4.lerp(lx, lx + lr * 0.5, b), C4.lerp(ly, ly + lr * 0.45, b), s, 0);
+        ctx.globalAlpha = 1;
+      } else { mol(ctx, "CH4", lx - lr * 0.4, ly, s, 0); mol(ctx, "O2", lx + lr * 0.35, ly - lr * 0.35, s, 0.5); mol(ctx, "O2", lx + lr * 0.35, ly + lr * 0.35, s, -0.5); }
+      ctx.restore(); ctx.strokeStyle = "#5f6b7a"; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.arc(lx, ly, lr, 0, 7); ctx.stroke();
+      C4.t(c, "CH₄ + 2 O₂ → CO₂ + 2 H₂O", small ? bx + 10 : lx, small ? 58 : ly + lr + 14, {size:12, color:P.ink});
+      /* balances : réactifs consommés / produits formés (barres empilées) */
+      var bw = small ? 34 : 44, bh = H * (small ? 0.36 : 0.42), x0 = small ? W * 0.56 : W * 0.75, x1 = x0 + bw + (small ? 30 : 36), yb = H - 26, sc = bh / (5 * x * 1.08);
+      [[x0, [[xb, "#3b4656", "CH₄"], [4 * xb, "#2f64c8", "O₂"]], "réactifs"], [x1, [[2.75 * xb, "#c0321d", "CO₂"], [2.25 * xb, "#24775a", "H₂O"]], "produits"]].forEach(function(col){
+        var y = yb; col[1].forEach(function(seg){ var h = seg[0] * sc; ctx.fillStyle = seg[1]; ctx.fillRect(col[0], y - h, bw, h); if (h > 14) S.draw.text(c, seg[2], col[0] + bw / 2, y - h / 2, {size:10.5, color:"#fff"}); y -= h; });
+        ctx.strokeStyle = "#8a95a3"; ctx.lineWidth = 1; ctx.strokeRect(col[0], yb - bh, bw, bh);
+        C4.t(c, col[2], col[0] + bw / 2, yb + 12, {size:11, color:"#2c3a4e"});
+        C4.t(c, S.fmt(5 * xb, 0) + " g", col[0] + bw / 2, Math.max(yb - 5 * xb * sc - 10, yb - bh - 10), {size:11, color:"#2c3a4e"});
+      });
+      S.draw.text(c, "=", (x0 + bw + x1) / 2, yb - Math.min(bh, 5 * xb * sc) / 2, {size:18, color:P.green});
+      /* graphe */
+      g.clear();
+      gx = S.draw.axes(g, {x0:0, x1:200, y0:0, y1:820, xl:"m(CH₄) en g", yl:"masse en g", l:48});
+      [[4, "#2f64c8", "O₂ (×4)"], [2.75, "#c0321d", "CO₂ (×2,75)"], [2.25, "#24775a", "H₂O (×2,25)"]].forEach(function(L, i){
+        S.draw.line(g, gx.X(0), gx.Y(0), gx.X(200), gx.Y(200 * L[0]), L[1], 2.6);
+        C4.tag(g, L[2], gx.X(small ? 120 : 150) + (i - 1) * 4, gx.Y((small ? 120 : 150) * L[0]) + (i === 2 ? 14 : -12), L[1], 11.5);
+        C4.ion(g, gx.X(xb), gx.Y(L[0] * xb), 6, L[1], "", {});
+      });
+      if (di >= 0){ var dd = DEF[di]; if (di < 3){ S.draw.line(g, gx.X(0), gx.Y(dd[2]), gx.X(200), gx.Y(dd[2]), P.amber, 1.6, [4, 4]); C4.tag(g, "cible " + dd[2] + " g", gx.X(4), gx.Y(dd[2]) - 10, "#8a5200", 11, "left"); } }
+      S.draw.line(g, gx.X(x), gx.Y(0), gx.X(x), gx.Y(820), "#b8c0cc", 1, [3, 3]);
+      C4.tag(g, "glisse : choisis m(CH₄)", g.W - 10, 12, "#5f6b7a", 11, "right");
+      ro.set(0, S.fmt(n, 3) + " mol"); ro.set(1, S.fmt(4 * x, 0) + " g (" + S.fmt(2 * n * 24, 1) + " L)"); ro.set(2, S.fmt(2 * n * 24 / 0.21, 0) + " L"); ro.set(3, S.fmt(2.75 * x, 1) + " g"); ro.set(4, S.fmt(2.25 * x, 1) + " g");
+      if (di >= 0){ var D = DEF[di], val = D[1](x), okk = Math.abs(val - D[2]) / D[2] <= 0.015; if (okk) won[di] = 1;
+        nt.set("<b>Défi " + (di + 1) + "/4</b> : quelle masse de CH₄ faut-il brûler pour " + D[0] + " ? " + (okk ? "✅ " + S.fmt(x, 0) + " g de CH₄ (n = " + S.fmt(n, 3) + " mol) donnent bien " + S.fmt(val, 0) + " " + D[3] + "." : "Ici : " + S.fmt(val, 0) + " " + D[3] + ".") + " · " + (won[0] + won[1] + won[2] + won[3]) + "/4 réussis.", okk ? "ok" : "");
+      } else nt.set("n(CH₄) = " + S.fmt(x, 0) + " / 16 = " + S.fmt(n, 3) + " mol → n(O₂) = 2n, n(CO₂) = n, n(H₂O) = 2n. Réactifs : " + S.fmt(5 * x, 0) + " g ; produits : " + S.fmt(5 * x, 0) + " g. Volumes à 20 °C et 1 atm (V<sub>m</sub> = 24 L/mol), eau supposée liquide, air à 21 % de O₂.", "");
     });
+    function P5cGrad(ctx, y0, y1){ var gg = ctx.createLinearGradient(0, y0, 0, y1); gg.addColorStop(0, "#c9d1dc"); gg.addColorStop(1, "#8a95a3"); return gg; }
   }
 });
 

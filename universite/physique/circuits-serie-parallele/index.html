@@ -23,6 +23,10 @@
 #cv{display:block;touch-action:none;cursor:crosshair}
 .hint{font:500 .82rem var(--f-ui);color:var(--muted)}
 .val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
 </style>
 <style id="sfa-kit">
 /* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
@@ -147,13 +151,19 @@ new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classLis
 <div class="sfa-page">
 <nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH9">Électrocinétique</a>›<b>Circuits série et parallèle</b></nav>
 <div class="sfa-grid"><main style="min-width:0">
-<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Électrocinétique</span><span class="sfa-chip free">Gratuit</span></div><h1>Circuits série et parallèle</h1><p>Loi d&#x27;Ohm, loi des nœuds et loi des mailles</p></div>
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Électrocinétique</span><span class="sfa-chip free">Gratuit</span></div><h1>Circuits série et parallèle</h1><p>Résistances en série et en parallèle : loi d&#x27;Ohm, loi des nœuds, loi des mailles. Ouvre un interrupteur, puis teste-toi avec le défi.</p></div>
 <section class="sfa-sim">
 
 
 
 <canvas id="cv" style="width:100%;height:62vh;min-height:400px;" aria-label="Circuit électrique : clique sur un fil pour y placer l'ampèremètre, sur un dipôle pour y brancher le voltmètre"></canvas>
 
+<div class="fml" id="defiBox" style="display:none">
+  <span class="q" id="dq"></span>
+  <div class="line"><input id="da" inputmode="decimal" autocomplete="off" aria-label="Ta réponse"><b id="du"></b>
+    <button class="btn" id="dv">Vérifier</button><button class="btn" id="ds">Voir la solution</button><button class="btn" id="dn">Autre défi</button></div>
+  <div id="dfb" role="status"></div>
+</div>
 <div class="fml" id="fml"></div>
 
 <div class="row">
@@ -167,6 +177,13 @@ new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classLis
   <button class="btn on" id="n2">2 résistances</button>
   <button class="btn" id="n3">3 résistances</button>
   <button class="btn" id="bulb">Ampoules</button>
+</div>
+<div class="row">
+  <span class="pill">Interrupteurs</span>
+  <button class="btn" id="k1">K₁ fermé</button>
+  <button class="btn" id="k2">K₂ fermé</button>
+  <button class="btn" id="k3">K₃ fermé</button>
+  <span class="hint">Ouvre un interrupteur : que deviennent les autres dipôles ?</span>
 </div>
 <div class="row">
   <span class="pill">Appareil</span>
@@ -197,6 +214,8 @@ new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classLis
 <div class="row">
   <button class="btn" id="elec">Voir les électrons</button>
   <button class="btn" id="pause">Pause</button>
+  <button class="btn" id="defi">Défi : calcule avant de mesurer</button>
+  <span class="hint" id="score"></span>
 </div>
 
 <div class="info" id="info"></div>
@@ -210,28 +229,31 @@ const FT='600 13px Mulish,system-ui,sans-serif',FN='600 12px Mulish,system-ui,sa
 const SUB=['','₁','₂','₃'];
 const $=id=>document.getElementById(id);
 const fr=(v,d)=>v.toFixed(d).replace('.',',');
-const fA=v=>fr(v,v>=10?1:2)+' A', fV=v=>fr(v,1)+' V', fW=v=>fr(v,v>=100?0:v>=10?1:2)+' W', fO=v=>(Math.abs(v-Math.round(v))<0.05?Math.round(v)+'':fr(v,1))+' Ω';
+const fA=v=>fr(v,v>=10?1:2)+' A', fV=v=>fr(v,1)+' V', fW=v=>fr(v,v>=100?0:v>=10?1:2)+' W', fO=v=>v===Infinity?'∞ (circuit ouvert)':(Math.abs(v-Math.round(v))<0.05?Math.round(v)+'':fr(v,1))+' Ω';
 
 // ---------- état ----------
 let mode='P', n=2, bulbs=false, tool='A', elec=false, paused=false;
 let U=12, R=[0,20,40,60];
 let amm={br:'main',i:0}, volt='R2';
+let open=[false,false,false,false];   // interrupteur K_k ouvert
+let defi=null, reveal=true, score=0, tries=0;
 const K=110, VMAX=330;           // px/s par ampère, vitesse plafonnée à l'écran
 
 // ---------- calcul électrique ----------
 function solve(){
-  const r1=R[1],r2=R[2],r3=R[3];
-  const s={I:[0,0,0,0],V:[0,0,0,0]};
+  const s={I:[0,0,0,0],V:[0,0,0,0],It:0,Req:Infinity};
+  const g=k=>(k>n||open[k])?0:1/R[k];                 // conductance d'une branche (0 si interrupteur ouvert)
   if(mode==='S'){
-    s.Req=n===2?r1+r2:r1+r2+r3; s.It=U/s.Req;
-    for(let k=1;k<=n;k++){s.I[k]=s.It;s.V[k]=R[k]*s.It;}
+    let cut=false,sum=0;for(let k=1;k<=n;k++){if(open[k])cut=true;sum+=R[k];}
+    if(!cut){s.Req=sum;s.It=U/sum;for(let k=1;k<=n;k++){s.I[k]=s.It;s.V[k]=R[k]*s.It;}}
   }else if(mode==='P'){
-    let g=1/r1+1/r2+(n===3?1/r3:0); s.Req=1/g;
-    for(let k=1;k<=n;k++){s.I[k]=U/R[k];s.V[k]=U;}
-    s.It=U/s.Req;
+    let G=0;for(let k=1;k<=n;k++)G+=g(k);
+    if(G>0){s.Req=1/G;s.It=U*G;}
+    for(let k=1;k<=n;k++)if(!open[k]){s.I[k]=U/R[k];s.V[k]=U;}
   }else{
-    const r23=r2*r3/(r2+r3); s.r23=r23; s.Req=r1+r23; s.It=U/s.Req;
-    s.I[1]=s.It; s.V[1]=r1*s.It; const u23=r23*s.It; s.V[2]=s.V[3]=u23; s.I[2]=u23/r2; s.I[3]=u23/r3;
+    const G=g(2)+g(3);
+    if(!open[1]&&G>0){const r23=1/G;s.r23=r23;s.Req=R[1]+r23;s.It=U/s.Req;s.I[1]=s.It;s.V[1]=R[1]*s.It;
+      const u23=r23*s.It;[2,3].forEach(k=>{if(!open[k]){s.V[k]=u23;s.I[k]=u23/R[k];}});}
   }
   s.P=s.I.map((i,k)=>i*s.V[k]);
   return s;
@@ -369,7 +391,8 @@ function draw(now){
 
   // dipôles (résistances ou ampoules)
   g.dip.forEach(d=>{
-    const k=d.k,x=d.x,y=d.y,bw=g.bw,P=s.P[k];
+    const k=d.k,x=d.x,y=d.y,bw=g.bw,P=s.P[k],op=open[k];
+    d.xe=op?(bulbs?x+15:x+bw/2-26):x+bw/2;          // extrémité droite du dipôle (avant l'interrupteur)
     if(bulbs){
       ctx.fillStyle='#fff';ctx.fillRect(x-bw/2,y-4,bw,8);
       ctx.strokeStyle=WIRE;ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(x-bw/2,y);ctx.lineTo(x-14,y);ctx.moveTo(x+14,y);ctx.lineTo(x+bw/2,y);ctx.stroke();
@@ -381,10 +404,17 @@ function draw(now){
       ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,13,0,7);ctx.fill();ctx.stroke();
       ctx.beginPath();ctx.moveTo(x-9,y-9);ctx.lineTo(x+9,y+9);ctx.moveTo(x+9,y-9);ctx.lineTo(x-9,y+9);ctx.stroke();
     }else{
-      ctx.fillStyle='#fff';ctx.strokeStyle=ORANGE;ctx.lineWidth=2.2;
-      ctx.beginPath();ctx.rect(x-bw/2+6,y-10,bw-12,20);ctx.fill();ctx.stroke();
-      ctx.fillStyle=ORANGE;ctx.font=FS;ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillText('R'+SUB[k]+' '+fO(R[k]),x,y+0.5);ctx.textBaseline='alphabetic';
+      const x0=x-bw/2+6,x1=op?x+bw/2-28:x+bw/2-6;
+      ctx.fillStyle='#fff';ctx.strokeStyle=op?GREY:ORANGE;ctx.lineWidth=2.2;
+      ctx.beginPath();ctx.rect(x0,y-10,x1-x0,20);ctx.fill();ctx.stroke();
+      ctx.fillStyle=op?GREY:ORANGE;ctx.font=FS;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(op?'R'+SUB[k]:'R'+SUB[k]+' '+fO(R[k]),(x0+x1)/2,y+0.5);ctx.textBaseline='alphabetic';
+    }
+    if(op){                                           // interrupteur ouvert, dessiné à droite du dipôle
+      const a=d.xe+1,b2=x+bw/2+(bulbs?6:0);
+      ctx.fillStyle='#fff';ctx.fillRect(a+2,y-4,b2-a-4,8);
+      ctx.strokeStyle=RED_D;ctx.lineWidth=2.4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a+3,y);ctx.lineTo(b2-6,y-13);ctx.stroke();
+      ctx.fillStyle=RED_D;[a+3,b2-3].forEach(q=>{ctx.beginPath();ctx.arc(q,y,2.8,0,7);ctx.fill();});
     }
   });
 
@@ -416,7 +446,7 @@ function draw(now){
   }else{
     const d=g.dip.find(q=>'R'+q.k===volt)||g.dip[0];volt='R'+d.k;
     vU=s.V[d.k];vLbl='R'+SUB[d.k];
-    const cx=d.x,cy=d.y-34,xl=d.x-g.bw/2,xr=d.x+g.bw/2;
+    const cx=d.x,cy=d.y-34,xl=d.x-g.bw/2,xr=d.xe||d.x+g.bw/2;
     ctx.strokeStyle=BLUE_D;ctx.lineWidth=1.6;ctx.beginPath();
     ctx.moveTo(xl,d.y);ctx.lineTo(xl,cy);ctx.lineTo(cx-11,cy);ctx.moveTo(xr,d.y);ctx.lineTo(xr,cy);ctx.lineTo(cx+11,cy);ctx.stroke();
     [[xl,d.y],[xr,d.y]].forEach(p=>{ctx.fillStyle=BLUE_D;ctx.beginPath();ctx.arc(p[0],p[1],3,0,7);ctx.fill();});
@@ -434,17 +464,19 @@ function draw(now){
   if(s.It>1e-9&&gy-30-Math.max(g.yT+14,gy-56)>12)tag('I',gx+8,gy-44,RED_D,'700 13px Mulish,system-ui,sans-serif','left');
   // dipôles : I, U, P (et R pour les ampoules)
   g.dip.forEach(d=>{const k=d.k;let y=d.y+22;
-    if(bulbs){tag('R'+SUB[k]+' = '+fO(R[k]),d.x,y,ORANGE,FS);y+=14;}
+    if(bulbs||open[k]){tag('R'+SUB[k]+' = '+fO(R[k]),d.x,y,ORANGE,FS);y+=14;}
+    if(!reveal){tag('I'+SUB[k]+' = ?   U'+SUB[k]+' = ?',d.x,y,GREY,FS);return;}
+    if(open[k]&&!bulbs){tag('K'+SUB[k]+' ouvert : I'+SUB[k]+' = 0',d.x,y,RED_D,FS);return;}
     tag('I'+SUB[k]+' = '+fA(s.I[k]),d.x,y,RED_D,FS);y+=14;
     tag('U'+SUB[k]+' = '+fV(s.V[k]),d.x,y,BLUE_D,FS);y+=14;
     tag('P'+SUB[k]+' = '+fW(s.P[k]),d.x,y,VIOLET,FS);
   });
   if(g.N){tag('N',g.N[0]-9,g.N[1]+15,INK,'700 13px Mulish,system-ui,sans-serif','right');}
-  if(sl){const t=fA(ammI);
+  if(sl){const t=reveal?fA(ammI):'? A';
     if(sl.lab==='up')tag(t,sl.x,sl.y-21,RED_D,FN);
     else if(sl.lab==='down')tag(t,sl.x,sl.y+22,RED_D,FN);
     else tag(t,sl.x-16,sl.y,RED_D,FN,'right');}
-  tag(fV(vU),vPos.lab[0],vPos.lab[1],BLUE_D,FN,vPos.lab[2]);
+  tag(reveal?fV(vU):'? V',vPos.lab[0],vPos.lab[1],BLUE_D,FN,vPos.lab[2]);
   // légende des porteurs
   ctx.fillStyle=elec?INK:RED;ctx.beginPath();ctx.arc(12,H-30,3.2,0,7);ctx.fill();
   if(elec){tag('Électrons : du − vers le +,',20,H-30,INK,FT,'left');tag('en sens inverse du courant I',20,H-12,INK,FT,'left');}
@@ -461,7 +493,25 @@ function update(s,ammI,ammLbl,vU,vLbl){
   const b=(c,t)=>'<b style="color:'+c+'">'+t+'</b>';
   let f='';
   const Rs=[1,2,3].slice(0,n);
-  if(mode==='S'){
+  const op=Rs.filter(k=>open[k]);
+  if(op.length){
+    const names=op.map(k=>'K'+SUB[k]).join(', ')+(op.length>1?' ouverts':' ouvert');
+    if(s.It<1e-12){
+      f=b(RED_D,names+' : le circuit est coupé, I = 0 partout.')+'<br>'+(mode==='S'
+        ?'En série, il n\'y a qu\'un seul chemin : un seul dipôle débranché arrête tout le courant. C\'est pour cela qu\'une guirlande en série s\'éteint entièrement quand une ampoule grille.'
+        :'Plus aucun chemin fermé ne relie la borne + à la borne − du générateur.');
+    }else if(mode==='P'){
+      const cl=Rs.filter(k=>!open[k]);
+      f=b(RED_D,names+' : le courant ne passe plus dans '+(op.length>1?'ces branches':'cette branche')+'.')+' Les autres branches gardent la tension '+b(BLUE_D,'U = '+fV(U))+' et le même courant qu\'avant.<br>'+
+        b(ORANGE,(cl.length>1?'1/R<sub>éq</sub> = '+cl.map(k=>'1/R'+SUB[k]).join(' + ')+' &nbsp;⇒&nbsp; ':'')+'R<sub>éq</sub> = '+fO(s.Req))+' &nbsp;⇒&nbsp; '+b(RED_D,'I = '+cl.map(k=>'I'+SUB[k]).join(' + ')+' = '+fA(s.It))+'<br>'+
+        'En parallèle, chaque dipôle a son propre chemin : en débrancher un ne coupe pas les autres (comme les lampes d\'une maison).';
+    }else{
+      const k=open[2]?3:2;
+      f=b(RED_D,names+' : tout le courant passe par R'+SUB[k]+'.')+' R₁ et R'+SUB[k]+' sont maintenant en série.<br>'+
+        b(ORANGE,'R<sub>éq</sub> = R₁ + R'+SUB[k]+' = '+fO(s.Req))+' &nbsp;⇒&nbsp; '+b(RED_D,'I = '+fA(s.It))+'<br>'+
+        'Loi des mailles : '+b(BLUE_D,'U = U₁ + U'+SUB[k])+' &nbsp;→&nbsp; '+fV(U)+' = '+fV(s.V[1])+' + '+fV(s.V[k]);
+    }
+  }else if(mode==='S'){
     f=b(ORANGE,'R<sub>éq</sub> = '+Rs.map(k=>'R'+SUB[k]).join(' + ')+' = '+fO(s.Req))+' &nbsp;⇒&nbsp; '+b(RED_D,'I = U / R<sub>éq</sub> = '+fA(s.It))+', le même partout (pas de nœud).<br>'+
       'Loi des mailles : '+b(BLUE_D,'U = '+Rs.map(k=>'U'+SUB[k]).join(' + '))+' &nbsp;→&nbsp; '+fV(U)+' = '+Rs.map(k=>fV(s.V[k])).join(' + ');
   }else if(mode==='P'){
@@ -477,8 +527,9 @@ function update(s,ammI,ammLbl,vU,vLbl){
   const info='U = '+fV(U)+' &nbsp;|&nbsp; R<sub>éq</sub> = '+fO(s.Req)+' &nbsp;|&nbsp; I = '+fA(s.It)+' &nbsp;|&nbsp; P totale = U·I = '+fW(Pt)+
     ' &nbsp;|&nbsp; '+b(RED_D,'ampèremètre ('+ammLbl+') : '+fA(ammI))+' &nbsp;|&nbsp; '+b(BLUE_D,'voltmètre (bornes '+(vLbl==='générateur'?'du générateur':'de '+vLbl)+') : '+fV(vU))+
     (capped?' &nbsp;|&nbsp; vitesse des porteurs plafonnée à l\'écran':'');
-  const all=f+'§'+info;
-  if(all!==lastTxt){lastTxt=all;$('fml').innerHTML=f;$('info').innerHTML=info;}
+  const all=f+'§'+info+'§'+reveal;
+  if(all!==lastTxt){lastTxt=all;$('fml').innerHTML=f;$('info').innerHTML=info;
+    $('fml').style.display=$('info').style.display=reveal?'':'none';}
 }
 
 // ---------- contrôles ----------
@@ -490,7 +541,7 @@ function setMode(m){mode=m;['S','P','M'].forEach(x=>$('m'+x).classList.toggle('o
   syncN();amm={br:'main',i:0};}
 function syncN(){$('n2').classList.toggle('on',n===2);$('n3').classList.toggle('on',n===3);
   $('n2').disabled=mode==='M';$('n2').style.opacity=mode==='M'?.45:1;
-  $('rowR3').style.display=n===3?'':'none';
+  $('rowR3').style.display=n===3?'':'none';$('k3').style.display=n===3?'':'none';
   if(volt==='R3'&&n===2)volt='R2';}
 $('mS').onclick=()=>setMode('S');$('mP').onclick=()=>setMode('P');$('mM').onclick=()=>setMode('M');
 $('n2').onclick=()=>{if(mode==='M')return;n=2;syncN();amm={br:'main',i:0};};
@@ -501,7 +552,48 @@ $('pause').onclick=()=>{paused=!paused;$('pause').classList.toggle('on',paused);
 function setTool(t){tool=t;$('tA').classList.toggle('on',t==='A');$('tV').classList.toggle('on',t==='V');
   $('hint').textContent=t==='A'?'Clique sur un fil : l\'ampèremètre s\'y branche en série.':'Clique sur une résistance ou sur le générateur : le voltmètre se branche à ses bornes.';}
 $('tA').onclick=()=>setTool('A');$('tV').onclick=()=>setTool('V');
+[1,2,3].forEach(k=>{$('k'+k).onclick=()=>{open[k]=!open[k];syncK();};});
+function syncK(){[1,2,3].forEach(k=>{$('k'+k).classList.toggle('on',open[k]);$('k'+k).textContent='K'+SUB[k]+(open[k]?' ouvert':' fermé');});}
 syncN();
+
+// ---------- défi : calculer avant de mesurer ----------
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const setS=(id,v)=>{const el=$(id);el.value=v;el.dispatchEvent(new Event('input'));};
+function ansOf(s,d){return d.type==='Req'?s.Req:d.type==='It'?s.It:d.type==='U'?s.V[d.k]:d.type==='I'?s.I[d.k]:s.P[d.k];}
+function fmtOf(v,d){return d.type==='Req'?fO(v):d.type==='U'?fV(v):d.type==='P'?fW(v):fA(v);}
+function hintOf(d){
+  const k=SUB[d.k];
+  if(d.type==='Req')return mode==='S'?'En série, les résistances s\'additionnent.':mode==='P'?'En parallèle, ce sont les inverses qui s\'additionnent : 1/R_éq = 1/R₁ + 1/R₂ …':'Calcule d\'abord R₂ ∥ R₃ = R₂R₃/(R₂ + R₃), puis ajoute R₁.';
+  if(d.type==='It')return 'Trouve d\'abord R_éq, puis I = U / R_éq.';
+  if(d.type==='U')return mode==='S'?'Le courant est le même partout : U'+k+' = R'+k+' · I.':mode==='P'?'En parallèle, chaque branche est branchée directement aux bornes du générateur.':(d.k===1?'U₁ = R₁ · I, où I est le courant débité par le générateur.':'U₂ = U₃ = U − U₁, avec U₁ = R₁ · I.');
+  if(d.type==='I')return mode==='S'?'Un seul chemin : I = U / R_éq, le même partout.':mode==='P'?'Chaque branche a la tension U : I'+k+' = U / R'+k+'.':(d.k===1?'R₁ est dans la branche principale : I₁ = U / R_éq.':'Trouve U₂ = U − R₁ · I, puis I'+k+' = U₂ / R'+k+'.');
+  return 'P'+k+' = U'+k+' · I'+k+' = R'+k+' · I'+k+'².';
+}
+function newDefi(){
+  setMode(pick(['S','P','M']));if(mode!=='M'){n=pick([2,3]);syncN();}
+  open=[false,false,false,false];syncK();if(bulbs){bulbs=false;$('bulb').classList.remove('on');}
+  setS('U',pick([6,9,12,18,24]));[1,2,3].forEach(k=>setS('R'+k,pick([10,20,30,40,60])));
+  const k=1+Math.floor(Math.random()*n), type=pick(mode==='S'?['Req','It','U','U','P']:['Req','It','U','I','I','P']);
+  defi={type,k};reveal=false;tries=0;
+  const K=SUB[k];
+  $('dq').innerHTML='Défi · '+({Req:'Que vaut la résistance équivalente R<sub>éq</sub> de ce circuit ?',It:'Quelle intensité I le générateur débite-t-il ?',
+    U:'Quelle tension U'+K+' mesure-t-on aux bornes de R'+K+' ?',I:'Quelle intensité I'+K+' traverse R'+K+' ?',P:'Quelle puissance P'+K+' la résistance R'+K+' dissipe-t-elle ?'})[type];
+  $('du').textContent=({Req:'Ω',It:'A',U:'V',I:'A',P:'W'})[type];
+  $('da').value='';$('dfb').textContent='Les mesures sont masquées : calcule, puis vérifie.';$('dfb').style.color='';
+  $('dv').disabled=false;
+}
+function endDefi(msg,col){reveal=true;$('dfb').innerHTML=msg;$('dfb').style.color=col;$('dv').disabled=true;}
+$('defi').onclick=()=>{const on=$('defiBox').style.display==='none';$('defiBox').style.display=on?'':'none';$('defi').classList.toggle('on',on);
+  if(on){newDefi();$('da').focus({preventScroll:true});}else{defi=null;reveal=true;}};
+$('dn').onclick=()=>{newDefi();$('da').focus({preventScroll:true});};
+$('dv').onclick=()=>{if(!defi||reveal)return;const x=parseFloat($('da').value.replace(',','.').replace(/[^0-9.\-eE]/g,''));
+  if(!isFinite(x)){$('dfb').textContent='Écris un nombre, par exemple 13,3.';$('dfb').style.color=RED_D;return;}
+  const a=ansOf(solve(),defi);
+  if(Math.abs(x-a)<=Math.max(0.025*Math.abs(a),0.006)){score++;$('score').textContent=score+(score>1?' défis réussis':' défi réussi');
+    endDefi('Correct : '+fmtOf(a,defi)+'. Les mesures sont affichées, compare avec ton calcul.',GREEN_D);}
+  else{tries++;$('dfb').textContent='Pas encore. Indice : '+hintOf(defi);$('dfb').style.color=RED_D;}};
+$('ds').onclick=()=>{if(!defi)return;const a=ansOf(solve(),defi);endDefi('Réponse : '+fmtOf(a,defi)+'. '+hintOf(defi),BLUE_D);};
+$('da').addEventListener('keydown',e=>{if(e.key==='Enter')$('dv').click();});
 
 // clic / doigt sur le circuit
 function distSeg(p,a,b){const vx=b[0]-a[0],vy=b[1]-a[1],L2=vx*vx+vy*vy||1;let t=((p[0]-a[0])*vx+(p[1]-a[1])*vy)/L2;t=Math.max(0,Math.min(1,t));
@@ -523,14 +615,15 @@ cv.addEventListener('pointerdown',e=>{if(!G)return;const r=cv.getBoundingClientR
 });
 window.__sim={setMode,setTool,get:()=>({mode,n,amm,volt}),set:(o)=>Object.assign({},o)};
 window.__set=(k,v)=>{const el=$(k);el.value=v;el.dispatchEvent(new Event('input'));};
-window.__state=o=>{if('amm' in o)amm=o.amm;if('volt' in o)volt=o.volt;};
+window.__state=o=>{if('amm' in o)amm=o.amm;if('volt' in o)volt=o.volt;if('open' in o){open=o.open;syncK();}};
+window.__solve=solve;window.__defi=()=>defi;
 requestAnimationFrame(draw);
 })();
 </script>
 </section></main>
 <aside class="sfa-side">
 <div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
-  <div class="sfa-list"><h2>Électrocinétique : circuits et courant<span>2 simulations</span></h2><ol><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/circuits-serie-parallele/"><i>01</i>Circuits série et parallèle</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/resistance-pouillet-joule/"><i>02</i>Résistance d&#x27;un fil : Pouillet et Joule</a></li></ol></div>
+  <div class="sfa-list"><h2>Électrocinétique : circuits et courant<span>3 simulations</span></h2><ol><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/circuits-serie-parallele/"><i>01</i>Circuits série et parallèle</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/condensateurs-serie-parallele/"><i>02</i>Condensateurs en série et en parallèle</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/resistance-pouillet-joule/"><i>03</i>Résistance d&#x27;un fil : Pouillet et Joule</a></li></ol></div>
   <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
 </aside></div></div>
 <footer class="sfa-foot">Science For All · simulations interactives de physique</footer>

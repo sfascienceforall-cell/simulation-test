@@ -32,24 +32,33 @@
   function panel() {
     var cur = here(), L = last();
     var h = '<div class="nv-panel" id="nvPanel" role="dialog" aria-label="Tous les cours"><div class="nv-pin" style="grid-template-columns:' + SITE.cols.map(function (c) { return (c.w || 1) + "fr"; }).join(" ") + '">';
-    SITE.cols.forEach(function (c, ci) {
-      h += '<div class="nv-col"><h3>' + c.t + (c.s ? " <small>" + c.s + "</small>" : "") + "</h3>";
+    SITE.cols.forEach(function (c) {
+      var acc = c.a || (c.list && c.list[0] && c.list[0][2]) || SITE.acc;
+      h += '<div class="nv-col" style="--a:' + acc + '"><div class="nv-head"><h3>' + c.t + (c.s ? " <small>" + c.s + "</small>" : "") + "</h3>" +
+        (c.all ? '<a class="nv-all" href="' + url(c.all[1]) + '">' + c.all[0] + " →</a>" : "") + "</div>";
+      if (c.list && c.chips) {
+        h += '<div class="nv-quick">';
+        c.list.forEach(function (u) { var href = url(u[1]); h += '<a class="' + (cur === href ? "on" : "") + '" href="' + href + '">' + u[0] + "</a>"; });
+        h += "</div>";
+      } else if (c.list) {
+        h += '<div class="nv-ugrid">';
+        c.list.forEach(function (u) { var href = url(u[1]); h += '<a class="nv-u' + (cur === href ? " on" : "") + '" style="--a:' + (u[2] || SITE.acc) + '" href="' + href + '"><i></i>' + u[0] + (u[3] ? "<small>" + u[3] + "</small>" : "") + "</a>"; });
+        h += "</div>";
+      }
       if (c.grid) {
         h += '<div class="nv-sgrid">';
         c.grid.forEach(function (m) { h += '<div class="nv-mat" style="--a:' + m.a + '"><b>' + m.t + "</b><div>";
           m.l.forEach(function (y) { var u = url(y[1]); h += '<a href="' + u + '"' + (cur === u ? ' class="on"' : "") + ">" + y[0] + "</a>"; }); h += "</div></div>"; });
         h += "</div>";
       }
-      if (c.chips) { h += '<div class="nv-chips">'; c.chips.forEach(function (u) { h += '<a href="' + url(u[1]) + '">' + u[0] + "</a>"; }); h += "</div>"; }
-      if (c.list) {
-        h += '<div class="nv-ugrid">';
-        c.list.forEach(function (u) { var href = url(u[1]); h += '<a class="nv-u' + (cur === href ? " on" : "") + '" style="--a:' + (u[2] || SITE.acc) + '" href="' + href + '"><i></i>' + u[0] + (u[3] ? "<small>" + u[3] + "</small>" : "") + "</a>"; });
-        h += "</div>";
+      if (c.chips) {
+        h += '<div class="nv-chl-t">Chapitres</div><ol class="nv-chl">';
+        c.chips.forEach(function (u, i) { var t = String(u[0]).replace(/^\d+\.\s*/, ""); h += '<li><a href="' + url(u[1]) + '" title="' + esc(t) + '"><em>' + (i + 1) + "</em><span>" + t + "</span></a></li>"; });
+        h += "</ol>";
       }
-      if (c.all) h += '<a class="nv-all" href="' + url(c.all[1]) + '">' + c.all[0] + " →</a>";
-      if (ci === SITE.cols.length - 1 && L) h += '<a class="nv-resume" href="' + esc(L.u) + '"><small>Reprendre</small><b>' + esc(L.t) + "</b></a>";
       h += "</div>";
     });
+    if (L) h += '<a class="nv-resume" href="' + esc(L.u) + '"><small>↻ Reprendre</small><b>' + esc(L.t) + '</b><i>→</i></a>';
     h += '<div class="nv-mlinks">' + SITE.links.map(function (l) { return '<a href="' + url(l[1]) + '">' + l[0] + "</a>"; }).join("") + "</div>";
     return h + "</div></div>";
   }

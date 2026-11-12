@@ -49,11 +49,20 @@ window.SFAPROG = { load: load, save: save, record: record, latest: latest, statu
 /* ======================= adaptateur : page d'exercices de physique ======================= */
 function physExos() {
   if (!window.CH || !document.getElementById("vExo") || typeof window.openEx !== "function") return;
-  var CH = window.CH, COURS = "physique-ba1";
+  var CH = window.CH, META = window.SFA && window.SFA.meta, ENGINE = !!(META && META.chapitres);
+  /* identifiant du cours : physique (page autonome) ou dossier du cours du moteur (ex. universite-chimie, secondaire-maths-4e) */
+  var COURS = ENGINE ? location.pathname.replace(/index\.html$/, "").replace(/\/$/, "").split("/").slice(-3).filter(function (x) { return x && x !== "simulation-test"; }).join("-") : "physique-ba1";
+  var NOM = ENGINE ? (META.court || META.titre || "ce cours") : "physique";
+  /* état de la page : variables globales (page de physique) ou adresse et DOM (moteur, état privé) */
+  function hq() { var q = {}; location.hash.replace(/^#/, "").split("&").forEach(function (kv) { var m = kv.split("="); if (m[0]) q[m[0]] = m[1]; }); return q; }
+  function gci() { if (typeof window.ci === "number") return window.ci; var c = parseInt(hq().c, 10); return isNaN(c) ? 0 : c; }
+  function gei() { if (typeof window.ei === "number") return window.ei; var e = parseInt(hq().e, 10); return isNaN(e) ? 0 : e; }
+  function grev() { if (typeof window.reveal === "boolean") return window.reveal; var b = document.getElementById("bSol"); return !!(b && b.classList.contains("on")); }
+  function gview() { if (typeof window.view === "string") return window.view; var m = { vExo: "exo", vList: "list", vChap: "chap", vTheo: "theo", vHome: "home" }; for (var id in m) { var el = document.getElementById(id); if (el && el.style.display !== "none") return m[id]; } return ""; }
   var css = document.createElement("style");
   css.textContent =
     ".pg-bar{display:inline-block;vertical-align:middle;height:7px;border-radius:99px;background:#e3e7ed;overflow:hidden;width:100%}" +
-    ".pg-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#b42318,#e0573f);transition:width .4s}" +
+    ".pg-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--acc,#b42318),var(--acc,#e0573f));transition:width .4s}" +
     ".pg-bar.ok i{background:linear-gradient(90deg,#1D9E75,#2fbf8f)}" +
     "div.pg-head.pg-head{padding:10px 14px 10px 18px!important}div.pg-self.pg-self{padding:12px 14px!important}div.pg-card.pg-card{padding:14px 16px!important}.pg-badge.pg-badge{padding:3px 8px!important}.pg-lv.pg-lv{padding:4px 9px!important}.pg-self button.pg-x,.pg-self .bts button{padding:8px 13px!important}.pg-self .errs .bts button{padding:6px 10px!important}#pgDash .box.box{padding:20px 22px!important}#pgDash .tile.tile{padding:10px 12px!important}#pgDash .x.x{padding:5px 10px!important}.pg-card button.pg-o{padding:6px 10px!important}.pg-badge.pg-badge{left:8px;right:auto}" +
     ".pg-qcm{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 2px}.pg-qcm span{font:800 12.5px Mulish,system-ui,sans-serif;color:#5f6b7a;margin-right:4px}" +
@@ -61,12 +70,12 @@ function physExos() {
     ".pg-qcm button:hover{background:#eef1f5;transform:translateY(-1px)}.pg-qcm button.good{background:#1D9E75;border-color:#1D9E75;color:#fff}.pg-qcm button.bad{background:#fdeceb;border-color:#e0a19f;color:#a32d2d}" +
     ".pg-qcm button[disabled]{cursor:default;transform:none}.pg-qcm .msg{font:800 13px Mulish,system-ui,sans-serif;margin-left:6px}" +
     ".pg-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid #e3e7ed;border-radius:12px;padding:10px 14px;margin:0 0 12px;background:#fff;position:relative;overflow:hidden}" +
-    ".pg-head::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#b42318}" +
-    ".pg-head .t{flex:1 1 220px;min-width:0}.pg-head small{display:block;font:800 10.5px Mulish,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#b42318}" +
+    ".pg-head::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--acc,#b42318)}" +
+    ".pg-head .t{flex:1 1 220px;min-width:0}.pg-head small{display:block;font:800 10.5px Mulish,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--acc,#b42318)}" +
     ".pg-head b{display:block;font:800 14px/1.3 Mulish,system-ui,sans-serif;color:#0f1b2d;margin:1px 0 6px}" +
     ".pg-head .n{font:700 12px Mulish,system-ui,sans-serif;color:#5f6b7a;white-space:nowrap}" +
     ".pg-lv{font:800 11px Mulish,system-ui,sans-serif;padding:4px 9px;border-radius:99px;background:#eef1f5;color:#5f6b7a;white-space:nowrap}" +
-    ".pg-lv.l1{background:#fdeceb;color:#b42318}.pg-lv.l2{background:#e3f5ee;color:#0F6E56}.pg-lv.l3{background:#0F6E56;color:#fff}" +
+    ".pg-lv.l1{background:#fdeceb;color:var(--acc,#b42318)}.pg-lv.l2{background:#e3f5ee;color:#0F6E56}.pg-lv.l3{background:#0F6E56;color:#fff}" +
     ".pg-self{border:1px solid #e3e7ed;border-radius:12px;padding:12px 14px;margin:12px 0;background:linear-gradient(#fbfcfd,#fff)}" +
     ".pg-self h4{font:800 13px Mulish,system-ui,sans-serif;margin:0 0 8px;color:#0f1b2d}" +
     ".pg-self .bts{display:flex;flex-wrap:wrap;gap:8px}.pg-self button{all:unset;cursor:pointer;font:800 13px Mulish,system-ui,sans-serif;border:1px solid #d3d9e2;border-radius:9px;padding:8px 13px;background:#fff;color:#2c3a4e}" +
@@ -78,10 +87,10 @@ function physExos() {
     ".pg-badge.ko{background:#a32d2d}.card{position:relative}" +
     ".sfa-list a[data-c] .pg-mini{display:block;width:100%;margin-top:4px}.sfa-list a[data-c] .pg-mini .pg-bar{height:4px}" +
     ".pg-card{background:#fff;border:1px solid #e3e7ed;border-radius:12px;padding:14px 16px}" +
-    ".pg-card small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#b42318;margin-bottom:6px}" +
+    ".pg-card small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--acc,#b42318);margin-bottom:6px}" +
     ".pg-card .big{font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#0f1b2d}.pg-card .sub{font:600 12.5px/1.45 Mulish,system-ui,sans-serif;color:#5f6b7a;margin:4px 0 10px}" +
     ".pg-card .kv{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font:600 12.5px Mulish,system-ui,sans-serif;color:#2c3a4e;margin-top:10px}.pg-card .kv b{font-weight:800}" +
-    ".pg-card a.go{display:block;margin-top:10px;font:800 12.5px Mulish,system-ui,sans-serif;color:#b42318;text-decoration:none}" +
+    ".pg-card a.go{display:block;margin-top:10px;font:800 12.5px Mulish,system-ui,sans-serif;color:var(--acc,#b42318);text-decoration:none}" +
     ".pg-card button{all:unset;cursor:pointer;margin-top:10px;font:800 12.5px Mulish,system-ui,sans-serif;color:#13233a;border:1px solid #d3d9e2;border-radius:8px;padding:6px 10px}" +
     "#pgDash{position:fixed;inset:0;background:rgba(15,27,45,.45);display:none;align-items:flex-start;justify-content:center;z-index:200;padding:40px 14px;overflow:auto}" +
     "#pgDash.show{display:flex}#pgDash .box{background:#fff;border-radius:14px;max-width:760px;width:100%;padding:20px 22px;box-shadow:0 20px 60px rgba(0,0,0,.25)}" +
@@ -96,7 +105,7 @@ function physExos() {
 
   /* QCM écrits en texte (« A. … B. … ») : la bonne lettre est au début de la solution */
   function qcmOf(e) {
-    if (!e || typeof e.st !== "string" || typeof e.sol !== "string" || !/<b>A\.<\/b>/.test(e.st) || !/<b>B\.<\/b>/.test(e.st)) return null;
+    if (!e || (e._x && e._x.choix) || typeof e.st !== "string" || typeof e.sol !== "string" || !/<b>A\.<\/b>/.test(e.st) || !/<b>B\.<\/b>/.test(e.st)) return null;
     var m = /^\s*(?:<[^>]+>\s*)*([A-E])[.)]/.exec(e.sol); if (!m) return null;
     var L = (e.st.match(/<b>([A-E])\.<\/b>/g) || []).map(function (x) { return x.charAt(3); });
     return L.indexOf(m[1]) < 0 ? null : { letters: L, good: m[1] };
@@ -104,7 +113,7 @@ function physExos() {
   var qcmDone = null;   /* réponse donnée dans la vue courante */
   function qcmRow() {
     var stmt = document.getElementById("stmt"); if (!stmt) return;
-    var r = document.getElementById("pgQcm"), e = window.CH[window.ci].ex[window.ei], q = qcmOf(e);
+    var r = document.getElementById("pgQcm"), e = CH[gci()].ex[gei()], q = qcmOf(e);
     if (!q) { if (r) r.remove(); return; }
     if (!r) { r = document.createElement("div"); r.id = "pgQcm"; r.className = "pg-qcm"; stmt.parentNode.insertBefore(r, stmt.nextSibling); }
     r.innerHTML = "<span>Ta réponse :</span>" + q.letters.map(function (l) {
@@ -114,13 +123,22 @@ function physExos() {
   }
   document.addEventListener("click", function (ev) {
     var t = ev.target.closest && ev.target.closest("#pgQcm button[data-l]"); if (!t || qcmDone) return;
-    var e = window.CH[window.ci].ex[window.ei], q = qcmOf(e); if (!q) return;
+    var e = CH[gci()].ex[gei()], q = qcmOf(e); if (!q) return;
     qcmDone = t.dataset.l;
-    record({ k: key(window.ci, window.ei), c: COURS, ch: window.ci, how: "qcm", ok: qcmDone === q.good ? 1 : 0, rep: qcmDone });
-    qcmRow(); if (!window.reveal) window.toggleSol(); else selfBox();
+    record({ k: key(gci(), gei()), c: COURS, ch: gci(), how: "qcm", ok: qcmDone === q.good ? 1 : 0, rep: qcmDone });
+    qcmRow(); if (!grev()) window.toggleSol(); else selfBox();
     head("vExo"); side();
   });
-  function key(i, j) { return "phys/" + slug(CH[i].t) + "/" + j + "-" + slug(CH[i].ex[j].t); }
+  document.addEventListener("click", function (ev) {
+    var b = ev.target.closest && ev.target.closest(".qc"); if (!b || gview() !== "exo") return;
+    var e = CH[gci()].ex[gei()], x = e && e._x; if (!x || !x.choix || b.parentNode.dataset.done) return;
+    qcmDone = String(+b.dataset.j);
+    record({ k: key(gci(), gei()), c: COURS, ch: gci(), how: "qcm", ok: +b.dataset.j === x.bonne ? 1 : 0, rep: qcmDone });
+    setTimeout(function () { selfBox(); head("vExo"); side(); }, 0);
+  }, true);
+  function isQcm(e) { return !!(e && ((e._x && e._x.choix) || qcmOf(e))); }
+  function qcmOk() { var e = CH[gci()].ex[gei()]; if (e && e._x && e._x.choix) return qcmDone != null && +qcmDone === e._x.bonne; var q = qcmOf(e); return q && qcmDone === q.good; }
+  function key(i, j) { return (ENGINE ? COURS : "phys") + "/" + slug(CH[i].t) + "/" + j + "-" + slug(CH[i].ex[j].t); }
   function keys(i) { return CH[i].ex.map(function (e, j) { return key(i, j); }); }
   function allKeys() { var k = []; CH.forEach(function (c, i) { k = k.concat(keys(i)); }); return k; }
   function chStat(i) { return stats(keys(i), COURS); }
@@ -131,22 +149,22 @@ function physExos() {
   function head(viewId) {
     var v = document.getElementById(viewId); if (!v) return;
     var h = v.querySelector(".pg-head"); if (!h) { h = document.createElement("div"); h.className = "pg-head"; v.insertBefore(h, v.firstChild); }
-    var i = window.ci, s = chStat(i), lv = level(s), all = stats(allKeys(), COURS);
+    var i = gci(), s = chStat(i), lv = level(s), all = stats(allKeys(), COURS);
     h.innerHTML = '<div class="t"><small>Chapitre ' + (i + 1) + " / " + CH.length + " · ta progression</small><b>" + esc(CH[i].t) + "</b>" + bar(s.ok / s.n, lv.id >= 2 ? "ok" : "") + "</div>" +
       '<span class="n">' + s.ok + " / " + s.n + " réussi" + (s.ok > 1 ? "s" : "") + " · " + s.tried + " tenté" + (s.tried > 1 ? "s" : "") + "</span>" +
       '<span class="pg-lv l' + lv.id + '">' + lv.t + "</span>" +
-      '<span class="n" title="Tout le cours de physique">Cours : ' + pctTxt(all) + "</span>";
+      '<span class="n" title="Tout le cours">Cours : ' + pctTxt(all) + "</span>";
   }
   /* auto-évaluation sous la solution (exercices ouverts : l'étudiant dit s'il avait trouvé) */
   function selfBox() {
     var v = document.getElementById("vExo"), info = document.getElementById("info"); if (!v || !info) return;
     var b = document.getElementById("pgSelf");
     if (!b) { b = document.createElement("div"); b.id = "pgSelf"; b.className = "pg-self"; info.parentNode.insertBefore(b, info.nextSibling); }
-    if (!window.reveal) { b.style.display = "none"; return; }
+    if (!grev()) { b.style.display = "none"; return; }
     b.style.display = "";
-    var k = key(window.ci, window.ei), st = status(k), last = st && st.last;
-    var isQ = !!qcmOf(window.CH[window.ci].ex[window.ei]);
-    if (isQ && (!qcmDone || qcmDone && last && last.ok)) { b.style.display = qcmDone ? "" : "none";
+    var k = key(gci(), gei()), st = status(k), last = st && st.last;
+    var isQ = isQcm(CH[gci()].ex[gei()]);
+    if (isQ && (!qcmDone || qcmOk())) { b.style.display = qcmDone ? "" : "none";
       if (qcmDone) b.innerHTML = '<div class="done" style="margin:0">Réponse enregistrée dans ta progression.</div>'; return; }
     var errBtns = Object.keys(ERR).map(function (e) { return '<button type="button" data-e="' + e + '"' + (last && !last.ok && last.err === e ? ' class="on"' : "") + ">" + ERR[e] + "</button>"; }).join("");
     if (isQ) { b.innerHTML = "<h4>Où était l'erreur ? (pour ton bilan)</h4><div class=\"bts\">" + errBtns + "</div>"; return; }
@@ -158,7 +176,7 @@ function physExos() {
   }
   document.addEventListener("click", function (ev) {
     var t = ev.target.closest && ev.target.closest("#pgSelf button"); if (!t) return;
-    var k = key(window.ci, window.ei), base = { k: k, c: COURS, ch: window.ci, how: "self" };
+    var k = key(gci(), gei()), base = { k: k, c: COURS, ch: gci(), how: "self" };
     if (t.dataset.r === "1") record(Object.assign(base, { ok: 1 }));
     else if (t.dataset.r === "0") record(Object.assign(base, { ok: 0, err: null }));
     else if (t.dataset.e) { var p = load(), a = p.attempts; for (var x = a.length - 1; x >= 0; x--) if (a[x].k === k) { if (!a[x].ok) { a[x].err = t.dataset.e; save(p); } break; } }
@@ -167,8 +185,8 @@ function physExos() {
   /* badges sur les cartes d'exercices et de chapitres */
   function badges() {
     var g = document.getElementById("exGrid");
-    if (g && window.view === "list") Array.prototype.forEach.call(g.children, function (card, j) {
-      var st = status(key(window.ci, j)); if (!st || card.querySelector(".pg-badge")) return;
+    if (g && gview() === "list") Array.prototype.forEach.call(g.children, function (card, j) {
+      var st = status(key(gci(), j)); if (!st || card.querySelector(".pg-badge")) return;
       var s = document.createElement("span"); s.className = "pg-badge" + (st.last.ok ? "" : " ko"); s.textContent = st.last.ok ? "✓ Réussi" : "À revoir"; card.appendChild(s);
     });
     var hg = document.getElementById("homeGrid");
@@ -191,7 +209,7 @@ function physExos() {
     var c = document.getElementById("pgCard");
     if (!c) { c = document.createElement("div"); c.id = "pgCard"; c.className = "pg-card"; var bl = aside.querySelector(".sfa-blocus-side"); aside.insertBefore(c, bl ? bl.nextSibling : aside.firstChild); }
     var all = stats(allKeys(), COURS), w = week(COURS), rec = recommend();
-    c.innerHTML = "<small>Ma progression · physique</small><div class=\"big\">" + pctTxt(all) + '</div><div class="sub">' + all.ok + (all.ok > 1 ? " exercices réussis" : " exercice réussi") + " sur " + all.n + "</div>" + bar(all.ok / all.n, "ok") +
+    c.innerHTML = "<small>Ma progression · " + esc(NOM) + "</small><div class=\"big\">" + pctTxt(all) + '</div><div class="sub">' + all.ok + (all.ok > 1 ? " exercices réussis" : " exercice réussi") + " sur " + all.n + "</div>" + bar(all.ok / all.n, "ok") +
       '<div class="kv"><span>Cette semaine</span><b>' + w.n + " exercice" + (w.n > 1 ? "s" : "") + "</b><span>Taux de réussite (7 jours)</span><b>" + (w.rate == null ? "—" : Math.round(100 * w.rate) + " %") + "</b></div>" +
       (rec ? '<a class="go" href="#c=' + rec.i + '&v=list">À faire ensuite : ' + esc(CH[rec.i].t) + " →</a>" : "") +
       '<button type="button" id="pgOpen" class="pg-o">Voir mon bilan détaillé</button>';
@@ -213,7 +231,7 @@ function physExos() {
       return '<span>' + (i + 1) + ". " + esc(c.t) + '</span><b style="text-align:right">' + pct(s) + ' %</b><span class="pg-lv l' + lv.id + '" style="text-align:center">' + lv.t + "</span>"; }).join("");
     var er = Object.keys(errs).sort(function (a, b) { return errs[b] - errs[a]; }).map(function (k) {
       return "<span>" + esc(ERR[k] || k) + '</span><b style="text-align:right">' + errs[k] + '</b><span><span class="ebar" style="display:block;width:' + Math.round(100 * errs[k] / emax) + '%"></span></span>'; }).join("");
-    d.innerHTML = '<div class="box"><button type="button" class="x">✕ Fermer</button><h2>Mon bilan en physique</h2>' +
+    d.innerHTML = '<div class="box"><button type="button" class="x">✕ Fermer</button><h2>Mon bilan · ' + esc(NOM) + '</h2>' +
       '<div class="tiles"><div class="tile"><small>Cours</small><b>' + pctTxt(all) + "</b></div><div class=\"tile\"><small>Réussis</small><b>" + all.ok + " / " + all.n + "</b></div>" +
       '<div class="tile"><small>Cette semaine</small><b>' + w.n + '</b></div><div class="tile"><small>Réussite 7 jours</small><b>' + (w.rate == null ? "—" : Math.round(100 * w.rate) + " %") + "</b></div>" +
       '<div class="tile"><small>Jours actifs (7 j)</small><b>' + w.days + " / 7</b></div></div>" +
@@ -232,7 +250,7 @@ function physExos() {
   wrap("openChap", function () { head("vChap"); });
   wrap("openTheo", function () { head("vTheo"); });
   /* l'aiguillage interne appelle ces fonctions par leur nom global : on relance la vue courante pour appliquer l'habillage */
-  var v = window.view;
+  var v = gview();
   if (v === "exo") { qcmRow(); selfBox(); head("vExo"); } else if (v === "list") { head("vList"); badges(); } else if (v === "chap") head("vChap"); else if (v === "theo") head("vTheo");
   badges(); side();
 }

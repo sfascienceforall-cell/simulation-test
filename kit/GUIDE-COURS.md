@@ -58,7 +58,7 @@ Tu peux définir tes propres petites fonctions en haut du fichier (préfixe-les 
 - Physique autonome : deux balises dans chaque page (`sfa-shell.css` ; `../phys-meta.js` + `sfa-shell.js` avant `sfa-nav.js`). En plus : panneau « Réglages », simulation suivante/précédente, flèches du clavier. La carte des chapitres `universite/physique/phys-meta.js` se régénère après tout changement de l'accueil de la physique (script `build_phys_meta.py`, chapitres d'exercices dans sa table EXO).
 
 ## Progression de l'étudiant (13/11/2026)
-`kit/sfa-progress.js` (API `window.SFAPROG`) garde les essais dans le navigateur (clé `sfa_progress_v1`, partagée avec `sfa-shell.js`). Branché pour l'instant sur la page d'exercices de physique (`universite/physique/exercices/`) :
+`kit/sfa-progress.js` (API `window.SFAPROG`) garde les essais dans le navigateur (clé `sfa_progress_v1`, partagée avec `sfa-shell.js`). Branché sur la page d'exercices de physique (`universite/physique/exercices/`, balise dans la page) et sur les 21 cours du moteur commun (chargé par `kit/course-engine.js`, identifiant de cours = chemin du dossier, ex. `universite-chimie`, `secondaire-maths-4e`). Les QCM du moteur (`choix/bonne`) sont enregistrés automatiquement :
 - jauge du chapitre (réussis / tentés, niveau Pas commencé · En cours · Acquis · Maîtrisé) et du cours ;
 - 75 QCM écrits en texte rendus cliquables : la bonne lettre est lue au début de la solution (`<b>E.</b> …`) ;
 - exercices ouverts : après « Voir la solution », l'étudiant indique s'il avait trouvé et, sinon, le type d'erreur ;

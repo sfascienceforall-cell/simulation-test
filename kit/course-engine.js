@@ -1,3 +1,5 @@
+/* dossier du kit, pour charger sfa-progress.js */
+var SFA_KIT = ((document.currentScript && document.currentScript.src) || "").replace(/[^\/]*$/, "");
 /* SFA · moteur des pages de cours (novembre 2026).
    Un cours = des chapitres. Chaque chapitre : simulations (vignettes → page dédiée), théorie animée, exercices avec devanture.
    Données : page.js (SFA.page), sims-NN.js (SFA.sim), exos-NN.js (SFA.exos), theo-NN.js (SFA.theo + SFA.figs),
@@ -296,5 +298,7 @@ window.SFA_COURSE = function () {
   }
   window.addEventListener("hashchange", route); window.addEventListener("popstate", route);
   buildHome(); route(); loop();
+  /* progression de l'étudiant (kit/sfa-progress.js), chargée depuis le dossier de ce script */
+  if (SFA_KIT && !window.SFAPROG) { var sp = document.createElement("script"); sp.src = SFA_KIT + "sfa-progress.js"; document.head.appendChild(sp); }
 };
 document.addEventListener("DOMContentLoaded", function () { window.SFA_COURSE(); });

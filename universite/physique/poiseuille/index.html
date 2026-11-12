@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Écoulement visqueux : loi de Poiseuille · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#FL">Fluides</a>›<b>Écoulement visqueux : loi de Poiseuille</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Fluides</span><span class="sfa-chip free">Gratuit</span></div><h1>Écoulement visqueux : loi de Poiseuille</h1><p>Fais couler de l'eau, du sang ou de l'huile dans un tube : le débit dépend du rayon à la puissance 4. Ajoute une sténose et regarde où la pression chute.</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:60vh;min-height:520px;cursor:default" aria-label="Écoulement visqueux dans un tube : profil parabolique des vitesses, débit de Poiseuille et effet d'un rétrécissement"></canvas>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill">Liquide</span>
+  <button class="btn" id="fE">Eau (1,0 mPa·s)</button>
+  <button class="btn on" id="fS">Sang (3,5 mPa·s)</button>
+  <button class="btn" id="fG">Huile (100 mPa·s)</button>
+</div>
+<div class="row">
+  <span class="pill">Rétrécissement</span>
+  <button class="btn on" id="s0">Aucun</button>
+  <button class="btn" id="s1">Sténose au milieu</button>
+  <button class="btn" id="half">Rayon ÷ 2 (tout le tube)</button>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#185fa5">ΔP &nbsp;différence de pression</span>
+  <input type="range" id="dP" min="100" max="4000" value="1000" step="50" style="accent-color:#378ADD;">
+  <span class="val" id="dPv" style="color:#185fa5"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#BA7517">r &nbsp;rayon du tube</span>
+  <input type="range" id="r" min="0.5" max="5" value="2" step="0.1" style="accent-color:#BA7517;">
+  <span class="val" id="rv" style="color:#BA7517"></span>
+</div>
+<div class="row" id="rowS" style="display:none">
+  <span class="pill" style="min-width:150px;color:#a32d2d">rayon dans la sténose</span>
+  <input type="range" id="rs" min="20" max="100" value="50" step="5" style="accent-color:#E24B4A;">
+  <span class="val" id="rsv" style="color:#a32d2d"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#534AB7">L &nbsp;longueur</span>
+  <input type="range" id="L" min="2" max="30" value="10" step="1" style="accent-color:#7F77DD;">
+  <span class="val" id="Lv" style="color:#534AB7"></span>
+</div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const INK='#3d3d3a',BLUE='#378ADD',BLUE_D='#185fa5',RED='#E24B4A',RED_D='#a32d2d',ORANGE='#BA7517',VIOLET_D='#534AB7',GREY='#9aa0a6',AX='#c8ccd0',WALL='#c9a3a0';
+const FT='600 13px Mulish,system-ui,sans-serif',FS='600 11px Mulish,system-ui,sans-serif',FB='700 13px Mulish,system-ui,sans-serif';
+const $=id=>document.getElementById(id);
+const fr=(v,d)=>v.toFixed(d).replace('.',',');
+const fQ=q=>{const ml=q*1e6;return ml>=1?fr(ml,ml>=100?0:ml>=10?1:2)+' mL/s':fr(ml*60,ml*60>=10?1:2)+' mL/min';};
+const fRh=x=>{const e=Math.floor(Math.log10(x)),m=x/Math.pow(10,e);return fr(m,2)+'·10'+String(e).replace('-','⁻').replace(/\d/g,d=>'⁰¹²³⁴⁵⁶⁷⁸⁹'[d])+' Pa·s/m³';};
+let dP=1000,r=2e-3,L=0.10,eta=3.5e-3,sten=false,fs=0.5;   // fs : rayon dans la sténose / rayon normal ; la sténose occupe 30 % de la longueur
+const LS=0.3;
+function Rh(rad,len){return 8*eta*len/(Math.PI*Math.pow(rad,4));}
+function solve(){
+  const R1=Rh(r,L*(sten?1-LS:1)),R2=sten?Rh(r*fs,L*LS):0,Rt=R1+R2,Q=dP/Rt;
+  return {R1,R2,Rt,Q,v:Q/(Math.PI*r*r),vs:sten?Q/(Math.PI*r*r*fs*fs):0,dP2:Q*R2};
+}
+let W=0,H=0,dpr=1;
+function size(){const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.round(b.width)||700,h=Math.round(b.height)||520;if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);}
+function tag(t,x,y,col,font,al){ctx.font=font||FT;ctx.textAlign=al||'center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.strokeText(t,x,y);ctx.fillStyle=col;ctx.fillText(t,x,y);ctx.textBaseline='alphabetic';}
+// particules : position x (0..1 le long du tube), y relatif (-1..1)
+const parts=[];for(let k=0;k<260;k++)parts.push({x:Math.random(),y:Math.random()*2-1});
+let last=performance.now();
+function frame(now){
+  size();const dt=Math.min(.05,(now-last)/1000);last=now;
+  const s=solve();
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  const x0=50,x1=W-30,yc=H*0.3,RMAXPX=Math.min(H*0.2,90),rp=RMAXPX*(r/5e-3)*0.95+6;
+  const xa=x0+(x1-x0)*(0.5-LS/2),xb=x0+(x1-x0)*(0.5+LS/2);
+  const radAt=x=>(sten&&x>xa&&x<xb)?rp*fs:rp;
+  // paroi du vaisseau
+  ctx.fillStyle='#fbeeee';ctx.beginPath();ctx.moveTo(x0,yc-rp-10);
+  for(let x=x0;x<=x1;x+=2)ctx.lineTo(x,yc-radAt(x)-10);for(let x=x1;x>=x0;x-=2)ctx.lineTo(x,yc-radAt(x));ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(x0,yc+rp+10);for(let x=x0;x<=x1;x+=2)ctx.lineTo(x,yc+radAt(x)+10);for(let x=x1;x>=x0;x-=2)ctx.lineTo(x,yc+radAt(x));ctx.closePath();ctx.fill();
+  ctx.strokeStyle=WALL;ctx.lineWidth=2;[-1,1].forEach(sg=>{ctx.beginPath();for(let x=x0;x<=x1;x+=2){const y=yc+sg*radAt(x);x===x0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();});
+  // fluide
+  ctx.fillStyle=eta>0.05?'rgba(186,117,23,.08)':eta>2e-3?'rgba(226,75,74,.08)':'rgba(55,138,221,.08)';
+  ctx.beginPath();for(let x=x0;x<=x1;x+=2)ctx.lineTo(x,yc-radAt(x));for(let x=x1;x>=x0;x-=2)ctx.lineTo(x,yc+radAt(x));ctx.closePath();ctx.fill();
+  // particules avancent avec v(y) = 2·v_moy·(1 − y²) ; vitesse d'écran normalisée
+  const vref=Math.max(s.v,1e-9),scr=0.18;
+  ctx.fillStyle=eta>0.05?ORANGE:eta>2e-3?RED_D:BLUE_D;
+  parts.forEach(p=>{const X=x0+(x1-x0)*p.x,inS=sten&&X>xa&&X<xb,loc=inS?1/(fs*fs):1;
+    p.x+=dt*scr*2*(1-p.y*p.y)*loc*Math.min(3,s.v/0.05+.15)/1.0*0.35; if(p.x>1){p.x-=1;}
+    const yy=yc+p.y*radAt(X)*0.96;ctx.globalAlpha=.75;ctx.beginPath();ctx.arc(X,yy,1.9,0,7);ctx.fill();});
+  ctx.globalAlpha=1;
+  // profil des vitesses (section d'entrée)
+  const xp=x0+(x1-x0)*0.16;ctx.strokeStyle=VIOLET_D;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(xp,yc-rp);ctx.lineTo(xp,yc+rp);ctx.stroke();
+  ctx.beginPath();for(let k=-20;k<=20;k++){const y=k/20,len=(1-y*y)*Math.min(70,(x1-x0)*0.12);const X=xp+len,Y=yc+y*rp;k===-20?ctx.moveTo(X,Y):ctx.lineTo(X,Y);}ctx.stroke();
+  for(let k=-4;k<=4;k++){const y=k/5,len=(1-y*y)*Math.min(70,(x1-x0)*0.12),Y=yc+y*rp;if(len<4)continue;ctx.beginPath();ctx.moveTo(xp,Y);ctx.lineTo(xp+len,Y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(xp+len,Y);ctx.lineTo(xp+len-5,Y-3);ctx.lineTo(xp+len-5,Y+3);ctx.closePath();ctx.fillStyle=VIOLET_D;ctx.fill();}
+  tag('profil parabolique : v max au centre, nulle à la paroi',xp,yc-rp-24,VIOLET_D,FS,'left');
+  tag('P₁',x0-22,yc,BLUE_D,FB);tag('P₂',x1+16,yc,BLUE_D,FB);
+  if(sten)tag('sténose : r × '+fr(fs,2)+' → v × '+fr(1/(fs*fs),1),(xa+xb)/2,yc+radAt((xa+xb)/2)+28,RED_D,FS);
+  // graphe de la pression le long du tube
+  const gy0=H*0.62,gy1=H-34,gh=gy1-gy0;
+  ctx.strokeStyle=AX;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x0,gy0-6);ctx.lineTo(x0,gy1);ctx.lineTo(x1,gy1);ctx.stroke();
+  tag('pression le long du tube',x0+6,gy0-14,INK,FB,'left');tag('P₁',x0-14,gy0,BLUE_D,FS);tag('P₂',x0-14,gy1,BLUE_D,FS);tag('x',x1,gy1+14,GREY,FS);
+  const Pat=x=>{const f=(x-x0)/(x1-x0);if(!sten)return 1-f;const d1=(s.R1/s.Rt)/(1-LS);   // chute par unité de longueur hors sténose
+    if(f<0.5-LS/2)return 1-d1*f;const pa=1-d1*(0.5-LS/2);if(f<0.5+LS/2)return pa-(s.R2/s.Rt)*(f-(0.5-LS/2))/LS;return pa-s.R2/s.Rt-d1*(f-(0.5+LS/2));};
+  ctx.strokeStyle=BLUE_D;ctx.lineWidth=2.6;ctx.beginPath();for(let x=x0;x<=x1;x+=3){const y=gy1-gh*Pat(x);x===x0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();
+  if(sten){ctx.fillStyle='rgba(226,75,74,.08)';ctx.fillRect(xa,gy0,xb-xa,gh);tag(fr(100*s.R2/s.Rt,0)+' % de la chute de pression ici',(xa+xb)/2,gy0+10,RED_D,FS);}
+  txt(s);requestAnimationFrame(frame);
+}
+let lastT='';
+function txt(s){
+  const b=(c,t)=>'<b style="color:'+c+'">'+t+'</b>';
+  let f=b(ORANGE,'R<sub>h</sub> = 8ηL / (πr⁴)')+' &nbsp;et&nbsp; '+b(BLUE_D,'Q = ΔP / R<sub>h</sub> = πr⁴ΔP / (8ηL)')+' &nbsp;→&nbsp; '+b(BLUE_D,'Q = '+fQ(s.Q))+'<br>'+
+    'Le débit varie comme <b>r⁴</b> : rayon ÷ 2 → débit ÷ 16 à ΔP égal. C\'est pourquoi une petite vasoconstriction change beaucoup la circulation.';
+  if(sten)f+='<br>Résistances en série : R<sub>tot</sub> = R<sub>tube</sub> + R<sub>sténose</sub> ; dans la sténose, R ∝ 1/r⁴ et la vitesse moyenne ∝ 1/r².';
+  const info='η = '+fr(eta*1e3,1)+' mPa·s &nbsp;|&nbsp; r = '+fr(r*1e3,1)+' mm &nbsp;|&nbsp; L = '+fr(L*100,0)+' cm &nbsp;|&nbsp; ΔP = '+fr(dP,0)+' Pa ('+fr(dP/133.32,1)+' mmHg) &nbsp;|&nbsp; R<sub>h</sub> = '+fRh(s.Rt)+' &nbsp;|&nbsp; '+b(BLUE_D,'Q = '+fQ(s.Q))+' &nbsp;|&nbsp; vitesse moyenne '+fr(s.v*100,1)+' cm/s'+(sten?' (sténose : '+fr(s.vs*100,1)+' cm/s)':'')+' &nbsp;|&nbsp; vitesse au centre '+fr(2*s.v*100,1)+' cm/s';
+  const all=f+info;if(all!==lastT){lastT=all;$('fml').innerHTML=f;$('info').innerHTML=info;}
+}
+function bind(id,fmt,set){const el=$(id),o=$(id+'v');const go=()=>{const v=parseFloat(el.value);set(v);o.textContent=fmt(v);};el.addEventListener('input',go);go();}
+bind('dP',v=>fr(v,0)+' Pa',v=>dP=v);bind('r',v=>fr(v,1)+' mm',v=>r=v*1e-3);bind('L',v=>fr(v,0)+' cm',v=>L=v/100);bind('rs',v=>v+' % du rayon',v=>fs=v/100);
+[['fE',1e-3],['fS',3.5e-3],['fG',0.1]].forEach(([id,e])=>{$(id).onclick=()=>{eta=e;['fE','fS','fG'].forEach(x=>$(x).classList.toggle('on',x===id));};});
+$('s0').onclick=()=>{sten=false;$('s0').classList.add('on');$('s1').classList.remove('on');$('rowS').style.display='none';};
+$('s1').onclick=()=>{sten=true;$('s1').classList.add('on');$('s0').classList.remove('on');$('rowS').style.display='';};
+$('half').onclick=()=>{const el=$('r');el.value=Math.max(0.5,parseFloat(el.value)/2);el.dispatchEvent(new Event('input'));};
+window.__pois={solve,set:(k,v)=>{const el=$(k);el.value=v;el.dispatchEvent(new Event('input'));},get:()=>({dP,r,L,eta,sten,fs})};
+requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Mécanique des fluides<span>8 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/archimede/"><i>01</i>Poussée d'Archimède</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/pascal/"><i>02</i>Principe de Pascal</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Bernouilli-/"><i>03</i>Bernoulli</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/tube-en-u/"><i>04</i>Tube en U : liquides non miscibles</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/deux-cubes-immerges/"><i>05</i>Deux cubes immergés : action-réaction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/bulles-laplace/"><i>06</i>Deux bulles de savon reliées : loi de Laplace</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/venturi-aspiration/"><i>07</i>Tube en T et rétrécissement : effet Venturi</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/poiseuille/"><i>08</i>Écoulement visqueux : loi de Poiseuille</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

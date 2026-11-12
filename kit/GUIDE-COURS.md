@@ -64,3 +64,4 @@ Tu peux définir tes propres petites fonctions en haut du fichier (préfixe-les 
 - exercices ouverts : après « Voir la solution », l'étudiant indique s'il avait trouvé et, sinon, le type d'erreur ;
 - badges sur les cartes, mini-jauges dans la liste des chapitres, carte « Ma progression » (semaine, chapitre recommandé) et bilan détaillé (par chapitre, erreurs les plus fréquentes).
 Identifiant d'un exercice : `phys/<titre du chapitre>/<n°>-<titre>` : changer un titre fait perdre la progression de cet exercice.
+Pages d'accueil (`index.html`, `universite/`, `secondaire/`) : bloc « Ma progression » (cours commencés, semaine, note sur 20), via la balise `kit/sfa-progress.js` ajoutée à la main. ⚠ `kit/build_hubs.py` n'écrit ni `sfa-nav.js` ni `sfa-progress.js` : après une régénération des hubs, remettre les deux balises.

@@ -142,6 +142,9 @@ function physExos() {
   function keys(i) { return CH[i].ex.map(function (e, j) { return key(i, j); }); }
   function allKeys() { var k = []; CH.forEach(function (c, i) { k = k.concat(keys(i)); }); return k; }
   function chStat(i) { return stats(keys(i), COURS); }
+  /* le cours est inscrit dans la progression pour le tableau de bord des pages d'accueil */
+  (function () { var p = load(); p.courses = p.courses || {}; var acc = getComputedStyle(document.body).getPropertyValue("--acc").trim();
+    p.courses[COURS] = { nom: ENGINE ? (META.titre || NOM) : "Physique BA1", n: allKeys().length, href: location.pathname, acc: acc || "#b42318", seen: Date.now() }; save(p); })();
   function pct(s) { return s.n ? Math.round(100 * s.ok / s.n) : 0; }
   function pctTxt(s) { var v = s.n ? 100 * s.ok / s.n : 0; return (v > 0 && v < 1 ? "< 1" : Math.round(v)) + " %"; }
 
@@ -254,5 +257,33 @@ function physExos() {
   if (v === "exo") { qcmRow(); selfBox(); head("vExo"); } else if (v === "list") { head("vList"); badges(); } else if (v === "chap") head("vChap"); else if (v === "theo") head("vTheo");
   badges(); side();
 }
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", physExos); else physExos();
+/* ======================= tableau de bord des pages d'accueil ======================= */
+function hub() {
+  var hero = document.querySelector("main.wrap > .hero"); if (!hero || window.CH) return;
+  var p = load(), C = p.courses || {}, ids = Object.keys(C).filter(function (c) { return p.attempts.some(function (a) { return a.c === c; }); });
+  if (!ids.length) return;
+  var since = Date.now() - 7 * DAY, wk = p.attempts.filter(function (a) { return a.ts >= since; }), wok = wk.filter(function (a) { return a.ok; }).length;
+  function last(c) { var t = 0; p.attempts.forEach(function (a) { if (a.c === c && a.ts > t) t = a.ts; }); return t; }
+  ids.sort(function (a, b) { return last(b) - last(a); });
+  var cards = ids.map(function (c) {
+    var L = latest(c), ok = 0, tried = 0; Object.keys(L).forEach(function (k) { tried++; if (L[k].ok) ok++; });
+    var n = C[c].n || tried, r = n ? ok / n : 0, pc = r > 0 && r < .01 ? "< 1" : Math.round(100 * r);
+    return '<a class="hp-c" href="' + esc(C[c].href) + '" style="--a:' + esc(C[c].acc || "#13233a") + '"><small>' + esc(C[c].nom) + "</small><b>" + pc + ' %</b><span class="hp-b"><i style="width:' + Math.round(100 * r) + '%"></i></span><em>' + ok + " réussi" + (ok > 1 ? "s" : "") + " sur " + n + " · " + tried + " tenté" + (tried > 1 ? "s" : "") + "</em><u>Reprendre →</u></a>";
+  }).join("");
+  var note = wk.length ? Math.round(20 * wok / wk.length * 2) / 2 : null;
+  var box = document.createElement("section"); box.id = "hubProg";
+  box.innerHTML = "<style>#hubProg{margin:6px 0 26px}#hubProg h2{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}#hubProg h2 em{font-style:normal;font-size:13px;color:#5f6b7a;font-weight:700}" +
+    ".hp-w{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 12px}.hp-w div{background:#fff;border:1px solid #e3e7ed;border-radius:12px;padding:10px 14px;min-width:130px}.hp-w small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#8a95a3}.hp-w b{font:800 22px Mulish,system-ui,sans-serif;color:#0f1b2d}" +
+    ".hp-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}.hp-c{display:block;background:#fff;border:1px solid #e3e7ed;border-radius:12px;padding:14px 16px;text-decoration:none;color:#0f1b2d;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s}" +
+    ".hp-c::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--a)}.hp-c:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(15,27,45,.08)}" +
+    ".hp-c small{display:block;font:800 11px Mulish,system-ui,sans-serif;color:var(--a);text-transform:uppercase;letter-spacing:.06em}.hp-c b{display:block;font:800 26px/1.2 Mulish,system-ui,sans-serif;margin:2px 0 6px}" +
+    ".hp-b{display:block;height:7px;border-radius:99px;background:#e3e7ed;overflow:hidden}.hp-b i{display:block;height:100%;background:var(--a);border-radius:99px}" +
+    ".hp-c em{display:block;font:600 12px Mulish,system-ui,sans-serif;font-style:normal;color:#5f6b7a;margin-top:6px}.hp-c u{display:block;text-decoration:none;font:800 12.5px Mulish,system-ui,sans-serif;color:var(--a);margin-top:8px}</style>" +
+    "<h2>Ma progression<em>gardée dans ce navigateur</em></h2>" +
+    '<div class="hp-w"><div><small>Cette semaine</small><b>' + wk.length + ' exercice' + (wk.length > 1 ? "s" : "") + '</b></div><div><small>Réussite (7 jours)</small><b>' + (wk.length ? Math.round(100 * wok / wk.length) + " %" : "—") + '</b></div><div><small>Note de la semaine</small><b>' + (note == null ? "—" : String(note).replace(".", ",") + " / 20") + "</b></div></div>" +
+    '<div class="hp-g">' + cards + "</div>";
+  hero.parentNode.insertBefore(box, hero.nextSibling);
+}
+function boot() { physExos(); hub(); }
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
 })();

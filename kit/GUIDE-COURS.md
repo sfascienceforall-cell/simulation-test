@@ -56,3 +56,11 @@ Tu peux définir tes propres petites fonctions en haut du fichier (préfixe-les 
 `kit/sfa-shell.css` + `kit/sfa-shell.js` ajoutent à toutes les pages de simulation : bandeau du chapitre (n / N, points de progression, onglets Simulations · Théorie · Exercices), barre d'outils (Recommencer, Plein écran), coches « déjà ouverte » (clé `sfa_progress_v1` du navigateur).
 - Moteur commun : chargé automatiquement par `kit/sim-page.js` (aucune page à modifier).
 - Physique autonome : deux balises dans chaque page (`sfa-shell.css` ; `../phys-meta.js` + `sfa-shell.js` avant `sfa-nav.js`). En plus : panneau « Réglages », simulation suivante/précédente, flèches du clavier. La carte des chapitres `universite/physique/phys-meta.js` se régénère après tout changement de l'accueil de la physique (script `build_phys_meta.py`, chapitres d'exercices dans sa table EXO).
+
+## Progression de l'étudiant (13/11/2026)
+`kit/sfa-progress.js` (API `window.SFAPROG`) garde les essais dans le navigateur (clé `sfa_progress_v1`, partagée avec `sfa-shell.js`). Branché pour l'instant sur la page d'exercices de physique (`universite/physique/exercices/`) :
+- jauge du chapitre (réussis / tentés, niveau Pas commencé · En cours · Acquis · Maîtrisé) et du cours ;
+- 75 QCM écrits en texte rendus cliquables : la bonne lettre est lue au début de la solution (`<b>E.</b> …`) ;
+- exercices ouverts : après « Voir la solution », l'étudiant indique s'il avait trouvé et, sinon, le type d'erreur ;
+- badges sur les cartes, mini-jauges dans la liste des chapitres, carte « Ma progression » (semaine, chapitre recommandé) et bilan détaillé (par chapitre, erreurs les plus fréquentes).
+Identifiant d'un exercice : `phys/<titre du chapitre>/<n°>-<titre>` : changer un titre fait perdre la progression de cet exercice.

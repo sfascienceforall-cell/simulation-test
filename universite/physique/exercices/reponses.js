@@ -120,3 +120,67 @@ Object.assign(window.SFA_NUM, {
     { q: "(b) Période", v: 92.4, u: "min", p: { 5543: "unites" } }
   ]
 });
+
+/* Chapitres « Somme des forces », « Quantité de mouvement et impulsion », « Conservation de l'énergie » (13/11/2026) */
+Object.assign(window.SFA_NUM, {
+  "Caisse tirée avec frottement": [ { q: "Accélération a", v: 3, u: "m/s²", p: { 5: "formule", 7: "signe" } } ],
+  "Deux caisses poussées ensemble": [
+    { q: "Accélération a", v: 4, u: "m/s²", p: { 6.67: "formule", 10: "formule" } },
+    { q: "Force de m₁ sur m₂", v: 8, u: "N", p: { 20: "concept", 12: "formule" } }
+  ],
+  "Plan incliné lisse": [ { q: "Accélération a", v: 4.9, u: "m/s²", p: { 8.5: "trigo", 9.81: "concept" } } ],
+  "Angle limite de glissement": [ { q: "Angle limite θ", v: 21.8, u: "°", p: { 23.6: "trigo", 66.4: "trigo", 0.381: "unites" } } ],
+  "Balance dans un ascenseur": [ { q: "Indication de la balance N", v: 827, u: "N", p: { 547: "signe", 687: "concept", 140: "concept" } } ],
+  "Freinage d’urgence": [
+    { q: "Décélération (valeur positive)", v: 8, u: "m/s²", p: { 0.8: "formule" } },
+    { q: "Distance d'arrêt", v: 25, u: "m", p: { 50: "formule", 324: "unites" } },
+    { q: "Durée du freinage", v: 2.5, u: "s", p: { 9: "unites" } }
+  ],
+  "Table + poulie": [
+    { q: "Accélération a", v: 2.75, u: "m/s²", p: { 3.92: "formule", 6.54: "formule" } },
+    { q: "Tension T", v: 14.1, u: "N", p: { 19.62: "concept", 8.24: "formule" } }
+  ],
+  "Pendule conique (examen)": [
+    { q: "(a) Tension", v: 13.6, u: "N", p: { 10.19: "trigo", 23.5: "trigo", 11.77: "concept" } },
+    { q: "(b) Vitesse v", v: 1.06, u: "m/s" },
+    { q: "(c) Période de rotation", v: 1.18, u: "s" }
+  ],
+  "Les patineurs qui se repoussent": [ { q: "Vitesse de Tom (positive vers la droite)", v: -2, u: "m/s", p: { 2: "signe", "-4.5": "formule", 4.5: "formule" } } ],
+  "Le coup de pied : l’aire sous F(t)": [
+    { q: "Impulsion J", v: 4, u: "N·s", p: { 8: "formule", 4000: "unites" } },
+    { q: "Force moyenne", v: 400, u: "N", p: { 800: "concept" } },
+    { q: "Vitesse du ballon", v: 10, u: "m/s", p: { 20: "formule" } }
+  ],
+  "La balle qui rebondit sur un mur": [
+    { q: "Δp (axe + vers le mur)", v: -7.2, u: "kg·m/s", p: { "-0.8": "signe", 0.8: "signe", 7.2: "signe" } },
+    { q: "Force moyenne du mur (axe + vers le mur)", v: -360, u: "N", p: { 360: "signe", "-40": "signe", 40: "signe" } }
+  ],
+  "Le casque : allonger la durée du choc": [
+    { q: "Force moyenne sans casque", v: 15000, u: "N", p: { 15: "unites" } },
+    { q: "Force moyenne avec casque", v: 2500, u: "N", p: { 2.5: "unites" } },
+    { q: "Décélération sans casque", v: 300, u: "g", p: { 3000: "unites" } },
+    { q: "Décélération avec casque", v: 50, u: "g", p: { 500: "unites" } }
+  ],
+  "Le recul du canon": [
+    { q: "(a) Vitesse de recul (positive dans le sens de l'obus)", v: -3, u: "m/s", p: { 3: "signe", "-300": "concept" } },
+    { q: "(b) Force moyenne du frein", v: 9000, u: "N", p: { 4500: "formule", 2250: "formule" } },
+    { q: "(c) Rapport K(obus) / K(canon)", v: 100, u: "", p: { 1: "concept", 0.01: "formule" } }
+  ],
+  "Le choc mou de deux wagons": [
+    { q: "(a) Vitesse commune", v: 2, u: "m/s", p: { 1.5: "formule", 3: "concept" } },
+    { q: "(b) Énergie cinétique perdue", v: 30, u: "kJ", p: { 90: "concept", 60: "concept", 30000: "unites" } }
+  ],
+  "Le choc élastique de deux billes": [
+    { q: "Vitesse de la bille de 1 kg", v: -2, u: "m/s", p: { 2: "signe" } },
+    { q: "Vitesse de la bille de 2 kg", v: 4, u: "m/s", p: { 2: "formule", 3: "formule" } }
+  ],
+  "Le pendule balistique (examen)": [
+    { q: "Vitesse de la balle", v: 200, u: "m/s", p: { 1: "concept", 2: "concept" } },
+    { q: "Énergie cinétique perdue dans le choc", v: 99.5, u: "%", tol: 0.005, p: { 0.5: "concept", 50: "concept" } }
+  ],
+  "Vitesse en bas d’une chute": [ { q: "Vitesse en bas", v: 19.8, u: "m/s", p: { 392: "formule", 14: "formule", 196: "formule" } } ],
+  "Pendule lâché": [ { q: "Vitesse au point bas", v: 3.13, u: "m/s", p: { 9.81: "formule", 2.21: "formule" } } ],
+  "Ressort qui propulse": [ { q: "Vitesse de sortie", v: 2, u: "m/s", p: { 4: "formule", 20: "unites", 0.2: "formule" } } ],
+  "Toboggan avec frottement": [ { q: "Énergie dissipée", v: 852, u: "J", tol: 0.01, p: { 1600: "concept", 2452: "concept", 4052: "signe" } } ],
+  "Hauteur minimale d’un looping": [ { q: "Rapport h / R", v: 2.5, u: "", p: { 2: "concept", 3: "calcul" } } ]
+});

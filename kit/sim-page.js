@@ -2,6 +2,15 @@
    Chargée après sfa-sec.js, page.js du cours et le fichier sims-NN.js du chapitre. window.SFA_SIMPAGE = id de la simulation. */
 (function () {
 "use strict";
+/* habillage commun (kit/sfa-shell.css + sfa-shell.js), chargé depuis le dossier de ce script */
+var KIT = (document.currentScript && document.currentScript.src || "").replace(/[^\/]*$/, "");
+function shell(o) {
+  if (!KIT) return;
+  if (!document.querySelector('link[href$="sfa-shell.css"]')) { var l = document.createElement("link"); l.rel = "stylesheet"; l.href = KIT + "sfa-shell.css"; document.head.appendChild(l); }
+  var go = function () { if (window.SFASHELL) window.SFASHELL.engine(o); };
+  if (window.SFASHELL) { go(); return; }
+  var s = document.createElement("script"); s.src = KIT + "sfa-shell.js"; s.onload = go; document.head.appendChild(s);
+}
 /* Charge les fichiers sims-NN.js du cours qui manquent (dans l'ordre) ; again = recharger aussi ceux déjà présents. */
 function loadCourse(again, cb) {
   var M = window.SFA.meta, have = {}, todo = [], redo = [];
@@ -55,6 +64,9 @@ function start() {
   });
   var host = document.getElementById("host");
   var kit = S.mount(d, host);
+  shell({ cours: M.court || M.titre, ci: ci, n: M.chapitres.length, titre: c.titre, cur: k, host: host,
+          sims: mates.map(function (s) { return { href: "../" + s.id + "/", t: strip(s.titre) }; }),
+          theo: "../#c=" + ci + "&v=theo", exos: "../#c=" + ci + "&v=list" });
   /* Certaines simulations utilisent des aides communes définies dans le fichier d'un autre chapitre
      (ex. B4, C4 dans sims-01.js). Si la construction échoue faute d'une telle aide, on charge les autres
      fichiers sims-NN.js du cours puis on reconstruit la simulation. */

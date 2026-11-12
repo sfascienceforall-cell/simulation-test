@@ -51,3 +51,8 @@ Tu peux définir tes propres petites fonctions en haut du fichier (préfixe-les 
    de 2-3 chapitres : les devantures doivent être belles et variées.
 6. Ne modifie PAS sims-NN.js, exos-NN.js, page.js, ni le kit. Seulement les fichiers theo-NN.js de TON cours.
    Les figs suivent l'ordre du tableau dans exos-NN.js (pas l'ordre trié par étoiles).
+
+## Habillage commun des pages de simulation (13/11/2026)
+`kit/sfa-shell.css` + `kit/sfa-shell.js` ajoutent à toutes les pages de simulation : bandeau du chapitre (n / N, points de progression, onglets Simulations · Théorie · Exercices), barre d'outils (Recommencer, Plein écran), coches « déjà ouverte » (clé `sfa_progress_v1` du navigateur).
+- Moteur commun : chargé automatiquement par `kit/sim-page.js` (aucune page à modifier).
+- Physique autonome : deux balises dans chaque page (`sfa-shell.css` ; `../phys-meta.js` + `sfa-shell.js` avant `sfa-nav.js`). En plus : panneau « Réglages », simulation suivante/précédente, flèches du clavier. La carte des chapitres `universite/physique/phys-meta.js` se régénère après tout changement de l'accueil de la physique (script `build_phys_meta.py`, chapitres d'exercices dans sa table EXO).

@@ -65,3 +65,7 @@ Tu peux définir tes propres petites fonctions en haut du fichier (préfixe-les 
 - badges sur les cartes, mini-jauges dans la liste des chapitres, carte « Ma progression » (semaine, chapitre recommandé) et bilan détaillé (par chapitre, erreurs les plus fréquentes).
 Identifiant d'un exercice : `phys/<titre du chapitre>/<n°>-<titre>` : changer un titre fait perdre la progression de cet exercice.
 Pages d'accueil (`index.html`, `universite/`, `secondaire/`) : bloc « Ma progression » (cours commencés, semaine, note sur 20), via la balise `kit/sfa-progress.js` ajoutée à la main. ⚠ `kit/build_hubs.py` n'écrit ni `sfa-nav.js` ni `sfa-progress.js` : après une régénération des hubs, remettre les deux balises.
+
+### Réponse chiffrée (13/11/2026)
+Un exercice devient corrigé automatiquement s'il porte un champ `num` (moteur : dans l'objet de `SFA.exos` ; physique : `universite/physique/exercices/reponses.js`, clé = titre exact). Une partie = `{ q:"(a) τ", v:0.47, u:"s", tol:0.02, p:{ 470:"unites" } }` ; plusieurs parties = tableau. `p` associe une valeur fausse typique à un type d'erreur (`unites`, `signe`, `formule`, `calcul`, `trigo`, `concept`). Deux essais, puis la solution s'affiche. Saisie acceptée : virgule ou point, `1,2e-3`, `1,2·10^-3`, `10⁷`.
+Fait : chapitre « Circuits électriques (R, C, L) » de physique (10 exercices, 24 réponses). À faire : les autres chapitres, avec valeurs recalculées et relues.

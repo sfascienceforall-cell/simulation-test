@@ -69,6 +69,12 @@ function physExos() {
     ".pg-qcm button{all:unset;cursor:pointer;font:800 15px Mulish,system-ui,sans-serif;width:42px;height:38px;text-align:center;line-height:38px;border:1.5px solid #d3d9e2;border-radius:10px;background:#fff;color:#13233a;transition:transform .12s,background .15s}" +
     ".pg-qcm button:hover{background:#eef1f5;transform:translateY(-1px)}.pg-qcm button.good{background:#1D9E75;border-color:#1D9E75;color:#fff}.pg-qcm button.bad{background:#fdeceb;border-color:#e0a19f;color:#a32d2d}" +
     ".pg-qcm button[disabled]{cursor:default;transform:none}.pg-qcm .msg{font:800 13px Mulish,system-ui,sans-serif;margin-left:6px}" +
+    ".pg-num{border:1px solid #e3e7ed;border-radius:12px;padding:12px 14px!important;margin:12px 0;background:#fff}" +
+    ".pg-num h4{font:800 13px Mulish,system-ui,sans-serif;margin:0 0 8px;color:#0f1b2d}.pg-num .ln{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:6px 0}" +
+    ".pg-num label{font:700 13px Mulish,system-ui,sans-serif;color:#2c3a4e;min-width:170px}.pg-num input{font:700 15px Mulish,system-ui,sans-serif;width:8.5em;padding:7px 9px!important;border:1.5px solid #d3d9e2;border-radius:9px;color:#0f1b2d;background:#fff}" +
+    ".pg-num input.good{border-color:#1D9E75;background:#e9f7f1}.pg-num input.bad{border-color:#e0a19f;background:#fdeceb}.pg-num .u{font:800 13px Mulish,system-ui,sans-serif;color:#5f6b7a;min-width:3em}" +
+    ".pg-num .mk{font:800 13px Mulish,system-ui,sans-serif}.pg-num .go{all:unset;cursor:pointer;font:800 13px Mulish,system-ui,sans-serif;background:#13233a;color:#fff;border-radius:9px;padding:8px 14px!important;margin-top:6px}" +
+    ".pg-num .msg{font:700 13px Mulish,system-ui,sans-serif;margin-top:8px}.pg-num .hint{font:600 12px Mulish,system-ui,sans-serif;color:#8a95a3;margin-top:4px}" +
     ".pg-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid #e3e7ed;border-radius:12px;padding:10px 14px;margin:0 0 12px;background:#fff;position:relative;overflow:hidden}" +
     ".pg-head::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--acc,#b42318)}" +
     ".pg-head .t{flex:1 1 220px;min-width:0}.pg-head small{display:block;font:800 10.5px Mulish,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--acc,#b42318)}" +
@@ -136,6 +142,52 @@ function physExos() {
     record({ k: key(gci(), gei()), c: COURS, ch: gci(), how: "qcm", ok: +b.dataset.j === x.bonne ? 1 : 0, rep: qcmDone });
     setTimeout(function () { selfBox(); head("vExo"); side(); }, 0);
   }, true);
+  /* ---------- réponse chiffrée : e.num, e._x.num (moteur) ou window.SFA_NUM[titre] ---------- */
+  function numOf(e) { if (!e) return null; var n = e.num || (e._x && e._x.num) || (window.SFA_NUM && window.SFA_NUM[String(e.t).replace(/<[^>]+>/g, "")]); return n ? (Array.isArray(n) ? n : [n]) : null; }
+  var SUPD = { "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4", "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9", "⁻": "-", "⁺": "+" };
+  function readNum(t) {
+    t = String(t || "").trim().replace(/\s+/g, "").replace(/−/g, "-").replace(/,/g, ".");
+    t = t.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺]+/g, function (m) { return "^" + m.split("").map(function (c) { return SUPD[c]; }).join(""); });
+    var m = /^([-+]?(?:\d+\.?\d*|\.\d+))?(?:(?:[·×x*]|\.)?10\^\(?([-+]?\d+)\)?|e([-+]?\d+))?$/i.exec(t);
+    if (!m || (!m[1] && m[2] == null)) return NaN;
+    var a = m[1] != null ? parseFloat(m[1]) : 1, e = m[2] != null ? +m[2] : (m[3] != null ? +m[3] : 0);
+    return a * Math.pow(10, e);
+  }
+  function close(x, v, tol) { if (v === 0) return Math.abs(x) <= (tol || 0.02); return Math.abs(x - v) <= Math.abs(v) * (tol || 0.02); }
+  var numTries = 0, numDone = false;
+  function numBox() {
+    var stmt = document.getElementById("stmt"); if (!stmt) return;
+    var box = document.getElementById("pgNum"), N = numOf(CH[gci()].ex[gei()]);
+    if (!N) { if (box) box.remove(); return; }
+    if (!box) { box = document.createElement("div"); box.id = "pgNum"; box.className = "pg-num"; var after = document.getElementById("pgQcm") || stmt; after.parentNode.insertBefore(box, after.nextSibling); }
+    box.innerHTML = "<h4>" + (N.length > 1 ? "Tes réponses" : "Ta réponse") + " (calcule sur papier, puis écris le nombre)</h4>" + N.map(function (n, i) {
+      return '<div class="ln"><label for="pgN' + i + '">' + esc(n.q || "Réponse") + '</label><input id="pgN' + i + '" inputmode="decimal" autocomplete="off" placeholder="ex. 12,5"><span class="u">' + esc(n.u || "") + '</span><span class="mk" id="pgM' + i + '"></span></div>'; }).join("") +
+      '<button type="button" class="go" id="pgCheck">Vérifier</button><div class="hint">Virgule ou point, et puissances de dix acceptées : 1,2e-3 ou 1,2·10^-3. Marge de 2 %.</div><div class="msg" id="pgNumMsg" role="status"></div>';
+  }
+  function checkNum() {
+    if (numDone) return;
+    var e = CH[gci()].ex[gei()], N = numOf(e); if (!N) return;
+    var all = true, err = null, empty = false;
+    N.forEach(function (n, i) {
+      var inp = document.getElementById("pgN" + i), x = readNum(inp.value), mk = document.getElementById("pgM" + i);
+      if (isNaN(x)) { empty = true; inp.className = ""; mk.textContent = ""; return; }
+      var ok = close(x, n.v, n.tol); inp.className = ok ? "good" : "bad"; mk.textContent = ok ? "✓" : "✗"; mk.style.color = ok ? "#0F6E56" : "#a32d2d";
+      if (!ok) { all = false; if (!err && n.p) Object.keys(n.p).forEach(function (pv) { if (!err && close(x, parseFloat(pv), 0.02)) err = n.p[pv]; }); }
+    });
+    var msg = document.getElementById("pgNumMsg");
+    if (empty) { msg.style.color = "#a32d2d"; msg.textContent = "Écris un nombre dans chaque case (par exemple 22,7)."; return; }
+    numTries++;
+    record({ k: key(gci(), gei()), c: COURS, ch: gci(), how: "num", ok: all ? 1 : 0, err: err, essai: numTries });
+    if (all) { numDone = true; msg.style.color = "#0F6E56"; msg.textContent = numTries === 1 ? "Tout est juste du premier coup !" : "Tout est juste."; if (!grev()) window.toggleSol(); }
+    else if (numTries >= 2) { numDone = true; msg.style.color = "#a32d2d"; msg.innerHTML = "Pas encore juste après deux essais : regarde la solution pas à pas." + (err ? " Erreur probable : <b>" + esc(ERR[err] || err) + "</b>." : "");
+      if (!grev()) window.toggleSol(); }
+    else { msg.style.color = "#a32d2d"; msg.innerHTML = "Pas encore : corrige les cases en rouge et vérifie à nouveau." + (err ? " Indice : on dirait une erreur de type <b>" + esc((ERR[err] || err).toLowerCase()) + "</b>." : "") + " Il te reste un essai avant la solution."; }
+    if (numDone) { Array.prototype.forEach.call(document.querySelectorAll("#pgNum input"), function (i) { i.disabled = true; }); var b = document.getElementById("pgCheck"); if (b) b.style.display = "none";
+      N.forEach(function (n, i) { var mk = document.getElementById("pgM" + i); if (mk && mk.textContent === "✗") mk.textContent = "✗ attendu : " + String(n.v).replace(".", ",") + " " + (n.u || ""); }); }
+    selfBox(); head("vExo"); side();
+  }
+  document.addEventListener("click", function (ev) { if (ev.target && ev.target.id === "pgCheck") checkNum(); });
+  document.addEventListener("keydown", function (ev) { if (ev.key === "Enter" && ev.target && /^pgN\d+$/.test(ev.target.id)) { ev.preventDefault(); checkNum(); } }, true);
   function isQcm(e) { return !!(e && ((e._x && e._x.choix) || qcmOf(e))); }
   function qcmOk() { var e = CH[gci()].ex[gei()]; if (e && e._x && e._x.choix) return qcmDone != null && +qcmDone === e._x.bonne; var q = qcmOf(e); return q && qcmDone === q.good; }
   function key(i, j) { return (ENGINE ? COURS : "phys") + "/" + slug(CH[i].t) + "/" + j + "-" + slug(CH[i].ex[j].t); }
@@ -163,9 +215,14 @@ function physExos() {
     var v = document.getElementById("vExo"), info = document.getElementById("info"); if (!v || !info) return;
     var b = document.getElementById("pgSelf");
     if (!b) { b = document.createElement("div"); b.id = "pgSelf"; b.className = "pg-self"; info.parentNode.insertBefore(b, info.nextSibling); }
-    if (!grev()) { b.style.display = "none"; return; }
+    if (!grev() && !(numOf(CH[gci()].ex[gei()]) && numTries)) { b.style.display = "none"; return; }
     b.style.display = "";
     var k = key(gci(), gei()), st = status(k), last = st && st.last;
+    var isN = !!numOf(CH[gci()].ex[gei()]);
+    if (isN) { if (!numDone && !(last && !last.ok && numTries)) { b.style.display = "none"; return; }
+      if (last && last.ok) { b.style.display = numTries ? "" : "none"; b.innerHTML = '<div class="done" style="margin:0">Réponse enregistrée dans ta progression.</div>'; return; }
+      var eb = Object.keys(ERR).map(function (e) { return '<button type="button" data-e="' + e + '"' + (last && last.err === e ? ' class="on"' : "") + ">" + ERR[e] + "</button>"; }).join("");
+      b.style.display = ""; b.innerHTML = "<h4>Où était l'erreur ? (pour ton bilan)</h4><div class=\"bts\">" + eb + "</div>"; return; }
     var isQ = isQcm(CH[gci()].ex[gei()]);
     if (isQ && (!qcmDone || qcmOk())) { b.style.display = qcmDone ? "" : "none";
       if (qcmDone) b.innerHTML = '<div class="done" style="margin:0">Réponse enregistrée dans ta progression.</div>'; return; }
@@ -247,14 +304,14 @@ function physExos() {
 
   /* branchements sur les fonctions de la page (sans les modifier) */
   function wrap(name, after) { var f = window[name]; if (typeof f !== "function") return; window[name] = function () { var r = f.apply(this, arguments); try { after(); } catch (e) {} return r; }; }
-  wrap("openEx", function () { qcmDone = null; qcmRow(); selfBox(); head("vExo"); });
+  wrap("openEx", function () { qcmDone = null; numTries = 0; numDone = false; qcmRow(); numBox(); selfBox(); head("vExo"); });
   wrap("toggleSol", selfBox);
   wrap("openList", function () { head("vList"); setTimeout(badges, 0); });
   wrap("openChap", function () { head("vChap"); });
   wrap("openTheo", function () { head("vTheo"); });
   /* l'aiguillage interne appelle ces fonctions par leur nom global : on relance la vue courante pour appliquer l'habillage */
   var v = gview();
-  if (v === "exo") { qcmRow(); selfBox(); head("vExo"); } else if (v === "list") { head("vList"); badges(); } else if (v === "chap") head("vChap"); else if (v === "theo") head("vTheo");
+  if (v === "exo") { qcmRow(); numBox(); selfBox(); head("vExo"); } else if (v === "list") { head("vList"); badges(); } else if (v === "chap") head("vChap"); else if (v === "theo") head("vTheo");
   badges(); side();
 }
 /* ======================= tableau de bord des pages d'accueil ======================= */

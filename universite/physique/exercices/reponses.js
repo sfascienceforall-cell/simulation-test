@@ -184,3 +184,77 @@ Object.assign(window.SFA_NUM, {
   "Toboggan avec frottement": [ { q: "Énergie dissipée", v: 852, u: "J", tol: 0.01, p: { 1600: "concept", 2452: "concept", 4052: "signe" } } ],
   "Hauteur minimale d’un looping": [ { q: "Rapport h / R", v: 2.5, u: "", p: { 2: "concept", 3: "calcul" } } ]
 });
+
+/* Chapitres « Les ondes », « Mécanique des fluides », « Électrostatique », « Magnétisme », « Optique » (13/11/2026) */
+Object.assign(window.SFA_NUM, {
+  "Longueur d’onde d’un son": [ { q: "Longueur d'onde λ", v: 0.773, u: "m", p: { 1.294: "formule", 149600: "formule" } } ],
+  "Lire une équation d’onde": [
+    { q: "Fréquence f", v: 2, u: "Hz", p: { 12.57: "formule", 4: "formule" } },
+    { q: "Longueur d'onde λ", v: 4, u: "m", p: { 0.5: "formule", 1.571: "formule" } },
+    { q: "Vitesse v", v: 8, u: "m/s", p: { 2: "formule" } }
+  ],
+  "Corde de guitare": [
+    { q: "Vitesse v", v: 100, u: "m/s", p: { 10000: "formule", 1: "formule" } },
+    { q: "Fréquence du fondamental f₁", v: 50, u: "Hz", p: { 100: "formule", 25: "formule" } }
+  ],
+  "Mode 3 d’une corde": [
+    { q: "Nombre de nœuds (extrémités comprises)", v: 4, u: "", tol: 0.001, p: { 3: "concept", 2: "concept" } },
+    { q: "Nombre de ventres", v: 3, u: "", tol: 0.001, p: { 4: "concept" } },
+    { q: "Longueur d'onde λ₃", v: 0.8, u: "m", p: { 0.4: "formule", 3.6: "formule", 1.2: "formule" } }
+  ],
+  "Interférence de deux sources (examen)": [
+    { q: "(a) Longueur d'onde λ", v: 3, u: "cm", p: { 300: "formule", 0.333: "formule" } },
+    { q: "(b) Amplitude au point (3 ; 2)", v: 19.8, u: "cm", tol: 0.03 }
+  ],
+  "Pression en profondeur": [ { q: "Pression absolue", v: 199.4, u: "kPa", tol: 0.01, p: { 98.1: "concept", 199400: "unites", 111.1: "formule" } } ],
+  "Presse hydraulique": [ { q: "Force sur S₂", v: 1000, u: "N", p: { 2.5: "formule", 250: "formule" } } ],
+  "Continuité dans un tuyau": [ { q: "Vitesse dans la partie étroite", v: 4, u: "m/s", p: { 2: "formule", 0.25: "formule" } } ],
+  "Réservoir sous air comprimé (examen)": [
+    { q: "(a) Vitesse en B", v: 21.8, u: "m/s", p: { 8.29: "concept", 20.1: "concept" } },
+    { q: "(b) Vitesse en B quand H_A = 3 m", v: 5.42, u: "m/s", p: { 20.5: "concept" } }
+  ],
+  "Réseau vasculaire — Poiseuille (examen)": [
+    { q: "(a) Nombre de capillaires N", v: 5e8, u: "", tol: 0.03, p: { 5e6: "unites", 5e10: "unites" } },
+    { q: "(b) Débit", v: 11.8, u: "cm³/s", tol: 0.02 }
+  ],
+  "Compter les électrons": [ { q: "Nombre d'électrons", v: 3e13, u: "", p: { 3e19: "unites", 3e7: "unites", 7.68e-25: "formule" } } ],
+  "Loi de Coulomb": [ { q: "Force F", v: 0.6, u: "N", p: { 0.18: "formule", 6e5: "unites", 6000: "unites" } } ],
+  "Jouer avec r et q": [
+    { q: "(a) Facteur sur F si r double", v: 0.25, u: "×", p: { 0.5: "formule", 4: "formule" } },
+    { q: "(b) Facteur si une charge double", v: 2, u: "×" },
+    { q: "(c) Facteur si les deux doublent", v: 4, u: "×", p: { 2: "formule" } }
+  ],
+  "Champ électrique d’une charge": [
+    { q: "Champ E", v: 1.125e6, u: "N/C", tol: 0.025, p: { 2.25e5: "formule", 1.125e2: "unites" } },
+    { q: "Force sur q", v: 1.125e-3, u: "N", tol: 0.025, p: { 1.125: "unites" } }
+  ],
+  "Point d’équilibre entre deux charges": [ { q: "Distance x / d depuis la charge 4q", v: 0.667, u: "", p: { 0.333: "concept", 0.8: "formule", 0.2: "formule" } } ],
+  "Deux boules suspendues (examen)": [ { q: "Charge q", v: 24, u: "nC", tol: 0.03, p: { 0.024: "unites", 2.4e-8: "unites", 48: "formule" } } ],
+  "Force de Lorentz": [ { q: "Force F", v: 1.6e-13, u: "N", p: { 6.4e-13: "formule", 1.6e-19: "concept" } } ],
+  "Force de Laplace sur un fil": [ { q: "Force F", v: 0.6, u: "N", p: { 3.75: "formule", 2.4: "formule" } } ],
+  "Angle et signe de la charge": [ { q: "Norme de F", v: 1.6e-14, u: "N", p: { 2.77e-14: "trigo", 3.2e-14: "trigo" } } ],
+  "Champ créé par un fil": [ { q: "Champ B", v: 40, u: "μT", p: { 4e-5: "unites", 251: "formule", 2e-4: "formule" } } ],
+  "Rayon cyclotron": [
+    { q: "Rayon R", v: 4.18, u: "cm", tol: 0.02, p: { 0.0418: "unites", 418: "unites" } },
+    { q: "Période", v: 1.31e-7, u: "s", tol: 0.02 }
+  ],
+  "Sélecteur de vitesse + spectromètre (examen)": [
+    { q: "(a) Vitesse non déviée", v: 5e5, u: "m/s", p: { 8e4: "formule", 2e-6: "formule" } },
+    { q: "(b) Masse de l'ion", v: 10, u: "u", tol: 0.03, p: { 1.66e-26: "unites" } }
+  ],
+  "Indice et vitesse": [ { q: "Vitesse dans le verre", v: 2e8, u: "m/s", p: { 4.5e8: "formule", 3e8: "concept" } } ],
+  "Snell-Descartes air → eau": [ { q: "Angle de réfraction θ₂", v: 32.1, u: "°", p: { 70.1: "formule", 33.8: "trigo", 0.56: "unites" } } ],
+  "Angle critique et fibre optique": [ { q: "Angle critique θc", v: 41.8, u: "°", p: { 48.2: "trigo", 33.7: "trigo", 0.73: "unites" } } ],
+  "Lentille : image réelle": [
+    { q: "Position de l'image dᵢ", v: 15, u: "cm", p: { 7.5: "formule", "-15": "signe", 20: "formule" } },
+    { q: "Grandissement γ", v: -0.5, u: "", p: { 0.5: "signe", "-2": "formule" } }
+  ],
+  "Lentille : la loupe": [
+    { q: "Position de l'image dᵢ (négative si virtuelle)", v: -15, u: "cm", p: { 15: "signe", 3.75: "formule" } },
+    { q: "Grandissement γ", v: 2.5, u: "", p: { "-2.5": "signe" } }
+  ],
+  "Traversée d’une vitre (examen)": [
+    { q: "(a) Angle dans le verre θ₂", v: 35.3, u: "°", p: { 60: "concept", 54.7: "trigo" } },
+    { q: "(c) Décalage latéral d", v: 5.12, u: "mm", tol: 0.03, p: { 0.512: "unites", 0.00512: "unites" } }
+  ]
+});

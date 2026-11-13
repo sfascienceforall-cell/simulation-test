@@ -297,10 +297,32 @@ function physExos() {
       '<div class="tile"><small>Jours actifs (7 j)</small><b>' + w.days + " / 7</b></div></div>" +
       "<h3>Par chapitre</h3><div class=\"row2\">" + rows + "</div>" +
       "<h3>Mes erreurs les plus fréquentes</h3>" + (er ? '<div class="row2">' + er + "</div>" : '<p class="note">Aucune erreur enregistrée pour l\'instant. Quand tu te trompes, indique où : ce graphique te montrera quoi retravailler.</p>') +
-      '<p class="note">Ta progression est gardée dans ce navigateur seulement (rien n\'est envoyé). Elle sera perdue si tu effaces les données du site ou changes d\'appareil.</p></div>';
+      '<p class="note">Ta progression est gardée dans ce navigateur seulement (rien n\'est envoyé). Pour la retrouver sur un autre appareil, exporte-la ici puis importe le fichier là-bas.</p>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button type="button" class="x" id="pgExp" style="float:none">⬇ Exporter ma progression</button><button type="button" class="x" id="pgImp" style="float:none">⬆ Importer un fichier</button><input type="file" id="pgFile" accept="application/json,.json" hidden></div></div>';
     d.classList.add("show");
   }
   document.addEventListener("click", function (e) { if (e.target && e.target.id === "pgOpen") dash(); });
+  /* export / import de la progression (fichier JSON) ; l'import fusionne sans doublon */
+  document.addEventListener("click", function (e) {
+    if (!e.target) return;
+    if (e.target.id === "pgExp") { var blob = new Blob([JSON.stringify(load())], { type: "application/json" }), a = document.createElement("a");
+      a.href = URL.createObjectURL(blob); var dt = new Date(); a.download = "progression-sfa-" + dt.getFullYear() + "-" + String(dt.getMonth() + 1).padStart(2, "0") + "-" + String(dt.getDate()).padStart(2, "0") + ".json"; document.body.appendChild(a); a.click(); a.remove(); }
+    if (e.target.id === "pgImp") document.getElementById("pgFile").click();
+  });
+  document.addEventListener("change", function (e) {
+    if (!e.target || e.target.id !== "pgFile" || !e.target.files[0]) return;
+    var r = new FileReader(); r.onload = function () {
+      try { var q = JSON.parse(r.result); if (!q || q.v !== 1 || !Array.isArray(q.attempts)) throw 0;
+        var p = load(), seen = {}; p.attempts.forEach(function (a) { seen[a.k + "|" + a.ts] = 1; });
+        q.attempts.forEach(function (a) { if (a && a.k && !seen[a.k + "|" + a.ts]) p.attempts.push(a); });
+        p.attempts.sort(function (a, b) { return a.ts - b.ts; });
+        Object.keys(q.visits || {}).forEach(function (k) { if (!p.visits[k]) p.visits[k] = q.visits[k]; });
+        p.courses = Object.assign({}, q.courses || {}, p.courses || {}); save(p);
+        side(); dash(); alert0("Progression importée : " + q.attempts.length + " essais lus.");
+      } catch (er) { alert0("Ce fichier n'est pas une progression SFA."); }
+    }; r.readAsText(e.target.files[0]);
+  });
+  function alert0(t) { var n = document.querySelectorAll("#pgDash .note"), d = n[n.length - 1]; if (d) { d.textContent = t; d.style.color = "#0F6E56"; } }
 
   /* branchements sur les fonctions de la page (sans les modifier) */
   function wrap(name, after) { var f = window[name]; if (typeof f !== "function") return; window[name] = function () { var r = f.apply(this, arguments); try { after(); } catch (e) {} return r; }; }

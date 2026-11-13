@@ -197,8 +197,9 @@ const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
 const INK='#3d3d3a',BLUE_D='#185fa5',RED='#E24B4A',RED_D='#a32d2d',ORANGE='#BA7517',VIOLET_D='#534AB7',GREY='#9aa0a6',WIRE='#5b6470',GREEN_D='#0F6E56';
 const FT='600 13px Mulish,system-ui,sans-serif',FS='600 11px Mulish,system-ui,sans-serif',FB='700 13px Mulish,system-ui,sans-serif';
 const $=id=>document.getElementById(id);
-const fr=(v,d)=>(Math.abs(v)<5e-5?0:v).toFixed(d).replace('.',',');
+const fr=(v,d)=>(Math.abs(v)<5e-5?0:v).toFixed(d).replace('.',',').replace('-','−');
 const fA=v=>fr(v*1000,1)+' mA';
+const fq=(v,d)=>(v<-5e-5?'('+fr(v,d)+')':fr(v,d)), fqA=v=>(v<-5e-8?'('+fr(v*1000,1)+' mA)':fA(v));
 let E1=12,E2=6,R1=10,R2=20,R3=30,s2=1,showArr=true;
 /* nœud A en haut, B en bas (référence). Sens supposés : I₁ et I₂ montent dans les branches des générateurs vers A, I₃ descend dans R₃. */
 function solve(){const e2=s2*E2,V=(E1/R1+e2/R2)/(1/R1+1/R2+1/R3);return {V,I1:(E1-V)/R1,I2:(e2-V)/R2,I3:V/R3,e2};}
@@ -247,9 +248,9 @@ function frame(now){
 let lastT='';
 function txt(S){
   const b=(c,s)=>'<b style="color:'+c+'">'+s+'</b>',sg=s2>0?'+':'−';
-  const f=b(GREEN_D,'Nœud A : I₁ + I₂ = I₃')+' &nbsp;→&nbsp; '+fA(S.I1)+' + '+fA(S.I2)+' = '+fA(S.I3)+'<br>'+
-    b(BLUE_D,'Maille 1 : E₁ − R₁·I₁ − R₃·I₃ = 0')+' &nbsp;→&nbsp; '+fr(E1,1)+' − '+fr(R1*S.I1,2)+' − '+fr(R3*S.I3,2)+' = '+fr(E1-R1*S.I1-R3*S.I3,2)+' V<br>'+
-    b(BLUE_D,'Maille 2 : '+(s2>0?'':'−')+'E₂ − R₂·I₂ − R₃·I₃ = 0')+' &nbsp;→&nbsp; '+fr(S.e2,1)+' − '+fr(R2*S.I2,2)+' − '+fr(R3*S.I3,2)+' = '+fr(S.e2-R2*S.I2-R3*S.I3,2)+' V<br>'+
+  const f=b(GREEN_D,'Nœud A : I₁ + I₂ = I₃')+' &nbsp;→&nbsp; '+fA(S.I1)+' + '+fqA(S.I2)+' = '+fA(S.I3)+'<br>'+
+    b(BLUE_D,'Maille 1 : E₁ − R₁·I₁ − R₃·I₃ = 0')+' &nbsp;→&nbsp; '+fr(E1,1)+' − '+fq(R1*S.I1,2)+' − '+fq(R3*S.I3,2)+' = '+fr(E1-R1*S.I1-R3*S.I3,2)+' V<br>'+
+    b(BLUE_D,'Maille 2 : '+(s2>0?'':'−')+'E₂ − R₂·I₂ − R₃·I₃ = 0')+' &nbsp;→&nbsp; '+fr(S.e2,1)+' − '+fq(R2*S.I2,2)+' − '+fq(R3*S.I3,2)+' = '+fr(S.e2-R2*S.I2-R3*S.I3,2)+' V<br>'+
     'Méthode : choisis un sens pour chaque courant (flèches vertes), écris les équations, résous. Un résultat négatif veut dire que le courant va dans l\'autre sens : on ne refait pas le calcul.';
   const Ps=E1*S.I1+S.e2*S.I2,Pr=R1*S.I1*S.I1+R2*S.I2*S.I2+R3*S.I3*S.I3;
   const info=b(GREEN_D,'I₁ = '+fA(S.I1))+' &nbsp;|&nbsp; '+b(GREEN_D,'I₂ = '+fA(S.I2))+' &nbsp;|&nbsp; '+b(GREEN_D,'I₃ = '+fA(S.I3))+' &nbsp;|&nbsp; puissance des générateurs '+fr(Ps*1000,0)+' mW = puissance dissipée dans les résistances '+fr(Pr*1000,0)+' mW'+

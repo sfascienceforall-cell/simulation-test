@@ -1,60 +1,152 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Simulations interactives · SFA</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&display=swap"><style>
-:root{--bg:#f6f7f9;--paper:#fff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
- --navy:#13233a;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--sel:#eef3fd;
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Simulations interactives · SFA</title>
+<meta name="description" content="Près de 1 000 simulations interactives, la théorie animée et plus de 3 300 exercices corrigés, du secondaire (3e → 6e, FWB) à la première année d'université. Gratuit, sans compte.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800;900&display=swap"><style>
+:root{--bg:#f6f7f9;--paper:#fff;--ink:#0f1b2d;--ink2:#2c3a4e;--ink3:#3b4a5e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+ --navy:#13233a;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#0f6e56;
  --f:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif}
-*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--f)}
+*{box-sizing:border-box}html{background:var(--bg);scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--f)}
 a{color:inherit}
+/* en-tête de secours (remplacé par kit/sfa-nav.js) */
 .top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
 .top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
 .logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f);text-decoration:none;white-space:nowrap}
 .logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f);font-style:normal}
-.nav{display:flex;gap:18px;font:600 13px var(--f);color:var(--muted)}.nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
-.nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
-.cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
-@media (max-width:720px){.top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.nav::-webkit-scrollbar{display:none}.nav a{padding:6px 0;flex:none}.cta{padding:8px 11px;font-size:12px}}
-.wrap{max-width:1240px;margin:0 auto;padding:0 16px}
-.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:28px;align-items:center;padding:34px 0 26px}
-@media (max-width:900px){.hero{grid-template-columns:minmax(0,1fr)}}
-.free{display:inline-block;font:800 11px var(--f);letter-spacing:.08em;text-transform:uppercase;background:var(--yellow);color:var(--yellow-ink);padding:4px 10px;border-radius:999px}
-h1{font:800 clamp(1.9rem,4vw,2.9rem)/1.08 var(--f);letter-spacing:-.02em;margin:12px 0 10px;text-wrap:balance}
-.lead{color:var(--muted);max-width:56ch;margin:0 0 16px}
-.search{display:flex;gap:8px;max-width:460px}
-.search input{flex:1;min-width:0;border:1px solid var(--line2);border-radius:8px;padding:10px 12px;font:500 14px var(--f);background:var(--paper)}
-.stats{display:flex;gap:22px;margin-top:16px;color:var(--muted);font:600 13px var(--f)}.stats b{display:block;color:var(--ink);font:800 22px var(--f)}
-.feat{background:var(--navy);border-radius:14px;padding:14px;color:#fff;text-decoration:none;display:block}
-.feat small{font:800 10px var(--f);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow)}
-.feat img{display:block;width:100%;border-radius:8px;margin:10px 0;background:#fff}
-.feat b{font:800 16px/1.3 var(--f)}
-.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 14px;scrollbar-width:thin}
-.chips a{flex:none;text-decoration:none;font:700 13px var(--f);padding:8px 12px;border-radius:9px;border:1px solid var(--line);background:var(--paper);color:var(--ink2)}
-.chips a span{color:var(--faint);font-weight:600;margin-left:6px}
-section{padding:18px 0 8px;scroll-margin-top:70px}
-section h2{font:800 1.3rem var(--f);margin:0;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-section h2 em{font-style:normal;font:700 12px var(--f);color:var(--chip-ink);background:var(--chip);padding:3px 9px;border-radius:999px}
-section h2 em.hp{background:#f1eef9;color:#5a3fa0}
-section>p{color:var(--muted);margin:4px 0 12px;font-size:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
-.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden;text-decoration:none;display:flex;flex-direction:column;transition:border-color .15s,transform .15s}
-.card:hover{border-color:var(--line2);transform:translateY(-2px)}
-.card img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;background:#fff;border-bottom:1px solid var(--line)}
-.card div{padding:11px 13px 13px}
-.card small{font:700 11px var(--f);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-.card b{display:block;font:800 15px/1.3 var(--f);margin:3px 0 4px}
-.card span{display:block;color:var(--muted);font-size:13px;line-height:1.4}
-.card .new{display:inline-block;margin-left:6px;font:800 10px var(--f);background:var(--yellow);color:var(--yellow-ink);padding:1px 6px;border-radius:999px;vertical-align:2px;text-transform:uppercase;letter-spacing:.05em}
-.promo{background:var(--navy);color:#fff;border-radius:14px;padding:22px;margin:26px 0 30px;display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
-.promo small{display:block;font:800 10px var(--f);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:4px}
-.promo b{font:800 20px/1.25 var(--f)}
-.promo a{background:var(--yellow);color:var(--yellow-ink);font:800 13px var(--f);padding:10px 14px;border-radius:8px;text-decoration:none}
-.chips a.ex{background:var(--navy);color:#fff;border-color:var(--navy)}.chips a.ex span{color:var(--yellow)}
-section h2 em.ex{background:#e7f6ef;color:#0F6E56}
-.exsec{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 18px 20px;margin:6px 0 10px}
-.empty{display:none;color:var(--muted);padding:20px 0}
-footer{border-top:1px solid var(--line);color:var(--faint);font-size:12px;padding:16px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 20px}
+/* héros */
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:44px;align-items:center;padding:60px 0 36px}
+.free{align-self:flex-start;display:inline-block;background:#fde68a;color:#6b4e00;font:800 12px var(--f);letter-spacing:.08em;text-transform:uppercase;padding:7px 12px;border-radius:999px}
+.hero-l{display:flex;flex-direction:column;gap:20px}
+h1{margin:0;font:900 clamp(2.1rem,5vw,3.5rem)/1.05 var(--f);letter-spacing:-.02em;text-wrap:balance}
+.lead{margin:0;font-size:clamp(16px,1.6vw,18.5px);line-height:1.6;color:var(--ink3);max-width:62ch}
+.lead b{color:var(--ink)}
+.ctas{display:flex;flex-wrap:wrap;gap:12px}
+.btn{font:800 15px var(--f);padding:14px 20px;border-radius:12px;text-decoration:none;cursor:pointer;border:0}
+.btn.pri{background:var(--navy);color:#fff}.btn.pri:hover{background:#1d3352}
+.btn.sec{background:#fff;color:var(--navy);box-shadow:inset 0 0 0 1.5px var(--navy)}.btn.sec:hover{background:#eef2f8}
+.stats{display:flex;flex-wrap:wrap;gap:28px;margin-top:4px}
+.stats div{display:flex;flex-direction:column;font:600 13px var(--f);color:var(--muted)}.stats b{font:900 30px/1.15 var(--f);color:var(--ink)}
+.feat{background:var(--navy);border-radius:22px;padding:20px;display:flex;flex-direction:column;gap:14px;text-decoration:none;color:#fff}
+.feat small{color:#fcd34d;font:800 12px var(--f);letter-spacing:.1em;text-transform:uppercase}
+.feat img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;border-radius:14px;background:#fff;display:block}
+.feat .row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.feat b{display:block;font:800 19px/1.25 var(--f)}.feat span{display:block;color:#c7d0dc;font-size:14px}
+.feat u{text-decoration:none;background:#fcd34d;color:var(--navy);font:800 14px var(--f);padding:11px 16px;border-radius:10px}
+.feat:hover u{background:#fde68a}
+/* niveaux */
+section{scroll-margin-top:70px}
+.lvl{padding-top:20px;padding-bottom:52px;display:flex;flex-direction:column;gap:22px}
+.lvl-h{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+h2{margin:0;font:900 clamp(1.6rem,3vw,2rem)/1.15 var(--f);letter-spacing:-.01em}
+.lvl-h p,.how p.sub{margin:6px 0 0;font-size:16px;color:var(--muted)}
+.seg{display:flex;flex-wrap:wrap;gap:6px;background:#e9edf2;padding:5px;border-radius:14px}
+.seg button{font:800 14px var(--f);border:0;cursor:pointer;padding:11px 15px;border-radius:10px;min-height:44px;background:transparent;color:var(--ink2)}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed=true]{background:var(--navy);color:#fff}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,262px),1fr));gap:18px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;text-decoration:none;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(15,27,45,.09)}
+.card img{width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;background:#f1f4f8;display:block}
+.card i{display:block;height:4px;background:var(--c)}
+.card div{padding:15px 17px 17px;display:flex;flex-direction:column;gap:5px;flex:1}
+.card small{font:800 12px var(--f);letter-spacing:.06em;text-transform:uppercase;color:var(--c)}
+.card b{font:800 20px/1.2 var(--f)}
+.card span{font-size:14px;color:var(--muted);line-height:1.45}
+.card em{font:700 13px var(--f);font-style:normal;color:var(--ink2);margin-top:auto;padding-top:6px}
+.all{font:700 14px var(--f);color:var(--muted);margin:0}.all a{color:var(--chip-ink);font-weight:800}
+/* le chemin */
+.how{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.how .wrap{padding-top:52px;padding-bottom:52px;display:flex;flex-direction:column;gap:22px}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:18px}
+.steps div{border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:9px}
+.steps span{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font:900 16px var(--f)}
+.steps b{font-size:19px}.steps p{margin:0;font-size:15px;line-height:1.55;color:var(--ink3)}
+/* options */
+.opts{padding-top:52px;padding-bottom:52px;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:18px}
+.opt{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:8px;text-decoration:none;cursor:pointer;text-align:left;font:inherit;color:var(--ink);transition:transform .15s,box-shadow .15s}
+.opt:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(15,27,45,.08)}
+.opt b{font-size:18px}.opt span{font-size:15px;color:var(--muted);line-height:1.5}
+.opt.go{background:var(--green);border-color:var(--green);color:#fff}.opt.go span{color:#d8f0e6}
+footer{border-top:1px solid var(--line);background:#fff}
+footer .wrap{padding:22px 20px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:13px;color:var(--muted)}
+footer a{color:var(--chip-ink)}
+@media (max-width:620px){.hero{padding:30px 0 24px;gap:26px}.btn{flex:1 1 100%;text-align:center}.stats{gap:20px}.stats b{font-size:25px}
+ .seg{width:100%;overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}.seg::-webkit-scrollbar{display:none}.seg button{flex:none;padding:10px 12px}
+ .lvl{padding-bottom:40px}.how .wrap,.opts{padding-top:38px;padding-bottom:38px}}
 </style><link rel="stylesheet" href="kit/sfa-nav.css"></head><body>
-<header class="top"></header>
-<main class="wrap"><div class="hero"><div><span class="free">100 % gratuit</span><h1>Les sciences en simulations interactives.</h1><p class="lead">Du secondaire à la première année d'université : tu manipules, tu vois ce qui change, puis tu t'entraînes avec des exercices corrigés du ★ au ★★★★★. Choisis ton niveau, ou tape une notion dans la recherche (⌘K).</p></div></div>
-<section id="secondaire"><h2>Secondaire<em>3e → 6e · FWB</em></h2><p>Chaque matière, chaque année : 10 chapitres avec simulations, théorie animée et exercices. <a href="secondaire/">Voir tout le secondaire →</a></p><div class="grid"><a class="card" href="secondaire/maths/3e/"><img loading="lazy" src="secondaire/maths/4e/thumbs/m4-c04-formule.jpg" alt=""><div><small>Secondaire · 3e → 6e</small><b>Mathématiques</b><span>Fonctions, géométrie, trigonométrie, dérivées, probabilités</span></div></a><a class="card" href="secondaire/physique/3e/"><img loading="lazy" src="secondaire/physique/4e/thumbs/p4-c04-lancer-energie.jpg" alt=""><div><small>Secondaire · 3e → 6e</small><b>Physique</b><span>Forces, énergie, électricité, optique, ondes</span></div></a><a class="card" href="secondaire/chimie/3e/"><img loading="lazy" src="secondaire/chimie/4e/thumbs/c4-c04-azote.jpg" alt=""><div><small>Secondaire · 3e → 6e</small><b>Chimie</b><span>Atomes, réactions, acides et bases, chimie organique</span></div></a><a class="card" href="secondaire/biologie/3e/"><img loading="lazy" src="secondaire/biologie/4e/thumbs/b4-c03-pompe.jpg" alt=""><div><small>Secondaire · 3e → 6e</small><b>Biologie</b><span>Cellule, génétique, corps humain, écologie, évolution</span></div></a></div></section>
-<section id="universite"><h2>Université<em>BA1</em></h2><p>Médecine, pharmacie, sciences biomédicales et sciences. <a href="universite/">Voir toute l'université →</a></p><div class="grid"><a class="card" href="universite/physique/" data-q="physique mécanique ondes optique électricité fluides gaz"><img loading="lazy" src="universite/physique/thumbs/projectile.jpg" alt=""><div><small>Université · BA1</small><b>Physique</b><span>Mécanique, fluides, ondes, optique, électricité et magnétisme ; exercices et QCM par chapitre.</span></div></a><a class="card" href="universite/chimie/" data-q="chimie 19 chapitres titrage tampon stéréochimie équilibre cinétique"><img loading="lazy" src="chimie/thumbs/titrage-tampon.jpg" alt=""><div><small>Université · BA1</small><b>Chimie</b><span>19 chapitres : simulations, théorie animée et exercices du ★ au ★★★★★.</span></div></a><a class="card" href="universite/maths/"><img loading="lazy" src="universite/maths/thumbs/um-c05-relaxation.jpg" alt=""><div><small>Université · BA1</small><b>Mathématiques</b><span>Analyse, algèbre linéaire, équations différentielles</span></div></a><a class="card" href="universite/biologie/"><img loading="lazy" src="universite/biologie/thumbs/ub-c04-potentiel-action.jpg" alt=""><div><small>Université · BA1</small><b>Biologie</b><span>Biologie cellulaire et moléculaire, génétique, physiologie</span></div></a><a class="card" href="universite/statistique/"><img loading="lazy" src="universite/statistique/thumbs/us-c04-log-qq.jpg" alt=""><div><small>Université · BA1</small><b>Biostatistique</b><span>Descriptive, probabilités, tests, régression</span></div></a></div></section>
-</main><footer>Science For All · simulations, théorie et exercices</footer>
+<header class="top"><div class="in"><a class="logo" href="./"><i>SFA</i>Science For All</a></div></header>
+<main class="wrap"><div class="hero">
+ <div class="hero-l">
+  <span class="free">Gratuit · sans compte</span>
+  <h1>Les sciences se comprennent en les manipulant.</h1>
+  <p class="lead">Science For All rassemble près de <b>1 000 simulations interactives</b>, la <b>théorie animée</b> et plus de <b>3 300 exercices corrigés</b>, du secondaire (3e → 6e, programme FWB) à la première année d'université (médecine, pharmacie, sciences). Chaque chapitre suit le même chemin : tu manipules, tu comprends, tu t'entraînes. Ta progression reste enregistrée dans ton navigateur.</p>
+  <div class="ctas"><a class="btn pri" href="#niveau">Choisir mon cours →</a><button type="button" class="btn sec" data-resume>Reprendre où j'en étais</button></div>
+  <div class="stats"><div><b>997</b>simulations</div><div><b>3 316</b>exercices et QCM</div><div><b>21</b>cours, 5 matières</div></div>
+ </div>
+ <a class="feat" href="universite/physique/bulles-laplace/"><small>À essayer en premier</small><img src="universite/physique/thumbs/bulles-laplace.jpg" alt="Deux bulles de savon reliées par un tube"><span class="row"><span><b>Deux bulles de savon reliées</b><span>Physique BA1 · laquelle se vide dans l'autre ?</span></span><u>Ouvrir</u></span></a>
+</div></main>
+
+<section id="niveau" class="wrap lvl">
+ <div class="lvl-h"><div><h2>Choisis ton niveau</h2><p>Les matières de ce niveau s'affichent juste en dessous.</p></div>
+  <div class="seg" role="group" aria-label="Niveau" id="seg"></div></div>
+ <div class="cards" id="cards"></div>
+ <p class="all" id="all"></p>
+</section>
+
+<section class="how"><div class="wrap">
+ <h2>Chaque chapitre, le même chemin</h2>
+ <div class="steps">
+  <div><span style="background:#e8f1fb;color:#1e3f8f">1</span><b>Manipule</b><p>Une simulation par notion : tu bouges un curseur, tu attrapes un objet, et tu vois ce qui change. Prédis d'abord, puis vérifie.</p></div>
+  <div><span style="background:#e9f5ef;color:#0f6e56">2</span><b>Comprends</b><p>La théorie animée du chapitre, l'essentiel à retenir et les pièges classiques, en quelques cartes.</p></div>
+  <div><span style="background:#fef3c7;color:#8a5a00">3</span><b>Entraîne-toi</b><p>Exercices et QCM du ★ au ★★★★★ : tu réponds, tu vois tout de suite si c'est juste, puis le corrigé détaillé.</p></div>
+ </div>
+</div></section>
+
+<section class="wrap opts">
+ <button type="button" class="opt" data-resume><b>↻ Reprendre</b><span id="resumeTxt">Retrouve la dernière page ouverte sur cet appareil.</span></button>
+ <button type="button" class="opt" id="progBtn"><b>Ma progression</b><span id="progTxt">Chapitres réussis, exercices à revoir, erreurs fréquentes. Tout reste dans ce navigateur, sans compte.</span></button>
+ <a class="opt go" href="https://sciencesforall.be/concours"><b>Prépa concours médecine</b><span>Le cours complet, les exercices type examen corrigés et le suivi.</span></a>
+</section>
+
+<footer><div class="wrap"><span>Science For All · simulations, théorie et exercices · <a href="https://sciencesforall.be">sciencesforall.be</a></span><span>Secondaire FWB · Université BA1</span></div></footer>
+<script>
+(function(){
+"use strict";
+var COL={maths:"#1e3f8f",physique:"#b42318",chimie:"#2e6b55",biologie:"#5b21b6",stat:"#0e7490"};
+var NOM={maths:"Mathématiques",physique:"Physique",chimie:"Chimie",biologie:"Biologie",stat:"Biostatistique"};
+var DESC={maths:"Fonctions, géométrie, trigonométrie, probabilités.",physique:"Forces, énergie, électricité, optique, ondes.",chimie:"Atomes, réactions, acides et bases, chimie organique.",biologie:"Cellule, génétique, corps humain, écologie."};
+var THUMB={maths:{"3e":"m3-c01-carre","4e":"m4-c04-formule","5e":"m5-c01-composee","6e":"m6-c01-demi-vie"},physique:{"3e":"p3-c01-deux-boules","4e":"p4-c04-lancer-energie","5e":"p5-c01-cables","6e":"p6-c01-aimant-boussoles"},
+ chimie:{"3e":"c3-c01-atelier","4e":"c4-c04-azote","5e":"c5-c01-flamme","6e":"c6-c01-ebullition"},biologie:{"3e":"b3-3d-coeur","4e":"b4-c03-pompe","5e":"b5-3d-anticorps","6e":"b6-3d-crispr"}};
+/* simulations par cours (relevé du 13/11/2026) */
+var SEC={"3e":{maths:40,physique:40,chimie:40,biologie:43},"4e":{maths:49,physique:40,chimie:40,biologie:43},"5e":{maths:40,physique:40,chimie:40,biologie:42},"6e":{maths:40,physique:40,chimie:41,biologie:42}};
+var BA1=[["physique","universite/physique/","universite/physique/thumbs/Bernouilli-.jpg","Mécanique, fluides, gaz, ondes, optique, électricité, nucléaire.",16,77],
+ ["chimie","universite/chimie/","chimie/thumbs/titrage-tampon.jpg","Atome, liaisons, équilibres, titrages, chimie organique.",19,62],
+ ["maths","universite/maths/","universite/maths/thumbs/um-c05-relaxation.jpg","Analyse, algèbre linéaire, équations différentielles.",11,70],
+ ["biologie","universite/biologie/","universite/biologie/thumbs/ub-c04-potentiel-action.jpg","Cellule, métabolisme, génétique, physiologie.",10,58],
+ ["stat","universite/statistique/","universite/statistique/thumbs/us-c04-log-qq.jpg","Statistique descriptive, probabilités, tests, régression.",10,48]];
+var LV=["3e","4e","5e","6e","BA1"];
+function card(k,href,img,lev,desc,cnt){return '<a class="card" style="--c:'+COL[k]+'" href="'+href+'"><img loading="lazy" src="'+img+'" alt=""><i></i><div><small>'+lev+'</small><b>'+NOM[k]+'</b><span>'+desc+'</span><em>'+cnt+'</em></div></a>';}
+function pick(lv,save){
+ document.querySelectorAll("#seg button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.lv===lv?"true":"false");});
+ var h;
+ if(lv==="BA1"){h=BA1.map(function(c){return card(c[0],c[1],c[2],"Université · BA1",c[3],c[4]+" chapitres · "+c[5]+" simulations");}).join("");
+  document.getElementById("all").innerHTML='Médecine, pharmacie, sciences biomédicales et sciences · <a href="universite/">voir toute l\'université →</a>';}
+ else{h=["maths","physique","chimie","biologie"].map(function(k){return card(k,"secondaire/"+k+"/"+lv+"/","secondaire/"+k+"/"+lv+"/thumbs/"+THUMB[k][lv]+".jpg","Secondaire · "+lv,DESC[k],"10 chapitres · "+SEC[lv][k]+" simulations");}).join("");
+  document.getElementById("all").innerHTML='Programme de la Fédération Wallonie-Bruxelles · <a href="secondaire/">voir tout le secondaire →</a>';}
+ document.getElementById("cards").innerHTML=h;
+ var on=document.querySelector('#seg button[aria-pressed="true"]');if(on){var sg=document.getElementById("seg");sg.scrollLeft=on.offsetLeft-sg.offsetLeft-8;}
+ if(save)try{localStorage.setItem("sfa_home_lv",lv);}catch(e){}
+}
+var seg=document.getElementById("seg");
+seg.innerHTML=LV.map(function(k){return '<button type="button" data-lv="'+k+'" aria-pressed="false">'+(k==="BA1"?"Université BA1":"Secondaire "+k)+'</button>';}).join("");
+seg.addEventListener("click",function(e){var b=e.target.closest("button");if(b)pick(b.dataset.lv,true);});
+var start="BA1";try{var s=localStorage.getItem("sfa_home_lv");if(LV.indexOf(s)>=0)start=s;}catch(e){}
+pick(start,false);
+/* Reprendre : la dernière page ouverte sur ce site (même clé que kit/sfa-nav.js) */
+var last=null;try{last=JSON.parse(localStorage.getItem("sfa_last:"+location.pathname.replace(/index\.html$/,""))||"null");}catch(e){}
+if(last&&last.u){document.getElementById("resumeTxt").textContent="Dernière page ouverte : "+(last.t||"ta dernière page")+".";}
+document.querySelectorAll("[data-resume]").forEach(function(b){b.addEventListener("click",function(){if(last&&last.u)location.href=last.u;else{document.getElementById("resumeTxt").textContent="Rien à reprendre pour l'instant sur cet appareil : choisis un cours ci-dessus pour commencer.";document.getElementById("niveau").scrollIntoView();}});});
+/* Ma progression : le tableau de bord (kit/sfa-progress.js) s'affiche sous l'introduction dès qu'il y a des exercices faits */
+document.getElementById("progBtn").addEventListener("click",function(){var hp=document.getElementById("hubProg");if(hp)hp.scrollIntoView({block:"start"});else{document.getElementById("progTxt").textContent="Pas encore d'exercice fait sur cet appareil. Dès ton premier exercice, ton tableau de bord apparaîtra en haut de cette page.";}});
+})();
+</script>
 <script src="kit/sfa-progress.js"></script><script src="kit/sfa-nav.js"></script></body></html>

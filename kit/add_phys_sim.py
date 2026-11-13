@@ -13,7 +13,7 @@ T0='Condensateurs en série et en parallèle'
 head=head.replace(f'<title>{T0} · SFA</title>',f'<title>{html.escape(titre,quote=False)} · SFA</title>').replace(f'›<b>{T0}</b>',f'›<b>{html.escape(titre,quote=False)}</b>').replace(f'<h1>{T0}</h1>',f'<h1>{html.escape(titre,quote=False)}</h1>')
 i=head.index('<p>Capacité équivalente'); j=head.index('</p>',i); head=head[:i]+'<p>'+intro+head[j:]
 # fil d'Ariane et puce : chapitre de la section
-home=R+'/universite/physique/index.html'; s=open(home,encoding='utf-8').read()
+home=R+'/universite/physique/catalogue.html'; s=open(home,encoding='utf-8').read()
 m=re.search(r'<section id="'+sec+r'"><h2>([^<]*)<em class="">(\d+) simulations?</em></h2><div class="grid">(.*?)</div></section>',s,re.S); assert m,sec
 small=re.search(r'<small>([^<]*)</small>',m.group(3)).group(1)
 head=re.sub(r'(<nav class="sfa-crumbs"[^>]*>.*?›<a href=")[^"]*(">)[^<]*(</a>)',lambda mm:mm.group(1)+B+'#'+sec+mm.group(2)+small+mm.group(3),head,count=1,flags=re.S)

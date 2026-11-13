@@ -288,3 +288,30 @@ Object.assign(window.SFA_NUM, {
   ],
   "Iode 131 : attendre la décroissance": [ { q: "Durée", v: 53.3, u: "jours", p: { 794: "formule", 36.9: "formule", 802: "formule" } } ]
 });
+/* Ajout du 13/11/2026 (vers 02 h 30) : exercices à valeurs fixes des chapitres Trigonométrie, Vecteurs, Décomposer une force et Moment de force.
+   Les exercices dont l'énoncé dépend d'un curseur ne sont pas concernés. */
+window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
+  "Conversion degrés ↔ radians": [{ q: "150° en radians", v: 2.618, u: "rad", tol: 0.01, p: { 8594: "unites" } }, { q: "3π/4 rad en degrés", v: 135, u: "°", tol: 0.005, p: { 2.356: "unites" } }],
+  "Valeurs remarquables": [{ q: "cos 60°", v: 0.5, u: "", tol: 0.01, p: { 0.866: "trigo" } }, { q: "sin 30°", v: 0.5, u: "", tol: 0.01, p: { 0.866: "trigo" } }, { q: "tan 45°", v: 1, u: "", tol: 0.01 }],
+  "L’échelle contre le mur": [{ q: "Hauteur sur le mur", v: 4.70, u: "m", tol: 0.01, p: { 1.71: "trigo" } }, { q: "Distance du pied au mur", v: 1.71, u: "m", tol: 0.015, p: { 4.70: "trigo" } }],
+  "Norme et direction": [{ q: "Norme", v: 5, u: "", tol: 0.005, p: { 7: "formule", 25: "formule" } }, { q: "Angle avec l'axe x", v: 53.1, u: "°", tol: 0.005, p: { 36.9: "trigo" } }],
+  "Somme de deux vecteurs": [{ q: "1re composante", v: 1, u: "", tol: 0.001, p: { 3: "signe" } }, { q: "2e composante", v: 4, u: "", tol: 0.001 }, { q: "Norme", v: 4.12, u: "", tol: 0.01, p: { 17: "formule", 5: "formule" } }],
+  "Produit scalaire et travail": [{ q: "Travail W", v: 6, u: "J", tol: 0.01, p: { 10.39: "trigo", 12: "trigo" } }],
+  "Trouver k pour que ā ⟂ b̄": [{ q: "k", v: 1, u: "", tol: 0.001, p: { "-1": "signe", "-4": "concept" } }],
+  "Angle entre deux vecteurs": [{ q: "Angle θ", v: 36.9, u: "°", tol: 0.005, p: { 0.8: "trigo", 53.1: "trigo" } }],
+  "Produit vectoriel et aire": [{ q: "Composante z de ā × b̄", v: 2, u: "", tol: 0.001, p: { "-2": "signe" } }, { q: "Norme (aire)", v: 2, u: "", tol: 0.001 }],
+  "Projeter un vecteur sur un autre": [{ q: "Projection scalaire", v: 4, u: "", tol: 0.005, p: { 20: "formule", 4.47: "formule" } }, { q: "Vecteur projeté : x", v: 2.4, u: "", tol: 0.005 }, { q: "Vecteur projeté : y", v: 3.2, u: "", tol: 0.005 }],
+  "Aire d’un triangle par le produit vectoriel": [{ q: "Aire du triangle", v: 5.5, u: "unités²", tol: 0.005, p: { 11: "formule" } }],
+  "Produit vectoriel en composantes (3D)": [{ q: "c̄ : x", v: 2, u: "", tol: 0.001, p: { "-2": "signe" } }, { q: "c̄ : y", v: -4, u: "", tol: 0.001, p: { 4: "signe" } }, { q: "c̄ : z", v: 5, u: "", tol: 0.001, p: { "-5": "signe" } }, { q: "‖c̄‖", v: 6.71, u: "", tol: 0.01, p: { 45: "formule" } }],
+  "Moment d’une force (examen)": [{ q: "M_z", v: -2.6, u: "N·m", tol: 0.01, p: { 2.6: "signe", "-1.4": "signe" } }, { q: "Bras de levier d", v: 0.52, u: "m", tol: 0.01 }],
+  "Échauffement : force selon x": [{ q: "Fₓ", v: 10, u: "N", tol: 0.001 }, { q: "F_y", v: 0, u: "N", tol: 0.01 }],
+  "Le poids": [{ q: "Pₓ", v: 0, u: "N", tol: 0.01 }, { q: "P_y", v: -20, u: "N", tol: 0.001, p: { 20: "signe" } }],
+  "Force alignée": [{ q: "Moment M", v: 0, u: "N·m", tol: 0.01 }],
+  "Force de travers": [{ q: "Moment M", v: 8.66, u: "N·m", tol: 0.01, p: { 5: "trigo", 10: "trigo" } }],
+  "Force alignée avec le bras": [{ q: "Moment M", v: 0, u: "N·m", tol: 0.01, p: { 10: "concept" } }],
+  "Clé tirée de travers": [{ q: "Moment M", v: 1.0, u: "N·m", tol: 0.01, p: { 1.73: "trigo", 2: "trigo" } }],
+  "Balançoire": [{ q: "Distance de l'adulte", v: 0.75, u: "m", tol: 0.01, p: { 3: "formule" } }],
+  "La balançoire": [{ q: "Distance de l'amie", v: 1.5, u: "m", tol: 0.01, p: { 2.67: "formule" } }],
+  "Deux forces, sens opposés": [{ q: "Moment résultant (antihoraire +)", v: -0.5, u: "N·m", tol: 0.01, p: { 0.5: "signe", 8.5: "signe" } }],
+  "Poutre chargée (examen)": [{ q: "Force F", v: 533, u: "N", tol: 0.01, p: { 500: "formule", 400: "formule" } }]
+});

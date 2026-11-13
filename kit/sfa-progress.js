@@ -143,7 +143,9 @@ function physExos() {
     setTimeout(function () { selfBox(); head("vExo"); side(); }, 0);
   }, true);
   /* ---------- réponse chiffrée : e.num, e._x.num (moteur) ou window.SFA_NUM[titre] ---------- */
-  function numOf(e) { if (!e) return null; var n = e.num || (e._x && e._x.num) || (window.SFA_NUM && window.SFA_NUM[String(e.t).replace(/<[^>]+>/g, "")]); return n ? (Array.isArray(n) ? n : [n]) : null; }
+  /* un QCM (choix A. … B. … dans l'énoncé) ne reçoit jamais la case chiffrée d'un exercice homonyme */
+  function looksQcm(e) { var t = String(typeof e.st === "function" ? "" : e.st || "").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " "); return /(^|\s)A\.\s[\s\S]*\sB\.\s/.test(t); }
+  function numOf(e) { if (!e) return null; var n = e.num || (e._x && e._x.num) || (!looksQcm(e) && window.SFA_NUM && window.SFA_NUM[String(e.t).replace(/<[^>]+>/g, "")]); return n ? (Array.isArray(n) ? n : [n]) : null; }
   var SUPD = { "⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4", "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9", "⁻": "-", "⁺": "+" };
   function readNum(t) {
     t = String(t || "").trim().replace(/\s+/g, "").replace(/−/g, "-").replace(/,/g, ".");

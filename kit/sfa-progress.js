@@ -154,6 +154,8 @@ function physExos() {
     return a * Math.pow(10, e);
   }
   function close(x, v, tol) { if (v === 0) return Math.abs(x) <= (tol || 0.02); return Math.abs(x - v) <= Math.abs(v) * (tol || 0.02); }
+  function tolTxt(N) { var m = Math.max.apply(null, N.map(function (n) { return n.v === 0 ? 0 : (n.tol || 0.02); }));
+    return m < 0.005 ? "Valeur exacte attendue." : "Marge de " + String(Math.round(1000 * m) / 10).replace(".", ",") + " %."; }
   var numTries = 0, numDone = false;
   function numBox() {
     var stmt = document.getElementById("stmt"); if (!stmt) return;
@@ -162,7 +164,7 @@ function physExos() {
     if (!box) { box = document.createElement("div"); box.id = "pgNum"; box.className = "pg-num"; var after = document.getElementById("pgQcm") || stmt; after.parentNode.insertBefore(box, after.nextSibling); }
     box.innerHTML = "<h4>" + (N.length > 1 ? "Tes réponses" : "Ta réponse") + " (calcule sur papier, puis écris le nombre)</h4>" + N.map(function (n, i) {
       return '<div class="ln"><label for="pgN' + i + '">' + esc(n.q || "Réponse") + '</label><input id="pgN' + i + '" inputmode="decimal" autocomplete="off" placeholder="ex. 12,5"><span class="u">' + esc(n.u || "") + '</span><span class="mk" id="pgM' + i + '"></span></div>'; }).join("") +
-      '<button type="button" class="go" id="pgCheck">Vérifier</button><div class="hint">Virgule ou point, et puissances de dix acceptées : 1,2e-3 ou 1,2·10^-3. Marge de 2 %.</div><div class="msg" id="pgNumMsg" role="status"></div>';
+      '<button type="button" class="go" id="pgCheck">Vérifier</button><div class="hint">Virgule ou point, et puissances de dix acceptées : 1,2e-3 ou 1,2·10^-3. ' + tolTxt(N) + '</div><div class="msg" id="pgNumMsg" role="status"></div>';
   }
   function checkNum() {
     if (numDone) return;

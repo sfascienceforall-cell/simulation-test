@@ -12,7 +12,7 @@ function save(p) { try { localStorage.setItem(LS, JSON.stringify(p)); } catch (e
 function slug(t) { return String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/<[^>]+>/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60); }
 function esc(t) { return String(t == null ? "" : t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;"); }
 
-var ERR = { unites: "Unités ou conversion", signe: "Signe ou sens", formule: "Mauvaise formule ou loi", calcul: "Erreur de calcul", trigo: "Trigo, angle, projection", concept: "Je ne savais pas comment commencer" };
+var ERR = { unites: "Unités ou conversion", signe: "Signe ou sens", formule: "Mauvaise formule ou loi", calcul: "Erreur de calcul", trigo: "Trigo, angle, projection", concept: "Notion mal comprise" };
 
 function record(a) { var p = load(); a.ts = a.ts || Date.now(); p.attempts.push(a); if (p.attempts.length > 5000) p.attempts = p.attempts.slice(-5000); save(p); return a; }
 /* dernier essai par exercice */
@@ -289,8 +289,11 @@ function physExos() {
     var d = document.getElementById("pgDash");
     if (!d) { d = document.createElement("div"); d.id = "pgDash"; d.addEventListener("click", function (e) { if (e.target === d || e.target.classList.contains("x")) d.classList.remove("show"); }); document.body.appendChild(d); }
     var all = stats(allKeys(), COURS), w = week(COURS), errs = w.errs, emax = Math.max.apply(null, [1].concat(Object.keys(errs).map(function (k) { return errs[k]; })));
+    var chErr = {}; load().attempts.forEach(function (x) { if (x.c === COURS && !x.ok && x.err) { var m = chErr[x.ch] = chErr[x.ch] || {}; m[x.err] = (m[x.err] || 0) + 1; } });
+    function topErr(i) { var m = chErr[i]; if (!m) return ""; var k = Object.keys(m).sort(function (a, b) { return m[b] - m[a]; })[0];
+      return '<small style="display:block;color:#a32d2d;font-weight:600">Erreur la plus fréquente : ' + esc((ERR[k] || k).toLowerCase()) + " (" + m[k] + ")</small>"; }
     var rows = CH.map(function (c, i) { var s = chStat(i), lv = level(s);
-      return '<span>' + (i + 1) + ". " + esc(c.t) + '</span><b style="text-align:right">' + pct(s) + ' %</b><span class="pg-lv l' + lv.id + '" style="text-align:center">' + lv.t + "</span>"; }).join("");
+      return '<span>' + (i + 1) + ". " + esc(c.t) + topErr(i) + '</span><b style="text-align:right">' + pct(s) + ' %</b><span class="pg-lv l' + lv.id + '" style="text-align:center">' + lv.t + "</span>"; }).join("");
     var er = Object.keys(errs).sort(function (a, b) { return errs[b] - errs[a]; }).map(function (k) {
       return "<span>" + esc(ERR[k] || k) + '</span><b style="text-align:right">' + errs[k] + '</b><span><span class="ebar" style="display:block;width:' + Math.round(100 * errs[k] / emax) + '%"></span></span>'; }).join("");
     d.innerHTML = '<div class="box"><button type="button" class="x">✕ Fermer</button><h2>Mon bilan · ' + esc(NOM) + '</h2>' +

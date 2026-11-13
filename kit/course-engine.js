@@ -239,12 +239,42 @@ window.SFA_COURSE = function () {
       card.appendChild(cap); card.onclick = function () { openChap(i); }; g.appendChild(card);
     });
   }
+  /* devanture d'un exercice dont le dessin est partagé par plusieurs exercices du chapitre :
+     on montre plutôt sa formule chimique principale et ses données chiffrées */
+  var SUBD = "₀₁₂₃₄₅₆₇₈₉", SUPD = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+  function exText(h) { return String(h || "").replace(/<sub>([^<]*)<\/sub>/g, function (m, x) { return x.replace(/\d/g, function (n) { return SUBD[+n]; }); })
+      .replace(/<sup>([^<]*)<\/sup>/g, function (m, x) { return x.replace(/\d/g, function (n) { return SUPD[+n]; }).replace(/[+]/g, "⁺").replace(/[−-]/g, "⁻"); })
+      .replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " "); }
+  var ELEM = " H He Li Be B C N O F Ne Na Mg Al Si P S Cl Ar K Ca Ti Cr Mn Fe Co Ni Cu Zn Br Ag Sn I Ba Pt Au Hg Pb Se As Sr Li U ";
+  function okFormula(f) { var toks = f.replace(/[₀-₉⁰-⁹⁺⁻()·\s]|H₂O$/g, " ").match(/[A-Z][a-z]?/g) || [];
+    if (!toks.length || /^[CnmV]\(/.test(f) || /^[IVX]+$/.test(f.replace(/[^A-Za-z]/g, ""))) return false;
+    for (var i = 0; i < toks.length; i++) if (ELEM.indexOf(" " + toks[i] + " ") < 0) return false;
+    return /[₀-₉]/.test(f) || toks.length >= 2; }
+  function dataFig(e) {
+    var t = exText(e.st).split(/ A\. /)[0];
+    var fm = (t.match(/(?:[A-Z][a-z]?[₀-₉]*|\((?:[A-Z][a-z]?[₀-₉]*)+\)[₀-₉]*){2,}(?:[⁰-⁹]*[⁺⁻])?(?:\s?·\s?[₀-₉0-9]*\s?H₂O)?/g) || [])
+      .filter(function (f) { return okFormula(f); }).filter(function (f, i, l) { return l.indexOf(f) === i; });
+    var data = (t.match(/\d+(?:[,.]\d+)?(?:\s?·\s?10[⁻⁰-⁹]+)?\s?(?:mg|kg|g|mL|L|mol\/L|mmol|mol|atm|°C|K|kPa|Pa|mmHg|%|nm|pm|kJ|J|V|A|s|min|h)(?![a-zA-Z\u00C0-\u024F])/g) || []).filter(function (x, i, l) { return l.indexOf(x) === i; }).slice(0, 3);
+    if (!fm.length && !data.length) return null;
+    return function () {
+      ctx.fillStyle = "#f6f8fb"; ctx.fillRect(0, 0, W, H);
+      TB(strip(e.t).slice(0, 60), W / 2, 26, "#1a5fb4", 13);
+      if (fm.length) { var big = fm[0], sz = big.length > 14 ? 26 : big.length > 9 ? 32 : 38, by = data.length ? H * 0.46 : H * 0.52; TB(big, W / 2, by, "#c2630a", sz);
+        if (fm[1]) TB("+ " + fm[1], W / 2, by + sz * 0.8, "#c2630a", 16); }
+      data.forEach(function (x, k) { var n = data.length, cx = W / 2 + (k - (n - 1) / 2) * 140, cy = fm.length ? H * 0.8 : H * 0.55;
+        ctx.fillStyle = "#fff"; ctx.strokeStyle = "#d3d9e2"; ctx.lineWidth = 1; if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(cx - 62, cy - 20, 124, 32, 9); ctx.fill(); ctx.stroke(); }
+        TB(x, cx, cy + 2, "#2c3a4e", 14); });
+    };
+  }
   function buildExGrid() {
     var g = document.getElementById("exGrid"); g.innerHTML = "";
+    function dkey(e) { return String(e.d).replace(/'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"/g, "''"); }
+    var dup = {}; CH[ci].ex.forEach(function (e) { if (!e.draw && e.d) { var k = dkey(e); dup[k] = (dup[k] || 0) + 1; } });
     CH[ci].ex.forEach(function (e, j) {
       if (lvf && e.s !== lvf) return;
       var card = document.createElement("div"); card.className = "card";
-      card.appendChild(paint(function () { if (e.draw) e.draw.call(e, 1); else if (e.d) e.d(1); else CH[ci].ic(); }, 460, 280));
+      var fig = (!e.draw && e.d && dup[dkey(e)] >= 3) ? dataFig(e) : null;
+      card.appendChild(paint(function () { if (fig) fig(); else if (e.draw) e.draw.call(e, 1); else if (e.d) e.d(1); else CH[ci].ic(); }, 460, 280));
       var cap = document.createElement("div"); cap.className = "cap";
       cap.innerHTML = '<span class="num">n°' + (j + 1) + (e._x && e._x.choix ? " · QCM" : "") + '</span><div class="tt">' + cardT(e) + '</div><span class="lv ' + lvClass(e.s) + '">' + "★".repeat(e.s) + "</span>";
       card.appendChild(cap); card.onclick = function () { openEx(j); }; g.appendChild(card);

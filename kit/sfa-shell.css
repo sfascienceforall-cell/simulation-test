@@ -58,3 +58,14 @@ body.sh-phys .sfa-list a.on i{color:var(--acc,#b42318)}
 .sp-prev:hover{color:var(--acc,#185fa5)}
 .sfa-list .sp-chap{display:block;padding:8px 8px 2px;border-top:1px solid var(--line,#e3e7ed);margin-top:6px}
 .sfa-list .sp-chap a{display:inline-block;padding:4px 0;font:800 13px var(--f-ui,Mulish,system-ui,sans-serif);color:var(--acc,#185fa5);text-decoration:none;background:none}
+/* Plein écran sur un écran large : la simulation à gauche, les réglages et les formules dans une colonne à droite (13/11/2026) ; seulement les pages de physique, dont la simulation est un canevas direct */
+@media (min-width:1000px) and (min-aspect-ratio:4/3){
+.sh-fs:fullscreen:has(>canvas,>.sfa-stage){display:grid;grid-template-columns:minmax(0,1fr) 340px;column-gap:22px;align-content:start;align-items:start}
+.sh-fs:fullscreen:has(>canvas,>.sfa-stage)>*{grid-column:1/-1}
+.sh-fs:fullscreen:has(>canvas,>.sfa-stage)>.sh-tools{grid-row:1}
+.sh-fs:fullscreen:has(>canvas,>.sfa-stage)>canvas{grid-column:1;grid-row:2/span 30;width:100%!important;height:auto!important;max-height:calc(100vh - 90px);object-fit:contain}
+.sh-fs:fullscreen:has(>canvas,>.sfa-stage)>.sfa-stage{grid-column:1;grid-row:2/span 30}
+.sh-fs:fullscreen:has(>canvas,>.sfa-stage)>div:not(.sh-tools):not(.sfa-stage) input[type=range]{max-width:150px}
+.sh-fs:fullscreen:has(>canvas,>.sfa-stage)>.sh-ctrl,.sh-fs:fullscreen:has(>canvas,>.sfa-stage)>.fml,.sh-fs:fullscreen:has(>canvas,>.sfa-stage)>.info,.sh-fs:fullscreen:has(>canvas,>.sfa-stage)>.legend,.sh-fs:fullscreen:has(>canvas,>.sfa-stage)>.row,.sh-fs:fullscreen:has(>canvas,>.sfa-stage)>div:not(.sh-tools):not(.sfa-stage){grid-column:2;min-width:0}
+.sh-fs:fullscreen:has(>canvas,>.sfa-stage)>.sh-ctrl .row{flex-wrap:wrap}
+}

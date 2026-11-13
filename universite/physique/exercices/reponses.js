@@ -258,3 +258,33 @@ Object.assign(window.SFA_NUM, {
     { q: "(c) Décalage latéral d", v: 5.12, u: "mm", tol: 0.03, p: { 0.512: "unites", 0.00512: "unites" } }
   ]
 });
+
+/* Chapitres « Thermodynamique » et « Physique nucléaire » ajoutés le 13/11/2026 */
+Object.assign(window.SFA_NUM, {
+  "Pression d’un gaz parfait": [ { q: "Pression P", v: 4.99, u: "bar", p: { 499: "unites", 0.0499: "unites", 49.9: "unites" } } ],
+  "Chauffage isobare de l’air": [
+    { q: "Travail fourni W", v: 831, u: "J", p: { 2079: "formule", 2910: "formule" } },
+    { q: "Chaleur reçue Q", v: 2910, u: "J", p: { 2079: "formule", 1247: "formule" } },
+    { q: "Variation d'énergie interne ΔU", v: 2079, u: "J", p: { 3741: "signe", 1247: "formule" } }
+  ],
+  "Détente isotherme": [
+    { q: "Travail fourni W", v: 2740, u: "J", p: { 4988: "formule", 1190: "formule" } },
+    { q: "Chaleur reçue Q", v: 2740, u: "J", p: { 0: "concept", "-2740": "signe" } }
+  ],
+  "Compression adiabatique de l’air": [
+    { q: "Pression finale P₂", v: 6.96, u: "bar", p: { 4: "concept", 0.144: "formule" } },
+    { q: "Température finale T₂", v: 522, u: "K", p: { 1200: "concept", 300: "concept", 249: "unites" } }
+  ],
+  "Travail d’un cycle rectangulaire (examen)": [
+    { q: "Travail net W", v: 4000, u: "J", p: { "-4000": "signe", 6000: "formule", 2000: "formule", 40: "unites" } },
+    { q: "Chaleur nette reçue Q", v: 4000, u: "J", p: { 0: "concept", "-4000": "signe" } }
+  ],
+  "Activité d’un traceur au technétium": [ { q: "Activité après 24 h", v: 50, u: "MBq", p: { 200: "formule", 0: "concept", 100: "calcul" } } ],
+  "Constante radioactive du fluor 18": [ { q: "λ", v: 1.05e-4, u: "s⁻¹", p: { 6.3e-3: "unites", 9.53e3: "formule", 1.52e-4: "formule" } } ],
+  "Datation au carbone 14": [ { q: "Âge", v: 11460, u: "ans", p: { 5730: "formule", 17190: "formule", 2865: "formule" } } ],
+  "Rayons X à travers l’os": [
+    { q: "Pourcentage transmis", v: 33.3, u: "%", p: { 66.7: "concept", 1.1: "formule", 10: "formule" } },
+    { q: "Couche de demi-atténuation", v: 1.26, u: "cm", p: { 0.79: "formule", 0.38: "formule" } }
+  ],
+  "Iode 131 : attendre la décroissance": [ { q: "Durée", v: 53.3, u: "jours", p: { 794: "formule", 36.9: "formule", 802: "formule" } } ]
+});

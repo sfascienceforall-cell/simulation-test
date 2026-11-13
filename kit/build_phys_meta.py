@@ -3,7 +3,7 @@ import re,json,html,sys
 import os
 root=sys.argv[1] if len(sys.argv)>1 else os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 s=open(root+'/universite/physique/index.html',encoding='utf-8').read()
-EXO={'MA':1,'PH1':3,'PH2':5,'PH3':7,'PH4':8,'OS':None,'FL':10,'TH':None,'PH5':9,'PH6':13,'PH7':13,'PH8':11,'PH9':14,'PH10':14,'PH11':12,'NU':None}
+EXO={'MA':1,'PH1':3,'PH2':5,'PH3':7,'PH4':8,'OS':None,'FL':10,'PH5':9,'PH6':13,'PH7':13,'PH8':11,'PH9':14,'PH10':14,'PH11':12,'NU':19,'TH':18}
 chs=[]
 for m in re.finditer(r'<section id="([A-Z0-9]+)"><h2>([^<]*)<em[^>]*>[^<]*</em></h2><div class="grid">(.*?)</div></section>',s,re.S):
     sid,t,body=m.groups(); sims=[]

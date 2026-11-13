@@ -222,10 +222,13 @@ window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
    "tol": 0.02
   },
   {
-   "q": "(d)",
+   "q": "(d) Lactose arrivant au côlon",
    "v": 9,
    "u": "g",
-   "tol": 0.01
+   "tol": 0.01,
+   "p": {
+    "3": "concept"
+   }
   }
  ],
  "Quantités de matière": [

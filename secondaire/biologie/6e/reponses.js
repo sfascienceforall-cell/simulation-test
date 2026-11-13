@@ -482,7 +482,7 @@ window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
    "tol": 0.02
   },
   {
-   "q": "(b)",
+   "q": "(b) Masse moyenne après 5 générations",
    "v": 69,
    "u": "g",
    "tol": 0.02

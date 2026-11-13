@@ -7,7 +7,9 @@
 (function () {
 "use strict";
 var LS = "sfa_progress_v1", DAY = 864e5;
-function load() { try { var p = JSON.parse(localStorage.getItem(LS) || "null"); if (p && p.v === 1) { p.visits = p.visits || {}; p.attempts = p.attempts || []; return p; } } catch (e) {} return { v: 1, visits: {}, attempts: [] }; }
+/* clés d'exercice : avant le 13/11 elles contenaient la position (« …/12-titre ») ; elles ne gardent plus que le titre (+ « ~2 » en cas de titre en double), pour que l'ajout d'exercices ne décale rien */
+function migrateKeys(p) { if (p.kv !== 2) { (p.attempts || []).forEach(function (a) { if (a && a.k) a.k = String(a.k).replace(/^([^\/]+\/[^\/]*\/)\d+-/, "$1"); }); p.kv = 2; } return p; }
+function load() { try { var p = JSON.parse(localStorage.getItem(LS) || "null"); if (p && p.v === 1) { p.visits = p.visits || {}; p.attempts = p.attempts || []; if (p.kv !== 2) { migrateKeys(p); save(p); } return p; } } catch (e) {} return { v: 1, kv: 2, visits: {}, attempts: [] }; }
 function save(p) { try { localStorage.setItem(LS, JSON.stringify(p)); } catch (e) {} }
 function slug(t) { return String(t || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/<[^>]+>/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60); }
 function esc(t) { return String(t == null ? "" : t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;"); }
@@ -194,7 +196,7 @@ function physExos() {
   document.addEventListener("keydown", function (ev) { if (ev.key === "Enter" && ev.target && /^pgN\d+$/.test(ev.target.id)) { ev.preventDefault(); checkNum(); } }, true);
   function isQcm(e) { return !!(e && ((e._x && e._x.choix) || qcmOf(e))); }
   function qcmOk() { var e = CH[gci()].ex[gei()]; if (e && e._x && e._x.choix) return qcmDone != null && +qcmDone === e._x.bonne; var q = qcmOf(e); return q && qcmDone === q.good; }
-  function key(i, j) { return (ENGINE ? COURS : "phys") + "/" + slug(CH[i].t) + "/" + j + "-" + slug(CH[i].ex[j].t); }
+  function key(i, j) { var t = slug(CH[i].ex[j].t), n = 0; for (var x = 0; x < j; x++) if (slug(CH[i].ex[x].t) === t) n++; return (ENGINE ? COURS : "phys") + "/" + slug(CH[i].t) + "/" + t + (n ? "~" + (n + 1) : ""); }
   function keys(i) { return CH[i].ex.map(function (e, j) { return key(i, j); }); }
   function allKeys() { var k = []; CH.forEach(function (c, i) { k = k.concat(keys(i)); }); return k; }
   function chStat(i) { return stats(keys(i), COURS); }
@@ -320,6 +322,7 @@ function physExos() {
     if (!e.target || e.target.id !== "pgFile" || !e.target.files[0]) return;
     var r = new FileReader(); r.onload = function () {
       try { var q = JSON.parse(r.result); if (!q || q.v !== 1 || !Array.isArray(q.attempts)) throw 0;
+        migrateKeys(q);
         var p = load(), seen = {}; p.attempts.forEach(function (a) { seen[a.k + "|" + a.ts] = 1; });
         q.attempts.forEach(function (a) { if (a && a.k && !seen[a.k + "|" + a.ts]) p.attempts.push(a); });
         p.attempts.sort(function (a, b) { return a.ts - b.ts; });

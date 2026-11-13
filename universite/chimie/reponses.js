@@ -1550,5 +1550,1433 @@ window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
     "1.6": "calcul"
    }
   }
+ ],
+ "Un comprimé de calcium": [
+  {
+   "q": "a) Quantité de CaCO₃",
+   "v": 0.00749,
+   "u": "mol",
+   "p": {
+    "7.49": "unites",
+    "0.0187": "formule"
+   }
+  },
+  {
+   "q": "b) Nombre d'ions Ca²⁺",
+   "v": 4.51e+21,
+   "u": "ions"
+  },
+  {
+   "q": "c) Masse de calcium",
+   "v": 300,
+   "u": "mg",
+   "p": {
+    "750": "concept",
+    "0.3": "unites"
+   }
+  }
+ ],
+ "Sérum physiologique : compter les moles et les ions": [
+  {
+   "q": "a) Masse de NaCl",
+   "v": 4.5,
+   "u": "g",
+   "p": {
+    "9": "concept"
+   }
+  },
+  {
+   "q": "b) Quantité de NaCl",
+   "v": 0.077,
+   "u": "mol"
+  },
+  {
+   "q": "b) Concentration molaire",
+   "v": 0.154,
+   "u": "mol/L",
+   "p": {
+    "0.077": "formule"
+   }
+  },
+  {
+   "q": "c) Nombre d'ions Na⁺",
+   "v": 4.64e+22,
+   "u": "ions"
+  },
+  {
+   "q": "c) Masse de sodium",
+   "v": 1.77,
+   "u": "g",
+   "p": {
+    "4.5": "concept"
+   }
+  }
+ ],
+ "Du minerai phosphaté à l'acide phosphorique": [
+  {
+   "q": "c) Masse de H₃PO₄",
+   "v": 1.23,
+   "u": "kg",
+   "p": {
+    "1.58": "concept",
+    "0.616": "formule"
+   }
+  },
+  {
+   "q": "d) Masse de H₂SO₄",
+   "v": 1.85,
+   "u": "kg",
+   "p": {
+    "0.616": "formule"
+   }
+  }
+ ],
+ "Fabriquer du sulfate de baryum pour la radiologie": [
+  {
+   "q": "b) Masse de BaSO₄",
+   "v": 0.934,
+   "u": "g",
+   "p": {
+    "1.17": "concept"
+   }
+  },
+  {
+   "q": "c) [Ba²⁺] dans le filtrat",
+   "v": 0.0154,
+   "u": "mol/L",
+   "p": {
+    "0.025": "concept"
+   }
+  }
+ ],
+ "Un antiacide face à l'acide gastrique": [
+  {
+   "q": "c) Masse de Mg(OH)₂ en excès",
+   "v": 50,
+   "u": "mg",
+   "tol": 0.05,
+   "p": {
+    "0.05": "unites"
+   }
+  },
+  {
+   "q": "d) Masse de MgCl₂ formée",
+   "v": 0.571,
+   "u": "g",
+   "p": {
+    "1.14": "formule"
+   }
+  }
+ ],
+ "Préparer un hémostatique dentaire : le chlorure de fer(III)": [
+  {
+   "q": "b) Fer restant",
+   "v": 0.26,
+   "u": "g",
+   "tol": 0.05
+  },
+  {
+   "q": "c) Masse maximale de FeCl₃",
+   "v": 11.4,
+   "u": "g",
+   "tol": 0.01,
+   "p": {
+    "12.2": "concept"
+   }
+  },
+  {
+   "q": "d) Rendement",
+   "v": 88.3,
+   "u": "%",
+   "tol": 0.01,
+   "p": {
+    "82.8": "concept",
+    "0.883": "unites"
+   }
+  }
+ ],
+ "Le sel d'Epsom : combien d'eau dans le cristal ?": [
+  {
+   "q": "a) x",
+   "v": 7,
+   "u": "",
+   "tol": 0.001
+  },
+  {
+   "q": "b) % massique d'eau",
+   "v": 51.2,
+   "u": "%",
+   "tol": 0.01
+  },
+  {
+   "q": "c) Masse d'hydrate",
+   "v": 6.16,
+   "u": "g",
+   "p": {
+    "3.01": "concept"
+   }
+  }
+ ],
+ "Eau oxygénée « 10 volumes » pour la désinfection": [
+  {
+   "q": "b) [H₂O₂] « 10 volumes »",
+   "v": 0.893,
+   "u": "mol/L",
+   "p": {
+    "0.446": "formule"
+   }
+  },
+  {
+   "q": "c) [H₂O₂] de la solution mère",
+   "v": 9.79,
+   "u": "mol/L"
+  },
+  {
+   "q": "d) Volume de solution mère",
+   "v": 45.6,
+   "u": "mL",
+   "tol": 0.02
+  }
+ ],
+ "Contrôle qualité d'une poudre de bicarbonate": [
+  {
+   "q": "b) Masse de NaHCO₃",
+   "v": 1.81,
+   "u": "g",
+   "p": {
+    "0.906": "formule"
+   }
+  },
+  {
+   "q": "c) Pureté",
+   "v": 90.7,
+   "u": "%",
+   "p": {
+    "0.907": "unites"
+   }
+  },
+  {
+   "q": "d) Volume de CO₂ (CNTP)",
+   "v": 0.484,
+   "u": "L",
+   "tol": 0.02
+  }
+ ],
+ "Sachet de réhydratation orale : concentrations et osmolarité": [
+  {
+   "q": "b) Osmolarité (1,00 L)",
+   "v": 310,
+   "u": "mosmol/L",
+   "tol": 0.02
+  },
+  {
+   "q": "c) Osmolarité (750 mL)",
+   "v": 414,
+   "u": "mosmol/L",
+   "tol": 0.02,
+   "p": {
+    "233": "formule"
+   }
+  }
+ ],
+ "Le fer d'un traitement contre l'anémie": [
+  {
+   "q": "a) x",
+   "v": 7,
+   "u": "",
+   "tol": 0.001
+  },
+  {
+   "q": "b) Masse de sel hydraté",
+   "v": 324,
+   "u": "mg",
+   "p": {
+    "177": "concept"
+   }
+  },
+  {
+   "q": "d) Masse de fer dosée",
+   "v": 63.7,
+   "u": "mg",
+   "p": {
+    "12.7": "formule"
+   }
+  },
+  {
+   "q": "d) % de la valeur annoncée",
+   "v": 98.0,
+   "u": "%",
+   "tol": 0.01
+  }
+ ],
+ "Une bougie à oxygène de secours": [
+  {
+   "q": "a) Volume de O₂",
+   "v": 30.0,
+   "u": "L",
+   "p": {
+    "1.5": "formule"
+   }
+  },
+  {
+   "q": "a) Quantité de O₂",
+   "v": 1.226,
+   "u": "mol"
+  },
+  {
+   "q": "b) Masse de KClO₃",
+   "v": 100.1,
+   "u": "g",
+   "p": {
+    "150.2": "formule",
+    "66.8": "formule"
+   }
+  },
+  {
+   "q": "c) Masse à charger",
+   "v": 108.8,
+   "u": "g",
+   "p": {
+    "92.1": "formule"
+   }
+  }
+ ],
+ "Contenu d'une bouteille d'oxygène médical": [
+  {
+   "q": "a) Quantité de O₂",
+   "v": 31.2,
+   "u": "mol"
+  },
+  {
+   "q": "b) Masse de O₂",
+   "v": 997,
+   "u": "g",
+   "p": {
+    "499": "formule"
+   }
+  }
+ ],
+ "La seringue qu'on comprime": [
+  {
+   "q": "a) Pression",
+   "v": 2.5,
+   "u": "atm",
+   "p": {
+    "0.4": "formule"
+   }
+  },
+  {
+   "q": "a) La même en kPa",
+   "v": 253,
+   "u": "kPa"
+  },
+  {
+   "q": "b) Facteur",
+   "v": 2.5,
+   "u": ""
+  }
+ ],
+ "Le volume molaire d'un gaz dépend de la température": [
+  {
+   "q": "b) Vm à 0 °C",
+   "v": 22.43,
+   "u": "L/mol",
+   "tol": 0.01,
+   "p": {
+    "0": "unites"
+   }
+  },
+  {
+   "q": "b) Vm à 25 °C",
+   "v": 24.48,
+   "u": "L/mol",
+   "tol": 0.01,
+   "p": {
+    "2.05": "unites"
+   }
+  },
+  {
+   "q": "b) Vm à 37 °C",
+   "v": 25.46,
+   "u": "L/mol",
+   "tol": 0.01,
+   "p": {
+    "3.04": "unites"
+   }
+  },
+  {
+   "q": "c) Écart",
+   "v": 13.5,
+   "u": "%",
+   "tol": 0.03
+  }
+ ],
+ "Une même pression dans quatre unités": [
+  {
+   "q": "a) P en Pa",
+   "v": 366000.0,
+   "u": "Pa",
+   "p": {
+    "366": "unites",
+    "42400": "unites"
+   }
+  },
+  {
+   "q": "b) P en atm",
+   "v": 3.61,
+   "u": "atm"
+  },
+  {
+   "q": "b) P en mmHg",
+   "v": 2750.0,
+   "u": "mmHg"
+  }
+ ],
+ "Gaz dégagé par une décomposition thermique": [
+  {
+   "q": "a) V aux CNTP",
+   "v": 1.12,
+   "u": "L"
+  },
+  {
+   "q": "b) V à 25 °C",
+   "v": 1.22,
+   "u": "L",
+   "p": {
+    "0.125": "unites"
+   }
+  }
+ ],
+ "Un flacon scellé passe à l'autoclave": [
+  {
+   "q": "a) P à 121 °C",
+   "v": 1.345,
+   "u": "atm",
+   "tol": 0.01,
+   "p": {
+    "6.05": "unites"
+   }
+  },
+  {
+   "q": "c) Température maximale",
+   "v": 108,
+   "u": "°C",
+   "tol": 0.01,
+   "p": {
+    "381": "unites",
+    "26": "unites"
+   }
+  }
+ ],
+ "Identifier le gaz d'une bouteille sans étiquette": [
+  {
+   "q": "a) Quantité de gaz",
+   "v": 0.0204,
+   "u": "mol",
+   "p": {
+    "0.172": "unites"
+   }
+  },
+  {
+   "q": "b) Masse molaire",
+   "v": 32.0,
+   "u": "g/mol"
+  },
+  {
+   "q": "c) Densité par rapport à N₂",
+   "v": 1.14,
+   "u": ""
+  }
+ ],
+ "Pureté d'un ruban de magnésium": [
+  {
+   "q": "a) P(H₂)",
+   "v": 728,
+   "u": "mmHg",
+   "p": {
+    "752": "concept",
+    "776": "signe"
+   }
+  },
+  {
+   "q": "b) n(H₂)",
+   "v": 0.00552,
+   "u": "mol",
+   "p": {
+    "0.0057": "concept"
+   }
+  },
+  {
+   "q": "c) % de Mg",
+   "v": 89.4,
+   "u": "%",
+   "p": {
+    "92.4": "concept"
+   }
+  }
+ ],
+ "Mélange équimolaire N₂O/O₂ pour l'analgésie": [
+  {
+   "q": "a) Quantité totale",
+   "v": 0.831,
+   "u": "mol"
+  },
+  {
+   "q": "a) Masse de N₂O",
+   "v": 18.3,
+   "u": "g"
+  },
+  {
+   "q": "a) Masse de O₂",
+   "v": 13.3,
+   "u": "g"
+  },
+  {
+   "q": "b) Masse molaire moyenne",
+   "v": 38.0,
+   "u": "g/mol",
+   "p": {
+    "76": "formule"
+   }
+  },
+  {
+   "q": "c) Masse volumique",
+   "v": 1.49,
+   "u": "g/L"
+  },
+  {
+   "q": "d) P(O₂)",
+   "v": 380,
+   "u": "mmHg",
+   "p": {
+    "160": "concept"
+   }
+  }
+ ],
+ "Oxygène alvéolaire au niveau de la mer et en altitude": [
+  {
+   "q": "a) P_I(O₂) au niveau de la mer",
+   "v": 150,
+   "u": "mmHg",
+   "p": {
+    "160": "concept"
+   }
+  },
+  {
+   "q": "a) P_A(O₂) au niveau de la mer",
+   "v": 100,
+   "u": "mmHg",
+   "tol": 0.03
+  },
+  {
+   "q": "b) P_I(O₂) au refuge",
+   "v": 90.9,
+   "u": "mmHg"
+  },
+  {
+   "q": "b) P_A(O₂) au refuge",
+   "v": 40.9,
+   "u": "mmHg",
+   "tol": 0.03
+  },
+  {
+   "q": "c) Fraction de O₂ nécessaire",
+   "v": 0.346,
+   "u": "",
+   "tol": 0.03,
+   "p": {
+    "34.6": "unites"
+   }
+  }
+ ],
+ "Travail en caisson pressurisé": [
+  {
+   "q": "a) [N₂] dans le caisson",
+   "v": 0.0012,
+   "u": "mol/L",
+   "tol": 0.05,
+   "p": {
+    "0.0015": "concept"
+   }
+  },
+  {
+   "q": "a) [N₂] en surface",
+   "v": 0.00043,
+   "u": "mol/L",
+   "tol": 0.05,
+   "p": {
+    "0.00054": "concept"
+   }
+  },
+  {
+   "q": "c) P(O₂) dans le caisson",
+   "v": 0.588,
+   "u": "atm"
+  },
+  {
+   "q": "c) P(N₂) dans le caisson",
+   "v": 2.21,
+   "u": "atm"
+  },
+  {
+   "q": "d) % de O₂ nécessaire",
+   "v": 7.5,
+   "u": "%",
+   "tol": 0.01
+  }
+ ],
+ "Du spiromètre au volume pulmonaire (conditions BTPS)": [
+  {
+   "q": "a) Gaz sec expiré",
+   "v": 189.0,
+   "u": "mmol",
+   "tol": 0.01,
+   "p": {
+    "194": "concept"
+   }
+  },
+  {
+   "q": "b) Volume BTPS",
+   "v": 5.24,
+   "u": "L",
+   "tol": 0.01
+  }
+ ],
+ "Un anesthésique volatil : identification et dosage": [
+  {
+   "q": "a) Masse molaire",
+   "v": 200,
+   "u": "g/mol",
+   "p": {
+    "80": "formule"
+   }
+  },
+  {
+   "q": "b) v quadratique de O₂",
+   "v": 492,
+   "u": "m/s",
+   "p": {
+    "15.5": "unites"
+   }
+  },
+  {
+   "q": "b) v quadratique de l'anesthésique",
+   "v": 197,
+   "u": "m/s"
+  },
+  {
+   "q": "d) Masse dans 1,00 L",
+   "v": 0.166,
+   "u": "g"
+  }
+ ],
+ "Une ampoule de bicarbonate et le CO₂ à éliminer": [
+  {
+   "q": "a) Quantité de CO₂",
+   "v": 50.0,
+   "u": "mmol"
+  },
+  {
+   "q": "b) Volume à 37 °C",
+   "v": 1.27,
+   "u": "L"
+  },
+  {
+   "q": "b) Volume aux conditions normales",
+   "v": 1.12,
+   "u": "L"
+  },
+  {
+   "q": "c) Durée équivalente",
+   "v": 5.6,
+   "u": "min"
+  },
+  {
+   "q": "d) Pression dans 60 mL",
+   "v": 21.2,
+   "u": "atm"
+  }
+ ],
+ "Diluer une solution mère de glucose": [
+  {
+   "q": "Volume de solution mère",
+   "v": 30.0,
+   "u": "mL",
+   "p": {
+    "1333": "formule",
+    "0.03": "unites"
+   }
+  }
+ ],
+ "Préparer une solution isotonique de chlorure de sodium": [
+  {
+   "q": "a) Masse de NaCl",
+   "v": 2.25,
+   "u": "g",
+   "p": {
+    "9": "formule"
+   }
+  },
+  {
+   "q": "b) Volume de solution mère",
+   "v": 38.5,
+   "u": "mL"
+  }
+ ],
+ "Convertir les unités de la biologie médicale": [
+  {
+   "q": "a) Glycémie",
+   "v": 5.0,
+   "u": "mmol/L",
+   "p": {
+    "0.5": "unites"
+   }
+  },
+  {
+   "q": "b) Cholestérol",
+   "v": 5.17,
+   "u": "mmol/L",
+   "p": {
+    "0.517": "unites"
+   }
+  },
+  {
+   "q": "c) Urée",
+   "v": 5.0,
+   "u": "mmol/L"
+  },
+  {
+   "q": "d) Sodium",
+   "v": 3.22,
+   "u": "g/L",
+   "p": {
+    "3220": "unites"
+   }
+  }
+ ],
+ "Acide nitrique concentré : de l'étiquette au flacon": [
+  {
+   "q": "a) Masse de liquide commercial",
+   "v": 12.1,
+   "u": "g",
+   "p": {
+    "7.88": "concept"
+   }
+  },
+  {
+   "q": "b) Volume",
+   "v": 8.66,
+   "u": "mL"
+  },
+  {
+   "q": "c) Concentration du flacon",
+   "v": 14.4,
+   "u": "mol/L"
+  }
+ ],
+ "La perfusion de glucose à 5 %": [
+  {
+   "q": "a) Osmolarité",
+   "v": 0.278,
+   "u": "osmol/L",
+   "p": {
+    "278": "unites"
+   }
+  },
+  {
+   "q": "b) Masse de NaCl par litre",
+   "v": 8.11,
+   "u": "g/L",
+   "p": {
+    "16.2": "formule"
+   }
+  },
+  {
+   "q": "c) Pression osmotique",
+   "v": 7.07,
+   "u": "atm",
+   "p": {
+    "0.683": "unites"
+   }
+  }
+ ],
+ "Osmolarité d'un soluté de Ringer lactate": [
+  {
+   "q": "a) Osmolarité",
+   "v": 277,
+   "u": "mosmol/L",
+   "tol": 0.02,
+   "p": {
+    "140": "formule"
+   }
+  }
+ ],
+ "Identifier un édulcorant par cryoscopie": [
+  {
+   "q": "a) Molalité",
+   "v": 0.25,
+   "u": "mol/kg"
+  },
+  {
+   "q": "b) Masse molaire",
+   "v": 152,
+   "u": "g/mol"
+  }
+ ],
+ "Chlorure de calcium : congélation et ébullition": [
+  {
+   "q": "Température de congélation",
+   "v": -1.4,
+   "u": "°C",
+   "p": {
+    "-0.465": "formule",
+    "1.4": "signe"
+   }
+  },
+  {
+   "q": "Température d'ébullition",
+   "v": 100.38,
+   "u": "°C",
+   "tol": 0.0005,
+   "p": {
+    "100.128": "formule"
+   }
+  }
+ ],
+ "Point de congélation du plasma et pression osmotique": [
+  {
+   "q": "a) Osmolalité",
+   "v": 301,
+   "u": "mosmol/kg",
+   "p": {
+    "0.301": "unites"
+   }
+  },
+  {
+   "q": "b) Pression osmotique",
+   "v": 7.67,
+   "u": "atm"
+  },
+  {
+   "q": "b) La même en mmHg",
+   "v": 5826,
+   "u": "mmHg"
+  },
+  {
+   "q": "c) Masse de NaCl",
+   "v": 8.8,
+   "u": "g",
+   "p": {
+    "17.6": "formule"
+   }
+  }
+ ],
+ "Globules rouges dans trois solutions": [
+  {
+   "q": "Osmolarité A (KCl)",
+   "v": 0.402,
+   "u": "osmol/L",
+   "p": {
+    "0.201": "formule"
+   }
+  },
+  {
+   "q": "Osmolarité B (urée)",
+   "v": 0.29,
+   "u": "osmol/L"
+  },
+  {
+   "q": "Osmolarité C (Na₂SO₄)",
+   "v": 0.289,
+   "u": "osmol/L",
+   "p": {
+    "0.0964": "formule"
+   }
+  }
+ ],
+ "Le CO₂ d'une bouteille d'eau pétillante": [
+  {
+   "q": "b) Masse de CO₂ perdue",
+   "v": 3.6,
+   "u": "g",
+   "tol": 0.04
+  },
+  {
+   "q": "c) Volume de ce gaz",
+   "v": 2.0,
+   "u": "L",
+   "tol": 0.04
+  }
+ ],
+ "Hyponatrémie et hyperglycémie : une natrémie trompeuse": [
+  {
+   "q": "a) Osmolarité estimée",
+   "v": 298,
+   "u": "mosmol/L",
+   "tol": 0.01
+  },
+  {
+   "q": "b) Tonicité efficace",
+   "v": 288,
+   "u": "mosmol/L",
+   "tol": 0.01
+  }
+ ],
+ "Masse molaire d'une protéine par osmométrie": [
+  {
+   "q": "a) Masse molaire",
+   "v": 66400.0,
+   "u": "g/mol",
+   "tol": 0.03
+  },
+  {
+   "q": "b) Abaissement cryoscopique",
+   "v": 0.00056,
+   "u": "K",
+   "tol": 0.05
+  }
+ ],
+ "Chlorure de potassium injecté trop vite : effet osmotique, effet électrique": [
+  {
+   "q": "a) E_K avant",
+   "v": -95.0,
+   "u": "mV",
+   "tol": 0.01,
+   "p": {
+    "95": "signe"
+   }
+  },
+  {
+   "q": "a) E_K après",
+   "v": -90.6,
+   "u": "mV",
+   "tol": 0.01
+  },
+  {
+   "q": "b) Variation d'osmolarité",
+   "v": 1.43,
+   "u": "mosmol/L",
+   "tol": 0.03,
+   "p": {
+    "0.714": "formule"
+   }
+  }
+ ],
+ "Une base forte, puis un acide fort": [
+  {
+   "q": "a) pH de l'eau de baryte",
+   "v": 11.7,
+   "u": "",
+   "tol": 0.003,
+   "p": {
+    "11.4": "formule",
+    "2.3": "concept"
+   }
+  },
+  {
+   "q": "b) pH de HClO₄",
+   "v": 1.4,
+   "u": "",
+   "tol": 0.01
+  }
+ ],
+ "Quelques pH du corps humain": [
+  {
+   "q": "a) [H₃O⁺] du suc gastrique",
+   "v": 0.0316,
+   "u": "mol/L"
+  },
+  {
+   "q": "a) [H₃O⁺] du sang",
+   "v": 3.98e-08,
+   "u": "mol/L"
+  },
+  {
+   "q": "c) Rapport suc / sang",
+   "v": 794000.0,
+   "u": "",
+   "tol": 0.03,
+   "p": {
+    "5.9": "formule"
+   }
+  }
+ ],
+ "Couples acide-base de l'organisme": [
+  {
+   "q": "c) Constante K",
+   "v": 30900.0,
+   "u": "",
+   "tol": 0.04,
+   "p": {
+    "3.24e-05": "signe"
+   }
+  }
+ ],
+ "Acide éthanoïque : jusqu'où peut-on diluer ?": [
+  {
+   "q": "a) pH à 0,120 mol/L",
+   "v": 2.84,
+   "u": "",
+   "tol": 0.005
+  },
+  {
+   "q": "a) α",
+   "v": 1.2,
+   "u": "%",
+   "tol": 0.05
+  },
+  {
+   "q": "b) pH après dilution",
+   "v": 3.34,
+   "u": "",
+   "tol": 0.005,
+   "p": {
+    "3.84": "concept"
+   }
+  },
+  {
+   "q": "b) α après dilution",
+   "v": 3.8,
+   "u": "%",
+   "tol": 0.05
+  }
+ ],
+ "Un produit ménager à l'ammoniac": [
+  {
+   "q": "pH",
+   "v": 11.01,
+   "u": "",
+   "tol": 0.003,
+   "p": {
+    "2.99": "concept",
+    "12": "formule"
+   }
+  },
+  {
+   "q": "α",
+   "v": 1.7,
+   "u": "%",
+   "tol": 0.05
+  }
+ ],
+ "Le pH d'un vinaigre": [
+  {
+   "q": "a) Concentration",
+   "v": 0.841,
+   "u": "mol/L"
+  },
+  {
+   "q": "b) pH",
+   "v": 2.42,
+   "u": "",
+   "tol": 0.005
+  },
+  {
+   "q": "c) α",
+   "v": 0.45,
+   "u": "%",
+   "tol": 0.05
+  }
+ ],
+ "Trois sels, trois comportements": [
+  {
+   "q": "a) pH (pyridinium)",
+   "v": 3.35,
+   "u": "",
+   "tol": 0.005
+  },
+  {
+   "q": "b) pH (KNO₃)",
+   "v": 7.0,
+   "u": "",
+   "tol": 0.003
+  },
+  {
+   "q": "c) pH (formiate)",
+   "v": 8.53,
+   "u": "",
+   "tol": 0.003,
+   "p": {
+    "5.47": "concept"
+   }
+  }
+ ],
+ "Ampholytes : glycine et hydrogénocitrate": [
+  {
+   "q": "a) pH de la glycine",
+   "v": 5.97,
+   "u": "",
+   "tol": 0.005
+  },
+  {
+   "q": "b) pH de l'hydrogénocitrate",
+   "v": 5.58,
+   "u": "",
+   "tol": 0.005,
+   "p": {
+    "3.95": "concept"
+   }
+  }
+ ],
+ "Crampes et acide lactique : l'approximation ne marche plus": [
+  {
+   "q": "a) pH approché",
+   "v": 3.08,
+   "u": "",
+   "tol": 0.005
+  },
+  {
+   "q": "b) pH exact",
+   "v": 3.12,
+   "u": "",
+   "tol": 0.004
+  },
+  {
+   "q": "c) α réel",
+   "v": 15.3,
+   "u": "%",
+   "tol": 0.03,
+   "p": {
+    "16.6": "concept"
+   }
+  }
+ ],
+ "Une dose d'aspirine en fiole jaugée": [
+  {
+   "q": "a) Concentration",
+   "v": 0.00722,
+   "u": "mol/L",
+   "p": {
+    "0.00181": "unites"
+   }
+  },
+  {
+   "q": "b) pH exact",
+   "v": 2.87,
+   "u": "",
+   "tol": 0.01
+  },
+  {
+   "q": "c) α",
+   "v": 19,
+   "u": "%",
+   "tol": 0.05
+  }
+ ],
+ "L'acide phosphorique, un triacide": [
+  {
+   "q": "pH",
+   "v": 1.63,
+   "u": "",
+   "tol": 0.01
+  },
+  {
+   "q": "[HPO₄²⁻]",
+   "v": 6.3e-08,
+   "u": "mol/L",
+   "tol": 0.05
+  }
+ ],
+ "Ammoniac sanguin : quelle part traverse les membranes ?": [
+  {
+   "q": "a) % de NH₃ (pKa à 25 °C)",
+   "v": 1.39,
+   "u": "%",
+   "tol": 0.03,
+   "p": {
+    "98.6": "signe"
+   }
+  },
+  {
+   "q": "b) % de NH₃ à 37 °C",
+   "v": 3.22,
+   "u": "%",
+   "tol": 0.03
+  },
+  {
+   "q": "c) % de NH₃ en alcalose",
+   "v": 4.49,
+   "u": "%",
+   "tol": 0.03
+  }
+ ],
+ "Le tampon bicarbonate face à une acidose lactique": [
+  {
+   "q": "a) pH plasmatique",
+   "v": 7.42,
+   "u": "",
+   "tol": 0.003
+  },
+  {
+   "q": "b) pH sans élimination du CO₂",
+   "v": 6.37,
+   "u": "",
+   "tol": 0.005
+  },
+  {
+   "q": "c) pH avec la respiration",
+   "v": 7.25,
+   "u": "",
+   "tol": 0.003
+  }
+ ],
+ "Quel couple pour un tampon à pH 9,60 ?": [
+  {
+   "q": "b) Rapport [NH₃]/[NH₄⁺]",
+   "v": 2.24,
+   "u": "",
+   "p": {
+    "0.447": "signe"
+   }
+  },
+  {
+   "q": "c) n(NH₃)",
+   "v": 0.224,
+   "u": "mol"
+  }
+ ],
+ "Un tampon éthanoate, trois compositions": [
+  {
+   "q": "pH (1)",
+   "v": 5.16,
+   "u": "",
+   "tol": 0.003,
+   "p": {
+    "4.36": "signe"
+   }
+  },
+  {
+   "q": "pH (2)",
+   "v": 4.76,
+   "u": "",
+   "tol": 0.003
+  },
+  {
+   "q": "pH (3)",
+   "v": 3.76,
+   "u": "",
+   "tol": 0.003,
+   "p": {
+    "5.76": "signe"
+   }
+  }
+ ],
+ "La glycine à trois pH": [
+  {
+   "q": "b) pI",
+   "v": 5.97,
+   "u": "",
+   "tol": 0.005
+  }
+ ],
+ "Peser les sels d'un tampon phosphate": [
+  {
+   "q": "a) Rapport [HPO₄²⁻]/[H₂PO₄⁻]",
+   "v": 0.631,
+   "u": "",
+   "p": {
+    "1.58": "signe"
+   }
+  },
+  {
+   "q": "b) Masse de NaH₂PO₄",
+   "v": 1.84,
+   "u": "g"
+  },
+  {
+   "q": "b) Masse de Na₂HPO₄",
+   "v": 1.37,
+   "u": "g"
+  }
+ ],
+ "Le tampon carbonate face à un ajout d'acide": [
+  {
+   "q": "a) pH du tampon",
+   "v": 10.15,
+   "u": "",
+   "tol": 0.003
+  },
+  {
+   "q": "b) pH dans l'eau pure",
+   "v": 1.65,
+   "u": "",
+   "tol": 0.01
+  },
+  {
+   "q": "c) pH après l'incident",
+   "v": 10.0,
+   "u": "",
+   "tol": 0.003
+  }
+ ],
+ "Courbe de titrage d'un acide faible : quatre points": [
+  {
+   "q": "a) Volume équivalent",
+   "v": 20.0,
+   "u": "mL"
+  },
+  {
+   "q": "b) pH initial",
+   "v": 2.88,
+   "u": "",
+   "tol": 0.005
+  },
+  {
+   "q": "b) pH à la demi-équivalence",
+   "v": 4.76,
+   "u": "",
+   "tol": 0.003
+  },
+  {
+   "q": "b) pH à l'équivalence",
+   "v": 8.73,
+   "u": "",
+   "tol": 0.004,
+   "p": {
+    "7": "concept"
+   }
+  },
+  {
+   "q": "b) pH après 30,0 mL",
+   "v": 12.3,
+   "u": "",
+   "tol": 0.005
+  }
+ ],
+ "Capacité d'un tampon formiate": [
+  {
+   "q": "a) pH de départ",
+   "v": 3.53,
+   "u": "",
+   "tol": 0.005
+  },
+  {
+   "q": "b) Volume qui détruit le tampon",
+   "v": 30.0,
+   "u": "mL"
+  },
+  {
+   "q": "b) pH après 40,0 mL",
+   "v": 12.12,
+   "u": "",
+   "tol": 0.004
+  },
+  {
+   "q": "c) Volume limite",
+   "v": 25.6,
+   "u": "mL",
+   "tol": 0.02
+  }
+ ],
+ "Deux gazométries aux urgences": [
+  {
+   "q": "a) pH du patient A",
+   "v": 7.22,
+   "u": "",
+   "tol": 0.003
+  },
+  {
+   "q": "a) pH du patient B",
+   "v": 7.67,
+   "u": "",
+   "tol": 0.003
+  },
+  {
+   "q": "b) [CO₂] visée",
+   "v": 0.88,
+   "u": "mmol/L",
+   "tol": 0.03
+  }
+ ],
+ "Tampon ou eau pure : qui encaisse un ajout d'acide ou de base ?": [
+  {
+   "q": "a) pH après soude",
+   "v": 4.98,
+   "u": "",
+   "tol": 0.004
+  },
+  {
+   "q": "a) pH après acide",
+   "v": 4.54,
+   "u": "",
+   "tol": 0.004
+  },
+  {
+   "q": "b) pH de l'eau après soude",
+   "v": 12.38,
+   "u": "",
+   "tol": 0.003
+  },
+  {
+   "q": "b) pH de l'eau après acide",
+   "v": 1.62,
+   "u": "",
+   "tol": 0.01
+  }
+ ],
+ "Titrer un acide faible ou un acide fort : deux courbes": [
+  {
+   "q": "a) Volume équivalent",
+   "v": 16.0,
+   "u": "mL"
+  },
+  {
+   "q": "b) pH initial (éthanoïque)",
+   "v": 2.93,
+   "u": "",
+   "tol": 0.005
+  },
+  {
+   "q": "b) pH après 4,0 mL",
+   "v": 4.28,
+   "u": "",
+   "tol": 0.004
+  },
+  {
+   "q": "b) pH à l'équivalence",
+   "v": 8.7,
+   "u": "",
+   "tol": 0.004,
+   "p": {
+    "7": "concept"
+   }
+  },
+  {
+   "q": "c) pH initial de HCl",
+   "v": 1.1,
+   "u": "",
+   "tol": 0.01
+  }
+ ],
+ "Doser l'acide phosphorique d'un additif alimentaire": [
+  {
+   "q": "a) Concentration de l'acide",
+   "v": 0.0456,
+   "u": "mol/L",
+   "p": {
+    "0.0912": "formule"
+   }
+  },
+  {
+   "q": "b) pH initial",
+   "v": 1.83,
+   "u": "",
+   "tol": 0.01
+  },
+  {
+   "q": "c) pH correct après 5,00 mL",
+   "v": 2.39,
+   "u": "",
+   "tol": 0.008,
+   "p": {
+    "2.2": "concept"
+   }
+  },
+  {
+   "q": "e) Volume pour pH 7,50",
+   "v": 15.8,
+   "u": "mL",
+   "tol": 0.02
+  }
  ]
 });

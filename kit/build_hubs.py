@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
-"""Pages d'accueil « Secondaire » et « Université » (style des pages de chimie). python3 kit/build_hubs.py"""
+"""ATTENTION (13/11/2026) : ce générateur est en retard sur les pages d'accueil actuelles (menu « Cours » refait à la main,
+physique déplacée dans universite/physique, dossier thumbs/ disparu). Ne pas le relancer tel quel : il écraserait le menu.
+Les balises sfa-nav.css / sfa-progress.js / sfa-nav.js sont désormais dans le gabarit.
+Pages d'accueil « Secondaire » et « Université » (style des pages de chimie). python3 kit/build_hubs.py"""
 import os, re, glob, json, subprocess, html
 R=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# chimie/index.html est devenu une redirection : on reprend le style de la page d'accueil déjà générée (identique)
 src=open(R+'/chimie/index.html').read()
+if '<style>' not in src: src=open(R+'/secondaire/index.html').read()
 css=re.search(r'<style>(.*?)</style>',src,re.S).group(1)
 FONTS='<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&display=swap">'
 def info(d):
@@ -25,14 +30,14 @@ def page(title,kicker,h1,lead,secs,nav,stats):
             body+=f'<a class="card" href="{c["href"]}" data-q="{html.escape((c["t"]+" "+c["d"]).lower())}"><img loading="lazy" src="{c["img"]}" alt=""><div><small>{c["k"]}</small><b>{c["t"]}</b><span>{c["d"]}</span></div></a>'
         body+='</div></section>'
     st=''.join(f'<div><b>{v}</b>{k}</div>' for k,v in stats)
-    return f'''<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{title} · SFA</title>{FONTS}<style>{css}</style></head><body>
+    return f'''<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{title} · SFA</title>{FONTS}<style>{css}</style><link rel="stylesheet" href="../kit/sfa-nav.css"></head><body>
 <header class="top"><div class="in"><a class="logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a><nav class="nav">{navh}</nav><a class="cta" href="{nav[0][0]}prepa/">Prépa concours médecine</a></div></header>
 <main class="wrap"><div class="hero"><div><span class="free">100 % gratuit</span><h1>{h1}</h1><p class="lead">{lead}</p>
 <div class="search"><input id="q" type="search" placeholder="Rechercher un cours, une notion…" aria-label="Rechercher"></div><div class="stats">{st}</div></div>
 <a class="feat" href="{secs[0][3][0]["href"]}"><small>À essayer en premier</small><img src="{secs[0][3][0]["img"]}" alt=""><b>{secs[0][3][0]["t"]}</b></a></div>
 <nav class="chips" aria-label="Matières">{chips}</nav>{body}<p class="empty" id="empty">Aucun cours ne correspond.</p></main>
 <footer>Science For All · simulations, théorie et exercices</footer>
-<script>const q=document.getElementById('q');q.addEventListener('input',()=>{{const v=q.value.trim().toLowerCase();let n=0;document.querySelectorAll('section').forEach(s=>{{let k=0;s.querySelectorAll('.card').forEach(c=>{{const ok=!v||c.dataset.q.includes(v);c.style.display=ok?'':'none';if(ok)k++;}});s.style.display=k?'':'none';n+=k;}});document.getElementById('empty').style.display=n?'none':'block';}});</script></body></html>'''
+<script>const q=document.getElementById('q');q.addEventListener('input',()=>{{const v=q.value.trim().toLowerCase();let n=0;document.querySelectorAll('section').forEach(s=>{{let k=0;s.querySelectorAll('.card').forEach(c=>{{const ok=!v||c.dataset.q.includes(v);c.style.display=ok?'':'none';if(ok)k++;}});s.style.display=k?'':'none';n+=k;}});document.getElementById('empty').style.display=n?'none':'block';}});</script><script src="../kit/sfa-progress.js"></script><script src="../kit/sfa-nav.js"></script></body></html>'''
 # ---- secondaire
 MN=[("maths","Mathématiques"),("physique","Physique"),("chimie","Chimie"),("biologie","Biologie")]
 secs=[];TS=TE=0

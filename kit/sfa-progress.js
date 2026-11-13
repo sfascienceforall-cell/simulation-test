@@ -196,7 +196,7 @@ function physExos() {
   function chStat(i) { return stats(keys(i), COURS); }
   /* le cours est inscrit dans la progression pour le tableau de bord des pages d'accueil */
   (function () { var p = load(); p.courses = p.courses || {}; var acc = getComputedStyle(document.body).getPropertyValue("--acc").trim();
-    p.courses[COURS] = { nom: ENGINE ? (META.titre || NOM) : "Physique BA1", n: allKeys().length, href: location.pathname, acc: acc || "#b42318", seen: Date.now() }; save(p); })();
+    p.courses[COURS] = { nom: ENGINE ? (META.titre || NOM) : "Physique BA1", n: allKeys().length, chN: CH.map(function (c) { return c.ex.length; }), href: location.pathname, acc: acc || "#b42318", seen: Date.now() }; save(p); })();
   function pct(s) { return s.n ? Math.round(100 * s.ok / s.n) : 0; }
   function pctTxt(s) { var v = s.n ? 100 * s.ok / s.n : 0; return (v > 0 && v < 1 ? "< 1" : Math.round(v)) + " %"; }
 

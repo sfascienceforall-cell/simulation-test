@@ -7,7 +7,7 @@
 (function () {
 "use strict";
 var LS = "sfa_progress_v1";
-function load() { try { var p = JSON.parse(localStorage.getItem(LS) || "null"); if (p && p.v === 1) return p; } catch (e) {} return { v: 1, visits: {}, attempts: [] }; }
+function load() { try { var p = JSON.parse(localStorage.getItem(LS) || "null"); if (p && p.v === 1) { p.visits = p.visits || {}; p.attempts = p.attempts || []; return p; } } catch (e) {} return { v: 1, visits: {}, attempts: [] }; }
 function save(p) { try { localStorage.setItem(LS, JSON.stringify(p)); } catch (e) {} }
 function keyOf(href) { try { return new URL(href, location.href).pathname.replace(/index\.html$/, "").replace(/\/?$/, "/"); } catch (e) { return String(href); } }
 function visit(href) { var p = load(), k = keyOf(href), o = p.visits[k] || { n: 0 }; o.n++; o.last = Date.now(); if (!o.first) o.first = o.last; p.visits[k] = o; save(p); }
@@ -27,7 +27,7 @@ function strip(o) {
     '<div class="sh-prog"><div class="sh-dots">' + dots + '</div><span class="sh-cnt">' + nSeen + " sur " + o.sims.length + " ouverte" + (nSeen > 1 ? "s" : "") + "</span></div></div>" +
     '<nav class="sh-tabs" aria-label="Parties du chapitre"><a class="on" aria-current="page">Simulations</a>' +
     '<a href="' + esc(o.theo || "#") + '"' + (o.theo ? "" : ' class="dis"') + ">Théorie</a>" +
-    '<a href="' + esc(o.exos || "#") + '"' + (o.exos ? "" : ' class="dis"') + ">Exercices</a></nav>";
+    '<a href="' + esc(o.exos || "#") + '"' + (o.exos ? "" : ' class="dis"') + ">Exercices" + (o.ex ? ' <span class="sh-exn">' + o.ex.ok + (o.ex.n ? "/" + o.ex.n : "") + " ✓</span>" : "") + "</a></nav>";
   main.insertBefore(d, main.firstChild);
 }
 
@@ -79,7 +79,11 @@ function phys() {
   document.body.classList.add("sh-phys", "simpage");
   document.body.style.setProperty("--acc", "#b42318"); document.body.style.setProperty("--acc-t", "#fdeceb");
   visit(location.href);
-  strip({ cours: P.cours, ci: ci, n: P.chapitres.length, titre: c.t, cur: k,
+  var exs = null;
+  if (c.exo != null) { var pr = load(), last = {}; (pr.attempts || []).forEach(function (a) { if (a.c === "physique-ba1" && a.ch === c.exo) last[a.k] = a; });
+    var okN = 0, tN = 0; Object.keys(last).forEach(function (kk) { tN++; if (last[kk].ok) okN++; });
+    var cn = pr.courses && pr.courses["physique-ba1"] && pr.courses["physique-ba1"].chN; if (tN) exs = { ok: okN, n: cn ? cn[c.exo] : 0 }; }
+  strip({ cours: P.cours, ci: ci, n: P.chapitres.length, titre: c.t, cur: k, ex: exs,
           sims: c.sims.map(function (s) { return { href: "../" + s.id + "/", t: s.t }; }),
           theo: exo ? exo + "&v=theo" : null, exos: exo ? exo + "&v=list" : null });
   var host = $(".sfa-sim");
@@ -114,7 +118,13 @@ function phys() {
 /* ---------- pages du moteur commun (appelé par sim-page.js ; il gère déjà flèches et suite du parcours) ---------- */
 function engine(o) {
   visit(location.href);
-  strip({ cours: o.cours, ci: o.ci, n: o.n, titre: o.titre, cur: o.cur, sims: o.sims, theo: o.theo, exos: o.exos });
+  /* exercices réussis du chapitre (même identifiant de cours que sfa-progress : chemin du dossier du cours) */
+  var parent = location.pathname.replace(/index\.html$/, "").replace(/\/$/, "").split("/").slice(0, -1);
+  var cid = parent.slice(-3).filter(function (x) { return x && x !== "simulation-test"; }).join("-");
+  var pr = load(), last = {}, exs = null; (pr.attempts || []).forEach(function (a) { if (a.c === cid && a.ch === o.ci) last[a.k] = a; });
+  var okN = 0, tN = 0; Object.keys(last).forEach(function (kk) { tN++; if (last[kk].ok) okN++; });
+  var cn = pr.courses && pr.courses[cid] && pr.courses[cid].chN; if (tN) exs = { ok: okN, n: cn ? cn[o.ci] : 0 };
+  strip({ cours: o.cours, ci: o.ci, n: o.n, titre: o.titre, cur: o.cur, sims: o.sims, theo: o.theo, exos: o.exos, ex: exs });
   tools(o.host || $(".simhost"));
   marks();
 }

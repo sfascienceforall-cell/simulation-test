@@ -3,17 +3,18 @@
 window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
  "Deux cobayes noirs, un petit blanc": [
   {
-   "q": "(b) Probabilité",
+   "q": "(b) P(prochain petit blanc)",
    "v": 0.25,
    "u": "",
    "tol": 0.01
   },
   {
-   "q": "(c) Probabilité",
+   "q": "(c) P(petit noir homozygote)",
    "v": 0.3333333333333333,
    "u": "",
    "tol": 0.01,
    "p": {
+    "0.25": "concept",
     "0.5": "concept"
    }
   }
@@ -59,13 +60,16 @@ window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
  ],
  "Exactement trois sur quatre": [
   {
-   "q": "(a) Probabilité",
+   "q": "(a) P(exactement 3 dominants)",
    "v": 0.421875,
    "u": "",
-   "tol": 0.01
+   "tol": 0.01,
+   "p": {
+    "0.75": "concept"
+   }
   },
   {
-   "q": "(b) Probabilité",
+   "q": "(b) P(au moins un récessif)",
    "v": 0.68359375,
    "u": "",
    "tol": 0.01
@@ -99,13 +103,13 @@ window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
  ],
  "La règle du produit": [
   {
-   "q": "(a) Probabilité",
+   "q": "(a) P(A et B dominants, C récessif)",
    "v": 0.140625,
    "u": "",
    "tol": 0.01
   },
   {
-   "q": "(b) Probabilité",
+   "q": "(b) P(aaBbCC)",
    "v": 0.03125,
    "u": "",
    "tol": 0.01
@@ -127,19 +131,22 @@ window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
  ],
  "Un chiot aabbcc": [
   {
-   "q": "(a) Probabilité",
+   "q": "(a) P(chiot aabbcc)",
    "v": 0.015625,
    "u": "",
-   "tol": 0.01
+   "tol": 0.01,
+   "p": {
+    "0.037037037037037035": "formule"
+   }
   },
   {
-   "q": "(b) Probabilité",
+   "q": "(b) P(au moins un sur 8)",
    "v": 12,
    "u": "%",
    "tol": 0.05
   },
   {
-   "q": "(c) Chiots",
+   "q": "(c) Chiots pour 95 %",
    "v": 191,
    "u": "",
    "tol": 0.02
@@ -167,16 +174,22 @@ window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
  ],
  "L'hémophilie dans une famille": [
   {
-   "q": "(b) Probabilité",
+   "q": "(b) P(1er enfant hémophile)",
    "v": 0.25,
    "u": "",
-   "tol": 0.01
+   "tol": 0.01,
+   "p": {
+    "0.5": "concept"
+   }
   },
   {
-   "q": "(c) Probabilité",
+   "q": "(c) P(hémophile si garçon)",
    "v": 0.5,
    "u": "",
-   "tol": 0.01
+   "tol": 0.01,
+   "p": {
+    "0.25": "concept"
+   }
   }
  ],
  "Daltonisme dans la population": [
@@ -204,7 +217,7 @@ window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
  ],
  "Un garçon atteint dans une fratrie": [
   {
-   "q": "(b) Probabilité",
+   "q": "(b) P(sœur porteuse)",
    "v": 0.5,
    "u": "",
    "tol": 0.01
@@ -232,13 +245,16 @@ window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
  ],
  "Fille d'un père daltonien": [
   {
-   "q": "(b) Probabilité",
+   "q": "(b) P(garçon daltonien)",
    "v": 0.25,
    "u": "",
-   "tol": 0.01
+   "tol": 0.01,
+   "p": {
+    "0.5": "concept"
+   }
   },
   {
-   "q": "(d) Probabilité",
+   "q": "(d) P(aucun daltonien sur 3)",
    "v": 0.421875,
    "u": "",
    "tol": 0.01
@@ -246,13 +262,13 @@ window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
  ],
  "Deux parents porteurs": [
   {
-   "q": "(b) Probabilité",
+   "q": "(b) P(2e enfant atteint)",
    "v": 0.25,
    "u": "",
    "tol": 0.01
   },
   {
-   "q": "(c) Probabilité",
+   "q": "(c) P(frère sain porteur)",
    "v": 0.6666666666666666,
    "u": "",
    "tol": 0.01,
@@ -263,13 +279,22 @@ window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
  ],
  "Couple au hasard et fratrie": [
   {
-   "q": "(a) Probabilité",
+   "q": "(a) Risque pour un couple au hasard",
    "v": 0.0002777777777777778,
    "u": "",
-   "tol": 0.02
+   "tol": 0.02,
+   "p": {
+    "0.0011111111111111111": "formule"
+   }
   },
   {
-   "q": "(c) Probabilité",
+   "q": "(b) Enfants atteints sur 100 000",
+   "v": 28,
+   "u": "",
+   "tol": 0.03
+  },
+  {
+   "q": "(c) Risque",
    "v": 0.005555555555555556,
    "u": "",
    "tol": 0.02
@@ -425,13 +450,19 @@ window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
  ],
  "Combien de résistantes ?": [
   {
-   "q": "(a) Résistantes",
+   "q": "(a) Résistantes au départ",
    "v": 10,
    "u": "",
    "tol": 0.01
   },
   {
-   "q": "(c) %",
+   "q": "(b) Sensibles restantes",
+   "v": 100000.0,
+   "u": "",
+   "tol": 0.02
+  },
+  {
+   "q": "(c) Proportion de résistantes",
    "v": 0.01,
    "u": "%",
    "tol": 0.05
@@ -565,19 +596,22 @@ window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
  ],
  "Prélèvement durable maximal": [
   {
-   "q": "(a) Taux",
+   "q": "(a) Prélèvement h optimal",
    "v": 30,
    "u": "%",
-   "tol": 0.01
+   "tol": 0.01,
+   "p": {
+    "60": "formule"
+   }
   },
   {
-   "q": "(b) Effectif",
+   "q": "(b) Population",
    "v": 2500,
    "u": "",
    "tol": 0.01
   },
   {
-   "q": "(c) Prélèvement",
+   "q": "(c) Rendement",
    "v": 750,
    "u": "individus/an",
    "tol": 0.01

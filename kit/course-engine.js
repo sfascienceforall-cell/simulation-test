@@ -77,7 +77,7 @@ window.SFA_COURSE = function () {
     /* anciens exercices (format {t,s,st,d,sol}) */
     (legacyMap[c.id] || []).forEach(function (k) {
       var lc = window.LEGACY_CH && window.LEGACY_CH[k]; if (!lc) return;
-      lc.ex.forEach(function (e) { o.ex.push(e); });
+      lc.ex.forEach(function (e) { e._legacy = 1; o.ex.push(e); });
       if (!o.th && (lc.th || lc.sub)) { o.th = lc.th; o.sub = lc.sub; o.ctl = lc.ctl; o.anim = lc.anim; }
       if (!th.icon && lc.ic) o.ic = lc.ic;
     });
@@ -273,7 +273,7 @@ window.SFA_COURSE = function () {
     CH[ci].ex.forEach(function (e, j) {
       if (lvf && e.s !== lvf) return;
       var card = document.createElement("div"); card.className = "card";
-      var fig = (!e.draw && e.d && dup[dkey(e)] >= 3) ? dataFig(e) : null;
+      var fig = (e._legacy && !e.draw && e.d && dup[dkey(e)] >= 3) ? dataFig(e) : null;
       card.appendChild(paint(function () { if (fig) fig(); else if (e.draw) e.draw.call(e, 1); else if (e.d) e.d(1); else CH[ci].ic(); }, 460, 280));
       var cap = document.createElement("div"); cap.className = "cap";
       cap.innerHTML = '<span class="num">n°' + (j + 1) + (e._x && e._x.choix ? " · QCM" : "") + '</span><div class="tt">' + cardT(e) + '</div><span class="lv ' + lvClass(e.s) + '">' + "★".repeat(e.s) + "</span>";

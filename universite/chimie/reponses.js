@@ -2978,5 +2978,293 @@ window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
    "u": "mL",
    "tol": 0.02
   }
+ ],
+ "Tampon Tris : le pH dérive avec la température": [
+  {
+   "q": "a) Masse de Tris",
+   "v": 3.03,
+   "u": "g"
+  },
+  {
+   "q": "a) Volume de HCl",
+   "v": 16.3,
+   "u": "mL",
+   "tol": 0.02,
+   "p": {
+    "8.7": "concept"
+   }
+  },
+  {
+   "q": "b) pH à 37 °C",
+   "v": 7.46,
+   "u": "",
+   "tol": 0.004,
+   "p": {
+    "8.14": "signe"
+   }
+  },
+  {
+   "q": "c) pH à régler à 25 °C",
+   "v": 7.74,
+   "u": "",
+   "tol": 0.004
+  }
+ ],
+ "Fabriquer un tampon glycine pour une électrophorèse": [
+  {
+   "q": "b) pH initial",
+   "v": 1.94,
+   "u": "",
+   "tol": 0.01
+  },
+  {
+   "q": "c) pH correct après 2,00 mL",
+   "v": 2.19,
+   "u": "",
+   "tol": 0.008,
+   "p": {
+    "1.86": "concept"
+   }
+  },
+  {
+   "q": "d) Volume pour le zwitterion",
+   "v": 8.0,
+   "u": "mL"
+  },
+  {
+   "q": "d) pH alors",
+   "v": 6.0,
+   "u": "",
+   "tol": 0.005
+  },
+  {
+   "q": "e) Volume pour pH 10,00",
+   "v": 13.7,
+   "u": "mL",
+   "tol": 0.02
+  }
+ ],
+ "Un tampon phosphate isotonique à pH 7,40": [
+  {
+   "q": "b) Masse de Na₂HPO₄",
+   "v": 0.863,
+   "u": "g"
+  },
+  {
+   "q": "b) Masse de NaH₂PO₄",
+   "v": 0.471,
+   "u": "g"
+  },
+  {
+   "q": "c) Masse de NaCl",
+   "v": 3.47,
+   "u": "g",
+   "tol": 0.02
+  },
+  {
+   "q": "d) pH après HCl",
+   "v": 7.22,
+   "u": "",
+   "tol": 0.004
+  }
+ ],
+ "Compter les électrons à partir des nombres quantiques": [
+  {
+   "q": "a) n = 4",
+   "v": 32,
+   "u": "",
+   "tol": 0.001,
+   "p": {
+    "16": "concept"
+   }
+  },
+  {
+   "q": "b) n = 3, l = 2",
+   "v": 10,
+   "u": "",
+   "tol": 0.001,
+   "p": {
+    "5": "concept"
+   }
+  },
+  {
+   "q": "c) n = 5, l = 1, m_l = 0",
+   "v": 2,
+   "u": "",
+   "tol": 0.001,
+   "p": {
+    "6": "concept"
+   }
+  },
+  {
+   "q": "d) n = 4, m_s = −½",
+   "v": 16,
+   "u": "",
+   "tol": 0.001,
+   "p": {
+    "32": "concept"
+   }
+  },
+  {
+   "q": "e) n = 2, l = 2",
+   "v": 0,
+   "u": "",
+   "tol": 0.001,
+   "p": {
+    "10": "concept"
+   }
+  },
+  {
+   "q": "f) Électrons l = 2 du Zr",
+   "v": 12,
+   "u": "",
+   "tol": 0.001,
+   "p": {
+    "2": "concept",
+    "10": "concept"
+   }
+  }
+ ],
+ "Un poison qui imite le phosphate": [
+  {
+   "q": "c) Énergie de 1re ionisation",
+   "v": 9.789,
+   "u": "eV",
+   "tol": 0.01
+  },
+  {
+   "q": "c) λ maximale",
+   "v": 127,
+   "u": "nm",
+   "tol": 0.02
+  }
+ ],
+ "Ions isoélectroniques du néon et ions du plasma": [
+  {
+   "q": "c) Rapport r(O²⁻)/r(Al³⁺)",
+   "v": 2.62,
+   "u": "",
+   "p": {
+    "0.382": "formule"
+   }
+  },
+  {
+   "q": "d) K⁺ plus gros que Na⁺ de",
+   "v": 35,
+   "u": "%",
+   "tol": 0.04
+  }
+ ],
+ "Fer(II) et fumarate : de l'orbitale au comprimé": [
+  {
+   "q": "c) Masse de fer",
+   "v": 65.7,
+   "u": "mg",
+   "p": {
+    "200": "concept"
+   }
+  },
+  {
+   "q": "c) Nombre d'ions Fe²⁺",
+   "v": 7.09e+20,
+   "u": "ions"
+  }
+ ],
+ "Hydrogénation du cyclohexène et énergie de résonance du benzène": [
+  {
+   "q": "a) Quantité de cyclohexène",
+   "v": 49.91,
+   "u": "mmol",
+   "tol": 0.01,
+   "p": {
+    "0.0499": "unites"
+   }
+  },
+  {
+   "q": "a) Volume de H₂",
+   "v": 1.22,
+   "u": "L",
+   "p": {
+    "1.12": "concept"
+   }
+  },
+  {
+   "q": "b) Énergie libérée",
+   "v": 5.99,
+   "u": "kJ"
+  },
+  {
+   "q": "c) Énergie de stabilisation",
+   "v": 152,
+   "u": "kJ/mol",
+   "p": {
+    "-152": "signe"
+   }
+  }
+ ],
+ "Durcir une huile pour fabriquer une margarine": [
+  {
+   "q": "a) C=C avant (par kg)",
+   "v": 5.122,
+   "u": "mol"
+  },
+  {
+   "q": "a) C=C après (par kg)",
+   "v": 3.349,
+   "u": "mol"
+  },
+  {
+   "q": "b) Masse de H₂ consommée",
+   "v": 3.57,
+   "u": "g",
+   "p": {
+    "1.79": "formule"
+   }
+  },
+  {
+   "q": "c) Volume à 25 °C, 1 atm",
+   "v": 43.4,
+   "u": "L"
+  },
+  {
+   "q": "c) Volume à 160 °C, 3,0 atm",
+   "v": 21.0,
+   "u": "L",
+   "tol": 0.02
+  }
+ ],
+ "Doubler une concentration : SN2 ou SN1 ?": [
+  {
+   "q": "a) Constante k (SN2)",
+   "v": 0.003,
+   "u": "L/(mol·s)",
+   "p": {
+    "0.0003": "formule"
+   }
+  },
+  {
+   "q": "b-i) v si [RBr]₀ double",
+   "v": 3e-05,
+   "u": "mol/(L·s)"
+  },
+  {
+   "q": "b-ii) v si les deux doublent",
+   "v": 6e-05,
+   "u": "mol/(L·s)",
+   "p": {
+    "3e-05": "concept"
+   }
+  },
+  {
+   "q": "b-iii) v si [CN⁻]₀ ÷ 2",
+   "v": 7.5e-06,
+   "u": "mol/(L·s)"
+  },
+  {
+   "q": "c) Demi-vie (SN1)",
+   "v": 3.2,
+   "u": "h",
+   "tol": 0.03
+  }
  ]
 });

@@ -184,6 +184,9 @@ window.SFA_COURSE = function () {
     buildExGrid(); show("vList"); setHash("c=" + ci + "&v=list");
   };
   var showInd = false;
+  /* devanture : un QCM repris de l'ancienne page s'appelle « QCM n » ; on montre plutôt le début de sa question */
+  function cardT(e) { if (!/^QCM \d+$/.test(String(e.t).trim())) return e.t; var q = String(e.st || "").split(/<br|<b>A\./)[0].replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+    return q ? "QCM — " + esc(q.length > 90 ? q.slice(0, 88).replace(/\s+\S*$/, "") + "…" : q) : e.t; }
   window.openEx = function (j) {
     ei = j; view = "exo"; reveal = false; p = 0; axesChoice = 0; showInd = false;
     var b = document.getElementById("bSol"); b.className = "btn"; b.textContent = "Voir la solution";
@@ -243,7 +246,7 @@ window.SFA_COURSE = function () {
       var card = document.createElement("div"); card.className = "card";
       card.appendChild(paint(function () { if (e.draw) e.draw.call(e, 1); else if (e.d) e.d(1); else CH[ci].ic(); }, 460, 280));
       var cap = document.createElement("div"); cap.className = "cap";
-      cap.innerHTML = '<span class="num">n°' + (j + 1) + (e._x && e._x.choix ? " · QCM" : "") + '</span><div class="tt">' + e.t + '</div><span class="lv ' + lvClass(e.s) + '">' + "★".repeat(e.s) + "</span>";
+      cap.innerHTML = '<span class="num">n°' + (j + 1) + (e._x && e._x.choix ? " · QCM" : "") + '</span><div class="tt">' + cardT(e) + '</div><span class="lv ' + lvClass(e.s) + '">' + "★".repeat(e.s) + "</span>";
       card.appendChild(cap); card.onclick = function () { openEx(j); }; g.appendChild(card);
     });
   }

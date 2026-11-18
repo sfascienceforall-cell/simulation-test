@@ -174,6 +174,7 @@ new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classLis
 .d-hud .sub{color:var(--muted);font-size:12px}
 .d-hint{position:absolute;right:12px;bottom:10px;font:500 12px var(--f-ui);color:var(--faint);pointer-events:none;text-align:right}
 .d-err{position:absolute;inset:0;display:grid;place-items:center;color:#a32d2d;font:600 14px var(--f-ui);padding:20px;text-align:center}
+.nolab .d-lab{display:none!important}
 @media (max-width:600px){.d-lab{font-size:11px}.door-stage{height:58vh;min-height:360px}.d-hud{font-size:12px;padding:8px 10px;top:auto;bottom:10px;left:10px}.d-hud .big{font-size:1rem}.d-hint{display:none}}
 </style>
 <div id="door" class="door-stage" aria-label="Porte en 3D : touche la porte pour la pousser, glisse ailleurs pour tourner la vue">
@@ -191,6 +192,8 @@ new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classLis
   <button class="btn mode on" id="mD" onclick="setMode('door')">Porte 3D</button>
   <button class="btn mode" id="mE" onclick="setMode('explore')">Explorer (2D)</button>
   <button class="btn mode" id="mB" onclick="setMode('balance')">Équilibre (balançoire)</button>
+  <button class="btn mode" id="mT" onclick="setMode('trans')">Translation ou rotation ?</button>
+  <button class="btn" id="bLab" onclick="toggleLab()" title="Masque ou affiche les étiquettes posées sur le schéma (les formules restent)">Masquer les écritures</button>
 </div>
 
 <div id="ctlD">
@@ -210,11 +213,41 @@ new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classLis
     <button class="btn" id="dTop">Vue du dessus</button>
     <button class="btn" id="dPersp">Vue 3D</button>
   </div>
+  <div class="row">
+    <label class="pill" style="cursor:pointer;color:#5b4a1f"><input type="checkbox" id="dRes" checked style="accent-color:#BA7517;margin-right:6px">Résistance de la porte (loquet + ferme-porte) : il faut au moins 9 N·m pour l’ouvrir</label>
+  </div>
+  <div class="row">
+    <span class="pill">Pousser :</span>
+    <button class="btn" id="dP1">près de la poignée (0,75 m)</button>
+    <button class="btn" id="dP2">près des charnières (0,15 m)</button>
+    <button class="btn" id="dP3">sur l’axe (0 m)</button>
+  </div>
 </div>
 <div class="row" id="ctlE">
   <span class="pill" style="color:#0F6E56;border-color:#79c6a6;">🖱 glisse le point d'application (bleu) ou la pointe de la force (rouge)</span>
 </div>
 
+<div id="ctlT" style="display:none;">
+  <div class="row">
+    <button class="btn mode on" id="tLib">Planche libre (coussin d’air)</button>
+    <button class="btn mode" id="tAxe">Planche fixée par un axe (charnière)</button>
+  </div>
+  <div class="row">
+    <span class="pill" style="color:#185fa5">point d’application</span>
+    <input type="range" id="tS" min="-0.6" max="0.6" step="0.05" value="0.4" style="accent-color:#185fa5;">
+    <span class="val" id="tSv" style="color:#185fa5">0,40 m de G</span>
+  </div>
+  <div class="row">
+    <span class="pill" style="color:#c23b3a">F &nbsp;force de poussée</span>
+    <input type="range" id="tF" min="1" max="10" step="0.5" value="6" style="accent-color:#E24B4A;">
+    <span class="val" id="tFv" style="color:#c23b3a">6 N</span>
+  </div>
+  <div class="row">
+    <button class="btn" id="tGo" style="font-weight:800">▶ Pousser</button>
+    <button class="btn" id="tC">Pousser au centre (G)</button>
+    <button class="btn" id="tRe">Recommencer</button>
+  </div>
+</div>
 <div id="ctlB" style="display:none;">
   <div class="row">
     <span class="pill" style="color:#a32d2d;border-color:#f09595;">gauche F₁</span>
@@ -251,6 +284,8 @@ function setMode(m){mode=m;
   document.getElementById('ctlD').style.display=D?'block':'none';
   cv.style.display=D?'none':'block';
   document.getElementById('info').style.display=D?'none':'block';
+  document.getElementById('ctlT').style.display=m==='trans'?'block':'none';
+  document.getElementById('mT').className='btn mode'+(m==='trans'?' on':'');
   if(D){document.getElementById('ctlE').style.display='none';document.getElementById('ctlB').style.display='none';
     document.getElementById('mE').className='btn mode';document.getElementById('mB').className='btn mode';
     document.getElementById('fml').innerHTML='<b style="color:#9a5f0f">M = F · d</b> : la porte tourne d’autant plus facilement que la force est grande et que son <b style="color:#9a5f0f">bras de levier d</b> (distance entre l’axe des charnières et la ligne d’action de la force) est long. Pousser près des charnières ne sert presque à rien.';return;}
@@ -259,6 +294,9 @@ function setMode(m){mode=m;
   document.getElementById('ctlE').style.display=m==='explore'?'flex':'none';
   document.getElementById('ctlB').style.display=m==='balance'?'block':'none';
   cv.style.cursor=m==='explore'?'crosshair':'default';
+  if(m==='trans'){cv.style.cursor='default';
+    document.getElementById('fml').innerHTML='<b style="color:#c23b3a">Une force</b> fait <b>translater</b> le solide (a<sub>G</sub> = F/m). Son <b style="color:#9a5f0f">moment M = F · d</b> le fait <b>tourner</b>. Si la ligne d’action passe par le centre de masse G (solide libre) ou par l’axe (solide fixé), d = 0, donc M = 0 : aucune rotation.';
+    if(window.trReset)trReset();return;}
   document.getElementById('fml').innerHTML= m==='balance'
    ?'<b style="color:#185fa5">Équilibre</b> : ΣM = 0 ⇒ <b style="color:#E24B4A">F₁·d₁</b> = <b style="color:#1D9E75">F₂·d₂</b>'
    :'<b style="color:#185fa5">M = F · d</b> avec <b>d = r·sinθ</b> (bras de levier = distance ⊥ de O à la ligne d\'action) = <b style="color:#BA7517">F·r·sinθ</b> | N·m';}
@@ -267,7 +305,10 @@ function syncSize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRat
   const nW=Math.round(r.width)||700,nH=Math.round(r.height)||360;
   if(nW!==W||nH!==H){W=nW;H=nH;cv.width=W*dpr;cv.height=H*dpr;}ctx.setTransform(dpr,0,0,dpr,0,0);}
 const FNT=(w,s)=>w+' '+s+'px Mulish,system-ui,sans-serif';
-function halo(txt,x,y,col,font,align){ctx.font=font;ctx.textAlign=align||'center';ctx.textBaseline='middle';ctx.lineJoin='round';
+window.SFA_NOLAB=false;
+function toggleLab(){SFA_NOLAB=!SFA_NOLAB;document.getElementById('door').classList.toggle('nolab',SFA_NOLAB);
+  const b=document.getElementById('bLab');b.textContent=SFA_NOLAB?'Afficher les écritures':'Masquer les écritures';b.className='btn'+(SFA_NOLAB?' mode on':'');}
+function halo(txt,x,y,col,font,align){if(SFA_NOLAB)return;ctx.font=font;ctx.textAlign=align||'center';ctx.textBaseline='middle';ctx.lineJoin='round';
   ctx.strokeStyle='rgba(255,255,255,0.95)';ctx.lineWidth=4.5;ctx.strokeText(txt,x,y);ctx.fillStyle=col;ctx.fillText(txt,x,y);ctx.textBaseline='alphabetic';}
 function arrow(x,y,vx,vy,col,lab,w,dash){const len=Math.hypot(vx,vy);if(len<2)return;w=w||2.8;
   const hs=Math.min(w*4.2,len*0.6),ang=Math.atan2(vy,vx),ex=x+vx,ey=y+vy;
@@ -448,7 +489,7 @@ function drawBalance(){
 }
 
 function draw(){syncSize();ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
-  if(mode==='explore')drawExplore();else if(mode==='balance')drawBalance();requestAnimationFrame(draw);}
+  if(mode==='explore')drawExplore();else if(mode==='balance')drawBalance();else if(mode==='trans')drawTrans();requestAnimationFrame(draw);}
 
 function gp(e){const r=cv.getBoundingClientRect();const t=e.touches?e.touches[0]:e;const x=t.clientX-r.left,y=t.clientY-r.top;
   return{x:O.x+(x-O.x)/SC,y:O.y+(y-O.y)/SC};}   // coordonnées du schéma zoomé
@@ -463,6 +504,121 @@ window.addEventListener('pointerup',()=>{drag=null;});
 
 setMode('door');draw();
 </script>
+<script>
+/* ---------- Mode « Translation ou rotation ? » (vue de dessus) ----------
+   Planche libre (coussin d'air, sans frottement) : a_G = F/m toujours ; moment autour de G : M = F·s.
+   Planche fixée par un axe : l'axe empêche la translation ; M = F·d autour de l'axe ; d = 0 → rien ne bouge. */
+const TR={m:2,L:1.2,F:6,s:0.4,axe:false,th:0,G:{x:0,y:-0.7},v:{x:0,y:0},w:0,push:0,run:false,tr:[],tp:0,pushed:false};
+const TR_T=0.25, TR_SLOW=0.5;                       // durée de la poussée (s) ; ralenti d'affichage
+function trI(){return TR.axe?TR.m*TR.L*TR.L/3:TR.m*TR.L*TR.L/12;}
+function trAxis(){return {x:-TR.L/2,y:0};}          // position de l'axe (mode fixé)
+function trU(){return {x:Math.cos(TR.th),y:Math.sin(TR.th)};}
+function trReset(){TR.th=0;TR.w=0;TR.v={x:0,y:0};TR.push=0;TR.run=false;TR.tr=[];TR.pushed=false;
+  TR.G=TR.axe?{x:0,y:0}:{x:0,y:-0.7};trInfo();}
+function trPush(){trReset();TR.push=TR_T;TR.run=true;TR.pushed=true;TR.tp=performance.now();}
+function trLever(){return TR.s;}                    // s (depuis G) ou d (depuis l'axe), selon le mode
+function trCenter(){return TR.axe?trAxis():TR.G;}
+function trP(){const u=trU(),C=trCenter();return {x:C.x+trLever()*u.x,y:C.y+trLever()*u.y};}
+const trF=(v,n)=>v.toFixed(n===undefined?2:n).replace('.',',');
+function trInfo(){
+  const el=document.getElementById('info'); if(!el||mode!=='trans')return;
+  const F=TR.F,r=Math.abs(trLever()),M=F*r,a=F/TR.m,I=trI(),al=M/I;
+  let h;
+  if(!TR.axe){
+    h=(r<1e-9
+      ?'<b>Force appliquée en G</b> (centre de masse) : d = 0, donc M = 0 ⇒ <b>translation seule</b>, la planche ne tourne pas. a<sub>G</sub> = F/m = '+trF(F,1)+' / '+TR.m+' = '+trF(a,1)+' m/s².'
+      :'<b>Translation</b> : a<sub>G</sub> = F/m = '+trF(a,1)+' m/s², la même où que tu pousses. <b>Rotation</b> autour de G : M = F · d = '+trF(F,1)+' × '+trF(r)+' = '+trF(M)+' N·m ⇒ elle tourne en plus d’avancer.');
+  } else {
+    h=(r<1e-9
+      ?'<b style="color:#c23b3a">Force appliquée sur l’axe</b> : d = 0, donc M = F × 0 = 0. L’axe encaisse la force : <b>ni translation, ni rotation</b>. Pousser sur la charnière ne sert à rien.'
+      :'L’axe retient la planche : <b>pas de translation</b>. <b>Rotation</b> : M = F · d = '+trF(F,1)+' × '+trF(r)+' = '+trF(M)+' N·m ⇒ α = M/I = '+trF(al,1)+' rad/s². Pour un même moment, il faut une force d’autant plus grande que d est petit : F = M/d.');
+  }
+  if(TR.pushed){h+='<br>Après la poussée ('+trF(TR_T)+' s) : '+(TR.axe?'':'v<sub>G</sub> = '+trF(Math.hypot(TR.v.x,TR.v.y))+' m/s · ')+'ω = '+trF(Math.abs(TR.w))+' rad/s';}
+  el.innerHTML=h;
+}
+function trArrow(x1,y1,x2,y2,col,w){const a=Math.atan2(y2-y1,x2-x1),hl=11+w;ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-Math.cos(a)*hl*0.7,y2-Math.sin(a)*hl*0.7);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-hl*Math.cos(a-0.4),y2-hl*Math.sin(a-0.4));ctx.lineTo(x2-hl*Math.cos(a+0.4),y2-hl*Math.sin(a+0.4));ctx.closePath();ctx.fill();}
+function drawTrans(){
+  const now=performance.now(),dt=Math.min(0.033,(now-(TR.tp||now))/1000)*TR_SLOW;TR.tp=now;
+  const k=Math.min(W/4.2,H/2.7),C0={x:W/2,y:H/2},S=p=>({x:C0.x+p.x*k,y:C0.y-p.y*k});
+  // --- dynamique ---
+  if(TR.run&&dt>0){
+    const u=trU(),n={x:0,y:1};                      // force fixe dans le plan : vers le haut de l'écran
+    if(TR.push>0){const h=Math.min(dt,TR.push);TR.push-=h;
+      const tau=trLever()*(u.x*n.y-u.y*n.x)*TR.F;
+      if(!TR.axe){TR.v.x+=TR.F*n.x/TR.m*h;TR.v.y+=TR.F*n.y/TR.m*h;}
+      TR.w+=tau/trI()*h;}
+    if(TR.axe)TR.w*=Math.exp(-0.35*dt);            // un peu de frottement dans la charnière
+    TR.th+=TR.w*dt;
+    if(TR.axe){const A=trAxis(),u2=trU();TR.G={x:A.x+TR.L/2*u2.x,y:A.y+TR.L/2*u2.y};}
+    else{TR.G.x+=TR.v.x*dt;TR.G.y+=TR.v.y*dt;}
+    const u2=trU(),e1={x:TR.G.x-TR.L/2*u2.x,y:TR.G.y-TR.L/2*u2.y},e2={x:TR.G.x+TR.L/2*u2.x,y:TR.G.y+TR.L/2*u2.y};
+    TR.tr.push([S(TR.G),S(e1),S(e2)]); if(TR.tr.length>900)TR.tr.shift();
+    if(!TR.axe&&(Math.abs(TR.G.y)>H/2/k+0.9||Math.abs(TR.G.x)>W/2/k+0.9))TR.run=false;
+    if(TR.push<=0&&Math.abs(TR.w)<0.01&&Math.hypot(TR.v.x,TR.v.y)<1e-3)TR.run=false;
+    trInfo();
+  }
+  // --- fond ---
+  ctx.strokeStyle='#f1f4f7';ctx.lineWidth=1;const gs=Math.max(18,k*0.2);
+  for(let x=C0.x%gs;x<W;x+=gs){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=C0.y%gs;y<H;y+=gs){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  halo(TR.axe?'Vue de dessus · planche fixée par un axe (charnière)':'Vue de dessus · planche sur coussin d’air (sans frottement)',12,16,'#5b6b7d',FNT(700,12.5),'left');
+  // --- traces : G (vert) et extrémités (gris) ---
+  const tl=(i,col,w,dash)=>{if(TR.tr.length<2)return;ctx.strokeStyle=col;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.beginPath();TR.tr.forEach((q,j)=>j?ctx.lineTo(q[i].x,q[i].y):ctx.moveTo(q[i].x,q[i].y));ctx.stroke();ctx.setLineDash([]);};
+  tl(1,'#c9d1da',1.5,[4,4]);tl(2,'#c9d1da',1.5,[4,4]);if(!TR.axe)tl(0,'#1D9E75',2.2);
+  // --- planche ---
+  const u=trU(),G=S(TR.G),ang=-TR.th,Lp=TR.L*k,Wp=Math.max(14,0.12*k);
+  ctx.save();ctx.translate(G.x,G.y);ctx.rotate(ang);
+  ctx.fillStyle='#e8eef5';ctx.strokeStyle='#5b6b7d';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(-Lp/2,-Wp/2,Lp,Wp,6);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#b8c4d1';for(let i=-5;i<=5;i++){ctx.fillRect(i*Lp/12-0.5,-Wp/2+3,1,Wp-6);}
+  ctx.restore();
+  // centre de masse
+  ctx.fillStyle='#fff';ctx.strokeStyle='#0F6E56';ctx.lineWidth=2;ctx.beginPath();ctx.arc(G.x,G.y,6,0,7);ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.moveTo(G.x-6,G.y);ctx.lineTo(G.x+6,G.y);ctx.moveTo(G.x,G.y-6);ctx.lineTo(G.x,G.y+6);ctx.stroke();
+  halo('G',G.x+12*Math.sin(TR.th)+0,G.y+Wp/2+14,'#0F6E56',FNT(800,13));
+  // axe
+  let C=G;
+  if(TR.axe){C=S(trAxis());ctx.fillStyle='#2c2c2a';ctx.beginPath();ctx.arc(C.x,C.y,8,0,7);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(C.x,C.y,3,0,7);ctx.fill();
+    halo('axe',C.x-16,C.y-Wp/2-12,'#2c2c2a',FNT(800,13));}
+  // point d'application et force
+  const P=S(trP()),r=Math.abs(trLever()),pushing=TR.push>0,len=26+TR.F*6;
+  const col=pushing?'#E24B4A':'rgba(226,75,74,0.55)';
+  trArrow(P.x,P.y+len+Wp/2,P.x,P.y+Wp/2+2,col,pushing?4:3);
+  halo('F = '+trF(TR.F,1)+' N',P.x+(P.x>C0.x+40?-44:44),P.y+Wp/2+len*0.6,'#c23b3a',FNT(800,13));
+  ctx.fillStyle='#185fa5';ctx.beginPath();ctx.arc(P.x,P.y,5.5,0,7);ctx.fill();
+  // bras de levier d (le long de la planche, au repos)
+  if(!TR.run&&!TR.pushed){
+    if(r>1e-9){ctx.strokeStyle='#BA7517';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(C.x,C.y-Wp/2-8);ctx.lineTo(P.x,P.y-Wp/2-8);ctx.stroke();ctx.setLineDash([]);
+      halo('d = '+trF(r)+' m',(C.x+P.x)/2,C.y-Wp/2-22,'#9a5f0f',FNT(800,13));
+      // flèche de rotation
+      const sg=(TR.axe?trLever():trLever())>0?1:-1;ctx.strokeStyle='#BA7517';ctx.lineWidth=2.5;const R=24,a0=Math.PI*0.15,a1=Math.PI*0.85;
+      ctx.beginPath();if(sg>0)ctx.arc(C.x,C.y,R,-a0,-a1,true);else ctx.arc(C.x,C.y,R,-Math.PI+a0,-Math.PI+a1,false);ctx.stroke();
+      const ea=sg>0?-a1:-Math.PI+a1,ex=C.x+R*Math.cos(ea),ey=C.y+R*Math.sin(ea),ta=ea+(sg>0?-Math.PI/2:Math.PI/2);
+      ctx.fillStyle='#BA7517';ctx.beginPath();ctx.moveTo(ex+7*Math.cos(ta),ey+7*Math.sin(ta));ctx.lineTo(ex+5*Math.cos(ta+2.2),ey+5*Math.sin(ta+2.2));ctx.lineTo(ex+5*Math.cos(ta-2.2),ey+5*Math.sin(ta-2.2));ctx.fill();
+      halo('M = '+trF(TR.F*r)+' N·m',C.x,C.y-R-30,'#9a5f0f',FNT(800,13));
+    } else {
+      halo(TR.axe?'Force sur l’axe : M = 0':'Force en G : M = 0',C.x,C.y-Wp/2-22,'#c23b3a',FNT(800,13));
+    }
+  }
+  // légende des traces
+  if(TR.tr.length>8&&!TR.axe)halo('trajectoire de G : '+(r<1e-9?'droite, sans rotation':'droite, et la planche tourne autour de G'),12,H-14,'#0F6E56',FNT(700,12.5),'left');
+  if(TR.tr.length>8&&TR.axe)halo(r<1e-9?'rien ne bouge':'rotation autour de l’axe, G décrit un cercle',12,H-14,'#5b6b7d',FNT(700,12.5),'left');
+}
+(function(){const $=id=>document.getElementById(id),sv=$('tS'),fv=$('tF');
+  function upd(){TR.s=+sv.value;TR.F=+fv.value;
+    $('tSv').textContent=TR.axe?trF(Math.abs(TR.s))+' m de l’axe':(Math.abs(TR.s)<1e-9?'en G':trF(Math.abs(TR.s))+' m '+(TR.s<0?'à gauche':'à droite')+' de G');
+    $('tFv').textContent=trF(TR.F,1).replace(',0','')+' N';trReset();}
+  function setAxe(a){TR.axe=a;$('tLib').className='btn mode'+(a?'':' on');$('tAxe').className='btn mode'+(a?' on':'');
+    if(a){sv.min=0;sv.max=1.2;sv.value=1.0;$('tC').textContent='Pousser sur l’axe';}else{sv.min=-0.6;sv.max=0.6;sv.value=0.4;$('tC').textContent='Pousser au centre (G)';}upd();}
+  sv.addEventListener('input',upd);fv.addEventListener('input',upd);
+  $('tLib').addEventListener('click',()=>setAxe(false));$('tAxe').addEventListener('click',()=>setAxe(true));
+  $('tGo').addEventListener('click',trPush);$('tRe').addEventListener('click',trReset);
+  $('tC').addEventListener('click',()=>{sv.value=0;upd();trPush();});
+  window.trReset=trReset;window.__trans={TR,push:trPush,setAxe,set:(s,F)=>{sv.value=s;if(F)fv.value=F;upd();}};
+})();
+</script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (()=>{
@@ -470,8 +626,8 @@ const box=document.getElementById('door');
 if(!window.THREE){box.insertAdjacentHTML('beforeend','<div class="d-err">Impossible de charger la 3D (three.js). Vérifie la connexion internet.</div>');return;}
 const $=id=>document.getElementById(id);
 const W_DOOR=0.9, H_DOOR=2.05, T_DOOR=0.045, MASS=20, I=MASS*W_DOOR*W_DOOR/3;   // porte pleine : I = mL²/3
-const C_DAMP=6, K_CLOSE=2.2, PHI_MAX=1.75;                                          // frottement des gonds, ferme-porte
-let F=30, alphaDeg=90, phi=0, omega=0, pushing=false, pushT=0;
+const C_DAMP=6, M_SEUIL=9, K_CLOSE=2.2, PHI_MAX=1.75;                                          // frottement des gonds, ferme-porte
+let F=30, alphaDeg=90, phi=0, omega=0, pushing=false, pushT=0, resist=true;
 let hit=null;   // {x,y,side} point d'application en repère porte
 
 // ---------- scène ----------
@@ -540,6 +696,12 @@ function forceDir(){ // direction de la force dans le repère porte
   const a=alphaDeg*Math.PI/180, nz=hit.side;          // normale de la face touchée (+z ou −z)
   return new THREE.Vector3(Math.cos(a),0,-nz*Math.sin(a)).normalize(); // composante le long de la porte (vers le bord libre) + poussée
 }
+function needTxt(g){   // force minimale pour ouvrir la porte fermée à cet endroit
+  if(g.d<0.005)return '<div class="sub" style="color:#c23b3a"><b>Sur l’axe : d = 0, donc M = F × 0 = 0.</b> Quelle que soit la force, la porte ne tourne pas : ce sont les charnières qui encaissent la poussée.</div>';
+  if(!resist)return '';
+  const Fmin=M_SEUIL/g.d, ok=F>=Fmin-1e-9;
+  return '<div class="sub">Pour l’ouvrir, il faut M ≥ '+M_SEUIL+' N·m, donc ici <b>F ≥ '+M_SEUIL+' / '+fmt(g.d)+' = '+(Fmin>=1000?'plus de 999':fmt(Fmin,0))+' N</b> '+(ok?'<b style="color:#0F6E56">✓ ta force suffit</b>':'<b style="color:#c23b3a">✗ ta force ne suffit pas : pousse plus loin des charnières</b>')+'</div>';
+}
 function geom(){ // r, d, M à partir du point touché
   const r=hit.x, dir=forceDir();
   const P=new THREE.Vector3(hit.x,hit.y,hit.side*(T_DOOR/2+0.002));
@@ -594,12 +756,16 @@ box.addEventListener('wheel',e=>{e.preventDefault();orb.r=Math.max(2.2,Math.min(
 
 // ---------- curseurs ----------
 const bindR=(id,set,fmt)=>{const s=$(id),o=$(id+'v');s.addEventListener('input',()=>{set(+s.value);o.textContent=fmt(+s.value);rebuild();});};
-bindR('dF',v=>F=v,v=>v+' N'); bindR('dA',v=>alphaDeg=v,v=>v+'°');
+bindR('dF',v=>F=v,v=>v+' N'); bindR('dA',v=>alphaDeg=v,v=>v+'°')
+$('dRes').addEventListener('change',e=>{resist=e.target.checked;});
+const pousse=x=>{hit={x,y:1.0,side:1};pushing=false;pushT=0;rebuild();};
+$('dP1').addEventListener('click',()=>pousse(0.75)); $('dP2').addEventListener('click',()=>pousse(0.15)); $('dP3').addEventListener('click',()=>pousse(0));;
 
 // ---------- étiquettes projetées ----------
 const proj=(v,el)=>{const p=v.clone().applyMatrix4(door.matrixWorld).project(cam);
   const vis=p.z<1&&Math.abs(p.x)<1.1&&Math.abs(p.y)<1.1;el.style.opacity=vis?1:0;
-  el.style.transform=`translate(${(p.x+1)/2*box.clientWidth}px,${(1-p.y)/2*box.clientHeight}px) translate(-50%,-50%)`;};
+  el._x=(p.x+1)/2*box.clientWidth;el._y=(1-p.y)/2*box.clientHeight;
+  el.style.transform=`translate(${el._x}px,${el._y}px) translate(-50%,-50%)`;};
 const fmt=(v,n=2)=>v.toFixed(n).replace('.',',');
 
 // ---------- boucle ----------
@@ -614,6 +780,8 @@ function loop(t){
   // dynamique de rotation : I·φ'' = M_poussée − c·φ' − k·φ
   let M=0;
   if(hit&&(pushing||pushT<0.25)){M=geom().torque;pushT+=dt;}
+  // résistance (loquet + ferme-porte) : la porte fermée ne démarre que si |M| atteint le seuil
+  if(resist&&Math.abs(phi)<0.01&&Math.abs(omega)<0.05&&Math.abs(M)<M_SEUIL){M=0;omega=0;phi=0;}
   const acc=(M-C_DAMP*omega-K_CLOSE*phi)/I;
   omega+=acc*dt; phi+=omega*dt;
   if(phi>PHI_MAX){phi=PHI_MAX;omega=Math.min(0,omega);} if(phi<-PHI_MAX){phi=-PHI_MAX;omega=Math.max(0,omega);}
@@ -627,9 +795,10 @@ function loop(t){
     proj(g.P.clone().sub(g.dir.clone().multiplyScalar(0.42+F/60*0.55)),lF);
     proj(g.Hx.clone().add(g.P).multiplyScalar(.5).add(new THREE.Vector3(0,0.09,0)),lR);
     proj(g.Hx.clone().add(g.foot).multiplyScalar(.5).add(new THREE.Vector3(0,-0.09,0)),lD); if(same)lD.style.opacity=0;
+    else if(Math.hypot(lR._x-lD._x,lR._y-lD._y)<30){lR.style.transform=`translate(${lR._x}px,${lD._y-26}px) translate(-50%,-50%)`;lD.style.transform=`translate(${lD._x}px,${lD._y+4}px) translate(-50%,-50%)`;}
     const Mabs=Math.abs(g.torque);
     $('dHud').innerHTML=`<div class="big"><b style="color:#9a5f0f">M</b> = <b style="color:#c23b3a">F</b> · <b style="color:#9a5f0f">d</b> = ${F} × ${fmt(g.d)} = <b>${fmt(Mabs,1)} N·m</b></div>
-      <div class="sub">d = r · sin α = ${fmt(g.r)} × sin ${alphaDeg}° · ouverture ${Math.round(Math.abs(phi)*180/Math.PI)}°${pushing?' · <b style="color:#c23b3a">tu pousses</b>':''}</div>`;
+      <div class="sub">d = r · sin α = ${fmt(g.r)} × sin ${alphaDeg}° · ouverture ${Math.round(Math.abs(phi)*180/Math.PI)}°${pushing?' · <b style="color:#c23b3a">tu pousses</b>':''}</div>`+needTxt(g);
   } else {[lF,lR,lD].forEach(e=>e.style.opacity=0);
     $('dHud').innerHTML='<div class="big"><b style="color:#9a5f0f">M</b> = <b style="color:#c23b3a">F</b> · <b style="color:#9a5f0f">d</b></div><div class="sub">Touche la porte pour la pousser : essaie près de la poignée, puis près des charnières.</div>';}
   renderer.render(scene,cam);

@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chaîne d’oscillateurs couplés · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH5">Ondes</a>›<b>Chaîne d’oscillateurs couplés</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Ondes</span><span class="sfa-chip free">Gratuit</span></div><h1>Chaîne d’oscillateurs couplés</h1><p>Des masses reliées par des ressorts transmettent une perturbation de proche en proche : c’est le modèle qui mène à l’équation des ondes, avec c = δx·√(k/m).</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:58vh;min-height:470px;cursor:default" aria-label="Chaîne de masses reliées par des ressorts : une perturbation se propage le long de la chaîne"></canvas>
+
+<div class="fml" id="fml">Chaque masse est tirée par ses deux voisines : <b style="color:#185fa5">F₁ = −k(yᵢ − yᵢ₋₁)</b> et <b style="color:#a32d2d">F₂ = −k(yᵢ − yᵢ₊₁)</b>, donc <b>m·ÿᵢ = k(yᵢ₊₁ − 2yᵢ + yᵢ₋₁)</b>. Quand δx est petit, le membre de droite vaut ≈ k·δx²·∂²y/∂x² : on obtient l’<b>équation des ondes</b> ∂²y/∂t² = c²·∂²y/∂x², avec <b>c = δx·√(k/m)</b>.</div>
+
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#BA7517">k &nbsp;raideur</span>
+  <input type="range" id="sK" min="2" max="50" step="1" value="20" style="accent-color:#BA7517;">
+  <span class="val" id="vK" style="color:#BA7517"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#3d4a57">m &nbsp;masse</span>
+  <input type="range" id="sM" min="10" max="200" step="5" value="50" style="accent-color:#5b6b7d;">
+  <span class="val" id="vM" style="color:#3d4a57"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#0F6E56">δx &nbsp;écart entre masses</span>
+  <input type="range" id="sX" min="1" max="4" step="0.5" value="2" style="accent-color:#1D9E75;">
+  <span class="val" id="vX" style="color:#0F6E56"></span>
+</div>
+<div class="row">
+  <span class="pill">Source</span>
+  <button class="btn" id="eP" style="font-weight:800">▶ Impulsion</button>
+  <button class="btn" id="eS">Sinus continu</button>
+  <span class="pill" style="color:#534AB7">f</span>
+  <input type="range" id="sF" min="0.2" max="3" step="0.1" value="0.8" style="accent-color:#534AB7;max-width:180px">
+  <span class="val" id="vF" style="color:#534AB7"></span>
+  <button class="btn" id="eStop">Arrêter la source</button>
+</div>
+<div class="row">
+  <span class="pill">Bout droit</span>
+  <button class="btn on" id="bFix">fixé</button>
+  <button class="btn" id="bLib">libre</button>
+  <button class="btn" id="bAbs">absorbant (pas de réflexion)</button>
+  <button class="btn" id="slow">Ralenti ×0,25</button>
+  <button class="btn" id="re">Recommencer</button>
+  <button class="btn" id="lab">Masquer les écritures</button>
+</div>
+<div class="row"><span class="hint">Clique une masse pour voir les deux forces qu’elle subit · attrape la première masse (à gauche) pour secouer la chaîne à la main.</span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const INK='#3d3d3a',BLUE_D='#185fa5',RED='#E24B4A',RED_D='#a32d2d',VIO='#534AB7',GREEN='#1D9E75',GREEN_D='#0F6E56',AX='#c8ccd0',GREY='#9aa0a6',ORANGE='#BA7517';
+const FT='600 13px Mulish,system-ui,sans-serif',FS='600 11.5px Mulish,system-ui,sans-serif',FB='800 13.5px Mulish,system-ui,sans-serif';
+const $=id=>document.getElementById(id), fr=(v,d)=>v.toFixed(d).replace('.',',');
+const LEN=0.8, A0=0.02;                 // longueur de chaîne (m), amplitude de la source (m)
+let k=20,m=0.05,dx=0.02,N=40,y=[],v=[],t=0,src='none',tl=0,f=0.8,end='fix',slow=false,noLab=false,sel=12,hand=null,rel=0;
+const w0=()=>Math.sqrt(k/m), c=()=>dx*w0(), tau=()=>4/w0(), fmax=()=>w0()/Math.PI;
+function reset(){N=Math.round(LEN/dx);y=new Array(N+2).fill(0);v=new Array(N+2).fill(0);t=0;src='none';sel=Math.min(sel,N);}
+function y0(tt){if(hand!==null)return hand;if(src==='pulse'){const s=(tt-tl-2*tau())/tau();return A0*Math.exp(-s*s);}if(src==='rel'){return rel*Math.exp(-(tt-tl)/tau());}if(src==='sin'){const s=tt-tl;return A0*Math.sin(2*Math.PI*f*s)*Math.min(1,s*f);}return 0;}
+function step(h){
+  y[0]=y0(t);
+  if(end==='fix')y[N+1]=0;else if(end==='lib')y[N+1]=y[N];
+  for(let i=1;i<=N;i++){let a;
+    if(i===N&&end==='abs'){a=(k*(y[i-1]-y[i])-Math.sqrt(k*m)*v[i])/m;}   // amortisseur adapté : l'onde est absorbée
+    else a=k*(y[i+1]-2*y[i]+y[i-1])/m;
+    v[i]+=a*h;}
+  for(let i=1;i<=N;i++)y[i]+=v[i]*h;
+  t+=h;}
+let W=0,H=0,dpr=1;
+function size(){const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.round(b.width)||700,h=Math.round(b.height)||470;if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);}
+function tag(s,x,yy,col,font,al){if(noLab)return;ctx.font=font||FT;ctx.textAlign=al||'center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.strokeText(s,x,yy);ctx.fillStyle=col;ctx.fillText(s,x,yy);ctx.textBaseline='alphabetic';}
+function arrowV(x,y1,y2,col){if(Math.abs(y2-y1)<3)return;const s=Math.sign(y2-y1);ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,y1);ctx.lineTo(x,y2-s*7);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y2);ctx.lineTo(x-5,y2-s*9);ctx.lineTo(x+5,y2-s*9);ctx.closePath();ctx.fill();}
+function spring(x1,y1,x2,y2,col){const n=7,L=Math.hypot(x2-x1,y2-y1);if(L<2){return;}const ux=(x2-x1)/L,uy=(y2-y1)/L,amp=Math.min(5,Math.max(2.5,10-L*0.05));
+  ctx.strokeStyle=col;ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(x1,y1);for(let j=1;j<2*n;j++){const s=j/(2*n),o=(j%2?1:-1)*amp;ctx.lineTo(x1+ux*L*s-uy*o,y1+uy*L*s+ux*o);}ctx.lineTo(x2,y2);ctx.stroke();}
+function G(){const L=70,R=W-40,cy=H*0.5,sx=(R-L)/(N+1),sy=Math.min(H*0.32,140)/A0;return{L,R,cy,sx,sy,X:i=>L+i*sx,Y:yy=>cy-yy*sy};}
+let last=performance.now();
+function frame(now){
+  size();let dt=Math.min(.04,(now-last)/1000);last=now;if(slow)dt*=0.25;
+  const h=0.04/w0(),n=Math.max(1,Math.ceil(dt/h));for(let q=0;q<n;q++)step(dt/n);
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  const g=G();
+  // axe x
+  ctx.strokeStyle=AX;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(g.L-30,g.cy);ctx.lineTo(g.R+20,g.cy);ctx.stroke();
+  tag('x',g.R+26,g.cy+12,GREY,FS);tag('y (déplacements agrandis)',g.L-30,24,GREY,FS,'left');
+  // repère « prévu par c »
+  if(src==='pulse'){const xs=c()*(t-tl-2*tau());if(xs>0&&xs<(N+1)*dx){const X=g.L+xs/dx*g.sx;ctx.strokeStyle=VIO;ctx.setLineDash([6,5]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X,g.cy-g.sy*A0*1.35);ctx.lineTo(X,g.cy+g.sy*A0*0.5);ctx.stroke();ctx.setLineDash([]);
+    tag('sommet prévu : x = c·t',X,g.cy-g.sy*A0*1.35-12,VIO,FS);}}
+  // ressorts
+  for(let i=0;i<=N;i++){if(i===N&&end!=='fix')break;spring(g.X(i),g.Y(y[i]),g.X(i+1),g.Y(y[i+1]),i===sel-1||i===sel?'#7a8796':'#aab4bf');}
+  // bout droit
+  const xr=g.X(N+1);if(end==='fix'){ctx.fillStyle='#5b6b7d';ctx.fillRect(xr-3,g.cy-30,6,60);for(let j=-28;j<30;j+=8){ctx.strokeStyle='#5b6b7d';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(xr+3,g.cy+j);ctx.lineTo(xr+10,g.cy+j-6);ctx.stroke();}tag('fixé',xr,g.cy+44,GREY,FS);}
+  else if(end==='abs'){ctx.fillStyle='rgba(83,74,183,.12)';ctx.fillRect(g.X(N)-6,g.cy-g.sy*A0*1.2,26,g.sy*A0*2.4);tag('absorbant',g.X(N)+7,g.cy+g.sy*A0*1.2+12,VIO,FS);}
+  else tag('libre',g.X(N),g.cy+g.sy*A0+28,GREY,FS);
+  // masses
+  const ms=Math.max(6,Math.min(16,g.sx*0.6));
+  for(let i=1;i<=N;i++){const X=g.X(i),Y=g.Y(y[i]);ctx.fillStyle=i===sel?'#e7f6ef':'#d7dde4';ctx.strokeStyle=i===sel?GREEN_D:'#4d5966';ctx.lineWidth=i===sel?2.5:1.5;ctx.fillRect(X-ms/2,Y-ms/2,ms,ms);ctx.strokeRect(X-ms/2,Y-ms/2,ms,ms);
+    if(ms>=13&&!noLab){ctx.font='700 10px Mulish,system-ui,sans-serif';ctx.fillStyle='#4d5966';ctx.textAlign='center';ctx.fillText('m',X,Y+3.5);}}
+  // source (main)
+  const X0=g.X(0),Y0=g.Y(y[0]);ctx.fillStyle=hand!==null?'#534AB7':'#8a7fd6';ctx.beginPath();ctx.roundRect(X0-11,Y0-11,22,22,5);ctx.fill();tag('source',X0,Y0+26,VIO,FS);
+  // forces sur la masse choisie
+  if(sel>=1&&sel<=N){const X=g.X(sel),Y=g.Y(y[sel]),yl=y[sel-1],yr=(sel===N&&end!=='fix')?(end==='lib'?y[N]:y[sel]):y[sel+1];
+    const F1=k*(yl-y[sel]),F2=k*(yr-y[sel]),fs=Math.min(H*0.18,90)/(k*A0*0.6);
+    arrowV(X-6,Y,Y-F1*fs,BLUE_D);arrowV(X+6,Y,Y-F2*fs,RED_D);
+    if(Math.abs(F1*fs)>8)tag('F₁',X-20,Y-F1*fs*0.6,BLUE_D,FB);if(Math.abs(F2*fs)>8)tag('F₂',X+22,Y-F2*fs*0.6,RED_D,FB);}
+  info();requestAnimationFrame(frame);
+}
+function info(){
+  const i=sel,yl=y[i-1],yr=(i===N&&end!=='fix')?(end==='lib'?y[N]:y[i]):y[i+1],F1=k*(yl-y[i]),F2=k*(yr-y[i]),cm=v=>fr(v*100,2);
+  let h='<b>c = δx·√(k/m) = '+fr(dx,2)+' × √('+k+' / '+fr(m,3)+') = '+fr(c(),2)+' m/s</b> · la chaîne ('+fr((N+1)*dx,2)+' m, '+N+' masses) est traversée en '+fr((N+1)*dx/c(),2)+' s';
+  h+='<br>Masse n° '+i+' : y = '+cm(y[i])+' cm · F₁ = k(y<sub>'+(i-1)+'</sub> − y<sub>'+i+'</sub>) = '+fr(F1,3)+' N · F₂ = k(y<sub>'+(i+1)+'</sub> − y<sub>'+i+'</sub>) = '+fr(F2,3)+' N ⇒ <b>m·ÿ = F₁ + F₂ = '+fr(F1+F2,3)+' N</b>';
+  if(src==='sin'){h+='<br>Sinus : λ = c/f = '+fr(c()/f,2)+' m, soit '+fr(c()/f/dx,1)+' masses par longueur d’onde.';if(f>fmax())h+=' <b style="color:#a32d2d">f dépasse la fréquence maximale de la chaîne f<sub>max</sub> = √(k/m)/π = '+fr(fmax(),2)+' Hz : l’onde ne se propage plus.</b>';}
+  h+='<br>À essayer : quadruple k, et c double. Quadruple m, et c est divisé par deux. Avec le bout fixé, l’impulsion revient <b>retournée</b> ; avec le bout libre, elle revient <b>du même côté</b>.';
+  $('info').innerHTML=h;}
+function sync(){k=+$('sK').value;m=+$('sM').value/1000;const ndx=+$('sX').value/100,ch=ndx!==dx;dx=ndx;f=+$('sF').value;
+  $('vK').textContent=k+' N/m';$('vM').textContent=Math.round(m*1000)+' g';$('vX').textContent=fr(dx*100,1)+' cm';$('vF').textContent=fr(f,1)+' Hz';if(ch)reset();}
+['sK','sM','sX','sF'].forEach(id=>$(id).addEventListener('input',sync));sync();reset();
+const ends={bFix:'fix',bLib:'lib',bAbs:'abs'};Object.keys(ends).forEach(id=>$(id).onclick=()=>{end=ends[id];Object.keys(ends).forEach(j=>$(j).classList.toggle('on',j===id));});
+$('eP').onclick=()=>{src='pulse';tl=t;$('eS').classList.remove('on');};
+$('eS').onclick=()=>{src='sin';tl=t;$('eS').classList.add('on');};
+$('eStop').onclick=()=>{src='none';$('eS').classList.remove('on');};
+$('re').onclick=()=>{reset();$('eS').classList.remove('on');};
+$('slow').onclick=()=>{slow=!slow;$('slow').classList.toggle('on',slow);};
+$('lab').onclick=()=>{noLab=!noLab;$('lab').textContent=noLab?'Afficher les écritures':'Masquer les écritures';$('lab').classList.toggle('on',noLab);};
+const pos=e=>{const b=cv.getBoundingClientRect(),q=e.touches?e.touches[0]:e;return{x:q.clientX-b.left,y:q.clientY-b.top};};
+cv.addEventListener('pointerdown',e=>{const p=pos(e),g=G();
+  if(Math.hypot(p.x-g.X(0),p.y-g.Y(y[0]))<24){src='none';$('eS').classList.remove('on');hand=Math.max(-A0*1.3,Math.min(A0*1.3,(g.cy-p.y)/g.sy));cv.setPointerCapture(e.pointerId);return;}
+  const i=Math.round((p.x-g.L)/g.sx);if(i>=1&&i<=N)sel=i;});
+cv.addEventListener('pointermove',e=>{const p=pos(e),g=G();if(hand!==null)hand=Math.max(-A0*1.3,Math.min(A0*1.3,(g.cy-p.y)/g.sy));cv.style.cursor=Math.hypot(p.x-g.X(0),p.y-g.Y(y[0]))<24||hand!==null?'ns-resize':'pointer';});
+cv.addEventListener('pointerup',()=>{if(hand!==null){rel=hand;src='rel';tl=t;}hand=null;});
+window.__ch={get:()=>({k,m,dx,N,c:c(),t,y:y.slice()}),pulse:()=>$('eP').click(),setEnd:e=>$({fix:'bFix',lib:'bLib',abs:'bAbs'}[e]).click()};
+requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Ondes, interférences et diffraction<span>12 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Onde-progressive/"><i>01</i>Onde progressive</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Fonction-d-onde-f-x-vt-/"><i>02</i>Fonction d'onde f(x − vt)</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Relation-v-f/"><i>03</i>Relation v = λf</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Onde-progressive-et-Onde-stationnaire/"><i>04</i>Onde progressive et stationnaire</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/diffraction/"><i>05</i>Diffraction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/yung/"><i>06</i>Fentes de Young</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/effet-de-battement/"><i>07</i>Battements</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Doppler/"><i>08</i>Effet Doppler</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/son-decibels/"><i>09</i>Son : intensité et décibels</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/longueur-onde-periode/"><i>10</i>Longueur d’onde ou période ?</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/interferences-deux-sources/"><i>11</i>Interférences de deux sources</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/chaine-oscillateurs/"><i>12</i>Chaîne d’oscillateurs couplés</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

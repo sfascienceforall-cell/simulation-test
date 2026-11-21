@@ -214,11 +214,17 @@ SFA.sim({
   id: "p6-c07-tuyau", ch: "c07", tag: "Instruments",
   titre: "Tuyau sonore : ouvert ou fermé, fondamental et harmoniques",
   resume: "Flûte, orgue, clarinette : f = n·v/(2L) pour un tuyau ouvert ; f = (2k−1)·v/(4L) pour un tuyau fermé. Étire le tuyau à la main et accorde-le.",
-  but: "Choisis le type de tuyau et le mode, puis tire la poignée rouge pour changer la longueur L. Les particules d'air vibrent : ventres de déplacement aux extrémités ouvertes, nœud à l'extrémité fermée. Lance le défi pour accorder le tuyau sur une note.",
+  but: "Choisis le type de tuyau et le mode, puis tire la bague rouge (ou glisse n'importe où sur le tuyau) pour changer la longueur L. Les particules d'air vibrent : ventres de déplacement aux extrémités ouvertes, nœud à l'extrémité fermée. Lance le défi pour accorder le tuyau sur une note.",
   aRetenir: "L'air du tuyau vibre en onde stationnaire. Tuyau ouvert aux deux bouts : ventre de déplacement aux deux bouts, f_n = n·v/(2L), tous les harmoniques. Tuyau fermé à un bout : nœud au bout fermé, f = (2k−1)·v/(4L), harmoniques impairs seulement, fondamental une octave plus bas. La vitesse du son dépend de la température : v ≈ 331 + 0,6·θ (m/s, θ en °C).",
   piege: "À longueur égale, le tuyau fermé est une octave plus grave que l'ouvert. Et un instrument à vent se désaccorde quand il chauffe : v augmente donc f aussi. Modèle : correction de bout négligée (en réalité l'extrémité ouverte se comporte comme un tuyau un peu plus long).",
   build: function(k, S){
-    var c = k.canvas(300), P = S.draw.palette, Pm = window.PH6;
+    var P = S.draw.palette, Pm = window.PH6;
+    function rcv(desk, phone){
+      var cv = k.canvas(0, {ratio: desk});
+      Object.defineProperty(cv, "ratio", {get: function(){ var w = cv.cv.parentNode ? cv.cv.parentNode.clientWidth : 600; return w < 460 ? phone : desk; }, configurable: true});
+      cv.resize(); return cv;
+    }
+    var c = rcv(0.66, 0.92);
     var typ = k.seg("Tuyau", [["o", "Ouvert aux 2 bouts"], ["f", "Fermé à un bout"]], "o");
     var L = k.slider("Longueur L", 0.1, 2, 0.05, 1, "m");
     var th = k.slider("Température de l'air", -10, 40, 1, 20, "°C");
@@ -228,44 +234,80 @@ SFA.sim({
     var ro = k.readouts(["Vitesse du son v", "Fréquence du mode", "Longueur d'onde du mode", "Fondamental"]);
     var nt = k.note("", "ok");
     var lp = k.loop(function(dt){ t += dt; k.redraw(); }); lp.play();
+    /* molécules d'air : positions de repos tirées une fois */
+    var seed = 99, mol = [];
+    function rnd(){ seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+    for (var i = 0; i < 260; i++) mol.push({u: rnd(), y: rnd() * 1.7 - 0.85, p: rnd() * 6.28, s: 0.8 + rnd() * 0.4});
     function noteName(f){ var NN = ["do", "do♯", "ré", "ré♯", "mi", "fa", "fa♯", "sol", "sol♯", "la", "la♯", "si"], m = Math.round(69 + 12 * Math.log(f / 440) / Math.LN2), cents = Math.round(1200 * Math.log(f / (440 * Math.pow(2, (m - 69) / 12))) / Math.LN2); return NN[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1) + (cents ? " " + (cents > 0 ? "+" : "−") + Math.abs(cents) + "¢" : ""); }
+    /* longueur dessinée : 30 % de la place pour 0,1 m, 100 % pour 2 m (la règle donne la vraie longueur) */
+    function Lpx(Lm){ return geo.av * (0.3 + 0.7 * (Lm - 0.1) / 1.9); }
     c.cv.style.touchAction = "none"; c.cv.style.cursor = "ew-resize";
-    c.pointer(function(tp, p){ if ((tp === "down" || tp === "drag") && geo.u){ L.set(Math.round(Math.max(0.1, Math.min(2, (p.x - geo.x0) / geo.u)) / 0.05) * 0.05); } });
+    c.pointer(function(tp, p){ if ((tp === "down" || tp === "drag") && geo.av){ var r = (p.x - geo.x0) / geo.av, Lm = 0.1 + (r - 0.3) / 0.7 * 1.9; L.set(Math.round(Math.max(0.1, Math.min(2, Lm)) / 0.05) * 0.05); } });
     k.draw(function(){
-      c.clear(); Pm.bg(c); var ctx = c.ctx, W = c.W, H = c.H, v = 331.3 + 0.606 * th.value, open = typ.value === "o", j = parseInt(md.value, 10);
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, ph = W < 460, v = 331.3 + 0.606 * th.value, open = typ.value === "o", j = parseInt(md.value, 10);
       var n = open ? j : 2 * j - 1, f = open ? n * v / (2 * L.value) : n * v / (4 * L.value), lam = v / f, f1 = open ? v / (2 * L.value) : v / (4 * L.value);
-      var x0 = 30, uMax = W - 78, u = uMax / 2.0; geo.u = u; geo.x0 = x0;   /* px par mètre : échelle fixe pour voir la longueur changer */
-      var x1 = x0 + L.value * u, cy = 84, h = 30, w = 2 * Math.PI * 0.8 * t;
-      /* tube : paroi métallique et intérieur */
-      var gi = ctx.createLinearGradient(0, cy - h, 0, cy + h); gi.addColorStop(0, "#eef3fb"); gi.addColorStop(1, "#dbe5f3");
+      var x0 = ph ? 26 : 34; geo.x0 = x0; geo.av = W - x0 - (ph ? 34 : 50);
+      var x1 = x0 + Lpx(L.value), cy = Math.round(H * (ph ? 0.33 : 0.36)), h = Math.round(H * (ph ? 0.12 : 0.15)), w = 2 * Math.PI * 0.8 * t, re = h * 0.28;
+      /* salle de musique : boiseries, plancher */
+      var bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#f6efe4"); bg.addColorStop(0.7, "#eadcc6"); bg.addColorStop(0.7, "#b8875a"); bg.addColorStop(1, "#8f6440"); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = "rgba(140,100,60,.16)"; ctx.lineWidth = 2; for (var px = 40; px < W; px += 90){ ctx.strokeRect(px - 30, 14, 64, H * 0.7 - 34); }
+      ctx.strokeStyle = "rgba(60,35,15,.18)"; ctx.lineWidth = 1; for (var fy = H * 0.7 + 10; fy < H; fy += 12){ ctx.beginPath(); ctx.moveTo(0, fy); ctx.lineTo(W, fy); ctx.stroke(); }
+      /* ombre du tuyau */
+      ctx.fillStyle = "rgba(60,35,15,.13)"; ctx.beginPath(); ctx.ellipse((x0 + x1) / 2, cy + h + 16, (x1 - x0) / 2 + 10, 6, 0, 0, 7); ctx.fill();
+      /* ondes sonores qui sortent des bouts ouverts */
+      var ends = open ? [[x0, -1], [x1, 1]] : [[x1, 1]];
+      ends.forEach(function(e){ for (var q = 0; q < 3; q++){ var ph2 = ((t * 0.8 + q / 3) % 1), r = re + 6 + ph2 * (ph ? 30 : 46); ctx.strokeStyle = "rgba(196,58,122," + (0.55 * (1 - ph2)) + ")"; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.ellipse(e[0], cy, r * 0.75, h + r * 0.5, 0, e[1] > 0 ? -1.1 : Math.PI - 1.1, e[1] > 0 ? 1.1 : Math.PI + 1.1); ctx.stroke(); } });
+      /* intérieur du tuyau (verre) */
+      var gi = ctx.createLinearGradient(0, cy - h, 0, cy + h); gi.addColorStop(0, "#e9f1fb"); gi.addColorStop(0.5, "#f8fbff"); gi.addColorStop(1, "#d3e0f0");
       ctx.fillStyle = gi; ctx.fillRect(x0, cy - h, x1 - x0, 2 * h);
-      /* densité (pression) : bandes colorées sous le tube */
-      var amp = 13;
+      /* surpression (rouge) / dépression (bleu) */
       function xi(uu){ return open ? Math.cos(n * Math.PI * uu) : Math.sin(n * Math.PI * uu / 2); }
       function dxi(uu){ return open ? -n * Math.PI * Math.sin(n * Math.PI * uu) : n * Math.PI / 2 * Math.cos(n * Math.PI * uu / 2); }
-      var nb = 90; for (var a = 0; a < nb; a++){ var u0 = a / nb, pr = -dxi(u0) * Math.cos(w) * 0.34, al = Math.min(0.55, Math.abs(pr) * 0.55); ctx.fillStyle = pr > 0 ? "rgba(192,50,29," + al + ")" : "rgba(31,75,158," + al + ")"; ctx.fillRect(x0 + u0 * (x1 - x0), cy - h, (x1 - x0) / nb + 0.6, 2 * h); }
-      Pm.metal(c, x0 - 2, cy - h - 7, x1 - x0 + 4, 8, 3, "#9aa6b8"); Pm.metal(c, x0 - 2, cy + h - 1, x1 - x0 + 4, 8, 3, "#9aa6b8");
-      if (!open) Pm.metal(c, x0 - 10, cy - h - 7, 12, 2 * h + 16, 4, "#6b7686");
-      /* particules d'air */
-      for (var q = 0; q <= 44; q++){ var uq = q / 44; for (var b = -1; b <= 1; b++){ var px = x0 + uq * (x1 - x0) + amp * xi(uq) * Math.cos(w), py = cy + b * 18; ctx.fillStyle = "rgba(19,35,58,.6)"; ctx.beginPath(); ctx.arc(px, py, 2, 0, 7); ctx.fill(); } }
-      /* enveloppe du déplacement */
-      ctx.strokeStyle = P.green; ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath();
-      for (var i = 0; i <= 200; i++){ var uu = i / 200, yy = cy + h + 26 - 18 * Math.abs(xi(uu)); if (i) ctx.lineTo(x0 + uu * (x1 - x0), yy); else ctx.moveTo(x0 + uu * (x1 - x0), yy); } ctx.stroke(); ctx.setLineDash([]);
-      S.draw.line(c, x0, cy + h + 26, x1, cy + h + 26, "#d5dce6", 1);
-      /* ventres et nœuds */
-      for (var m2 = 0; m2 <= (open ? n : n); m2++){ /* repères selon le mode */ }
-      var marks = []; for (var s2 = 0; s2 <= 2 * n + 0.001; s2++){ var uu2 = open ? s2 / (2 * n) * 1 : s2 / (2 * n) * 1; if (uu2 > 1.0001) break; var isV = Math.abs(xi(uu2)) > 0.99; marks.push([uu2, isV]); }
-      marks.forEach(function(mk){ S.draw.dot(c, x0 + mk[0] * (x1 - x0), cy + h + 26 - (mk[1] ? 18 : 0), 3.6, mk[1] ? P.green : P.red); });
-      /* poignée de longueur */
-      S.draw.arrow(c, x1 + 4, cy, x1 + 26, cy, P.red, 3); S.draw.arrow(c, x1 - 4, cy, x1 - 26, cy, P.red, 3);
-      S.draw.dot(c, x1, cy, 8, P.red);
-      S.draw.line(c, x0, cy - h - 20, x1, cy - h - 20, P.ink, 1.5); S.draw.line(c, x0, cy - h - 25, x0, cy - h - 15, P.ink, 1.5); S.draw.line(c, x1, cy - h - 25, x1, cy - h - 15, P.ink, 1.5);
-      S.draw.label(c, "L = " + S.fmt(L.value, 2) + " m", (x0 + x1) / 2, cy - h - 38, {color: P.ink, size: 12});
-      S.draw.text(c, open ? "ventre" : "nœud (fermé)", x0 + (open ? 0 : 0), cy + h + 54, {size: 11.5, color: open ? P.green : P.red, align: "left"});
-      S.draw.text(c, "● ventre de déplacement   ● nœud", W - 10, cy + h + 54, {size: 11, color: P.grey, align: "right"});
-      /* afficheur */
-      S.draw.display(c, S.fmt(f, 0) + " Hz", 78, H - 50, {w: 128, h: 54, caption: "FRÉQUENCE · " + noteName(f), size: 22});
-      if (goal){ var ok = Math.abs(f / goal[1] - 1) < 0.015; S.draw.display(c, S.fmt(goal[1], 0) + " Hz", W - 78, H - 50, {w: 128, h: 54, caption: "CIBLE · " + goal[0], size: 22, color: ok ? P.green : P.ink}); }
+      var nb = 90; for (var a = 0; a < nb; a++){ var u0 = (a + 0.5) / nb, pr = -dxi(u0) * Math.cos(w) * 0.34, al = Math.min(0.42, Math.abs(pr) * 0.42); ctx.fillStyle = pr > 0 ? "rgba(192,50,29," + al + ")" : "rgba(31,75,158," + al + ")"; ctx.fillRect(x0 + a / nb * (x1 - x0), cy - h, (x1 - x0) / nb + 0.6, 2 * h); }
+      /* molécules : elles oscillent autour de leur position de repos */
+      var amp = Math.min(ph ? 11 : 15, (x1 - x0) / n * 0.12), rM = ph ? 2.6 : 3.3;
+      mol.forEach(function(m){
+        var bx = x0 + m.u * (x1 - x0), mx = bx + amp * xi(m.u) * Math.cos(w) + Math.cos(t * 3 + m.p) * 0.8, my = cy + m.y * (h - 5) + Math.sin(t * 2.6 + m.p) * 0.8;
+        if (mx < x0 + 2 || mx > x1 - 2) return;
+        ctx.fillStyle = "#2b4f86"; ctx.beginPath(); ctx.arc(mx, my, rM * m.s, 0, 7); ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,.7)"; ctx.beginPath(); ctx.arc(mx - rM * 0.35, my - rM * 0.35, rM * 0.35, 0, 7); ctx.fill();
+      });
+      /* reflets du verre et paroi métallique */
+      ctx.fillStyle = "rgba(255,255,255,.45)"; ctx.fillRect(x0, cy - h + 5, x1 - x0, h * 0.18);
+      Pm.metal(c, x0 - 2, cy - h - 8, x1 - x0 + 4, 9, 4, "#b9a66b"); Pm.metal(c, x0 - 2, cy + h - 1, x1 - x0 + 4, 9, 4, "#b9a66b");
+      /* extrémités : anneau ouvert ou bouchon */
+      function ring(x, closed){
+        ctx.save(); ctx.beginPath(); ctx.ellipse(x, cy, re, h + 8, 0, 0, 7);
+        var gr = ctx.createLinearGradient(x - re, 0, x + re, 0); gr.addColorStop(0, "#8a7536"); gr.addColorStop(0.5, "#f1dd9a"); gr.addColorStop(1, "#8a7536");
+        if (closed){ ctx.fillStyle = gr; ctx.fill(); ctx.strokeStyle = "#5c4c1f"; ctx.lineWidth = 1.5; ctx.stroke(); S.draw.text(c, "fermé", x, cy + h + 22, {size: 10.5, color: P.red, weight: 800}); }
+        else { ctx.strokeStyle = gr; ctx.lineWidth = 6; ctx.stroke(); ctx.strokeStyle = "rgba(92,76,31,.6)"; ctx.lineWidth = 1; ctx.stroke(); }
+        ctx.restore();
+      }
+      ring(x0, !open); ring(x1, false);
+      /* bague rouge à tirer */
+      var gR = ctx.createLinearGradient(0, cy - h - 12, 0, cy + h + 12); gR.addColorStop(0, "#ef6a55"); gR.addColorStop(1, "#8f2414");
+      ctx.fillStyle = gR; S.draw.rrect(c, x1 - re - 12, cy - h - 12, 12, 2 * h + 24, 4); ctx.fill();
+      S.draw.arrow(c, x1 - re - 16, cy - h - 20, x1 - re - 38, cy - h - 20, P.red, 2.5); S.draw.arrow(c, x1 - re + 4, cy - h - 20, x1 - re + 26, cy - h - 20, P.red, 2.5);
+      /* cote L */
+      var yL = cy - h - (ph ? 34 : 40);
+      S.draw.line(c, x0, yL, x1, yL, P.ink, 1.5); S.draw.line(c, x0, yL - 5, x0, yL + 5, P.ink, 1.5); S.draw.line(c, x1, yL - 5, x1, yL + 5, P.ink, 1.5);
+      S.draw.label(c, "L = " + S.fmt(L.value, 2) + " m", (x0 + x1) / 2, yL, {color: P.ink, size: 12});
+      /* déplacement des molécules : enveloppe, ventres (verts) et nœuds (rouges) */
+      var yE = cy + h + (ph ? 46 : 54), hE = ph ? 16 : 20;
+      S.draw.line(c, x0, yE, x1, yE, "rgba(60,35,15,.25)", 1);
+      ctx.strokeStyle = P.green; ctx.lineWidth = 2.2; ctx.setLineDash([5, 4]);
+      [1, -1].forEach(function(sg){ ctx.beginPath(); for (var ii = 0; ii <= 200; ii++){ var uu = ii / 200, yy = yE - sg * hE * Math.abs(xi(uu)); if (ii) ctx.lineTo(x0 + uu * (x1 - x0), yy); else ctx.moveTo(x0 + uu * (x1 - x0), yy); } ctx.stroke(); });
+      ctx.setLineDash([]);
+      for (var s2 = 0; s2 <= 2 * n; s2++){ var uu2 = s2 / (2 * n); if (uu2 > 1.0001) break; var isV = Math.abs(xi(uu2)) > 0.99, xm = x0 + uu2 * (x1 - x0); if (isV || Math.abs(xi(uu2)) < 0.01) S.draw.dot(c, xm, yE, isV ? 5 : 4.5, isV ? P.green : P.red); }
+      ctx.font = "700 " + (ph ? 10 : 11) + "px Mulish, system-ui, sans-serif";
+      var t1 = "amplitude du déplacement de l'air :", lw1 = ctx.measureText(t1).width, lyy = yE + hE + 14, lx = ph ? x0 : Math.max(x0, W / 2 - (lw1 + 130) / 2);
+      S.draw.text(c, t1, lx, lyy, {size: ph ? 10 : 11, color: "#5a4128", align: "left", weight: 700}); lx += lw1 + 12;
+      [[P.green, "ventre"], [P.red, "nœud"]].forEach(function(q){ S.draw.dot(c, lx, lyy, 4, q[0]); S.draw.text(c, q[1], lx + 8, lyy, {size: ph ? 10 : 11, color: q[0], align: "left", weight: 800}); lx += 62; });
+      /* afficheurs */
+      var dw = ph ? 118 : 136, dh = ph ? 46 : 54, dy = H - dh / 2 - 10;
+      S.draw.display(c, S.fmt(f, 0) + " Hz", dw / 2 + 10, dy, {w: dw, h: dh, caption: "FRÉQUENCE · " + noteName(f), size: ph ? 18 : 22});
+      S.draw.text(c, "♪", dw + 26, dy, {size: 26, color: "rgba(196,58,122,.85)", weight: 700});
+      if (goal){ var ok = Math.abs(f / goal[1] - 1) < 0.015; S.draw.display(c, S.fmt(goal[1], 0) + " Hz", W - dw / 2 - 10, dy, {w: dw, h: dh, caption: "CIBLE · " + goal[0], size: ph ? 18 : 22, color: ok ? P.green : P.ink}); }
       var harm = []; for (var qq = 1; qq <= 4; qq++) harm.push(S.fmt(open ? qq * f1 : (2 * qq - 1) * f1, 0));
       ro.set(0, S.fmt(v, 1) + " m/s"); ro.set(1, S.fmt(f, 1) + " Hz (n = " + n + ")"); ro.set(2, S.fmt(lam, 3) + " m"); ro.set(3, S.fmt(f1, 1) + " Hz");
       if (goal){ var ok2 = Math.abs(f / goal[1] - 1) < 0.015; nt.set("<b>Défi :</b> joue " + goal[0] + " (" + S.fmt(goal[1], 0) + " Hz) à 1,5 % près. " + (ok2 ? "Accordé : L = " + S.fmt(L.value, 2) + " m en " + (open ? "tuyau ouvert" : "tuyau fermé") + ", mode " + md.value + "." : "Pour l'instant : " + S.fmt(f, 0) + " Hz. Astuce : f = n·v/(2L) (ouvert) ou n·v/(4L) (fermé)."), ok2 ? "ok" : "warn"); }
@@ -273,4 +315,3 @@ SFA.sim({
     });
   }
 });
-

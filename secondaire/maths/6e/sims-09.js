@@ -144,56 +144,170 @@ SFA.sim({
 SFA.sim({
   id:"m6-c09-monty-hall", ch:"c09", tag:"Paradoxe",
   titre:"Monty Hall : faut-il changer de porte ?",
-  resume:"Joue plusieurs parties, puis simule 1 000 parties : changer double les chances de gagner.",
-  but:"Derrière une porte : une voiture ; derrière les deux autres : des chèvres. Clique sur une porte, l'animateur en ouvre une avec une chèvre, puis tu gardes ou tu changes (clique sur la porte de ton choix). Ensuite lance une simulation de 1 000 parties.",
+  resume:"Le plateau du jeu : trois portes, une voiture, deux chèvres. Joue, puis regarde les scores « garder / changer » se remplir.",
+  but:"Derrière une porte : une voiture ; derrière les deux autres : des chèvres. Clique sur une porte, l'animateur en ouvre une avec une chèvre, puis tu gardes ou tu changes (clique sur la porte de ton choix). Lance ensuite les parties automatiques (une sur deux en gardant, une sur deux en changeant) ou simule 1 000 parties : les scores se remplissent en direct.",
   aRetenir:"Au départ, ta porte a 1 chance sur 3 d'être la bonne et les deux autres ensemble 2 chances sur 3. L'animateur sait où est la voiture et ouvre toujours une chèvre : ces 2/3 se concentrent sur la porte restante. Garder gagne dans 1/3 des cas, changer dans 2/3 des cas.",
   piege:"Ce n'est pas du 50/50 : les deux portes restantes ne sont pas équiprobables, parce que l'animateur n'ouvre pas une porte au hasard. L'information qu'il donne n'est pas symétrique.",
   build:function(k,S){
-    var c=M6.canvas(k,.88,380), P=S.draw.palette;
-    var st, rec={sw:[0,0],kp:[0,0]}, openA=[0,0,0], geo=null;
-    function newGame(){ st={phase:0,car:Math.floor(Math.random()*3),pick:-1,open:-1,final:-1}; openA=[0,0,0]; lp.play(); }
-    var lp=k.loop(function(dt){ var busy=false; for(var i=0;i<3;i++){ var want=(st.open===i||st.phase===2)?1:0, d=want-openA[i]; if(Math.abs(d)>0.001){ openA[i]+=Math.sign(d)*Math.min(Math.abs(d),dt*2.6); busy=true; } } k.redraw(); if(!busy) lp.pause(); });
+    var c=M6.canvas(k,.98,470), P=S.draw.palette;
+    var st, rec={sw:[0,0],kp:[0,0]}, openA=[0,0,0], geo=null, clock=0, confetti=[], auto={on:false,t:0,strat:true}, simQ=0, flash={kp:0,sw:0};
+    function lin(ctx,x0,y0,x1,y1,s){ var g=ctx.createLinearGradient(x0,y0,x1,y1); s.forEach(function(q){ g.addColorStop(q[0],q[1]); }); return g; }
+    function rr(x,y,w,h,r){ S.draw.rrect(c,x,y,w,h,r); }
+    function newGame(){ st={phase:0,car:Math.floor(Math.random()*3),pick:-1,open:-1,final:-1,tReveal:0,last:null}; openA=[0,0,0]; confetti=[]; }
+    function choose(i){ if(st.phase!==0) return; st.pick=i; var opts=[0,1,2].filter(function(j){return j!==i&&j!==st.car;}); st.open=opts[Math.floor(Math.random()*opts.length)]; st.phase=1; }
+    function decide(sw){ if(st.phase!==1) return; var other=[0,1,2].filter(function(j){return j!==st.pick&&j!==st.open;})[0]; st.final=sw?other:st.pick; st.phase=2; st.tReveal=0; var win=st.final===st.car; st.last={sw:sw,win:win};
+      if(sw){ rec.sw[1]++; if(win) rec.sw[0]++; flash.sw=1; } else { rec.kp[1]++; if(win) rec.kp[0]++; flash.kp=1; } }
+    function burst(i){ if(!geo) return; var g=geo[i]; for(var n=0;n<46;n++) confetti.push({x:g.x+g.w/2,y:g.y+g.h*0.35,vx:(Math.random()-0.5)*260,vy:-120-Math.random()*220,r:Math.random()*6.28,vr:(Math.random()-0.5)*12,c:["#f4c542","#c0321d","#2f7fd1","#24775a","#c43a7a","#ffffff"][n%6],life:1.8}); }
     newGame();
-    function choose(i){ if(st.phase!==0) return; st.pick=i; var opts=[0,1,2].filter(function(j){return j!==i&&j!==st.car;}); st.open=opts[Math.floor(Math.random()*opts.length)]; st.phase=1; lp.play(); }
-    function decide(sw){ if(st.phase!==1) return; var other=[0,1,2].filter(function(j){return j!==st.pick&&j!==st.open;})[0]; st.final=sw?other:st.pick; st.phase=2; var win=st.final===st.car; if(sw){ rec.sw[1]++; if(win) rec.sw[0]++; } else { rec.kp[1]++; if(win) rec.kp[0]++; } lp.play(); }
-    k.button("Garder ma porte",function(){decide(false);}); k.button("Changer de porte",function(){decide(true);}); k.button("Nouvelle partie",function(){newGame();},true);
-    k.button("Simuler 1 000 parties",function(){ for(var g=0;g<1000;g++){ var car=Math.floor(Math.random()*3), pick=Math.floor(Math.random()*3); rec.kp[1]++; if(pick===car) rec.kp[0]++; rec.sw[1]++; if(pick!==car) rec.sw[0]++; } });
-    k.button("Remettre les scores à zéro",function(){ rec={sw:[0,0],kp:[0,0]}; });
+    var lp=k.loop(function(dt){
+      clock+=dt; var sp=+speed.value;
+      /* ouverture des vantaux : la porte de l'animateur, puis le choix final, puis la dernière */
+      for(var i=0;i<3;i++){ var want=0; if(st.open===i) want=1; if(st.phase===2){ if(i===st.final&&st.tReveal>0.15) want=1; if(i!==st.final&&i!==st.open&&st.tReveal>0.75) want=1; }
+        var d=want-openA[i]; if(Math.abs(d)>0.001){ var was=openA[i]; openA[i]+=Math.sign(d)*Math.min(Math.abs(d),dt*2.4*Math.max(1,sp*0.8)); if(was<0.45&&openA[i]>=0.45&&i===st.car) burst(i); } }
+      if(st.phase===2) st.tReveal+=dt*Math.max(1,sp*0.8);
+      confetti.forEach(function(p){ p.vy+=380*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.vx*=0.985; p.r+=p.vr*dt; p.life-=dt; }); confetti=confetti.filter(function(p){ return p.life>0; });
+      flash.kp=Math.max(0,flash.kp-dt*1.5); flash.sw=Math.max(0,flash.sw-dt*1.5);
+      /* parties automatiques */
+      if(auto.on){ auto.t+=dt*sp;
+        if(st.phase===0&&auto.t>0.55) choose(Math.floor(Math.random()*3));
+        if(st.phase===1&&auto.t>1.7){ decide(auto.strat); }
+        if(st.phase===2&&auto.t>3.5){ newGame(); auto.t=0; auto.strat=!auto.strat; } }
+      /* 1 000 parties simulées : le score se remplit en direct */
+      if(simQ>0){ var m=Math.min(simQ,Math.max(1,Math.round(dt*420))); for(var gg=0;gg<m;gg++){ var car=Math.floor(Math.random()*3), pick=Math.floor(Math.random()*3); rec.kp[1]++; if(pick===car) rec.kp[0]++; rec.sw[1]++; if(pick!==car) rec.sw[0]++; } simQ-=m; flash.kp=flash.sw=0.6; }
+      k.redraw();
+    });
+    var speed;
+    var bAuto=k.button("▶ Parties automatiques",function(){ auto.on=!auto.on; if(auto.on){ newGame(); auto.t=0; } bAuto.textContent=auto.on?"❚❚ Arrêter les parties":"▶ Parties automatiques"; },true);
+    k.button("Garder ma porte",function(){ stopAuto(); decide(false); }); k.button("Changer de porte",function(){ stopAuto(); decide(true); });
+    k.button("Nouvelle partie",function(){ stopAuto(); newGame(); });
+    k.button("Simuler 1 000 parties",function(){ simQ+=1000; });
+    k.button("Remettre les scores à zéro",function(){ rec={sw:[0,0],kp:[0,0]}; simQ=0; });
+    speed=k.seg("Vitesse des parties automatiques",[[1,"×1"],[3,"×3"],[8,"×8"]],1);
+    function stopAuto(){ if(auto.on){ auto.on=false; bAuto.textContent="▶ Parties automatiques"; } }
     var ro=k.readouts(["Parties « garder »","Victoires « garder »","Parties « changer »","Victoires « changer »"]);
     var nt=k.note("","ok");
-    function goat(ctx,cx,cy,s){ ctx.save(); ctx.fillStyle="#f5f1e8"; ctx.strokeStyle="#8b7d62"; ctx.lineWidth=1.5; ctx.beginPath(); ctx.ellipse(cx,cy+s*0.1,s*0.4,s*0.24,0,0,6.2832); ctx.fill(); ctx.stroke();
-      [[-0.26,0.3],[-0.1,0.32],[0.12,0.32],[0.27,0.3]].forEach(function(l){ ctx.fillRect(cx+l[0]*s-s*0.025,cy+l[1]*s-s*0.04,s*0.05,s*0.25); }); ctx.beginPath(); ctx.arc(cx+s*0.42,cy-s*0.12,s*0.14,0,6.2832); ctx.fill(); ctx.stroke();
-      ctx.strokeStyle="#6b5d44"; ctx.lineWidth=2.2; ctx.beginPath(); ctx.moveTo(cx+s*0.4,cy-s*0.24); ctx.quadraticCurveTo(cx+s*0.36,cy-s*0.42,cx+s*0.5,cy-s*0.4); ctx.moveTo(cx+s*0.47,cy-s*0.23); ctx.quadraticCurveTo(cx+s*0.5,cy-s*0.38,cx+s*0.62,cy-s*0.33); ctx.stroke();
-      ctx.fillStyle="#13233a"; ctx.beginPath(); ctx.arc(cx+s*0.47,cy-s*0.14,s*0.022,0,6.2832); ctx.fill(); ctx.restore(); }
-    function carDraw(ctx,cx,cy,s){ ctx.save(); ctx.fillStyle=P.red; ctx.beginPath(); ctx.moveTo(cx-s*0.5,cy+s*0.12); ctx.lineTo(cx-s*0.5,cy-s*0.02); ctx.lineTo(cx-s*0.28,cy-s*0.06); ctx.lineTo(cx-s*0.14,cy-s*0.24); ctx.lineTo(cx+s*0.22,cy-s*0.24); ctx.lineTo(cx+s*0.36,cy-s*0.04); ctx.lineTo(cx+s*0.5,cy-s*0.0); ctx.lineTo(cx+s*0.5,cy+s*0.12); ctx.closePath(); ctx.fill();
-      ctx.fillStyle="#dbeafe"; ctx.beginPath(); ctx.moveTo(cx-s*0.2,cy-s*0.05); ctx.lineTo(cx-s*0.1,cy-s*0.2); ctx.lineTo(cx+s*0.2,cy-s*0.2); ctx.lineTo(cx+s*0.29,cy-s*0.05); ctx.closePath(); ctx.fill();
-      [-0.28,0.28].forEach(function(f){ ctx.fillStyle="#13233a"; ctx.beginPath(); ctx.arc(cx+f*s,cy+s*0.13,s*0.1,0,6.2832); ctx.fill(); ctx.fillStyle="#cbd5e1"; ctx.beginPath(); ctx.arc(cx+f*s,cy+s*0.13,s*0.04,0,6.2832); ctx.fill(); }); ctx.restore(); }
+    lp.play();
+    /* ---- dessins ---- */
+    function goat(ctx,cx,cy,s,t){ /* (cx, cy) = sol sous la chèvre ; s = largeur */
+      ctx.save(); ctx.translate(cx,cy); var u=s/100, chew=Math.sin(t*6)*1.2*u; ctx.lineCap="round"; ctx.lineJoin="round";
+      ctx.fillStyle="rgba(0,0,0,.25)"; ctx.beginPath(); ctx.ellipse(0,0,40*u,6*u,0,0,6.2832); ctx.fill();
+      ctx.strokeStyle="#b9ab8f"; ctx.lineWidth=7*u; [[-26,-2],[-14,2],[14,-2],[24,2]].forEach(function(l,i){ ctx.strokeStyle=i%2?"#cfc3a8":"#b9ab8f"; ctx.beginPath(); ctx.moveTo(l[0]*u,-30*u); ctx.lineTo((l[0]+l[1])*u,-3*u); ctx.stroke(); });
+      ctx.fillStyle="#4a3d2a"; [[-26,-2],[-14,2],[14,-2],[24,2]].forEach(function(l){ ctx.fillRect((l[0]+l[1]-4)*u,-5*u,8*u,5*u); });
+      var g=ctx.createRadialGradient(-6*u,-50*u,4*u,0,-40*u,40*u); g.addColorStop(0,"#ffffff"); g.addColorStop(1,"#d9cfba");
+      ctx.fillStyle=g; ctx.beginPath(); ctx.ellipse(0,-40*u,36*u,17*u,0,0,6.2832); ctx.fill();
+      ctx.fillStyle="#efe7d6"; ctx.beginPath(); ctx.moveTo(-34*u,-46*u); ctx.lineTo(-44*u,-56*u+Math.sin(t*9)*3*u); ctx.lineTo(-36*u,-40*u); ctx.closePath(); ctx.fill();
+      /* cou et tête */
+      ctx.fillStyle="#f3ecdd"; ctx.beginPath(); ctx.moveTo(22*u,-50*u); ctx.lineTo(34*u,-72*u); ctx.lineTo(44*u,-66*u); ctx.lineTo(34*u,-38*u); ctx.closePath(); ctx.fill();
+      ctx.save(); ctx.translate(40*u,-74*u); ctx.rotate(0.35);
+      ctx.fillStyle="#f6f0e3"; ctx.beginPath(); ctx.ellipse(6*u,0,15*u,9*u,0,0,6.2832); ctx.fill();
+      ctx.fillStyle="#e3d6bd"; ctx.beginPath(); ctx.ellipse(17*u,2*u+chew*0.3,6*u,6*u,0,0,6.2832); ctx.fill();
+      ctx.strokeStyle="#7a6a4e"; ctx.lineWidth=3.2*u; ctx.beginPath(); ctx.moveTo(-2*u,-7*u); ctx.quadraticCurveTo(-10*u,-22*u,-20*u,-14*u); ctx.stroke(); ctx.beginPath(); ctx.moveTo(3*u,-8*u); ctx.quadraticCurveTo(-3*u,-24*u,-13*u,-19*u); ctx.stroke();
+      ctx.fillStyle="#e8dcc4"; ctx.beginPath(); ctx.ellipse(-6*u,-2*u,9*u,3.5*u,-0.5,0,6.2832); ctx.fill();
+      ctx.fillStyle="#13233a"; ctx.beginPath(); ctx.arc(8*u,-3*u,1.9*u,0,6.2832); ctx.fill();
+      ctx.fillStyle="#cfc3a8"; ctx.beginPath(); ctx.moveTo(12*u,7*u); ctx.lineTo(16*u,19*u+chew); ctx.lineTo(19*u,7*u); ctx.closePath(); ctx.fill();
+      ctx.restore(); ctx.restore(); }
+    function car(ctx,cx,cy,s,t){ /* (cx, cy) = sol ; s = longueur */
+      ctx.save(); ctx.translate(cx,cy); var u=s/100;
+      ctx.fillStyle="rgba(0,0,0,.3)"; ctx.beginPath(); ctx.ellipse(0,0,50*u,6*u,0,0,6.2832); ctx.fill();
+      ctx.fillStyle=lin(ctx,0,-34*u,0,-6*u,[[0,"#e24a33"],[0.55,"#c0321d"],[1,"#7d1d10"]]);
+      ctx.beginPath(); ctx.moveTo(-50*u,-10*u); ctx.lineTo(-50*u,-20*u); ctx.quadraticCurveTo(-46*u,-26*u,-30*u,-27*u); ctx.lineTo(-16*u,-40*u); ctx.quadraticCurveTo(0,-45*u,18*u,-40*u); ctx.lineTo(30*u,-28*u); ctx.quadraticCurveTo(48*u,-26*u,50*u,-18*u); ctx.lineTo(50*u,-10*u); ctx.closePath(); ctx.fill();
+      ctx.fillStyle=lin(ctx,0,-40*u,0,-28*u,[[0,"#dbeafe"],[1,"#8fb3d9"]]);
+      ctx.beginPath(); ctx.moveTo(-26*u,-28*u); ctx.lineTo(-14*u,-38*u); ctx.lineTo(-1*u,-39*u); ctx.lineTo(-1*u,-28*u); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(2*u,-28*u); ctx.lineTo(2*u,-39*u); ctx.lineTo(16*u,-38*u); ctx.lineTo(25*u,-28*u); ctx.closePath(); ctx.fill();
+      ctx.fillStyle="rgba(255,255,255,.35)"; ctx.fillRect(-46*u,-24*u,92*u,2*u);
+      ctx.fillStyle="#fff6b0"; ctx.beginPath(); ctx.ellipse(47*u,-19*u,3*u,2.4*u,0,0,6.2832); ctx.fill();
+      ctx.fillStyle="#ff8a7a"; ctx.fillRect(-50*u,-21*u,3*u,4*u);
+      [-30,30].forEach(function(f){ ctx.fillStyle="#13233a"; ctx.beginPath(); ctx.arc(f*u,-9*u,10*u,0,6.2832); ctx.fill(); ctx.fillStyle=lin(ctx,0,-15*u,0,-3*u,[[0,"#e3e7ed"],[1,"#8a95a3"]]); ctx.beginPath(); ctx.arc(f*u,-9*u,5.5*u,0,6.2832); ctx.fill();
+        ctx.strokeStyle="#5f6b7a"; ctx.lineWidth=1.2*u; for(var a=0;a<5;a++){ var q=a*1.2566+t*0; ctx.beginPath(); ctx.moveTo(f*u,-9*u); ctx.lineTo(f*u+Math.cos(q)*5*u,-9*u+Math.sin(q)*5*u); ctx.stroke(); } });
+      /* nœud de cadeau */
+      ctx.fillStyle="#f4c542"; ctx.fillRect(-3*u,-43*u,6*u,33*u); ctx.beginPath(); ctx.ellipse(-8*u,-47*u,7*u,4*u,-0.4,0,6.2832); ctx.ellipse(8*u,-47*u,7*u,4*u,0.4,0,6.2832); ctx.fill();
+      ctx.restore(); }
+    function host(ctx,x,y,h,pointTo,t){ /* présentateur : (x, y) = pieds */
+      var u=h/100; ctx.save(); ctx.translate(x,y); ctx.lineCap="round"; ctx.lineJoin="round";
+      ctx.fillStyle="rgba(0,0,0,.3)"; ctx.beginPath(); ctx.ellipse(0,0,20*u,4*u,0,0,6.2832); ctx.fill();
+      ctx.strokeStyle="#241a3d"; ctx.lineWidth=10*u; ctx.beginPath(); ctx.moveTo(-5*u,-44*u); ctx.lineTo(-7*u,-4*u); ctx.moveTo(5*u,-44*u); ctx.lineTo(7*u,-4*u); ctx.stroke();
+      ctx.fillStyle="#13233a"; ctx.beginPath(); ctx.ellipse(-5*u,-3*u,8*u,4*u,0,0,6.2832); ctx.ellipse(10*u,-3*u,8*u,4*u,0,0,6.2832); ctx.fill();
+      ctx.fillStyle=lin(ctx,-16*u,0,16*u,0,[[0,"#6236c4"],[1,"#40218a"]]); rr(-16*u,-86*u,32*u,46*u,10*u); ctx.fill();
+      ctx.fillStyle="#ffffff"; ctx.beginPath(); ctx.moveTo(-6*u,-86*u); ctx.lineTo(6*u,-86*u); ctx.lineTo(0,-62*u); ctx.closePath(); ctx.fill();
+      ctx.fillStyle="#c0321d"; ctx.beginPath(); ctx.moveTo(-6*u,-84*u); ctx.lineTo(0,-80*u); ctx.lineTo(-6*u,-76*u); ctx.closePath(); ctx.moveTo(6*u,-84*u); ctx.lineTo(0,-80*u); ctx.lineTo(6*u,-76*u); ctx.closePath(); ctx.fill();
+      /* bras : un tient le micro, l'autre montre la porte */
+      ctx.strokeStyle="#4b2a9e"; ctx.lineWidth=8*u; ctx.beginPath(); ctx.moveTo(-12*u,-80*u); ctx.lineTo(-16*u,-60*u); ctx.lineTo(-6*u,-66*u); ctx.stroke();
+      ctx.fillStyle="#2c3a4e"; ctx.fillRect(-8*u,-78*u,4*u,13*u); ctx.fillStyle="#8a95a3"; ctx.beginPath(); ctx.arc(-6*u,-80*u,4*u,0,6.2832); ctx.fill();
+      var ang=pointTo==null?1.2:Math.atan2(pointTo[1]-(y-80*u),pointTo[0]-x)+Math.PI/2, wave=pointTo==null?Math.sin(t*2)*0.15:0;
+      ctx.save(); ctx.translate(12*u,-80*u); ctx.rotate(ang+wave); ctx.strokeStyle="#4b2a9e"; ctx.lineWidth=8*u; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,-28*u); ctx.stroke(); ctx.fillStyle="#f0c9a0"; ctx.beginPath(); ctx.arc(0,-31*u,4.5*u,0,6.2832); ctx.fill(); ctx.restore();
+      ctx.fillStyle="#f0c9a0"; ctx.fillRect(-4*u,-92*u,8*u,7*u); ctx.beginPath(); ctx.arc(0,-98*u,11*u,0,6.2832); ctx.fill();
+      ctx.fillStyle="#2b1d14"; ctx.beginPath(); ctx.arc(0,-101*u,11.5*u,Math.PI*1.05,Math.PI*2.02); ctx.fill();
+      ctx.fillStyle="#13233a"; ctx.beginPath(); ctx.arc(-4*u,-98*u,1.4*u,0,6.2832); ctx.arc(4*u,-98*u,1.4*u,0,6.2832); ctx.fill();
+      ctx.strokeStyle="#9a4a3a"; ctx.lineWidth=1.6*u; ctx.beginPath(); ctx.arc(0,-94*u,4*u,0.2,Math.PI-0.2); ctx.stroke();
+      ctx.restore(); }
     k.draw(function(){
-      c.clear(); var ctx=c.ctx, W=c.W,H=c.H, fs=M6.fs(c,12);
-      var dh=Math.round(H*0.6), dw=Math.min(118,(W-40)/3.3), gap=(W-3*dw)/4, y=26, h=dh-22; geo=[];
-      for(var i=0;i<3;i++){ var x=gap+i*(dw+gap), o=openA[i]; geo.push({x:x,y:y,w:dw,h:h});
-        ctx.fillStyle="#e8ecf3"; ctx.fillRect(x,y,dw,h); /* fond de la niche */
-        var open=o>0.5; if(o>0.02){ var cx=x+dw/2, cy=y+h*0.62; if(st.car===i) carDraw(ctx,cx,cy,dw*0.82); else goat(ctx,cx-dw*0.08,cy,dw*0.8); }
-        /* vantail qui pivote : largeur réduite quand la porte s'ouvre */
-        var pw=dw*(1-0.88*o); ctx.fillStyle=(st.pick===i&&st.phase>0)?"#2a57c4":P.mat; ctx.fillRect(x,y,pw,h); ctx.strokeStyle="rgba(255,255,255,.18)"; ctx.lineWidth=1.5; ctx.strokeRect(x+pw*0.12,y+h*0.07,pw*0.76,h*0.4); ctx.strokeRect(x+pw*0.12,y+h*0.53,pw*0.76,h*0.4);
-        if(pw>dw*0.4){ ctx.fillStyle="#f4c542"; ctx.beginPath(); ctx.arc(x+pw*0.82,y+h*0.52,4,0,6.2832); ctx.fill(); S.draw.text(c,String(i+1),x+pw/2,y+h*0.27,{size:Math.round(dw*0.34),color:"#ffffff",weight:800}); }
-        ctx.strokeStyle=(st.pick===i)?P.amber:"#13233a"; ctx.lineWidth=(st.pick===i)?4:2; ctx.strokeRect(x,y,dw,h);
-        var tag=""; if(st.phase===2&&st.final===i) tag="choix final"; else if(st.pick===i&&st.phase>0) tag="ton choix"; else if(st.open===i&&st.phase===1) tag="ouverte par l'animateur";
-        if(tag) S.draw.label(c,tag,x+dw/2,y+h+16,{size:fs,color:P.amber}); }
-      /* scores */
-      var by=dh+50, bh=Math.max(14,Math.min(24,(H-by-30)/2-4)), lx=96, rx=W-16;
-      S.draw.text(c,"Fréquence de victoire",12,by-10,{size:fs,align:"left",color:P.grey,weight:800});
-      [[ "Garder",rec.kp,P.grey,1/3],["Changer",rec.sw,P.green,2/3]].forEach(function(r,i){ var yy=by+i*(bh+8), fr=r[1][1]?r[1][0]/r[1][1]:0;
-        S.draw.text(c,r[0],lx-8,yy+bh/2,{size:fs,align:"right",color:r[2],weight:800}); ctx.fillStyle="#eef1f5"; ctx.fillRect(lx,yy,rx-lx,bh); ctx.fillStyle=r[2]; ctx.fillRect(lx,yy,(rx-lx)*fr,bh);
-        S.draw.line(c,lx+(rx-lx)*r[3],yy-3,lx+(rx-lx)*r[3],yy+bh+3,P.red,2); S.draw.text(c,r[1][1]?pct(S,fr,0)+" ("+r[1][0]+"/"+r[1][1]+")":"—",lx+6,yy+bh/2,{size:fs,align:"left",color:fr>0.12?"#fff":P.ink,weight:700}); });
-      S.draw.text(c,"traits rouges : 1/3 et 2/3 (valeurs théoriques)",rx,by+2*(bh+8)+6,{size:10.5,align:"right",color:P.red});
+      c.clear(); var ctx=c.ctx, W=c.W, H=c.H, small=W<470, fs=M6.fs(c,12), t=clock;
+      /* studio */
+      ctx.fillStyle=lin(ctx,0,0,0,H,[[0,"#1b1240"],[0.6,"#2c1f63"],[1,"#120c2b"]]); ctx.fillRect(0,0,W,H);
+      /* projecteurs */
+      ctx.save(); ctx.globalCompositeOperation="lighter";
+      [[0.15,0.4],[0.5,-0.2],[0.85,-0.5]].forEach(function(q,i){ var x0=q[0]*W, sw=Math.sin(t*0.6+i*2)*0.25+q[1]*0.2, x1=x0+Math.sin(sw)*H; ctx.fillStyle=lin(ctx,0,0,0,H*0.8,[[0,"rgba(180,160,255,.22)"],[1,"rgba(180,160,255,0)"]]); ctx.beginPath(); ctx.moveTo(x0-6,0); ctx.lineTo(x0+6,0); ctx.lineTo(x1+70,H*0.8); ctx.lineTo(x1-70,H*0.8); ctx.closePath(); ctx.fill(); });
+      ctx.restore();
+      /* enseigne lumineuse */
+      var sg=small?"3 PORTES":"LE JEU DES 3 PORTES", sw_=Math.min(W-30,small?170:300), sx=W/2-sw_/2, sy=8, sh=small?30:34;
+      ctx.fillStyle="#3a1d0e"; rr(sx,sy,sw_,sh,9); ctx.fill(); ctx.strokeStyle="#f4c542"; ctx.lineWidth=2; ctx.stroke();
+      var nb=Math.floor(sw_/14); for(var b=0;b<nb;b++){ var on=(Math.floor(t*6)+b)%3===0; ctx.fillStyle=on?"#fff3b0":"#a8842c"; ctx.beginPath(); ctx.arc(sx+7+b*(sw_-14)/(nb-1),sy+3.5,2,0,6.2832); ctx.arc(sx+7+b*(sw_-14)/(nb-1),sy+sh-3.5,2,0,6.2832); ctx.fill(); }
+      S.draw.text(c,sg,W/2,sy+sh/2+1,{size:small?14:17,weight:800,color:"#f4c542"});
+      /* portes */
+      var boardH=small?118:112, floorY=H-boardH-34, hostW=small?0:Math.min(100,W*0.17);
+      var doorTop=sy+sh+30, dh=floorY-doorTop, areaL=hostW+10, areaW=W-areaL-10, dw=Math.min(dh*0.62,(areaW-30)/3.25), gap=(areaW-3*dw)/4; geo=[];
+      /* sol brillant */
+      ctx.fillStyle=lin(ctx,0,floorY,0,H,[[0,"#3b2a78"],[1,"#150e30"]]); ctx.fillRect(0,floorY,W,H-floorY);
+      ctx.strokeStyle="rgba(255,255,255,.08)"; ctx.lineWidth=1; ctx.beginPath(); for(var fx=-W;fx<2*W;fx+=40){ ctx.moveTo(W/2+(fx-W/2)*0.35,floorY); ctx.lineTo(fx,H); } ctx.stroke();
+      var COL=[["#c0321d","#7d1d10"],["#1f4b9e","#12306b"],["#24775a","#134a37"]];
+      for(var i=0;i<3;i++){ var x=areaL+gap+i*(dw+gap), y=doorTop, h=dh, o=openA[i]; geo.push({x:x,y:y,w:dw,h:h});
+        /* cadre lumineux */
+        ctx.fillStyle="#2a1a10"; rr(x-9,y-9,dw+18,h+9,8); ctx.fill();
+        var nbb=Math.floor((2*h+dw)/16); for(var q=0;q<nbb;q++){ var d=q*16, bx, by; if(d<h){ bx=x-4.5; by=y+h-d; } else if(d<h+dw){ bx=x+(d-h); by=y-4.5; } else { bx=x+dw+4.5; by=y+(d-h-dw); } var lit=(Math.floor(t*7)+q)%4<2||(st.pick===i&&st.phase<2); ctx.fillStyle=lit?(st.pick===i?"#ffd36b":"#fff3b0"):"#8a6a24"; ctx.beginPath(); ctx.arc(bx,by,2.3,0,6.2832); ctx.fill(); }
+        /* coulisse derrière la porte */
+        ctx.fillStyle=lin(ctx,0,y,0,y+h,[[0,"#0e0a20"],[0.75,"#2a2152"],[1,"#3d3170"]]); ctx.fillRect(x,y,dw,h);
+        if(o>0.01){ S.draw.glow(c,x+dw/2,y+h*0.55,dw*0.7,st.car===i?"#f4c542":"#b9a8ff",st.car===i?0.5:0.25);
+          ctx.save(); ctx.beginPath(); ctx.rect(x,y,dw,h); ctx.clip();
+          if(st.car===i){ ctx.fillStyle="rgba(244,197,66,.35)"; ctx.beginPath(); ctx.ellipse(x+dw/2,y+h-8,dw*0.46,7,0,0,6.2832); ctx.fill(); car(ctx,x+dw/2,y+h-8,dw*0.92,t); }
+          else goat(ctx,x+dw/2-dw*0.08,y+h-6,dw*0.8,t);
+          ctx.restore(); }
+        /* vantail qui pivote vers nous (charnière à gauche) */
+        var phi=o*1.45, pw=dw*Math.cos(phi), ex=dw*Math.sin(phi)*0.13;
+        if(pw>0.5){ ctx.fillStyle=lin(ctx,x,0,x+pw,0,[[0,COL[i][0]],[1,COL[i][1]]]); ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+pw,y-ex); ctx.lineTo(x+pw,y+h+ex); ctx.lineTo(x,y+h); ctx.closePath(); ctx.fill();
+          ctx.strokeStyle="rgba(255,255,255,.18)"; ctx.lineWidth=1.5; [[0.07,0.4],[0.53,0.4]].forEach(function(pn){ ctx.beginPath(); ctx.moveTo(x+pw*0.12,y+h*pn[0]-ex*0.12); ctx.lineTo(x+pw*0.88,y+h*pn[0]-ex*0.88); ctx.lineTo(x+pw*0.88,y+h*(pn[0]+pn[1])+ex*0.6); ctx.lineTo(x+pw*0.12,y+h*(pn[0]+pn[1])+ex*0.1); ctx.closePath(); ctx.stroke(); });
+          if(pw>dw*0.35){ ctx.save(); ctx.translate(x+pw/2,y+h*0.27); ctx.scale(Math.max(0.2,pw/dw),1); S.draw.text(c,String(i+1),0,0,{size:Math.round(dw*0.36),color:"#ffffff",weight:800}); ctx.restore(); }
+          ctx.fillStyle="#f4c542"; ctx.beginPath(); ctx.arc(x+pw*0.84,y+h*0.53,Math.max(2.5,dw*0.035),0,6.2832); ctx.fill(); }
+        /* reflet au sol */
+        ctx.fillStyle="rgba(255,255,255,.05)"; ctx.fillRect(x,floorY+4,dw,12);
+        /* repère « ton choix » */
+        if(st.pick===i&&st.phase<2||st.final===i&&st.phase===2){ var bob=Math.sin(t*5)*3; ctx.fillStyle=P.amber; ctx.beginPath(); ctx.moveTo(x+dw/2,y-12+bob); ctx.lineTo(x+dw/2-9,y-24+bob); ctx.lineTo(x+dw/2+9,y-24+bob); ctx.closePath(); ctx.fill(); }
+        var tag=""; if(st.phase===2&&st.final===i) tag=st.last&&st.last.win?"gagné !":"choix final"; else if(st.pick===i&&st.phase>0) tag="ton choix"; else if(st.open===i&&st.phase===1) tag=small?"ouverte":"ouverte par l'animateur";
+        if(tag) S.draw.label(c,tag,x+dw/2,floorY+16,{size:fs,color:st.phase===2&&st.final===i&&st.last&&st.last.win?P.green:P.amber,fill:"rgba(255,255,255,.92)"}); }
+      /* présentateur */
+      if(!small){ var target=st.open>=0&&geo[st.open]?[geo[st.open].x+geo[st.open].w/2,geo[st.open].y+geo[st.open].h*0.5]:null; host(ctx,hostW*0.55,floorY+6,Math.min(dh*0.78,150),target,t); }
+      /* confettis */
+      confetti.forEach(function(p){ ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.globalAlpha=Math.min(1,p.life); ctx.fillStyle=p.c; ctx.fillRect(-3,-1.5,6,3); ctx.restore(); });
+      /* tableau des scores */
+      var by=H-boardH-4, bx=8, bw=W-16;
+      ctx.fillStyle="#0b0820"; rr(bx,by,bw,boardH,10); ctx.fill(); ctx.strokeStyle="#f4c542"; ctx.lineWidth=1.5; ctx.stroke();
+      S.draw.text(c,"SCORE EN DIRECT",bx+12,by+13,{size:small?10:11,align:"left",color:"#f4c542",weight:800}); S.draw.text(c,"fréquence de victoire",bx+bw-12,by+13,{size:small?9.5:10.5,align:"right",color:"#9fb0c8",weight:700});
+      var lx=bx+(small?70:86), rx=bx+bw-(small?66:92), bh=small?22:24;
+      [["GARDER",rec.kp,"#9fb0c8",1/3,flash.kp],["CHANGER",rec.sw,"#3fbf8a",2/3,flash.sw]].forEach(function(r,j){ var yy=by+30+j*(bh+12), fr=r[1][1]?r[1][0]/r[1][1]:0;
+        S.draw.text(c,r[0],lx-8,yy+bh/2,{size:small?10.5:12,align:"right",color:r[2],weight:800});
+        ctx.fillStyle="#1d1840"; rr(lx,yy,rx-lx,bh,5); ctx.fill();
+        if(fr>0){ ctx.fillStyle=lin(ctx,0,yy,0,yy+bh,[[0,r[2]],[1,S.draw.tint(r[2],0.65)]]); rr(lx,yy,Math.max(6,(rx-lx)*fr),bh,5); ctx.fill(); }
+        if(r[4]>0){ ctx.fillStyle="rgba(255,255,255,"+(r[4]*0.35)+")"; rr(lx,yy,rx-lx,bh,5); ctx.fill(); }
+        var mx=lx+(rx-lx)*r[3]; S.draw.line(c,mx,yy-4,mx,yy+bh+4,"#ff6b5a",2); S.draw.text(c,j?"2/3":"1/3",mx,yy-8+(j?bh+20:0)*0,{size:9,color:"#ff9a8c",weight:800});
+        S.draw.text(c,r[1][1]?pct(S,fr,0):"—",rx+8,yy+bh/2-(small?0:5),{size:small?14:16,align:"left",color:"#ffffff",weight:800,mono:true});
+        if(!small) S.draw.text(c,r[1][1]?r[1][0]+" / "+r[1][1]:"",rx+8,yy+bh/2+9,{size:9.5,align:"left",color:"#9fb0c8",weight:700}); });
       ro.set(0,String(rec.kp[1])); ro.set(1,rec.kp[1]?rec.kp[0]+" ("+pct(S,rec.kp[0]/rec.kp[1],0)+")":"—"); ro.set(2,String(rec.sw[1])); ro.set(3,rec.sw[1]?rec.sw[0]+" ("+pct(S,rec.sw[0]/rec.sw[1],0)+")":"—");
-      if(st.phase===0) nt.set("Étape 1 : clique sur la porte que tu choisis.","ok");
-      else if(st.phase===1) nt.set("L'animateur a ouvert la porte "+(st.open+1)+" (chèvre). Garder ou changer ? Clique sur ta porte pour la garder, sur l'autre porte fermée pour changer.","ok");
-      else nt.set(st.final===st.car?"Gagné ! La voiture était derrière la porte "+(st.car+1)+".":"Perdu : la voiture était derrière la porte "+(st.car+1)+".","ok");
+      if(simQ>0) nt.set("Simulation en cours : encore "+simQ+" parties…","ok");
+      else if(st.phase===0) nt.set(auto.on?"Parties automatiques : le joueur choisit une porte au hasard…":"Étape 1 : clique sur la porte que tu choisis.","ok");
+      else if(st.phase===1) nt.set("L'animateur a ouvert la porte "+(st.open+1)+" (chèvre). "+(auto.on?"Cette fois, le joueur va "+(auto.strat?"changer":"garder")+".":"Garder ou changer ? Clique sur ta porte pour la garder, sur l'autre porte fermée pour changer."),"ok");
+      else nt.set((st.last&&st.last.sw?"Il a changé. ":"Il a gardé. ")+(st.final===st.car?"Gagné ! La voiture était derrière la porte "+(st.car+1)+".":"Perdu : la voiture était derrière la porte "+(st.car+1)+"."),"ok");
     });
     c.pointer(function(type,p){ if(!geo) return; var hit=-1; geo.forEach(function(g,i){ if(p.x>=g.x&&p.x<=g.x+g.w&&p.y>=g.y&&p.y<=g.y+g.h) hit=i; });
       if(type==="move"){ c.cv.style.cursor=hit>=0&&st.phase<2&&hit!==st.open?"pointer":"default"; return; }
-      if(type==="down"&&hit>=0){ if(st.phase===0) choose(hit); else if(st.phase===1&&hit!==st.open){ decide(hit!==st.pick); } else if(st.phase===2) { /* rien */ } k.redraw(); } });
+      if(type==="down"&&hit>=0){ stopAuto(); if(st.phase===0) choose(hit); else if(st.phase===1&&hit!==st.open){ decide(hit!==st.pick); } k.redraw(); } });
   }
 });

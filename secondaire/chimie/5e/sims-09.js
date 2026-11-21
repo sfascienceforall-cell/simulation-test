@@ -124,13 +124,14 @@ SFA.sim({
 SFA.sim({
   id: "c5-c09-haber", ch: "c09", tag: "Défi industriel",
   titre: "Le procédé Haber-Bosch : trouver le bon compromis",
-  resume: "Carte rendement(T, P) de N₂ + 3 H₂ ⇌ 2 NH₃, vitesse et coût : touche la carte pour choisir.",
-  but: "Touche la carte pour choisir T et P. Lis le rendement d'équilibre, la vitesse (avec catalyseur) et le coût de compression. Défi : au moins 30 % de NH₃, une vitesse relative ≥ 0,2 et P ≤ 250 bar.",
+  resume: "Une usine d'ammoniac : règle la pression et la température du réacteur, regarde N₂ et H₂ entrer, NH₃ sortir, et lis le rendement.",
+  but: "Tourne les cadrans du réacteur (manomètre et thermomètre) ou touche la carte pour choisir T et P. Observe le mélange dans le réacteur et le débit de l'usine. Lis le rendement d'équilibre, la vitesse (avec catalyseur) et le coût de compression. Défi : au moins 30 % de NH₃, une vitesse relative ≥ 0,2 et P ≤ 250 bar.",
   aRetenir: "Haber-Bosch : exothermique et diminution du nombre de moles de gaz (4 → 2). Le rendement est meilleur à basse température et haute pression. Mais à basse température, c'est trop lent : on compromet ≈ 400–500 °C avec un catalyseur au fer, et ≈ 150–300 bar (limite de coût et de sécurité). On recycle les réactifs non convertis.",
   piege: "Le rendement maximal d'équilibre ne se trouve pas à la température où la réaction est la plus rapide. Un catalyseur permet de réagir à plus basse température (meilleur rendement) : il ne déplace pas l'équilibre. Modèle simplifié (ΔH constant, mélange stœchiométrique, K_p(500 °C) ≈ 1,45·10⁻⁵ bar⁻²).",
   build: function(k, S){
     var pal = S.draw.palette, r = C5.RX.nh3, R = 8.31;
-    var c = k.canvas(300);
+    var sc = k.canvas(0, {ratio: 0.62}); Object.defineProperty(sc, "ratio", {get: function(){ var w = Math.max(260, sc.cv.parentNode ? sc.cv.parentNode.clientWidth : 600); return w < 460 ? 1.0 : 0.64; }, configurable: true}); sc.resize();
+    var c = k.canvas(280);
     var T = k.slider("Température", 300, 700, 5, 450, "°C"), P = k.slider("Pression", 1, 400, 1, 200, "bar");
     var cat = k.toggle("Catalyseur au fer (Eₐ = 100 au lieu de 230 kJ/mol)", true);
     var ro = k.readouts(["NH₃ dans le mélange (équilibre)", "Conversion de N₂", "Vitesse relative", "Coût de compression relatif", "Défi"]);
@@ -149,6 +150,119 @@ SFA.sim({
       }
       cache = {w: c.W, h: c.H, cv: cv}; return cv;
     }
+    /* ---------- l'usine : réservoirs, compresseur, réacteur, condenseur ---------- */
+    var tm = 0, rnd = (function(s){ return function(){ s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; })(53), G = {}, dial = null, made = 0;
+    var TOK = {}, INS = [];
+    for (var ii = 0; ii < 26; ii++) INS.push({x: rnd(), y: rnd(), vx: rnd() * 2 - 1, vy: rnd() * 2 - 1, a: rnd() * 6, b: rnd() * 6});
+    function lin(ctx, x0, y0, x1, y1, st){ var gg = ctx.createLinearGradient(x0, y0, x1, y1); st.forEach(function(q){ gg.addColorStop(q[0], q[1]); }); return gg; }
+    function hexRGB(h){ var m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(h); return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : [150, 150, 150]; }
+    function mix(h, f){ return "rgb(" + hexRGB(h).map(function(v){ return Math.max(0, Math.min(255, Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f))); }).join(",") + ")"; }
+    function ball(ctx, x, y, r, hex){ var g = ctx.createRadialGradient(x - r * 0.38, y - r * 0.42, r * 0.06, x, y, r * 1.04); g.addColorStop(0, mix(hex, 0.8)); g.addColorStop(0.45, hex); g.addColorStop(1, mix(hex, -0.48)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill(); }
+    /* molécules en 3D (Å) : N₂, H₂, NH₃ (pyramide, 107°) */
+    var GEO = {N2: [[-0.55, 0, 0, 0.62, "#4f7be0"], [0.55, 0, 0, 0.62, "#4f7be0"]], H2: [[-0.37, 0, 0, 0.42, "#eef1f6"], [0.37, 0, 0, 0.42, "#eef1f6"]], NH3: [[0, 0.2, 0, 0.62, "#4f7be0"]]};
+    for (var hh = 0; hh < 3; hh++){ var an = hh * 2.0944; GEO.NH3.push([0.94 * 0.94 * Math.cos(an), 0.2 - 0.94 * 0.38, 0.94 * 0.94 * Math.sin(an), 0.42, "#eef1f6"]); }
+    function mol3(ctx, type, x, y, s, ya, pi){
+      var at = GEO[type].map(function(q){ var r = C5.rot ? C5.rot([q[0], q[1], q[2]], ya, pi) : [q[0], q[1], q[2]]; return [x + r[0] * s, y - r[1] * s, r[2], q[3] * s, q[4]]; });
+      at.sort(function(p, q){ return p[2] - q[2]; }); at.forEach(function(q){ ball(ctx, q[0], q[1], q[3], q[4]); });
+    }
+    function pathLen(P){ var L = 0; for (var i = 1; i < P.length; i++) L += Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]); return L; }
+    function pathAt(P, f){ var L = pathLen(P) * f; for (var i = 1; i < P.length; i++){ var d = Math.hypot(P[i][0] - P[i - 1][0], P[i][1] - P[i - 1][1]); if (L <= d){ var t = d ? L / d : 0; return [P[i - 1][0] + (P[i][0] - P[i - 1][0]) * t, P[i - 1][1] + (P[i][1] - P[i - 1][1]) * t]; } L -= d; } return P[P.length - 1]; }
+    function pipe(ctx, P, w){ ctx.save(); ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.strokeStyle = "#7d8899"; ctx.lineWidth = w + 3; ctx.beginPath(); P.forEach(function(q, i){ i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); }); ctx.stroke(); ctx.strokeStyle = "#dfe5ec"; ctx.lineWidth = w; ctx.stroke(); ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.lineWidth = w * 0.25; ctx.stroke(); ctx.restore(); }
+    function gauge(ctx, x, y, r, f, txt, cap, col){
+      ctx.save(); ctx.fillStyle = "rgba(15,27,45,.15)"; ctx.beginPath(); ctx.arc(x + 2, y + 3, r + 3, 0, 6.2832); ctx.fill();
+      ctx.fillStyle = lin(ctx, x - r, y - r, x + r, y + r, [[0, "#e9edf2"], [1, "#9aa6b5"]]); ctx.beginPath(); ctx.arc(x, y, r + 3, 0, 6.2832); ctx.fill();
+      ctx.fillStyle = "#fbfcfd"; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill();
+      var a0 = Math.PI * 0.75, a1 = Math.PI * 2.25;
+      ctx.lineWidth = r * 0.16; ctx.strokeStyle = "rgba(36,119,90,.35)"; ctx.beginPath(); ctx.arc(x, y, r * 0.78, a0, a0 + (a1 - a0) * 0.5); ctx.stroke(); ctx.strokeStyle = "rgba(192,50,29,.4)"; ctx.beginPath(); ctx.arc(x, y, r * 0.78, a0 + (a1 - a0) * 0.75, a1); ctx.stroke();
+      ctx.strokeStyle = "#51627a"; ctx.lineWidth = 1; for (var t = 0; t <= 10; t++){ var aa = a0 + (a1 - a0) * t / 10; ctx.beginPath(); ctx.moveTo(x + Math.cos(aa) * r * 0.9, y + Math.sin(aa) * r * 0.9); ctx.lineTo(x + Math.cos(aa) * r * (t % 5 ? 0.8 : 0.7), y + Math.sin(aa) * r * (t % 5 ? 0.8 : 0.7)); ctx.stroke(); }
+      var an = a0 + (a1 - a0) * Math.max(0, Math.min(1, f)); ctx.strokeStyle = col; ctx.lineWidth = 2.4; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(x - Math.cos(an) * r * 0.15, y - Math.sin(an) * r * 0.15); ctx.lineTo(x + Math.cos(an) * r * 0.82, y + Math.sin(an) * r * 0.82); ctx.stroke();
+      ctx.fillStyle = "#13233a"; ctx.beginPath(); ctx.arc(x, y, r * 0.1, 0, 6.2832); ctx.fill();
+      ctx.font = "700 " + Math.round(Math.max(9, r * 0.32)) + "px 'JetBrains Mono', monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = col; ctx.fillText(txt, x, y + r * 0.48);
+      ctx.restore();
+      S.draw.text(sc, cap, x, y + r + 13, {size: 10.5, color: pal.ink, weight: 800, halo: true});
+    }
+    sc.pointer(function(type, p){
+      if (type === "down"){ dial = null; ["P", "T"].forEach(function(kd){ var d = G[kd]; if (d && Math.hypot(p.x - d.x, p.y - d.y) < d.r + 10) dial = kd; }); }
+      if ((type === "down" || type === "drag") && dial){ var d = G[dial], an = Math.atan2(p.y - d.y, p.x - d.x), a0 = Math.PI * 0.75; var rel = an - a0; while (rel < -0.5) rel += 2 * Math.PI; var f = Math.max(0, Math.min(1, rel / (Math.PI * 1.5)));
+        if (dial === "P") P.set(Math.round(1 + f * 399)); else T.set(Math.round((300 + f * 400) / 5) * 5); k.redraw(); }
+      if (type === "up") dial = null;
+    });
+    k.loop(function(dt, t){ tm = t;
+      var rt = rate(T.value), v = Math.max(0, Math.min(0.9, 0.35 * (1 + 0.35 * Math.log(Math.max(rt, 1e-12)) / Math.LN10)));
+      G.v = v; Object.keys(TOK).forEach(function(kk){ TOK[kk].forEach(function(q){ q.s = (q.s + v * dt * 120 / Math.max(60, q.L || 100)) % 1; }); });
+      var ag = 0.5 * Math.sqrt((T.value + 273) / 723);
+      INS.forEach(function(m){ m.x += m.vx * ag * dt; m.y += m.vy * ag * dt; if (m.x < 0 || m.x > 1) m.vx = -m.vx; if (m.y < 0 || m.y > 1) m.vy = -m.vy; m.x = Math.max(0, Math.min(1, m.x)); m.y = Math.max(0, Math.min(1, m.y)); m.a += dt * ag * 3; });
+      made = (made + v * dt * 0.025 * Math.max(0.05, frac(T.value, P.value))) % 1;
+      k.redraw();
+    }).play();
+    function tokens(key, n, mixer){ if (!TOK[key]){ TOK[key] = []; for (var i = 0; i < n; i++) TOK[key].push({s: i / n + rnd() * 0.04, u: rnd(), a: rnd() * 6, L: 100}); } TOK[key].forEach(function(q){ q.type = mixer(q.u); }); return TOK[key]; }
+    function drawScene(x, f){
+      var ctx = sc.ctx, W = sc.W, H = sc.H, u = Math.min(W / 540, H / 345), phn = W < 460, tC = T.value, Pv = P.value;
+      sc.clear();
+      ctx.fillStyle = lin(ctx, 0, 0, 0, H, [[0, "#dfeaf6"], [0.85, "#f4f7fb"], [0.851, "#c9d1dc"], [1, "#b5bfcc"]]); ctx.fillRect(0, 0, W, H);
+      var yG = H * 0.85;
+      ctx.fillStyle = "rgba(120,135,160,.18)"; [[0.05, 0.42, 0.08], [0.14, 0.5, 0.06], [0.9, 0.38, 0.07]].forEach(function(q){ ctx.fillRect(W * q[0], H * q[1], W * q[2], yG - H * q[1]); });
+      var xN = W * (phn ? 0.11 : 0.1), yN = H * 0.3, yH2 = H * 0.66, tw = W * (phn ? 0.17 : 0.14), th = H * 0.13;
+      var xc = W * 0.3, yc = H * 0.58, cw = W * 0.1, ch = H * 0.16, xr = W * 0.52, rw = W * (phn ? 0.2 : 0.17), rt0 = H * 0.13, rb = yG - 4, xd = W * 0.74, xt = W * (phn ? 0.89 : 0.9), yt = H * 0.72;
+      /* conduites */
+      var pN = [[xN + tw / 2, yN], [W * 0.21, yN], [W * 0.21, yc], [xc - cw / 2, yc]], pH = [[xN + tw / 2, yH2], [W * 0.21, yH2], [W * 0.21, yc], [xc - cw / 2, yc]];
+      var pIn = [[xc + cw / 2, yc], [xr - rw / 2, yc]], pOut = [[xr + rw / 2, H * 0.3], [xd, H * 0.3], [xd, H * 0.36]], pLiq = [[xd, H * 0.74], [xd, yt], [xt - W * 0.05, yt]], pRec = [[xd, H * 0.36], [xd, H * 0.06], [xc, H * 0.06], [xc, yc - ch / 2]];
+      [pRec, pN, pH, pIn, pOut, pLiq].forEach(function(q){ pipe(ctx, q, Math.max(6, 9 * u)); });
+      /* molécules dans les conduites */
+      var fr = f, ms = 5.2 * u;
+      function flow(key, Pth, n, mixer){ var L = pathLen(Pth), arr = tokens(key, n, mixer); arr.forEach(function(q){ q.L = L; var pt = pathAt(Pth, q.s); mol3(ctx, q.type, pt[0], pt[1], ms, q.a + tm * 0.8, 0.4); }); }
+      var ny = Math.max(0, Math.min(1, (2 * x) / (4 - 2 * x)));
+      flow("N", pN, 4, function(){ return "N2"; }); flow("H", pH, 6, function(){ return "H2"; });
+      flow("in", pIn, 4, function(r){ return r < 0.25 ? "N2" : "H2"; });
+      flow("out", pOut, 4, function(r){ return r < ny ? "NH3" : r < ny + (1 - ny) * 0.25 ? "N2" : "H2"; });
+      flow("rec", pRec, 7, function(r){ return r < 0.25 ? "N2" : "H2"; }); flow("liq", pLiq, 3, function(){ return "NH3"; });
+      /* réservoirs */
+      [[yN, "N₂", "azote (air)", "#4f7be0"], [yH2, "H₂", "hydrogène", "#8a97a8"]].forEach(function(q){
+        ctx.save(); ctx.fillStyle = "rgba(15,27,45,.12)"; ctx.beginPath(); ctx.ellipse(xN, q[0] + th / 2 + 5, tw * 0.5, 4, 0, 0, 6.2832); ctx.fill();
+        ctx.fillStyle = lin(ctx, 0, q[0] - th / 2, 0, q[0] + th / 2, [[0, "#f4f6f9"], [0.4, "#ffffff"], [1, "#a9b4c2"]]); S.draw.rrect(sc, xN - tw / 2, q[0] - th / 2, tw, th, th / 2); ctx.fill(); ctx.strokeStyle = "#8a97a8"; ctx.lineWidth = 1; ctx.stroke();
+        ctx.fillStyle = q[3]; ctx.fillRect(xN - tw * 0.32, q[0] - th * 0.12, tw * 0.64, th * 0.24); ctx.fillStyle = "#6b7787"; ctx.fillRect(xN - tw * 0.3, q[0] + th / 2, 4, 6); ctx.fillRect(xN + tw * 0.3 - 4, q[0] + th / 2, 4, 6); ctx.restore();
+        S.draw.text(sc, q[1], xN, q[0], {size: Math.max(11, 13 * u), color: "#fff", weight: 800}); S.draw.text(sc, q[2], xN, q[0] - th / 2 - 9, {size: 10.5, color: pal.grey, halo: true});
+      });
+      /* compresseur */
+      ctx.save(); ctx.fillStyle = lin(ctx, xc - cw / 2, 0, xc + cw / 2, 0, [[0, "#5b6678"], [0.5, "#8994a6"], [1, "#475264"]]); S.draw.rrect(sc, xc - cw / 2, yc - ch / 2, cw, ch, 6); ctx.fill();
+      var fr2 = Math.min(cw, ch) * 0.34; ctx.translate(xc, yc); ctx.rotate(tm * (1 + Pv / 60)); ctx.fillStyle = "#dfe5ec"; for (var bl = 0; bl < 4; bl++){ ctx.rotate(Math.PI / 2); ctx.beginPath(); ctx.ellipse(fr2 * 0.5, 0, fr2 * 0.5, fr2 * 0.18, 0, 0, 6.2832); ctx.fill(); } ctx.fillStyle = "#2c3a4e"; ctx.beginPath(); ctx.arc(0, 0, fr2 * 0.18, 0, 6.2832); ctx.fill(); ctx.restore();
+      S.draw.text(sc, "compresseur", xc, yc + ch / 2 + 10, {size: 10.5, color: pal.grey, halo: true});
+      /* réacteur : cuve d'acier, hublot sur le lit de catalyseur */
+      var hot = (tC - 300) / 400;
+      S.draw.glow(sc, xr, (rt0 + rb) / 2, rw * 1.6, "#ff7a2a", 0.12 + 0.3 * hot);
+      ctx.save(); ctx.fillStyle = lin(ctx, xr - rw / 2, 0, xr + rw / 2, 0, [[0, "#6e7a8b"], [0.35, "#d9dfe7"], [0.6, "#aab4c1"], [1, "#5d6878"]]);
+      S.draw.rrect(sc, xr - rw / 2, rt0, rw, rb - rt0, rw * 0.45); ctx.fill(); ctx.strokeStyle = "#4a5568"; ctx.lineWidth = 1; ctx.stroke();
+      ctx.strokeStyle = "rgba(60,70,85,.45)"; ctx.lineWidth = 2; [0.08, 0.92].forEach(function(q){ var yy = rt0 + (rb - rt0) * q; ctx.beginPath(); ctx.moveTo(xr - rw / 2 + 2, yy); ctx.lineTo(xr + rw / 2 - 2, yy); ctx.stroke(); });
+      var wx = xr - rw * 0.36, wy = rt0 + (rb - rt0) * 0.15, ww = rw * 0.72, wh = (rb - rt0) * 0.5;
+      ctx.fillStyle = "#3a4558"; S.draw.rrect(sc, wx - 4, wy - 4, ww + 8, wh + 8, 10); ctx.fill();
+      ctx.save(); S.draw.rrect(sc, wx, wy, ww, wh, 8); ctx.clip();
+      ctx.fillStyle = lin(ctx, 0, wy, 0, wy + wh, [[0, "rgb(" + Math.round(255) + "," + Math.round(235 - 60 * hot) + "," + Math.round(205 - 120 * hot) + ")"], [1, "rgb(" + Math.round(250) + "," + Math.round(200 - 80 * hot) + "," + Math.round(150 - 110 * hot) + ")"]]); ctx.fillRect(wx, wy, ww, wh);
+      for (var lb = 0; lb < 3; lb++){ var ly = wy + wh * (0.3 + lb * 0.3); ctx.fillStyle = "rgba(70,78,92,.55)"; for (var pp = 0; pp < 9; pp++){ ctx.beginPath(); ctx.arc(wx + 4 + pp * (ww - 8) / 8, ly + (pp % 2) * 2, 3.2 * u, 0, 6.2832); ctx.fill(); } }
+      var nT = INS.length, nN2 = Math.round(nT * (1 - x) / (4 - 2 * x)), nNH3 = Math.round(nT * 2 * x / (4 - 2 * x)), ms2 = 6.6 * u;
+      INS.forEach(function(m, i){ var ty = i < nNH3 ? "NH3" : i < nNH3 + nN2 ? "N2" : "H2"; mol3(ctx, ty, wx + 10 + m.x * (ww - 20), wy + 10 + m.y * (wh - 20), ms2, m.a, m.b); });
+      ctx.restore();
+      ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(wx + 6, wy + 10); ctx.lineTo(wx + 6, wy + wh * 0.45); ctx.stroke();
+      ctx.restore();
+      S.draw.text(sc, "réacteur (catalyseur au fer)", xr, rb + 9, {size: 10.5, color: pal.grey, halo: true});
+      /* condenseur et cuve d'ammoniac liquide */
+      ctx.save(); var dw = W * 0.07, dt0 = H * 0.36, db = H * 0.74;
+      ctx.fillStyle = lin(ctx, xd - dw / 2, 0, xd + dw / 2, 0, [[0, "#8fb4d8"], [0.5, "#e6f1fb"], [1, "#7fa6cc"]]); S.draw.rrect(sc, xd - dw / 2, dt0, dw, db - dt0, 8); ctx.fill(); ctx.strokeStyle = "#5c7fa3"; ctx.lineWidth = 1; ctx.stroke();
+      ctx.strokeStyle = "#2f7fd1"; ctx.lineWidth = 2; ctx.beginPath(); for (var cz = 0; cz <= 40; cz++){ var yy2 = dt0 + 8 + cz / 40 * (db - dt0 - 16), xx2 = xd + Math.sin(cz * 0.8 + tm * 2) * dw * 0.3; cz ? ctx.lineTo(xx2, yy2) : ctx.moveTo(xx2, yy2); } ctx.stroke(); ctx.restore();
+      S.draw.text(sc, phn ? "condenseur" : "condenseur (froid)", xd, db + 10, {size: 10.5, color: pal.grey, halo: true});
+      var tkw = W * 0.1, tkh = H * 0.24, lvl = 0.25 + 0.6 * made;
+      ctx.save(); ctx.fillStyle = "rgba(230,240,250,.6)"; S.draw.rrect(sc, xt - tkw / 2, yt - tkh * 0.35, tkw, tkh, 8); ctx.fill(); ctx.save(); S.draw.rrect(sc, xt - tkw / 2, yt - tkh * 0.35, tkw, tkh, 8); ctx.clip();
+      ctx.fillStyle = "rgba(122,170,232,.75)"; ctx.fillRect(xt - tkw / 2, yt - tkh * 0.35 + tkh * (1 - lvl), tkw, tkh * lvl); ctx.restore(); ctx.strokeStyle = "#51627a"; ctx.lineWidth = 1.6; S.draw.rrect(sc, xt - tkw / 2, yt - tkh * 0.35, tkw, tkh, 8); ctx.stroke(); ctx.restore();
+      S.draw.text(sc, "NH₃ liquide", xt, yt + tkh * 0.65 + 9, {size: 10.5, color: pal.ink, weight: 800, halo: true});
+      S.draw.text(sc, phn ? "recyclage N₂ + H₂" : "recyclage de N₂ + H₂ non convertis", (xc + xr) / 2, H * 0.06 + 14, {size: 10.5, color: pal.grey, halo: true});
+      /* cadrans (on les tourne à la souris) et rendement */
+      var gr = Math.max(19, 27 * u);
+      G.P = {x: xc, y: H * 0.3, r: gr}; G.T = {x: xr, y: rt0 + (rb - rt0) * 0.79, r: Math.min(gr, rw * 0.3)};
+      gauge(ctx, G.P.x, G.P.y, gr, (Pv - 1) / 399, Pv + " bar", "PRESSION", pal.acc);
+      gauge(ctx, G.T.x, G.T.y, G.T.r, (tC - 300) / 400, tC + " °C", "TEMPÉRATURE", pal.red);
+      var dW = Math.max(92, 118 * u); S.draw.display(sc, S.fmt(100 * f, 1) + " %", W - dW / 2 - 10, H * 0.15, {w: dW, h: Math.max(34, 40 * u), caption: "NH₃ À L'ÉQUILIBRE", size: Math.round(Math.max(14, 18 * u)), screen: f >= 0.3 ? "#dff3e6" : "#e8f3ec", color: f >= 0.3 ? pal.green : "#13233a"});
+      if (G.v < 0.02) S.draw.label(sc, "réaction quasi à l'arrêt : trop lent", xr, H * 0.94, {color: pal.red, size: 12});
+      else S.draw.text(sc, "tourne les cadrans · débit ∝ vitesse de réaction", W / 2, H * 0.95, {size: 10.5, color: pal.ink, halo: true});
+    }
     var ax0 = null;
     c.pointer(function(type, p){ if ((type === "down" || type === "drag") && ax0){ T.set(Math.max(300, Math.min(700, Math.round(ax0.ix(p.x) / 5) * 5))); P.set(Math.max(1, Math.min(400, Math.round(ax0.iy(p.y))))); k.redraw(); } });
     k.draw(function(){
@@ -164,6 +278,7 @@ SFA.sim({
       S.draw.text(c, cat.value ? "vitesse ≥ 0,2 →" : "(sans catalyseur : trop lent partout)", ax.X(tmin) + 4, ax.B - 12, {size: 12, color: pal.green, align: "left"}); S.draw.text(c, "P ≤ 250 bar ↓", ax.R - 4, ax.Y(250) + 12, {size: 12, color: pal.green, align: "right"});
       S.draw.dot(c, ax.X(T.value), ax.Y(P.value), 8, pal.red); c.ctx.strokeStyle = "#fff"; c.ctx.lineWidth = 2; c.ctx.beginPath(); c.ctx.arc(ax.X(T.value), ax.Y(P.value), 8, 0, 6.3); c.ctx.stroke();
       var x = yv(T.value, P.value), f = 2 * x / (4 - 2 * x), rt = rate(T.value);
+      drawScene(x, f);
       ro.set(0, S.fmt(100 * f, 1) + " %"); ro.set(1, S.fmt(100 * x, 1) + " %"); ro.set(2, rt < 0.001 && !cat.value ? "≈ 0 (pas de catalyseur)" : S.sci(rt, 2)); ro.set(3, S.fmt(P.value / 200, 2) + " (200 bar = 1)");
       var win = f >= 0.30 && rt >= 0.2 && P.value <= 250;
       ro.set(4, win ? "réussi" : "à chercher");

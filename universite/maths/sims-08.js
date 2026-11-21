@@ -227,25 +227,106 @@ SFA.sim({
   aRetenir:"det [u v w] = u·(v × w). |det| = volume ; det = 0 ⇔ colonnes coplanaires ⇔ matrice non inversible ⇔ le système Ax = b n'a pas de solution unique. Échanger deux colonnes change le signe.",
   piege:"det(A + B) ≠ det A + det B en général ; en revanche det(AB) = det A · det B et det(kA) = k³·det A pour une matrice 3 × 3.",
   build:function(k, S){
-    var c = k.canvas(0, {ratio:0.72}), V = U.View3(k, c, {range:5, az:0.85, el:0.5}); V.attach();
-    var s = {ux:k.slider("u : x", -3, 3, 0.5, 2, ""), uy:k.slider("u : y", -3, 3, 0.5, 0, ""), uz:k.slider("u : z", -3, 3, 0.5, 0, ""), vx:k.slider("v : x", -3, 3, 0.5, 0.5, ""), vy:k.slider("v : y", -3, 3, 0.5, 2, ""), vz:k.slider("v : z", -3, 3, 0.5, 0, ""), wx:k.slider("w : x", -3, 3, 0.5, 0, ""), wy:k.slider("w : y", -3, 3, 0.5, 0.5, ""), wz:k.slider("w : z", -3, 3, 0.5, 2, "")};
+    /* scène 3D haute (le parallélépipède remplit le cadre), réglages regroupés : une colonne à la fois */
+    var c = k.canvas(0, {ratio:0.8}), rBase = c.resize, V = U.View3(k, c, {range:3, az:0.85, el:0.48});
+    c.resize = function(){ var w = c.cv.parentNode ? c.cv.parentNode.clientWidth : 600; c.ratio = w < 600 ? 1.12 : 0.78; rBase(); }; c.resize();
+    var CC = {u:C.blue, v:C.violet, w:C.green}, val = {ux:2, uy:0, uz:0, vx:0.5, vy:2, vz:0, wx:0, wy:0.5, wz:2};
+    var cam = {ox:0, oy:0, oz:0, range:3, init:false}, ui = {drag:false, mat:null}, anim = null;
+    var colS = k.seg("Colonne de la matrice à régler", [["u", "u (1re)"], ["v", "v (2e)"], ["w", "w (3e)"]], "u", function(){ showCol(); });
+    var sl = ["x", "y", "z"].map(function(a){ return k.slider(a, -3, 3, 0.5, 0, "", function(x){ anim = null; val[colS.value + a] = x; }); });
+    /* s.ux… : même interface qu'un curseur ({value, set}) pour les poignées et les boutons */
+    var s = {};
+    Object.keys(val).forEach(function(q){ s[q] = {get value(){ return val[q]; }, set:function(x){ val[q] = Math.max(-3, Math.min(3, x)); showCol(); }}; });
+    function showCol(){
+      var col = colS.value;
+      sl.forEach(function(o, i){ var a = ["x", "y", "z"][i]; o.set(val[col + a]); o.el.style.accentColor = CC[col]; o.el.parentNode.querySelector("label span").textContent = col + " : " + a; });
+    }
+    showCol();
     function sn(x){ return Math.round(x * 2) / 2; }
-    [["u", C.blue], ["v", C.violet], ["w", C.green]].forEach(function(h){ V.handles.push({col:h[1], get:function(){ return [s[h[0] + "x"].value, s[h[0] + "y"].value, s[h[0] + "z"].value]; }, set:function(x, y){ s[h[0] + "x"].set(sn(x)); s[h[0] + "y"].set(sn(y)); }}); });
+    [["u", C.blue], ["v", C.violet], ["w", C.green]].forEach(function(h){ V.handles.push({col:h[1], get:function(){ return [val[h[0] + "x"], val[h[0] + "y"], val[h[0] + "z"]]; }, set:function(x, y){ anim = null; if (colS.value !== h[0]) colS.set(h[0]); s[h[0] + "x"].set(sn(x)); s[h[0] + "y"].set(sn(y)); }}); });
+    /* clic sur une colonne de la matrice dessinée : on la sélectionne */
+    V.attach(function(t, pp){
+      if (t !== "down" || !ui.mat) return false;
+      var m = ui.mat; if (pp.y < m.y0 || pp.y > m.y1) return false;
+      for (var i = 0; i < 3; i++) if (pp.x > m.xs[i] - m.cw / 2 && pp.x < m.xs[i] + m.cw / 2){ colS.set(["u", "v", "w"][i]); showCol(); k.redraw(); return true; }
+      return false;
+    });
+    c.cv.addEventListener("pointerdown", function(){ ui.drag = true; if (rot.value){ rot.set(false); } });
+    window.addEventListener("pointerup", function(){ ui.drag = false; });
+    var rot = k.toggle("Rotation lente de la vue", true);
     var gd = k.toggle("Défi : volume exactement 6 (glisse les pointes)", false);
-    k.button("Aplatir : w = u + v", function(){ s.wx.set(Math.max(-3, Math.min(3, s.ux.value + s.vx.value))); s.wy.set(Math.max(-3, Math.min(3, s.uy.value + s.vy.value))); s.wz.set(Math.max(-3, Math.min(3, s.uz.value + s.vz.value))); }, true);
-    k.button("Échanger u et v", function(){ ["x", "y", "z"].forEach(function(a){ var t = s["u" + a].value; s["u" + a].set(s["v" + a].value); s["v" + a].set(t); }); });
-    k.button("Base canonique", function(){ var m = {ux:2, uy:0, uz:0, vx:0, vy:2, vz:0, wx:0, wy:0, wz:2}; for (var q in m) s[q].set(m[q]); });
+    k.button("Aplatir : w = u + v", function(){
+      var to = [Math.max(-3, Math.min(3, val.ux + val.vx)), Math.max(-3, Math.min(3, val.uy + val.vy)), Math.max(-3, Math.min(3, val.uz + val.vz))];
+      anim = {from:[val.wx, val.wy, val.wz], to:to, t:0}; colS.set("w"); showCol();
+    }, true);
+    k.button("Échanger u et v", function(){ anim = null; ["x", "y", "z"].forEach(function(a){ var t = val["u" + a]; val["u" + a] = val["v" + a]; val["v" + a] = t; }); showCol(); });
+    k.button("Base canonique", function(){ anim = null; var m = {ux:2, uy:0, uz:0, vx:0, vy:2, vz:0, wx:0, wy:0, wz:2}; for (var q in m) val[q] = m[q]; showCol(); });
     var ro = k.readouts(["det [u v w]", "Volume |det|", "Orientation", "Matrice inversible ?"]); var nt = k.note("", "ok");
+    function vecs(){ return [[val.ux, val.uy, val.uz], [val.vx, val.vy, val.vz], [val.wx, val.wy, val.wz]]; }
+    /* cadrage : centre et rayon de la sphère qui contient le parallélépipède */
+    function frame(){
+      var q = vecs(), G = U.mul3(U.add3(U.add3(q[0], q[1]), q[2]), 0.5), R = 0;
+      [0, 1].forEach(function(a){ [0, 1].forEach(function(b){ [0, 1].forEach(function(e){ var P = U.add3(U.add3(U.mul3(q[0], a), U.mul3(q[1], b)), U.mul3(q[2], e)); R = Math.max(R, U.norm3(U.sub3(P, G))); }); }); });
+      return {G:G, range:Math.max(1.5, R * 1.18)};
+    }
+    function ease(t){ return t * t * (3 - 2 * t); }
+    var lp = k.loop(function(dt){
+      if (anim){ anim.t = Math.min(1, anim.t + dt / 1.6); var e = ease(anim.t); ["x", "y", "z"].forEach(function(a, i){ val["w" + a] = anim.from[i] + (anim.to[i] - anim.from[i]) * e; }); if (anim.t >= 1){ ["x", "y", "z"].forEach(function(a, i){ val["w" + a] = anim.to[i]; }); anim = null; } showCol(); }
+      if (rot.value && !ui.drag) V.az += dt * 0.22;
+      if (!ui.drag){ var f = frame(), a = Math.min(1, dt * 3); cam.ox += (f.G[0] - cam.ox) * a; cam.oy += (f.G[1] - cam.oy) * a; cam.oz += (f.G[2] - cam.oz) * a; cam.range += (f.range - cam.range) * a; }
+      k.redraw();
+    });
+    lp.play();
+    function shadeCol(rgb, b, a){ return "rgba(" + Math.round(rgb[0] * b) + "," + Math.round(rgb[1] * b) + "," + Math.round(rgb[2] * b) + "," + a + ")"; }
     k.draw(function(){
-      c.clear(); V.fit(); var u = [s.ux.value, s.uy.value, s.uz.value], v = [s.vx.value, s.vy.value, s.vz.value], w = [s.wx.value, s.wy.value, s.wz.value], O = [0, 0, 0], d = U.dot3(u, U.cross3(v, w));
-      V.axes(4, null, {step:1});
-      var uv = U.add3(u, v), uw = U.add3(u, w), vw = U.add3(v, w), uvw = U.add3(uv, w), F = [[O, u, uv, v], [O, u, uw, w], [O, v, vw, w], [w, uw, uvw, vw], [v, uv, uvw, vw], [u, uv, uvw, uw]];
-      var col = Math.abs(d) < 1e-9 ? "rgba(138,149,163,.28)" : d > 0 ? "rgba(30,63,143,.2)" : "rgba(180,35,24,.2)", edge = Math.abs(d) < 1e-9 ? "#8a95a3" : d > 0 ? "rgba(30,63,143,.8)" : "rgba(180,35,24,.8)";
-      F.map(function(f){ var m = 0; f.forEach(function(q){ m += V.p(q[0], q[1], q[2]).d; }); return {f:f, d:m / 4}; }).sort(function(a, b){ return b.d - a.d; }).forEach(function(o){ V.poly(o.f, col, edge, 1.2); });
-      V.arrow(O, u, C.blue, 3, "u"); V.arrow(O, v, C.violet, 3, "v"); V.arrow(O, w, C.green, 3, "w"); V.hand();
-      ro.set(0, fx(d, 3)); ro.set(1, fx(Math.abs(d), 3)); ro.set(2, Math.abs(d) < 1e-9 ? "dégénéré" : d > 0 ? "directe (+)" : "indirecte (−)"); ro.set(3, Math.abs(d) < 1e-9 ? "non (det = 0)" : "oui");
+      if (!cam.init){ var f0 = frame(); cam.ox = f0.G[0]; cam.oy = f0.G[1]; cam.oz = f0.G[2]; cam.range = f0.range; cam.init = true; }
+      V.ox = cam.ox; V.oy = cam.oy; V.oz = cam.oz; V.range = cam.range; V.yoff = c.H * 0.06;
+      var ctx = c.ctx, W = c.W, H = c.H;
+      c.clear(); V.fit();
+      /* fond : léger dégradé, sol de l'espace */
+      var bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#f7f9fc"); bg.addColorStop(1, "#e9eef6"); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+      var q = vecs(), u = q[0], v = q[1], w = q[2], O = [0, 0, 0], d = U.dot3(u, U.cross3(v, w));
+      var Lax = Math.max(3, Math.min(9, Math.ceil(Math.max.apply(null, [u, v, w, U.add3(U.add3(u, v), w)].map(function(p){ return Math.max(Math.abs(p[0]), Math.abs(p[1]), Math.abs(p[2])); }))) + 1));
+      V.axes(Lax, null, {step:1});
+      var uv = U.add3(u, v), uw = U.add3(u, w), vw = U.add3(v, w), uvw = U.add3(uv, w);
+      var corners = [O, u, v, w, uv, uw, vw, uvw];
+      /* ombre portée sur le plan z = 0 (enveloppe convexe des sommets projetés) */
+      var sh = corners.map(function(p){ return V.p(p[0], p[1], 0); });
+      sh.sort(function(a, b){ return a.x - b.x || a.y - b.y; });
+      function cr(o, a, b){ return (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x); }
+      var lo = [], hi = [];
+      sh.forEach(function(p){ while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); });
+      sh.slice().reverse().forEach(function(p){ while (hi.length >= 2 && cr(hi[hi.length - 2], hi[hi.length - 1], p) <= 0) hi.pop(); hi.push(p); });
+      var hull = lo.slice(0, -1).concat(hi.slice(0, -1));
+      if (hull.length > 2){ ctx.save(); ctx.fillStyle = "rgba(15,27,45,.09)"; ctx.beginPath(); hull.forEach(function(p, i){ if (i) ctx.lineTo(p.x, p.y); else ctx.moveTo(p.x, p.y); }); ctx.closePath(); ctx.fill(); ctx.restore(); }
+      var deg = Math.abs(d) < 1e-9, rgb = deg ? [138, 149, 163] : d > 0 ? [52, 98, 205] : [205, 58, 44], edge = deg ? "#6b7787" : d > 0 ? "rgba(30,63,143,.9)" : "rgba(180,35,24,.9)";
+      var F = [[O, u, uv, v], [O, u, uw, w], [O, v, vw, w], [w, uw, uvw, vw], [v, uv, uvw, vw], [u, uv, uvw, uw]], Ld = [0.35, -0.45, 0.82];
+      F.map(function(f){ var m = 0; f.forEach(function(p){ m += V.p(p[0], p[1], p[2]).d; }); var n = U.cross3(U.sub3(f[1], f[0]), U.sub3(f[3], f[0])), nn = U.norm3(n) || 1; return {f:f, d:m / 4, b:0.72 + 0.4 * Math.abs(U.dot3(n, Ld)) / nn}; }).sort(function(a, b){ return b.d - a.d; })
+        .forEach(function(o){ V.poly(o.f, shadeCol(rgb, Math.min(1.15, o.b), deg ? 0.3 : 0.3), edge, 1.4); });
+      V.arrow(O, u, C.blue, 3.4, "u"); V.arrow(O, v, C.violet, 3.4, "v"); V.arrow(O, w, C.green, 3.4, "w"); V.hand();
+      V.dot(O, 4, C.ink);
+      /* matrice [u v w] dessinée en haut à gauche : colonnes colorées, clic = choisir la colonne */
+      var ph = W < 480, fs = ph ? 12.5 : 14.5, cw = ph ? 40 : 48, rh = ph ? 19 : 22, x0 = 14, y0 = 12, lab = "[u v w] =";
+      ctx.save(); ctx.font = "800 " + fs + "px Mulish, system-ui, sans-serif";
+      var lw = ctx.measureText(lab).width, pw = lw + 22 + cw * 3 + 16, phh = rh * 3 + 50;
+      ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.strokeStyle = "#dfe4ec"; ctx.lineWidth = 1; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x0, y0, pw, phh, 10); else ctx.rect(x0, y0, pw, phh); ctx.fill(); ctx.stroke();
+      var mx = x0 + 10 + lw + 14, my = y0 + 10, xs = [];
+      ctx.fillStyle = "#2c3a4e"; ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(lab, x0 + 10, my + rh * 1.5);
+      ctx.strokeStyle = "#2c3a4e"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(mx + 5, my); ctx.lineTo(mx, my); ctx.lineTo(mx, my + rh * 3); ctx.lineTo(mx + 5, my + rh * 3); ctx.moveTo(mx + cw * 3 - 5, my); ctx.lineTo(mx + cw * 3, my); ctx.lineTo(mx + cw * 3, my + rh * 3); ctx.lineTo(mx + cw * 3 - 5, my + rh * 3); ctx.stroke();
+      ["u", "v", "w"].forEach(function(cn, i){
+        var cx = mx + cw * (i + 0.5); xs.push(cx);
+        if (colS.value === cn){ ctx.fillStyle = U.rgba(CC[cn], 0.12); ctx.fillRect(cx - cw / 2 + 3, my + 1, cw - 6, rh * 3 - 2); }
+        ["x", "y", "z"].forEach(function(a, j){ ctx.fillStyle = CC[cn]; ctx.textAlign = "center"; ctx.fillText(fx(val[cn + a], 2), cx, my + rh * (j + 0.5)); });
+      });
+      ui.mat = {xs:xs, cw:cw, y0:my, y1:my + rh * 3};
+      ctx.font = "800 " + (fs + 1) + "px Mulish, system-ui, sans-serif"; ctx.textAlign = "left"; ctx.fillStyle = deg ? "#B45309" : d > 0 ? C.blue : C.red;
+      ctx.fillText("det = " + fx(d, 2) + (deg ? "  (aplati)" : ""), x0 + 10, y0 + phh - 16);
+      ctx.restore();
+      if (!ph) D_text("glisse pour tourner · pointes déplaçables", W - 12, H - 14);
+      function D_text(t, x, y){ SFA.draw.text(c, t, x, y, {size:11, color:"#8a95a3", align:"right"}); }
+      ro.set(0, fx(d, 3)); ro.set(1, fx(Math.abs(d), 3)); ro.set(2, deg ? "dégénéré" : d > 0 ? "directe (+)" : "indirecte (−)"); ro.set(3, deg ? "non (det = 0)" : "oui");
       if (gd.value){ var ok = Math.abs(Math.abs(d) - 6) < 0.26; nt.set(ok ? "Volume = " + fx(Math.abs(d), 2) + " ≈ 6 : réussi. Un même volume, une infinité de parallélépipèdes !" : "Volume = " + fx(Math.abs(d), 2) + ". Vise 6 : allonge un vecteur ou redresse-le vers la normale des deux autres.", ok ? "ok" : "warn"); return; }
-      nt.set(Math.abs(d) < 1e-9 ? "Les trois vecteurs sont dans un même plan : volume nul, det = 0. La matrice [u v w] n'est pas inversible." : "det = u·(v × w) = " + fx(d, 2) + " : le volume du parallélépipède est " + fx(Math.abs(d), 2) + (d < 0 ? " (orientation inversée, faces en rouge)." : "."), Math.abs(d) < 1e-9 ? "warn" : "ok");
+      nt.set(deg ? "Les trois vecteurs sont dans un même plan : volume nul, det = 0. La matrice [u v w] n'est pas inversible." : "det = u·(v × w) = " + fx(d, 2) + " : le volume du parallélépipède est " + fx(Math.abs(d), 2) + (d < 0 ? " (orientation inversée, faces en rouge)." : "."), deg ? "warn" : "ok");
     });
   }
 });

@@ -3,6 +3,51 @@
 var D2R = Math.PI / 180, R2D = 180 / Math.PI;
 var MED = [["air","Air (n = 1,00)",1.00],["eau","Eau (n = 1,33)",1.33],["verre","Verre (n = 1,50)",1.50],["diam","Diamant (n = 2,42)",2.42]];
 function nOf(k){ return MED.filter(function(m){ return m[0] === k; })[0][2]; }
+/* fibre (modèle 2D agrandi) : axe = segment droit, arc de cercle (rayon Rb, angle phi, vers le haut), segment droit.
+   Tracé du rayon pas à pas ; à chaque contact avec la gaine : réflexion totale si i ≥ angle limite, sinon fuite
+   (rayon réfracté dans la gaine) et réflexion partielle (Fresnel, lumière non polarisée). */
+function fibreGeom(x0, y0, L1, Rb, phi, L2){
+  var g = {x0:x0, y0:y0, L1:L1, Rb:Rb, phi:phi, L2:L2, bend:Rb > 0 && phi > 0};
+  g.Cx = x0 + L1; g.Cy = y0 - Rb;
+  if (g.bend){ g.Ex = g.Cx + Rb * Math.sin(phi); g.Ey = g.Cy + Rb * Math.cos(phi); g.dx = Math.cos(phi); g.dy = -Math.sin(phi); }
+  else { g.Ex = x0 + L1; g.Ey = y0; g.dx = 1; g.dy = 0; }
+  g.len = L1 + (g.bend ? Rb * phi : 0) + L2;
+  return g;
+}
+/* point de l'axe le plus proche : renvoie [distance, cx, cy, s (abscisse le long de l'axe)] */
+function fibreNear(g, px, py){
+  var best = null;
+  function cand(d, cx, cy, s){ if (!best || d < best[0]) best = [d, cx, cy, s]; }
+  var t = Math.max(-1e9, Math.min(g.L1, px - g.x0)); cand(Math.hypot(px - g.x0 - t, py - g.y0), g.x0 + t, g.y0, t);
+  if (g.bend){ var vx = px - g.Cx, vy = py - g.Cy, th = Math.atan2(vx, vy), r = Math.hypot(vx, vy);
+    if (th >= 0 && th <= g.phi && r > 1e-9) cand(Math.abs(r - g.Rb), g.Cx + g.Rb * vx / r, g.Cy + g.Rb * vy / r, g.L1 + g.Rb * th); }
+  var u = Math.max(0, (px - g.Ex) * g.dx + (py - g.Ey) * g.dy); cand(Math.hypot(px - g.Ex - u * g.dx, py - g.Ey - u * g.dy), g.Ex + u * g.dx, g.Ey + u * g.dy, g.L1 + (g.bend ? g.Rb * g.phi : 0) + u);
+  return best;
+}
+function fibreTrace(g, w, n1, n2, r1){
+  var thc = Math.asin(n2 / n1), x = g.x0, y = g.y0, dx = Math.cos(r1), dy = -Math.sin(r1), I = 1, st = 0.5;
+  var segs = [], leaks = [], hits = [], sx = x, sy = y, minI = 90, exited = false;
+  for (var it = 0; it < 20000 && I > 0.004; it++){
+    var nx = x + dx * st, ny = y + dy * st, nb = fibreNear(g, nx, ny);
+    if (nb[3] >= g.len){ segs.push([sx, sy, nx, ny, I]); exited = true; break; }
+    if (nb[0] >= w){
+      var ax = x, ay = y, bx2 = nx, by2 = ny;
+      for (var k = 0; k < 24; k++){ var mx = (ax + bx2) / 2, my = (ay + by2) / 2; if (fibreNear(g, mx, my)[0] < w){ ax = mx; ay = my; } else { bx2 = mx; by2 = my; } }
+      var hb = fibreNear(g, ax, ay), ox = ax - hb[1], oy = ay - hb[2], on = Math.hypot(ox, oy) || 1; ox /= on; oy /= on;
+      var ci = dx * ox + dy * oy, inc = Math.acos(Math.max(-1, Math.min(1, ci))) * 180 / Math.PI;
+      segs.push([sx, sy, ax, ay, I]); hits.push([ax, ay, inc]); minI = Math.min(minI, inc);
+      if (inc < thc * 180 / Math.PI - 1e-9){
+        var si = Math.sqrt(1 - ci * ci), stt = n1 / n2 * si, ct = Math.sqrt(1 - stt * stt), tx = n1 / n2 * (dx - ci * ox) + ct * ox, ty = n1 / n2 * (dy - ci * oy) + ct * oy;
+        var rs = (n1 * ci - n2 * ct) / (n1 * ci + n2 * ct), rp = (n2 * ci - n1 * ct) / (n2 * ci + n1 * ct), R = (rs * rs + rp * rp) / 2;
+        leaks.push([ax, ay, tx, ty, I * (1 - R)]); I *= R;
+      }
+      dx -= 2 * ci * ox; dy -= 2 * ci * oy; x = ax - ox * 0.05; y = ay - oy * 0.05; sx = x; sy = y; continue;
+    }
+    if (nb[3] < -1){ segs.push([sx, sy, nx, ny, I]); break; }
+    x = nx; y = ny;
+  }
+  return {segs:segs, leaks:leaks, hits:hits, minI:minI, out:exited ? I : 0, exited:exited, thc:thc * 180 / Math.PI};
+}
 
 SFA.sim({
   id:"p4-c09-snell", ch:"c09", tag:"Classique",
@@ -115,62 +160,90 @@ SFA.sim({
   id:"p4-c09-fibre", ch:"c09", tag:"Technologie",
   titre:"Fibre optique : piéger la lumière",
   resume:"La lumière avance en rebondissant par réflexion totale ; trop inclinée, elle s'échappe.",
-  but:"Règle l'indice de la gaine (le cœur a n = 1,50) et l'angle d'entrée du rayon (glisse le laser à la souris ou au doigt). Observe s'il reste guidé ou s'échappe : le cône vert montre les angles acceptés.",
+  but:"Règle l'indice de la gaine (le cœur a n = 1,50), la forme de la fibre et l'angle d'entrée du rayon (tourne le laser à la souris ou au doigt). Observe s'il reste guidé ou s'échappe : le cône vert montre les angles acceptés (fibre droite).",
   aRetenir:"Dans une fibre, le cœur (n₁) est entouré d'une gaine (n₂ < n₁). Si l'angle d'incidence sur la paroi dépasse l'angle limite, il y a réflexion totale : le rayon est guidé, même si la fibre est courbée. Angle d'acceptation : sin α<sub>max</sub> = √(n₁² − n₂²).",
   piege:"Plus l'indice de la gaine est proche de celui du cœur, plus l'angle d'acceptation est petit : la fibre « accepte » moins de lumière. Il faut aussi une gaine : sans elle, une fibre sale ou en contact avec un objet perdrait la lumière.",
   build:function(k,S){
-    var P = S.draw.palette, c = PX.canvas(k, 0.52, 0.8), st = {s:0, hint:true}, geo = {};
-    var n2s = k.slider("Indice de la gaine n₂", 1.30, 1.49, 0.01, 1.44, "");
-    var al = k.slider("Angle du rayon à l'entrée α", 0, 60, 1, 15, "°", function(){ st.hint = false; });
-    var ro = k.readouts(["Angle d'acceptation α<sub>max</sub>", "Angle limite cœur/gaine", "Incidence sur la paroi", "État du rayon"]);
+    var P = S.draw.palette, c = PX.canvas(k, 0.8, 0.82), st = {s:0, hint:true, sweep:false, ts:0}, geo = {}, cache = {};
+    var n2s = k.slider("Indice de la gaine n₂", 1.30, 1.49, 0.01, 1.32, "");
+    var al = k.slider("Angle du rayon à l'entrée α", 0, 60, 1, 15, "°", function(){ st.hint = false; st.sweep = false; });
+    var fo = k.seg("Forme de la fibre", [["0", "Droite"], ["22", "Virage large"], ["7", "Virage serré"]], "22");
+    k.button("▶ Balayer l'angle α", function(){ st.sweep = !st.sweep; st.ts = Math.acos(Math.max(-1, Math.min(1, 1 - al.value / 30))) / 0.7; }, true);
+    var ro = k.readouts(["Angle d'acceptation α<sub>max</sub>", "Angle limite cœur/gaine", "Incidence sur la paroi (la plus faible)", "État du rayon"]);
     var nt = k.note("", "");
-    var lp = k.loop(function(dt){ st.s += dt * 260; k.redraw(); }); lp.play();
-    PX.drag(k, c, function(){ return [{x:geo.hx, y:geo.hy, r:11, set:function(px, py){ st.hint = false; var a = Math.atan2(geo.cy - py, Math.max(2, geo.x0 - px)) * R2D; al.set(Math.max(0, Math.min(60, Math.round(a)))); }}]; });
+    var lp = k.loop(function(dt){ st.s += dt * 240; if (st.sweep){ st.ts += dt; al.set(Math.round(30 - 30 * Math.cos(st.ts * 0.7))); } k.redraw(); }); lp.play();
+    PX.drag(k, c, function(){ return [{x:geo.hx, y:geo.hy, r:16, set:function(px, py){ st.hint = false; st.sweep = false; var a = Math.atan2(py - geo.cy, Math.max(2, geo.x0 - px)) * R2D; al.set(Math.max(0, Math.min(60, Math.round(a)))); }}]; });
+    function path(ctx, g){ ctx.beginPath(); ctx.moveTo(g.x0 - 2, g.y0); ctx.lineTo(g.x0 + g.L1, g.y0); if (g.bend) ctx.arc(g.Cx, g.Cy, g.Rb, Math.PI / 2, Math.PI / 2 - g.phi, true); ctx.lineTo(g.Ex + g.dx * g.L2, g.Ey + g.dy * g.L2); }
     k.draw(function(){
-      var n1 = 1.5, n2 = n2s.value, A = al.value * D2R, ctx = c.ctx, ph = PX.phone(c);
-      var NA = Math.sqrt(n1 * n1 - n2 * n2), amax = NA >= 1 ? 90 : Math.asin(NA) * R2D, r1 = Math.asin(Math.sin(A) / n1), i2 = Math.PI / 2 - r1, thc = Math.asin(n2 / n1), guided = i2 >= thc - 1e-9;
-      var x0 = ph ? 96 : 112, x1 = c.W - 8, cy = c.H / 2, w = ph ? 30 : 40, col = guided ? P.green : P.amber;
-      geo.x0 = x0; geo.cy = cy;
+      var n1 = 1.5, n2 = n2s.value, A = al.value * D2R, ctx = c.ctx, ph = PX.phone(c), W = c.W, H = c.H, kap = +fo.value, phi = 60 * D2R, i, j;
+      var NA = Math.sqrt(n1 * n1 - n2 * n2), amax = NA >= 1 ? 90 : Math.asin(NA) * R2D, r1 = Math.asin(Math.sin(A) / n1), thc = Math.asin(n2 / n1);
+      /* géométrie (en unités de w : demi-largeur du cœur) */
+      var x0 = ph ? 104 : 150, y0 = kap ? H * 0.8 : H * 0.55;
+      var w = Math.max(6, Math.min(16, (W - x0 - 70) / (10 + 22 * Math.sin(phi) + 3), (H * 0.8 - 50) / (22 * (1 - Math.cos(phi)) + 6 * Math.sin(phi))));
+      var g;
+      if (!kap){ w = Math.min(w * 1.5, H * 0.07); g = fibreGeom(x0, y0, W - x0 - 64, 0, 0, 0); }
+      else { g = fibreGeom(x0, y0, 10 * w, kap * w, phi, 0); g.L2 = Math.max(20, Math.min((W - 84 - g.Ex) / g.dx, (g.Ey - 66) / -g.dy)); g = fibreGeom(x0, y0, 10 * w, kap * w, phi, g.L2); }
+      var key = [W, H, n2, al.value, kap].join("|"), tr = cache.k === key ? cache.v : (cache.k = key, cache.v = fibreTrace(g, w, n1, n2, r1));
+      var guided = tr.leaks.length === 0, col = "#ffcf3a";
+      geo.x0 = x0; geo.cy = y0;
       c.clear();
-      PX.bg(c, "#eef2f8", "#dde4ee");
-      /* gaine et cœur */
-      var jg = ctx.createLinearGradient(0, cy - w - 14, 0, cy + w + 14); jg.addColorStop(0, "#7d8aa0"); jg.addColorStop(0.5, "#aab4c6"); jg.addColorStop(1, "#7d8aa0");
-      ctx.fillStyle = jg; PX.rr(ctx, x0, cy - w - 14, x1 - x0 + 6, 2 * w + 28, 6); ctx.fill();
-      ctx.fillStyle = "#c9d7ea"; ctx.fillRect(x0, cy - w - 7, x1 - x0, 2 * w + 14);
-      var cg = ctx.createLinearGradient(0, cy - w, 0, cy + w); cg.addColorStop(0, "#e8f3ff"); cg.addColorStop(0.5, "#f7fbff"); cg.addColorStop(1, "#e8f3ff"); ctx.fillStyle = cg; ctx.fillRect(x0, cy - w, x1 - x0, 2 * w);
-      ctx.strokeStyle = "rgba(15,27,45,.25)"; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x0, cy - w); ctx.lineTo(x1, cy - w); ctx.moveTo(x0, cy + w); ctx.lineTo(x1, cy + w); ctx.stroke();
-      S.draw.label(c, "cœur n₁ = 1,50", (x0 + x1) / 2, cy + w - 13, {color:"#5f6b7a", size:PX.fs(c, 11.5)});
-      S.draw.label(c, "gaine n₂ = " + S.fmt(n2, 2), (x0 + x1) / 2, cy - w - 20, {color:"#2c3a4e", size:PX.fs(c, 11.5)});
+      /* table optique (breadboard) */
+      PX.bg(c, "#2f3642", "#1c2129");
+      ctx.fillStyle = "rgba(0,0,0,.45)"; for (var hx = 14; hx < W; hx += 26) for (var hy = 14; hy < H; hy += 26){ ctx.beginPath(); ctx.arc(hx, hy, 3, 0, 6.2832); ctx.fill(); }
+      ctx.fillStyle = "rgba(255,255,255,.06)"; for (hx = 14; hx < W; hx += 26) for (hy = 15.5; hy < H; hy += 26){ ctx.beginPath(); ctx.arc(hx, hy, 3, 0.2, Math.PI - 0.2); ctx.fill(); }
+      /* fibre : gaine de protection, gaine optique, cœur (vue en coupe) */
+      ctx.save(); ctx.lineCap = "butt"; ctx.lineJoin = "round";
+      path(ctx, g); ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.lineWidth = 2 * w * 2.0 + 8; ctx.stroke();
+      path(ctx, g); ctx.strokeStyle = "#e0761c"; ctx.lineWidth = 2 * w * 2.0; ctx.stroke();
+      path(ctx, g); ctx.strokeStyle = "#f59a3c"; ctx.lineWidth = 2 * w * 1.75; ctx.stroke();
+      path(ctx, g); ctx.strokeStyle = "#9fb4cc"; ctx.lineWidth = 2 * w * 1.5; ctx.stroke();
+      path(ctx, g); ctx.strokeStyle = "#b9cbe0"; ctx.lineWidth = 2 * w * 1.25; ctx.stroke();
+      path(ctx, g); ctx.strokeStyle = "#e9f3ff"; ctx.lineWidth = 2 * w; ctx.stroke();
+      path(ctx, g); ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.lineWidth = 2; ctx.setLineDash([]); ctx.stroke();
+      ctx.restore();
+      /* connecteur d'entrée */
+      ctx.fillStyle = PX.lin(c, 0, y0 - w * 2.3, 0, y0 + w * 2.3, [[0, "#d7dde6"], [0.5, "#8e99a8"], [1, "#596372"]]); PX.rr(ctx, x0 - 8, y0 - w * 2.3, 14, w * 4.6, 3); ctx.fill();
+      ctx.fillStyle = "#e9f3ff"; ctx.fillRect(x0 - 2, y0 - w, 3, 2 * w);
+      if (!ph || W > 380){ S.draw.label(c, "cœur n₁ = 1,50", x0 + Math.min(g.L1, 10 * w) * 0.55 + 14, y0 + w * 2 + 16, {color:"#2c3a4e", fill:"rgba(255,255,255,.9)", size:PX.fs(c, 11)}); S.draw.label(c, "gaine n₂ = " + S.fmt(n2, 2), x0 + Math.min(g.L1, 10 * w) * 0.55 + 14, y0 + w * 2 + 38, {color:"#2c3a4e", fill:"rgba(255,255,255,.9)", size:PX.fs(c, 11)}); }
       /* cône d'acceptation */
-      var cone = 62, am = Math.min(amax, 80) * D2R;
-      ctx.fillStyle = "rgba(36,119,90,.14)"; ctx.beginPath(); ctx.moveTo(x0, cy); ctx.lineTo(x0 - cone * Math.cos(am), cy - cone * Math.sin(am)); ctx.arc(x0, cy, cone, Math.PI + am, Math.PI - am, true); ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = "rgba(36,119,90,.55)"; ctx.lineWidth = 1.2; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(x0, cy); ctx.lineTo(x0 - cone * Math.cos(am), cy - cone * Math.sin(am)); ctx.moveTo(x0, cy); ctx.lineTo(x0 - cone * Math.cos(am), cy + cone * Math.sin(am)); ctx.stroke(); ctx.setLineDash([]);
-      S.draw.label(c, "α max = " + S.fmt(amax, 1) + "°", x0 - cone * 0.55, cy + cone * 0.95 > c.H - 14 ? c.H - 14 : cy + cone * 0.95, {color:P.green, size:10.5});
-      /* trajet du rayon */
-      var pts = [[x0, cy]], slope = Math.tan(r1), x = x0, y = cy, dir = -1, leak = null;
-      for (var it = 0; it < 90 && x < x1; it++){
-        var dyTo = dir < 0 ? (y - (cy - w)) : ((cy + w) - y), dx = slope > 1e-6 ? dyTo / slope : 1e9;
-        if (x + dx >= x1 || slope < 1e-6){ var xx = Math.min(x1, x + (slope > 1e-6 ? dx : x1 - x)); pts.push([xx, y + dir * slope * (xx - x)]); break; }
-        x += dx; y += dir * dyTo; pts.push([x, y]);
-        if (!guided){ var e = Math.asin(Math.min(1, n1 * Math.sin(i2) / n2)); leak = [x, y, e, dir]; break; }
-        dir = -dir;
-      }
-      /* rayon incident (air) et réfraction à l'entrée */
-      var Lr = ph ? 52 : 70, sx = x0 - Lr * Math.cos(A), sy = cy + Lr * Math.sin(A); geo.hx = sx; geo.hy = sy;
-      S.draw.line(c, sx, sy, x0, cy, "#6b7787", 1.2, [3, 3]);
-      S.draw.line(c, x0, cy - w - 4, x0, cy + w + 4, "rgba(15,27,45,.2)", 1, [2, 3]);
-      S.draw.arrow(c, sx, sy, x0 - 1, cy, P.amber, 3);
-      ctx.strokeStyle = col; ctx.lineWidth = 2.6; ctx.lineJoin = "round"; ctx.beginPath(); pts.forEach(function(p, j){ j ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }); ctx.stroke();
-      if (leak){ var lx = leak[0], ly = leak[1]; ctx.strokeStyle = P.red; ctx.setLineDash([5, 3]); ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + 60 * Math.sin(leak[2]), ly + leak[3] * 60 * Math.cos(leak[2])); ctx.stroke(); ctx.setLineDash([]); S.draw.glow(c, lx, ly, 22, P.red, 0.45); S.draw.label(c, "fuite", lx + 36 * Math.sin(leak[2]) + 12, ly + leak[3] * 44 * Math.cos(leak[2]), {color:P.red, size:11.5}); }
-      /* grain de lumière qui voyage */
-      var tot = 0, seg = [], j; for (j = 1; j < pts.length; j++){ var dd = Math.hypot(pts[j][0] - pts[j - 1][0], pts[j][1] - pts[j - 1][1]); seg.push(dd); tot += dd; }
-      if (tot > 0){ var s = st.s % (tot + 40), acc = 0; for (j = 0; j < seg.length; j++){ if (s <= acc + seg[j]){ var f = (s - acc) / seg[j]; if (guided || s < tot) S.draw.glow(c, pts[j][0] + (pts[j + 1][0] - pts[j][0]) * f, pts[j][1] + (pts[j + 1][1] - pts[j][1]) * f, 14, "#ffd24a", 0.9); break; } acc += seg[j]; } }
-      if (pts.length > 1){ var p1 = pts[1]; S.draw.line(c, p1[0], p1[1] - 18, p1[0], p1[1] + 18, "#6b7787", 1.1, [3, 3]); S.draw.label(c, "i", p1[0] + 12, p1[1] + (p1[1] < cy ? 16 : -16), {color:P.violet, size:11.5}); }
-      S.draw.label(c, "α = " + al.value + "°", x0 - 30, cy - 26, {color:P.amber, align:"right", size:11.5});
-      PX.grip(c, sx, sy, P.amber, st.hint ? "tourne le laser" : null, 8);
-      S.draw.label(c, guided ? "rayon guidé : réflexion totale" : "rayon perdu : trop incliné", c.W - 8, 14, {color:guided ? P.green : P.red, align:"right", size:12});
-      ro.set(0, S.fmt(amax, 1) + " °"); ro.set(1, S.fmt(thc * R2D, 1) + " °"); ro.set(2, S.fmt(i2 * R2D, 1) + " °"); ro.set(3, guided ? "guidé" : "perdu");
-      nt.set(guided ? "Incidence sur la paroi : " + S.fmt(i2 * R2D, 1) + " ° ≥ angle limite " + S.fmt(thc * R2D, 1) + " ° : réflexion totale à chaque rebond, aucune perte (modèle idéal)." : "Incidence sur la paroi : " + S.fmt(i2 * R2D, 1) + " ° < angle limite " + S.fmt(thc * R2D, 1) + " ° : une partie de la lumière passe dans la gaine et s'échappe. Diminue α (< " + S.fmt(amax, 1) + " °).", guided ? "" : "warn");
+      var cone = ph ? 50 : 62, am = Math.min(amax, 80) * D2R;
+      ctx.fillStyle = "rgba(60,200,140,.16)"; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.arc(x0, y0, cone, Math.PI - am, Math.PI + am); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "rgba(60,200,140,.7)"; ctx.lineWidth = 1.2; ctx.setLineDash([4, 3]); ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0 - cone * Math.cos(am), y0 - cone * Math.sin(am)); ctx.moveTo(x0, y0); ctx.lineTo(x0 - cone * Math.cos(am), y0 + cone * Math.sin(am)); ctx.stroke(); ctx.setLineDash([]);
+      S.draw.label(c, "α max = " + S.fmt(amax, 1) + "°", x0 - cone * 0.55, Math.max(16, y0 - cone - 10), {color:P.green, fill:"rgba(255,255,255,.9)", size:10.5});
+      /* rayon dans le cœur (intensité = opacité) */
+      ctx.save(); ctx.lineCap = "round"; ctx.shadowColor = col; ctx.shadowBlur = 10;
+      tr.segs.forEach(function(sg){ ctx.globalAlpha = Math.max(0.12, Math.min(1, 0.25 + sg[4])); ctx.strokeStyle = col; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(sg[0], sg[1]); ctx.lineTo(sg[2], sg[3]); ctx.stroke(); });
+      ctx.restore();
+      /* fuites : la fibre s'illumine là où la lumière s'échappe */
+      tr.leaks.forEach(function(L){ var a2 = Math.max(0.35, Math.min(1, L[4] * 1.4)); S.draw.glow(c, L[0] + L[2] * w * 1.4, L[1] + L[3] * w * 1.4, 26, "#ff5a3c", 0.7 * a2);
+        ctx.save(); ctx.globalAlpha = a2; ctx.strokeStyle = "#ff6b4a"; ctx.lineWidth = 2.4; ctx.shadowColor = "#ff5a3c"; ctx.shadowBlur = 8; ctx.beginPath(); ctx.moveTo(L[0], L[1]); ctx.lineTo(L[0] + L[2] * 80, L[1] + L[3] * 80); ctx.stroke(); ctx.restore(); });
+      if (tr.leaks.length){ var L0 = tr.leaks[0]; S.draw.label(c, "fuite", L0[0] + L0[2] * 92, L0[1] + L0[3] * 92, {color:P.red, size:11.5}); }
+      /* impulsions de lumière qui voyagent */
+      var tot = 0, lens = tr.segs.map(function(sg){ var d = Math.hypot(sg[2] - sg[0], sg[3] - sg[1]); tot += d; return d; });
+      if (tot > 0){ for (var pk = 0; pk < 6; pk++){ var s = (st.s + pk * 150) % (tot + 150), acc = 0; if (s > tot) continue;
+        for (j = 0; j < lens.length; j++){ if (s <= acc + lens[j]){ var f = (s - acc) / (lens[j] || 1), sg = tr.segs[j]; S.draw.glow(c, sg[0] + (sg[2] - sg[0]) * f, sg[1] + (sg[3] - sg[1]) * f, 16, "#fff3b0", Math.min(1, 0.2 + sg[4])); break; } acc += lens[j]; } } }
+      /* incidence la plus faible : normale et angle */
+      if (tr.hits.length){ var hm = tr.hits.reduce(function(a, b){ return b[2] < a[2] ? b : a; }), nb = fibreNear(g, hm[0], hm[1]), nx = hm[0] - nb[1], ny = hm[1] - nb[2], nn = Math.hypot(nx, ny) || 1; nx /= nn; ny /= nn;
+        S.draw.line(c, hm[0] - nx * 22, hm[1] - ny * 22, hm[0] + nx * 22, hm[1] + ny * 22, "#c9d3df", 1.2, [3, 3]);
+        S.draw.label(c, "i = " + S.fmt(hm[2], 1) + "°", hm[0] + nx * (w * 2 + 22) + (ph ? 0 : 6), hm[1] + ny * (w * 2 + 22), {color:hm[2] >= thc * R2D - 1e-9 ? P.violet : P.red, size:11}); }
+      /* récepteur en sortie */
+      var ex = g.Ex + g.dx * g.L2, ey = g.Ey + g.dy * g.L2, ang = Math.atan2(g.dy, g.dx), pct = tr.out * 100;
+      ctx.save(); ctx.translate(ex, ey); ctx.rotate(ang); ctx.fillStyle = PX.lin(c, 0, -w * 2.6, 0, w * 2.6, [[0, "#6b7787"], [1, "#2f3946"]]); PX.rr(ctx, 0, -w * 2.6, 34, w * 5.2, 5); ctx.fill(); ctx.fillStyle = "#11161d"; ctx.fillRect(0, -w, 4, 2 * w); ctx.restore();
+      S.draw.glow(c, ex, ey, 30, "#ffe27a", Math.min(0.9, pct / 100));
+      S.draw.display(c, S.fmt(pct, 0) + " %", kap ? Math.max(56, W * 0.3) : Math.min(W - 52, ex - 10), kap ? 44 : ey - w * 2 - 40, {w:ph ? 78 : 92, h:ph ? 36 : 42, caption:"LUMIÈRE REÇUE", size:ph ? 14 : 17});
+      /* laser orientable */
+      var Lr = ph ? 54 : 70, sx = x0 - Lr * Math.cos(A), sy = y0 + Lr * Math.sin(A); geo.hx = sx; geo.hy = sy;
+      ctx.save(); ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.shadowColor = col; ctx.shadowBlur = 10; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(x0, y0); ctx.stroke(); ctx.restore();
+      ctx.save(); ctx.translate(sx, sy); ctx.rotate(-A); ctx.fillStyle = PX.lin(c, 0, -11, 0, 11, [[0, "#5d6878"], [0.5, "#323a46"], [1, "#1b2028"]]); PX.rr(ctx, -46, -11, 46, 22, 5); ctx.fill(); ctx.fillStyle = "#c0321d"; ctx.fillRect(-38, -11, 6, 22); ctx.fillStyle = "#11161d"; ctx.fillRect(-3, -5, 4, 10); ctx.restore();
+      S.draw.glow(c, sx, sy, 12, col, 0.9);
+      PX.grip(c, sx - 26 * Math.cos(A), sy + 26 * Math.sin(A), P.amber, st.hint && !ph ? "tourne le laser" : null, 7);
+      geo.hx = sx - 26 * Math.cos(A); geo.hy = sy + 26 * Math.sin(A);
+      S.draw.label(c, "α = " + al.value + "°", x0 - 30, Math.min(H - 12, y0 + (ph ? 46 : 56) + 14), {color:P.amber, size:11.5});
+      S.draw.label(c, guided ? "rayon guidé : réflexion totale" : "fuites : la lumière s'échappe", W - 8, 16, {color:guided ? P.green : P.red, fill:"rgba(255,255,255,.92)", align:"right", size:12});
+      ro.set(0, S.fmt(amax, 1) + " °"); ro.set(1, S.fmt(thc * R2D, 1) + " °"); ro.set(2, tr.hits.length ? S.fmt(tr.minI, 1) + " °" : "aucun contact"); ro.set(3, guided ? "guidé (100 %)" : "fuites (reçu : " + S.fmt(pct, pct < 10 ? 1 : 0) + " %)");
+      var inA = al.value <= amax + 1e-9;
+      nt.set(guided ? (tr.hits.length ? "Incidence la plus faible sur la paroi : " + S.fmt(tr.minI, 1) + " ° ≥ angle limite " + S.fmt(thc * R2D, 1) + " ° : réflexion totale à chaque rebond, aucune perte (modèle idéal)." : "Rayon dans l'axe : il ne touche pas la paroi, aucune perte.") + (kap ? " Le rayon suit la fibre même dans le virage." : "")
+        : "Incidence sur la paroi : " + S.fmt(tr.minI, 1) + " ° &lt; angle limite " + S.fmt(thc * R2D, 1) + " ° : une partie de la lumière passe dans la gaine et s'échappe (le reste est réfléchi, formules de Fresnel)." + (inA && kap ? " Ici, c'est le <b>virage</b> qui fait fuir la lumière : dans une courbe serrée, le rayon frappe la paroi extérieure moins obliquement. (Modèle 2D très agrandi : une vraie fibre a un cœur de quelques µm et supporte des courbes de quelques cm.)" : " Diminue α (&lt; " + S.fmt(amax, 1) + " °)" + (kap ? " ou adoucis le virage." : ".")), guided ? "" : "warn");
     });
   }
 });

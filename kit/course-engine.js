@@ -230,13 +230,24 @@ window.SFA_COURSE = function () {
   function lvClass(s) { return s <= 2 ? "lv1" : (s === 3 ? "lv2" : (s === 4 ? "lv3" : "lv4")); }
   function paint(fn, w, h) { var mc = ctx, mW = W, mH = H; var pc = document.createElement("canvas"); var d = Math.min(2, window.devicePixelRatio || 1); pc.width = w * d; pc.height = h * d; ctx = pc.getContext("2d"); ctx.setTransform(d, 0, 0, d, 0, 0); W = w; H = h; ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H); try { fn(); } catch (er) {} ctx = mc; W = mW; H = mH; return pc; }
   function buildHome() {
-    var g = document.getElementById("homeGrid");
+    /* même présentation que la page de garde de Physique BA1 : vraie vignette de simulation,
+       « Chapitre N », titre, puis compteurs colorés. Sans vignette : le schéma du chapitre. */
+    var g = document.getElementById("homeGrid"); g.className = "chgrid";
     CH.forEach(function (c, i) {
-      var card = document.createElement("div"); card.className = "card";
-      card.appendChild(paint(function () { c.ic(); }, 460, 260));
-      var cap = document.createElement("div"); cap.className = "cap";
-      cap.innerHTML = '<span class="num">ch. ' + (i + 1) + '</span><div class="tt">' + esc(c.t) + '</div><span class="lv lv2">' + c.sims.length + " simulation" + (c.sims.length > 1 ? "s" : "") + '</span> <span class="lv lv3">' + ((c.sub || c.th) ? "théorie + " : "") + c.ex.length + " exercices</span>";
-      card.appendChild(cap); card.onclick = function () { openChap(i); }; g.appendChild(card);
+      var pick = M.chThumb && M.chThumb[c.id], s0 = null;
+      c.sims.forEach(function (s) { if (!s0 && (!pick || s.id === pick)) s0 = s; });
+      if (!s0) s0 = c.sims[0];
+      var a = document.createElement("a"); a.className = "chcard"; a.href = "#c=" + i;
+      var fig = document.createElement("div"); fig.className = "chfig";
+      function icon() { fig.innerHTML = ""; fig.appendChild(paint(function () { c.ic(); }, 460, 260)); }
+      if (s0 && s0.img) { var im = new Image(); im.loading = "lazy"; im.alt = ""; im.src = s0.img; im.onerror = icon; fig.appendChild(im); } else icon();
+      a.appendChild(fig);
+      var cap = document.createElement("div"); cap.className = "chcap";
+      cap.innerHTML = "<small>Chapitre " + (i + 1) + "</small><b>" + esc(c.t) + '</b><span class="meta">' +
+        (c.sims.length ? '<span class="ns">' + c.sims.length + " simulation" + (c.sims.length > 1 ? "s" : "") + "</span>" : "") +
+        (c.ex.length ? '<span class="ne">' + ((c.sub || c.th) ? "théorie + " : "") + c.ex.length + " exercice" + (c.ex.length > 1 ? "s" : "") + "</span>" : "") + "</span>";
+      a.appendChild(cap);
+      a.onclick = function (ev) { ev.preventDefault(); openChap(i); }; g.appendChild(a);
     });
   }
   /* devanture d'un exercice dont le dessin est partagé par plusieurs exercices du chapitre :

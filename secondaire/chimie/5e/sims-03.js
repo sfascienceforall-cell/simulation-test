@@ -95,15 +95,38 @@ SFA.sim({
   }
 });
 
+/* rendu 3D « en volume » (sphères ombrées, liaisons en cylindre) pour la polarité et la glace */
+C5.hexRGB = function(h){ h = String(h); if (/^#[0-9a-f]{3}$/i.test(h)) h = "#" + h[1] + h[1] + h[2] + h[2] + h[3] + h[3]; var m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(h); return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : [150, 150, 150]; };
+C5.mix = function(h, f){ var r = C5.hexRGB(h); return "rgb(" + r.map(function(v){ return Math.max(0, Math.min(255, Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f))); }).join(",") + ")"; };
+C5.ball3 = function(ctx, x, y, r, hex, a){
+  if (!(r > 0)) return; ctx.save(); if (a != null) ctx.globalAlpha = a;
+  var g = ctx.createRadialGradient(x - r * 0.38, y - r * 0.42, r * 0.06, x, y, r * 1.04);
+  g.addColorStop(0, C5.mix(hex, 0.8)); g.addColorStop(0.45, hex); g.addColorStop(1, C5.mix(hex, -0.48));
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill(); ctx.restore();
+};
+C5.stick3 = function(ctx, x1, y1, x2, y2, w, c1, c2){   /* liaison : deux demi-cylindres aux couleurs des atomes */
+  var mx = (x1 + x2) / 2, my = (y1 + y2) / 2, dx = x2 - x1, dy = y2 - y1, l = Math.hypot(dx, dy) || 1, nx = -dy / l * w / 2, ny = dx / l * w / 2;
+  [[x1, y1, mx, my, c1], [mx, my, x2, y2, c2]].forEach(function(q){
+    var g = ctx.createLinearGradient(q[0] + nx, q[1] + ny, q[0] - nx, q[1] - ny); g.addColorStop(0, C5.mix(q[4], -0.35)); g.addColorStop(0.35, C5.mix(q[4], 0.45)); g.addColorStop(1, C5.mix(q[4], -0.45));
+    ctx.save(); ctx.strokeStyle = g; ctx.lineWidth = w; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(q[0], q[1]); ctx.lineTo(q[2], q[3]); ctx.stroke(); ctx.restore();
+  });
+};
+C5.sym3 = function(ctx, t, x, y, size){ ctx.save(); ctx.font = "800 " + Math.round(size) + "px Mulish, system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.strokeStyle = "rgba(15,27,45,.55)"; ctx.strokeText(t, x, y); ctx.fillStyle = "#fff"; ctx.fillText(t, x, y); ctx.restore(); };
+C5.cvF = C5.cvF || function(k, fn){
+  var c = k.canvas(0, {ratio: 0.6});
+  Object.defineProperty(c, "ratio", {get: function(){ var w = Math.max(260, c.cv.parentNode ? c.cv.parentNode.clientWidth : 600); return fn(w) / w; }, configurable: true});
+  c.resize(); return c;
+};
+
 SFA.sim({
   id: "c5-c03-polarite", ch: "c03", tag: "3D",
   titre: "Polarité globale : somme de vecteurs",
   resume: "Chaque liaison a un dipôle ; la molécule est polaire seulement si la somme n'est pas nulle.",
-  but: "Choisis une molécule et fais-la tourner. Affiche les dipôles de liaison puis la résultante. Compare CO₂ et H₂O, CH₄ et CH₃Cl.",
+  but: "Choisis une molécule et fais-la tourner en la glissant à la souris ou au doigt. Le nuage coloré montre où sont les électrons (bleu = δ⁻, rouge = δ⁺). Affiche les dipôles de liaison puis la résultante, puis charge les plaques : la molécule polaire s'oriente, l'apolaire non. Compare CO₂ et H₂O, CH₄ et CH₃Cl.",
   aRetenir: "Une molécule est polaire si la somme vectorielle de ses dipôles de liaison n'est pas nulle. Il faut donc ΔEN ≠ 0 ET une géométrie qui ne compense pas les dipôles. CO₂, BF₃, CCl₄ : liaisons polaires, molécule apolaire (CH₄ : liaisons à peine polaires, ΔEN = 0,4, et molécule apolaire).",
   piege: "« Liaison polaire » ne veut pas dire « molécule polaire ». Remplacer un seul atome dans une molécule symétrique casse la symétrie : CH₄ est apolaire, CH₃Cl est polaire. Ici le dipôle est représenté par ΔEN (unités arbitraires), pas par un vrai moment dipolaire en debye.",
   build: function(k, S){
-    var pal = S.draw.palette, EN = C5.EN, st = {yaw: 0.5, pitch: 0.3};
+    var pal = S.draw.palette, EN = C5.EN, st = {yaw: 0.5, pitch: 0.3, drag: false, lx: 0, ly: 0};
     var TET = [[1,1,1],[1,-1,-1],[-1,1,-1],[-1,-1,1]].map(function(v){ return v.map(function(x){ return x / Math.sqrt(3); }); });
     function bent(th){ var h = th * Math.PI / 360; return [[Math.cos(h), Math.sin(h), 0], [Math.cos(h), -Math.sin(h), 0]]; }
     function pyr(th){ var s = 2 / Math.sqrt(3) * Math.sin(th * Math.PI / 360), ca = Math.sqrt(1 - s * s), o = []; for (var i = 0; i < 3; i++){ var a = i * 2 * Math.PI / 3; o.push([s * Math.cos(a), s * Math.sin(a), -ca]); } return o; }
@@ -120,64 +143,120 @@ SFA.sim({
       CH3Cl: M("CH₃Cl", "C", ["H", "H", "H", "Cl"], TET),
       CHCl3: M("CHCl₃", "C", ["H", "Cl", "Cl", "Cl"], TET)
     };
-    var c = k.canvas(340);
+    var COL = {H: "#eef1f6", C: "#59636f", N: "#4f7be0", O: "#e8594a", F: "#86d06f", Cl: "#3fb878", S: "#e8c63a", B: "#eba98a"};
+    var RAD = {H: 0.55, C: 0.78, N: 0.76, O: 0.76, F: 0.72, Cl: 0.92, S: 0.95, B: 0.8};
+    var c = C5.cvF(k, function(w){ return Math.round(w * (w < 460 ? 1.06 : 0.74)); });
     var sel = k.select("Molécule", Object.keys(MOL).map(function(x){ return [x, MOL[x].name]; }), "H2O");
+    var showC = k.toggle("Montrer le nuage de charge", true);
     var showB = k.toggle("Montrer les dipôles de liaison", true), showN = k.toggle("Montrer la résultante", true);
     var field = k.toggle("Placer la molécule entre deux plaques chargées", false);
+    k.button("⚡ Charger / décharger les plaques", function(){ field.set(!field.value); }, true);
     var ro = k.readouts(["Liaisons polaires ?", "Résultante", "Molécule"]);
     var nt = k.note("", "");
     var al = {f: 0}, T = 0;
-    C5.drag3d(c, st);
-    var lp = k.loop(function(dt, t){ T = t; al.f += ((field.value ? 1 : 0) - al.f) * Math.min(1, dt * 3); if (!st.dragging && !field.value) st.yaw += dt * 0.35; k.redraw(); }); lp.play();
+    c.pointer(function(type, p){
+      if (type === "down"){ st.drag = true; st.lx = p.x; st.ly = p.y; }
+      else if (type === "drag" && st.drag){ st.yaw += (p.x - st.lx) * 0.012; st.pitch = Math.max(-1.4, Math.min(1.4, st.pitch + (p.y - st.ly) * 0.012)); st.lx = p.x; st.ly = p.y; }
+      else if (type === "up") st.drag = false;
+    });
+    var lp = k.loop(function(dt, t){ T = t; al.f += ((field.value ? 1 : 0) - al.f) * Math.min(1, dt * 2.2); if (!st.drag && al.f < 0.02) st.yaw += dt * 0.35; k.redraw(); }); lp.play();
     function cross(a, b){ return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
     function rodr(v, ax, ang){ var cs = Math.cos(ang), sn = Math.sin(ang), cr = cross(ax, v), dt = ax[0] * v[0] + ax[1] * v[1] + ax[2] * v[2]; return [v[0] * cs + cr[0] * sn + ax[0] * dt * (1 - cs), v[1] * cs + cr[1] * sn + ax[1] * dt * (1 - cs), v[2] * cs + cr[2] * sn + ax[2] * dt * (1 - cs)]; }
+    function plate(x, y, w, h, sgn, f){   /* plaque métallique en perspective ; sgn = +1 (plaque +) ou −1 */
+      var ctx = c.ctx, d = w * 0.55, col = sgn > 0 ? [192, 50, 29] : [47, 127, 209];
+      ctx.save();
+      ctx.fillStyle = "rgba(40,55,80,.12)"; ctx.beginPath(); ctx.ellipse(x + w / 2, y + h + 4, w * 1.2, 4, 0, 0, 6.2832); ctx.fill();
+      var g = ctx.createLinearGradient(x, 0, x + w, 0); g.addColorStop(0, "#c3ccd8"); g.addColorStop(0.5, "#eef2f7"); g.addColorStop(1, "#aab5c3");
+      ctx.fillStyle = g; S.draw.rrect(c, x, y, w, h, 3); ctx.fill(); ctx.strokeStyle = "#7d8ea3"; ctx.lineWidth = 1; ctx.stroke();
+      if (f > 0.01){
+        ctx.fillStyle = "rgba(" + col.join(",") + "," + (0.28 * f) + ")"; S.draw.rrect(c, x, y, w, h, 3); ctx.fill();
+        ctx.font = "800 " + Math.round(w * 0.75) + "px Mulish, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "rgba(" + col.join(",") + "," + f + ")";
+        for (var i = 0; i < 6; i++) ctx.fillText(sgn > 0 ? "+" : "−", x + w / 2, y + h * (i + 0.5) / 6);
+        S.draw.glow(c, x + w / 2, y + h / 2, h * 0.45, sgn > 0 ? "#c0321d" : "#2f7fd1", 0.18 * f);
+      }
+      ctx.restore();
+    }
     k.draw(function(){
-      var m = MOL[sel.value]; c.clear();
-      var cx = c.W / 2, cy = c.H / 2 - 6, R = Math.min(100, c.W / 3.6), net = [0, 0, 0], items = [], ctx = c.ctx, anyPolar = false, W = c.W, H = c.H;
+      var m = MOL[sel.value], W = c.W, H = c.H, ctx = c.ctx, net = [0, 0, 0], items = [], anyPolar = false, f = al.f;
+      c.clear();
+      /* décor : studio clair, sol en perspective */
+      var bg = ctx.createRadialGradient(W / 2, H * 0.42, 10, W / 2, H * 0.5, Math.max(W, H) * 0.75); bg.addColorStop(0, "#fbfcfe"); bg.addColorStop(1, "#dfe6f0");
+      ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+      var yF = H * 0.8; ctx.fillStyle = "rgba(160,175,195,.18)"; ctx.fillRect(0, yF, W, H - yF);
+      ctx.strokeStyle = "rgba(120,135,160,.18)"; ctx.lineWidth = 1; for (var gx = -6; gx <= 6; gx++){ ctx.beginPath(); ctx.moveTo(W / 2 + gx * W * 0.06, yF); ctx.lineTo(W / 2 + gx * W * 0.16, H); ctx.stroke(); }
+      for (var gy = 0; gy < 4; gy++){ var yy = yF + (H - yF) * Math.pow(gy / 3, 1.6); ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(W, yy); ctx.stroke(); }
+      /* plaques, fils et générateur */
+      var pw = Math.max(14, W * 0.035), ph = H * 0.66, py = H * 0.1, xl = 10, xr = W - 10 - pw;
+      ctx.save(); ctx.strokeStyle = "#4a5568"; ctx.lineWidth = 2.5; ctx.lineJoin = "round";
+      ctx.beginPath(); ctx.moveTo(xl + pw / 2, py + ph); ctx.lineTo(xl + pw / 2, H - 16); ctx.lineTo(W / 2 - 34, H - 16); ctx.moveTo(xr + pw / 2, py + ph); ctx.lineTo(xr + pw / 2, H - 16); ctx.lineTo(W / 2 + 34, H - 16); ctx.stroke();
+      var bgr = ctx.createLinearGradient(0, H - 30, 0, H - 2); bgr.addColorStop(0, "#5b6678"); bgr.addColorStop(0.5, "#2b3445"); bgr.addColorStop(1, "#1b2230");
+      ctx.fillStyle = bgr; S.draw.rrect(c, W / 2 - 36, H - 29, 72, 26, 6); ctx.fill();
+      ctx.fillStyle = field.value ? "#7be08f" : "#6b7787"; ctx.beginPath(); ctx.arc(W / 2 - 22, H - 16, 3.5, 0, 6.2832); ctx.fill();
+      ctx.font = "800 10px Mulish, sans-serif"; ctx.fillStyle = "#e8eef6"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(field.value ? "ON  − | +" : "OFF − | +", W / 2 + 6, H - 16); ctx.restore();
+      plate(xl, py, pw, ph, -1, f); plate(xr, py, pw, ph, 1, f);
+      /* lignes de champ : de la plaque + vers la plaque − */
+      if (f > 0.02){ ctx.save(); ctx.strokeStyle = "rgba(98,54,196," + (0.22 * f) + ")"; ctx.lineWidth = 1.5; ctx.setLineDash([10, 8]); ctx.lineDashOffset = T * 30;
+        for (var fl = 0; fl < 6; fl++){ var yl = py + ph * (fl + 0.5) / 6; ctx.beginPath(); ctx.moveTo(xr - 4, yl); ctx.lineTo(xl + pw + 4, yl); ctx.stroke(); } ctx.restore(); }
       m.dirs.forEach(function(u, i){
         var d = EN[m.lig[i]] - EN[m.cen]; if (Math.abs(d) >= 0.5) anyPolar = true;
         net[0] += d * u[0]; net[1] += d * u[1]; net[2] += d * u[2];
         items.push({u: u, d: d, lab: m.lig[i]});
       });
       var mag = Math.hypot(net[0], net[1], net[2]); if (mag < 0.02) mag = 0;
-      /* plaques : la molécule polaire s'oriente (δ⁻ vers la plaque +), l'apolaire reste indifférente */
-      if (al.f > 0.01){
-        ctx.save(); ctx.fillStyle = "rgba(192,50,29,.16)"; ctx.fillRect(W - 40, 56, 26, H - 100); ctx.fillStyle = "rgba(47,127,209,.16)"; ctx.fillRect(14, 56, 26, H - 100); ctx.restore();
-        S.draw.text(c, "+", W - 27, H / 2, {size: 22, color: pal.red}); S.draw.text(c, "−", 27, H / 2, {size: 22, color: pal.acc});
-        S.draw.text(c, "plaque −", 27, H - 36, {size: 11.5, color: pal.grey}); S.draw.text(c, "plaque +", W - 27, H - 36, {size: 11.5, color: pal.grey});
-      }
       var axv = [0, 0, 0], angA = 0, nvn = null;
       if (mag > 0){ nvn = [net[0] / mag, net[1] / mag, net[2] / mag]; axv = cross(nvn, [1, 0, 0]); var sl = Math.hypot(axv[0], axv[1], axv[2]); angA = Math.acos(Math.max(-1, Math.min(1, nvn[0]))); if (sl < 1e-6){ axv = [0, 1, 0]; if (nvn[0] < 0) angA = Math.PI; } else axv = [axv[0] / sl, axv[1] / sl, axv[2] / sl]; }
+      /* dans le champ : la molécule polaire tourne pour aligner sa résultante (vers δ⁻) sur la plaque + ; agitation thermique légère */
       var rotM = function(u){
         var w = u;
-        if (al.f > 0.001){
-          if (mag > 0) w = rodr(u, axv, angA * al.f * (1 + 0.0) + Math.sin(T * 5) * 0.06 * (1 - al.f) * 0);
-          else w = rodr(u, [1, 0, 0], T * 2.2 * al.f);
+        if (f > 0.001){
+          if (mag > 0){ w = rodr(u, axv, angA * f); w = rodr(w, [0, 0, 1], 0.12 * Math.sin(T * 2.1) * f); w = rodr(w, [1, 0, 0], T * 0.9 * f); }
+          else w = rodr(u, [1, 0, 0], T * 2.2 * f);
         }
-        return C5.rot(w, al.f > 0.5 ? st.yaw * (1 - al.f) : st.yaw, al.f > 0.5 ? st.pitch * (1 - al.f) : st.pitch);
+        return C5.rot(w, st.yaw * (1 - f), st.pitch * (1 - f));
       };
-      items.forEach(function(it){ it.v = rotM(it.u); });
-      var P = function(v, f){ var s = 1 / (1 - 0.1 * v[2]); return [cx + R * f * v[0] * s, cy - R * f * v[1] * s, s]; };
-      if (showN.value && mag > 0){
-        var nv = rotM([nvn[0], nvn[1], nvn[2]]), L = 46 + mag * 36;
-        S.draw.arrow(c, cx - nv[0] * L * 0.35, cy + nv[1] * L * 0.35, cx + nv[0] * L, cy - nv[1] * L, pal.red, 4.6);
-        S.draw.label(c, "résultante", cx + nv[0] * L, cy - nv[1] * L - 18, {color: pal.red, size: 12});
-      } else if (showN.value) S.draw.label(c, "résultante nulle", cx, c.H - 22, {color: pal.green, size: 13});
+      var cx = W / 2, cy = H * 0.44, R = Math.min(W * 0.255, H * 0.3), rA = R * 0.36;
+      var P3 = function(v, s){ var k3 = 1 / (1 - 0.13 * v[2]); return [cx + R * s * v[0] * k3, cy - R * s * v[1] * k3, k3]; };
+      items.forEach(function(it){ it.v = rotM(it.u); it.p = P3(it.v, 1); it.r = rA * RAD[it.lab] * it.p[2]; it.q = -it.d; });
+      var qc = items.reduce(function(q, w){ return q + w.d; }, 0), rc = rA * RAD[m.cen];
+      /* ombre portée au sol */
+      ctx.save(); ctx.fillStyle = "rgba(40,55,80,.13)"; ctx.beginPath(); ctx.ellipse(cx, yF + (H - yF) * 0.35, R * 1.15, R * 0.16, 0, 0, 6.2832); ctx.fill(); ctx.restore();
+      /* nuage de charge : enveloppe des atomes, teintée selon la charge partielle (bleu δ⁻, rouge δ⁺) */
+      if (showC.value){
+        var blobs = items.map(function(it){ return [it.p[0], it.p[1], it.r * 1.9, it.q]; }); blobs.push([cx, cy, rc * 1.9, qc]);
+        ctx.save(); ctx.beginPath(); blobs.forEach(function(b){ ctx.moveTo(b[0] + b[2], b[1]); ctx.arc(b[0], b[1], b[2], 0, 6.2832); });
+        ctx.fillStyle = "rgba(235,240,250,.55)"; ctx.fill(); ctx.clip();
+        blobs.forEach(function(b){ var a = Math.min(0.62, Math.abs(b[3]) * 0.55), col = b[3] < 0 ? "47,127,209" : "214,64,46"; if (a < 0.04) return;
+          var g = ctx.createRadialGradient(b[0], b[1], 0, b[0], b[1], b[2] * 1.25); g.addColorStop(0, "rgba(" + col + "," + a + ")"); g.addColorStop(1, "rgba(" + col + ",0)"); ctx.fillStyle = g; ctx.fillRect(b[0] - b[2] * 1.3, b[1] - b[2] * 1.3, b[2] * 2.6, b[2] * 2.6); });
+        ctx.restore();
+        ctx.save(); ctx.beginPath(); blobs.forEach(function(b){ ctx.moveTo(b[0] + b[2], b[1]); ctx.arc(b[0], b[1], b[2], 0, 6.2832); }); ctx.strokeStyle = "rgba(255,255,255,.0)"; ctx.restore();
+      }
+      /* atomes et liaisons, du fond vers l'avant */
       var all = items.slice(); all.push({center: true, v: [0, 0, 0]}); all.sort(function(p, q){ return p.v[2] - q.v[2]; });
       all.forEach(function(it){
-        if (it.center){ var cd = mag > 0 ? "#cfe4d8" : "#cfe4d8"; C5.atom(c, cx, cy, 17, C5.CPK[m.cen] || cd, m.cen, "#0f1b2d"); var sg = items.reduce(function(q, w){ return q + w.d; }, 0); if (Math.abs(sg) >= 0.5) S.draw.label(c, sg < 0 ? "δ⁻" : "δ⁺", cx - 24, cy - 22, {color: sg < 0 ? pal.acc : pal.red, size: 12}); return; }
-        var p = P(it.v, 1), dEN = it.d;
-        S.draw.line(c, cx, cy, p[0], p[1], "#2c3a4e", 4 * p[2]); S.draw.line(c, cx, cy, p[0], p[1], "#dfe7f1", 1.2);
-        if (Math.abs(dEN) >= 0.5) S.draw.glow(c, p[0], p[1], 30 * p[2], dEN > 0 ? "#2f7fd1" : "#e8594a", 0.0);
-        C5.atom(c, p[0], p[1], 14 * p[2], C5.CPK[it.lab] || "#f3c987", it.lab, "#0f1b2d");
-        if (Math.abs(dEN) >= 0.5){ S.draw.label(c, dEN > 0 ? "δ⁻" : "δ⁺", p[0] + 16 * p[2], p[1] - 17 * p[2], {color: dEN > 0 ? pal.acc : pal.red, size: 12}); }
-        if (showB.value && Math.abs(dEN) >= 0.3){
-          var a = P(it.v, dEN > 0 ? 0.26 : 0.72), z = P(it.v, dEN > 0 ? 0.72 : 0.26), nx = -(z[1] - a[1]), ny = z[0] - a[0], nl2 = Math.hypot(nx, ny) || 1;
-          S.draw.arrow(c, a[0] + nx / nl2 * 9, a[1] + ny / nl2 * 9, z[0] + nx / nl2 * 9, z[1] + ny / nl2 * 9, "#2f7fd1", 2.6);
+        if (it.center){ C5.ball3(ctx, cx, cy, rc, COL[m.cen]); C5.sym3(ctx, m.cen, cx, cy, Math.max(12, rc * 0.62));
+          if (Math.abs(qc) >= 0.5) S.draw.label(c, qc < 0 ? "δ⁻" : "δ⁺", cx - rc * 0.9, cy - rc * 1.05, {color: qc < 0 ? pal.acc : pal.red, size: 13}); return; }
+        var p = it.p, ux = p[0] - cx, uy = p[1] - cy, ul = Math.hypot(ux, uy) || 1;
+        if (it.v[2] < 0){ C5.ball3(ctx, p[0], p[1], it.r, COL[it.lab]); C5.stick3(ctx, cx, cy, p[0] - ux / ul * it.r * 0.5, p[1] - uy / ul * it.r * 0.5, rA * 0.34 * p[2], COL[m.cen], COL[it.lab]); }
+        else { C5.stick3(ctx, cx + ux / ul * rc * 0.6, cy + uy / ul * rc * 0.6, p[0], p[1], rA * 0.34 * p[2], COL[m.cen], COL[it.lab]); C5.ball3(ctx, p[0], p[1], it.r, COL[it.lab]); }
+        C5.sym3(ctx, it.lab, p[0], p[1], Math.max(10, it.r * 0.7));
+        if (Math.abs(it.d) >= 0.5) S.draw.label(c, it.d > 0 ? "δ⁻" : "δ⁺", p[0] + it.r * 0.95, p[1] - it.r * 1.05, {color: it.d > 0 ? pal.acc : pal.red, size: 12});
+        if (showB.value && Math.abs(it.d) >= 0.3){
+          var a = P3(it.v, it.d > 0 ? 0.28 : 0.74), z = P3(it.v, it.d > 0 ? 0.74 : 0.28), nx = -(z[1] - a[1]), ny = z[0] - a[0], nl2 = Math.hypot(nx, ny) || 1, off = rA * 0.55;
+          S.draw.arrow(c, a[0] + nx / nl2 * off, a[1] + ny / nl2 * off, z[0] + nx / nl2 * off, z[1] + ny / nl2 * off, "#2f7fd1", 2.8);
         }
       });
-      S.draw.legend(c, [["#2f7fd1", "dipôle de liaison (vers δ⁻)"], [pal.red, "résultante"]], 8, 8);
-      S.draw.text(c, al.f < 0.5 ? "glisse pour tourner" : mag > 0 ? "la molécule s'oriente dans le champ" : "aucune orientation privilégiée", c.W - 10, c.H - 12, {size: 11.5, color: pal.grey, align: "right"});
+      if (showN.value && mag > 0){
+        var nv = rotM([nvn[0], nvn[1], nvn[2]]), L = R * (0.55 + mag * 0.35);
+        S.draw.arrow(c, cx - nv[0] * L * 0.35, cy + nv[1] * L * 0.35, cx + nv[0] * L, cy - nv[1] * L, pal.red, 5);
+        S.draw.label(c, "résultante", cx + nv[0] * L, cy - nv[1] * L - 18, {color: pal.red, size: 12});
+      } else if (showN.value) S.draw.label(c, "résultante nulle", cx, cy + R * 1.45, {color: pal.green, size: 13});
+      S.draw.text(c, m.name, xl + pw + 14, 18, {size: 18, align: "left", color: pal.ink, weight: 800});
+      S.draw.text(c, mag ? "polaire" : "apolaire", xl + pw + 14, 38, {size: 12.5, align: "left", color: mag ? pal.red : pal.green});
+      var lg = [["#2f7fd1", "dipôle de liaison (vers δ⁻)"], [pal.red, "résultante"]];
+      S.draw.legend(c, lg, xr - 8, 8, {align: "right"});
+      if (showC.value && W >= 400){ var lx = xr - 8 - 170, lyy = 50; ctx.save(); var gg = ctx.createLinearGradient(lx, 0, lx + 120, 0); gg.addColorStop(0, "rgba(47,127,209,.75)"); gg.addColorStop(0.5, "rgba(235,240,250,.9)"); gg.addColorStop(1, "rgba(214,64,46,.75)"); ctx.fillStyle = gg; S.draw.rrect(c, lx + 25, lyy, 120, 10, 5); ctx.fill(); ctx.restore();
+        S.draw.text(c, "δ⁻", lx + 14, lyy + 5, {size: 11, color: pal.acc}); S.draw.text(c, "δ⁺", lx + 158, lyy + 5, {size: 11, color: pal.red}); S.draw.text(c, "nuage de charge", lx + 85, lyy + 20, {size: 10.5, color: pal.grey, weight: 700}); }
+      S.draw.text(c, f < 0.5 ? "glisse pour tourner la molécule" : mag > 0 ? "le côté δ⁻ se tourne vers la plaque +" : "aucune orientation privilégiée", W / 2, py + ph + 14, {size: 11.5, color: pal.grey, halo: true});
       ro.set(0, anyPolar ? "oui" : "non (ΔEN < 0,5)"); ro.set(1, mag ? S.fmt(mag, 1) + " (unités ΔEN)" : "nulle"); ro.set(2, mag ? "polaire" : "apolaire");
       nt.set((mag ? "Les dipôles ne se compensent pas : un côté est δ⁻, l'autre δ⁺." : (anyPolar ? "Les liaisons sont polaires, mais la symétrie annule la somme : molécule apolaire." : "Presque aucune différence d'électronégativité : molécule apolaire.")) + (field.value ? (mag ? " Dans le champ, le côté δ⁻ se tourne vers la plaque +." : " Dans le champ, rien ne la fait s'orienter : elle tourne librement.") : ""), mag ? "" : "ok");
     });
@@ -255,80 +334,161 @@ SFA.sim({
   id: "c5-c03-glace", ch: "c03", tag: "Niche utile",
   titre: "Pourquoi la glace flotte-t-elle ?",
   resume: "Densité de l'eau liquide selon T, densité de la glace : combien dépasse du verre ?",
-  but: "Plonge un glaçon dans de l'eau douce, de l'eau de mer ou de l'éthanol, à la température de ton choix. Lis la part immergée, puis regarde la vue moléculaire.",
+  but: "Plonge un glaçon dans de l'eau douce, de l'eau de mer ou de l'éthanol, à la température de ton choix. Attrape le glaçon et enfonce-le : il remonte. Lis la part immergée, puis passe à la vue moléculaire en 3D (glisse pour la tourner) : réseau ouvert de la glace contre eau liquide plus compacte.",
   aRetenir: "Un corps flotte si sa masse volumique est plus petite que celle du liquide. Part immergée = ρ(glaçon) / ρ(liquide). La glace (0,917 g/cm³) est moins dense que l'eau liquide (≈ 1,000 g/cm³) : ses liaisons hydrogène forment un réseau ouvert en hexagones. L'eau liquide est la plus dense à 4 °C.",
   piege: "Presque tous les solides coulent dans leur propre liquide : l'eau est une exception. Dans l'éthanol (0,79 g/cm³) un glaçon coulerait. Ce modèle suppose que le glaçon n'a pas le temps de fondre. Les valeurs sont celles de tables, arrondies.",
   build: function(k, S){
     var pal = S.draw.palette, RHO_ICE = 0.917;
     var TT = [0, 4, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100], RR = [0.99984, 0.99997, 0.99970, 0.99821, 0.99565, 0.99222, 0.98803, 0.98320, 0.97778, 0.97182, 0.96535, 0.95835];
     function rhoW(t){ for (var i = 0; i < TT.length - 1; i++) if (t <= TT[i + 1]) return RR[i] + (RR[i + 1] - RR[i]) * (t - TT[i]) / (TT[i + 1] - TT[i]); return RR[RR.length - 1]; }
-    var c = k.canvas(290), g = k.canvas(200), cube = {y: null, v: 0, drag: false, target: 0, wl: 0, sz: 66, cx: 0, by: 0, by2: 0, bh: 0, off: 0};
+    var c = C5.cvF(k, function(w){ return Math.round(w * (w < 460 ? 0.98 : 0.64)); }), g = C5.cvF(k, function(w){ return w < 460 ? Math.round(w * 0.78) : 240; });
+    var cube = {y: null, v: 0, drag: false, target: 0, wl: 0, sz: 66, cx: 0, by: 0, by2: 0, bh: 0, off: 0};
     var liq = k.seg("Liquide", [["eau", "Eau pure"], ["mer", "Eau de mer"], ["eth", "Éthanol"]], "eau");
     var T = k.slider("Température du liquide", 0, 100, 1, 4, "°C");
-    var mol = k.toggle("Vue moléculaire à la place du graphe", false);
+    var mol = k.toggle("Vue moléculaire 3D à la place du graphe", false);
+    k.button("🧊 Lâcher un glaçon", function(){ cube.y = cube.by - cube.sz * 0.9; cube.v = 0; }, true);
     var ro = k.readouts(["Masse volumique du liquide", "Masse volumique de la glace", "Part immergée", "Verdict"]);
     var nt = k.note("", "");
+    var tm = 0, vw = {yaw: 0.3, pitch: 1.12, drag: false, lx: 0, ly: 0};
     /* eau de mer (35 g/kg) : 1,0247 g/cm³ à 20 °C, même dilatation que l'eau pure ; éthanol : 0,789 à 20 °C, −0,00085 g/cm³ par °C */
     c.pointer(function(type, p){
-      if (type === "down" && Math.abs(p.x - cube.cx) < cube.sz && p.y > cube.y - 12 && p.y < cube.y + cube.sz + 12){ cube.drag = true; cube.off = p.y - cube.y; cube.v = 0; }
+      if (type === "down" && Math.abs(p.x - cube.cx) < cube.sz && p.y > cube.y - cube.sz * 0.4 && p.y < cube.y + cube.sz + 12){ cube.drag = true; cube.off = p.y - cube.y; cube.v = 0; }
       else if (type === "drag" && cube.drag){ cube.y = Math.max(cube.by - 10, Math.min(cube.by + cube.bh - cube.sz - 3, p.y - cube.off)); cube.v = 0; }
       else if (type === "up") cube.drag = false;
     });
-    k.loop(function(dt){ if (cube.y != null && !cube.drag){ var a = (cube.target - cube.y) * 45 - cube.v * 5.5; cube.v += a * dt; cube.y += cube.v * dt; if (cube.y > cube.by + cube.bh - cube.sz - 3){ cube.y = cube.by + cube.bh - cube.sz - 3; cube.v = 0; } } k.redraw(); }).play();
+    g.pointer(function(type, p){
+      if (type === "down"){ vw.drag = true; vw.lx = p.x; vw.ly = p.y; }
+      else if (type === "drag" && vw.drag){ vw.yaw += (p.x - vw.lx) * 0.012; vw.pitch = Math.max(-1.5, Math.min(1.5, vw.pitch + (p.y - vw.ly) * 0.012)); vw.lx = p.x; vw.ly = p.y; }
+      else if (type === "up") vw.drag = false;
+    });
+    k.loop(function(dt, t){ tm = t; if (!vw.drag) vw.yaw += dt * 0.3;
+      if (cube.y != null && !cube.drag){ var a = (cube.target - cube.y) * 45 - cube.v * 5.5; cube.v += a * dt; cube.y += cube.v * dt; if (cube.y > cube.by + cube.bh - cube.sz - 3){ cube.y = cube.by + cube.bh - cube.sz - 3; cube.v = 0; } } k.redraw(); }).play();
     function rho(){ return liq.value === "eau" ? rhoW(T.value) : liq.value === "mer" ? 1.0247 * rhoW(T.value) / rhoW(20) : 0.789 - 0.00085 * (T.value - 20); }
-    k.draw(function(){
-      var r = rho(), f = RHO_ICE / r, ctx = c.ctx; c.clear(); g.clear();
-      var bw = Math.min(250, c.W - 60), bh = 190, bx = (c.W - bw) / 2, by = 28, sz = 66, cxm = c.W / 2;
-      C5.bench(c, by + bh + 2);
-      var gl = C5.beaker(c, bx, by, bw, bh, liq.value === "eth" ? "#d6e4f6" : liq.value === "mer" ? "#a6d1ec" : "#bde0f6", 0.72, {taper: 6}), wl = gl.top;
-      cube.target = f < 1 ? wl - sz * (1 - f) : by + bh - sz - 3; cube.wl = wl; cube.sz = sz; cube.cx = cxm; cube.by = by; cube.bh = bh;
-      if (cube.y == null) cube.y = cube.target - 40;
-      var cyc = cube.y, amp = Math.min(1, Math.abs(cube.v) / 60);
-      /* ondulations autour du glaçon */
-      ctx.save(); ctx.strokeStyle = "rgba(255,255,255,.75)"; ctx.lineWidth = 1.6;
-      for (var rp = 0; rp < 2; rp++){ ctx.beginPath(); ctx.ellipse(cxm, wl + 1, sz / 2 + 8 + rp * 12 + amp * 10, 2.5 + rp, 0, 0, 2 * Math.PI); ctx.stroke(); }
-      ctx.restore();
-      /* glaçon : partie émergée claire, partie immergée teintée par le liquide */
-      ctx.save(); S.draw.rrect(c, cxm - sz / 2, cyc, sz, sz, 9);
-      var gi = ctx.createLinearGradient(0, cyc, 0, cyc + sz); gi.addColorStop(0, "#fbfeff"); gi.addColorStop(1, "#d3eafb"); ctx.fillStyle = gi; ctx.fill(); ctx.clip();
-      if (cyc + sz > wl){ ctx.fillStyle = liq.value === "eth" ? "rgba(150,180,220,.35)" : "rgba(80,150,215,.38)"; ctx.fillRect(cxm - sz / 2, Math.max(cyc, wl), sz, cyc + sz - Math.max(cyc, wl)); }
-      ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(cxm - sz / 2 + 9, cyc + 8); ctx.lineTo(cxm - sz / 2 + 9, cyc + sz - 14); ctx.stroke(); ctx.restore();
-      ctx.save(); S.draw.rrect(c, cxm - sz / 2, cyc, sz, sz, 9); ctx.strokeStyle = "#6fa6d6"; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
-      S.draw.text(c, "glace", cxm, cyc + sz / 2 - 2, {size: 13, color: "#2c5d94"}); S.draw.text(c, "0,917", cxm, cyc + sz / 2 + 14, {size: 11, color: "#5f7ea3", weight: 600});
-      S.draw.line(c, bx + 2, wl, bx + bw - 2, wl, "rgba(31,75,158,.6)", 1.4, [5, 4]);
-      if (f < 1 && cyc < wl - 2){
-        var rx = cxm + sz / 2 + 16; S.draw.line(c, rx, cyc, rx, wl, pal.red, 2); S.draw.line(c, rx - 4, cyc, rx + 4, cyc, pal.red, 2); S.draw.line(c, rx - 4, wl, rx + 4, wl, pal.red, 2);
-        S.draw.label(c, S.fmt((1 - f) * 100, 1) + " % dépasse", Math.min(rx + 8, c.W - 96), (cyc + wl) / 2 - 14, {color: pal.red, align: "left", size: 12});
+    /* ---------- structures 3D (Å) : glace hexagonale Ih et eau liquide dans le même volume ---------- */
+    var rng = (function(s){ return function(){ s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; })(23);
+    var BOX = 9, HY = 2.55, ICE = [], LIQ = [];
+    (function(){
+      var A = 4.52, Cc = 7.36, u = 3 / 8, basis = [[1/3, 2/3, 0], [2/3, 1/3, 0.5], [1/3, 2/3, u], [2/3, 1/3, 0.5 + u]], O = [], i, j, kk, b;
+      for (i = -5; i <= 5; i++) for (j = -5; j <= 5; j++) for (kk = -1; kk <= 1; kk++) for (b = 0; b < 4; b++){
+        var f = basis[b], x = (i + f[0]) * A - (j + f[1]) * A * 0.5, z = (j + f[1]) * A * Math.sqrt(3) / 2, y = (kk + f[2]) * Cc;
+        O.push([x, y, z]);
       }
-      S.draw.text(c, "attrape le glaçon et enfonce-le : il remonte", c.W / 2, 12, {size: 12, color: pal.grey});
-      if (f >= 1) S.draw.label(c, "il coule", cxm, by + bh + 18, {color: pal.red, size: 13});
-      var ax = S.draw.axes(g, {x0: 0, x1: 100, y0: 0.95, y1: 1.002, xl: "T (°C)", stepX: 10, stepY: 0.01, l: 52, t: 26});
+      /* deux couches plissées complètes (y de 3/8 c à c), centrées */
+      O = O.filter(function(p){ return p[1] > 2.5 && p[1] < 7.6; });
+      var cxm = 0, czm = 0; O.forEach(function(p){ cxm += p[0]; czm += p[2]; }); cxm /= O.length; czm /= O.length;
+      O = O.map(function(p){ return [p[0] - cxm, p[1] - 5.06, p[2] - czm]; }).filter(function(p){ return Math.hypot(p[0], p[2]) < BOX; });
+      var nh = O.map(function(){ return 0; }), E = [];
+      for (i = 0; i < O.length; i++) for (j = i + 1; j < O.length; j++){ var d = Math.hypot(O[i][0] - O[j][0], O[i][1] - O[j][1], O[i][2] - O[j][2]); if (d < 3.0) E.push([i, j]); }
+      E.sort(function(){ return rng() - 0.5; });
+      var H = [];
+      E.forEach(function(e){ var from = nh[e[0]] < nh[e[1]] ? e[0] : nh[e[1]] < nh[e[0]] ? e[1] : (rng() < 0.5 ? e[0] : e[1]), to = from === e[0] ? e[1] : e[0];
+        if (nh[from] >= 2){ var sw = from; from = to; to = sw; } if (nh[from] >= 2) return; nh[from]++;
+        var p = O[from], q = O[to], d = Math.hypot(q[0] - p[0], q[1] - p[1], q[2] - p[2]); H.push([p[0] + (q[0] - p[0]) / d * 0.96, p[1] + (q[1] - p[1]) / d * 0.96, p[2] + (q[2] - p[2]) / d * 0.96, from, to]); });
+      ICE = {O: O, H: H, E: E};
+      /* liquide : 9 % de molécules en plus dans le même volume (ρ = 1,000 contre 0,917), placées au hasard sans recouvrement */
+      var N = Math.round(O.length * 1.09), L = [], tries = 0;
+      while (L.length < N && tries < 40000){ tries++; var q = [(rng() * 2 - 1) * BOX, (rng() * 2 - 1) * HY, (rng() * 2 - 1) * BOX]; if (Math.hypot(q[0], q[2]) > BOX) continue;
+        var ok = true; for (var m = 0; m < L.length; m++){ if (Math.hypot(L[m][0] - q[0], L[m][1] - q[1], L[m][2] - q[2]) < 2.55){ ok = false; break; } } if (ok) L.push(q); }
+      var LH = [], LE = [];
+      L.forEach(function(p, ii){ var th = rng() * 6.2832, ph = Math.acos(rng() * 2 - 1), d1 = [Math.sin(ph) * Math.cos(th), Math.cos(ph), Math.sin(ph) * Math.sin(th)];
+        var tmp = [d1[1], -d1[0], 0.3], tl = Math.hypot(tmp[0], tmp[1], tmp[2]); tmp = [tmp[0] / tl, tmp[1] / tl, tmp[2] / tl];
+        var ca = Math.cos(1.824), sa = Math.sin(1.824), d2 = [d1[0] * ca + tmp[0] * sa, d1[1] * ca + tmp[1] * sa, d1[2] * ca + tmp[2] * sa];
+        LH.push([p[0] + d1[0] * 0.96, p[1] + d1[1] * 0.96, p[2] + d1[2] * 0.96, ii]); LH.push([p[0] + d2[0] * 0.96, p[1] + d2[1] * 0.96, p[2] + d2[2] * 0.96, ii]); });
+      for (i = 0; i < L.length; i++) for (j = i + 1; j < L.length; j++){ if (Math.hypot(L[i][0] - L[j][0], L[i][1] - L[j][1], L[i][2] - L[j][2]) < 2.95 && rng() < 0.7) LE.push([i, j]); }
+      LIQ = {O: L, H: LH, E: LE};
+    })();
+    function drawLattice(S3, cx, cy, sc, jig){
+      var ctx = g.ctx, it = [], pr = function(p, ji){ var q = p; if (ji) q = [p[0] + Math.sin(tm * 3 + ji * 1.7) * 0.18, p[1] + Math.cos(tm * 2.6 + ji * 2.3) * 0.18, p[2] + Math.sin(tm * 2.2 + ji) * 0.18]; var r = C5.rot(q, vw.yaw, vw.pitch), s = 1 / (1 - r[2] * 0.035); return [cx + r[0] * sc * s, cy - r[1] * sc * s, r[2], s]; };
+      var PO = S3.O.map(function(p, i){ return pr(p, jig ? i + 1 : 0); });
+      S3.E.forEach(function(e){ var a = PO[e[0]], b = PO[e[1]]; it.push({z: (a[2] + b[2]) / 2 - 0.5, f: function(){ ctx.save(); ctx.strokeStyle = "rgba(31,75,158,.7)"; ctx.lineWidth = 1.6; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke(); ctx.restore(); }}); });
+      S3.H.forEach(function(h){ var oi = h.length > 4 ? h[3] : h[3], o = PO[oi], dx = h[0] - S3.O[oi][0], dy = h[1] - S3.O[oi][1], dz = h[2] - S3.O[oi][2];
+        var r = C5.rot([dx, dy, dz], vw.yaw, vw.pitch), hp = [o[0] + r[0] * sc * o[3], o[1] - r[1] * sc * o[3], o[2] + r[2]];
+        it.push({z: hp[2], f: function(){ ctx.save(); ctx.strokeStyle = "#c9d1dc"; ctx.lineWidth = sc * 0.22 * o[3]; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(o[0], o[1]); ctx.lineTo(hp[0], hp[1]); ctx.stroke(); ctx.restore(); C5.ball3(ctx, hp[0], hp[1], sc * 0.27 * o[3], "#f1f4f8"); }}); });
+      PO.forEach(function(p){ it.push({z: p[2], f: function(){ C5.ball3(ctx, p[0], p[1], sc * 0.42 * p[3], "#e8594a"); }}); });
+      it.sort(function(a, b){ return a.z - b.z; }); it.forEach(function(q){ q.f(); });
+    }
+    k.draw(function(){
+      var r = rho(), f = RHO_ICE / r, ctx = c.ctx, W = c.W, H = c.H; c.clear(); g.clear();
+      /* ---------- décor : cuisine, table en bois ---------- */
+      ctx.fillStyle = "#eef3f8"; ctx.fillRect(0, 0, W, H);
+      var tile = Math.max(26, W / 14), yTab = H * 0.86;
+      ctx.strokeStyle = "rgba(160,175,195,.35)"; ctx.lineWidth = 1; for (var tx = 0; tx < W; tx += tile){ ctx.beginPath(); ctx.moveTo(tx + 0.5, 0); ctx.lineTo(tx + 0.5, yTab); ctx.stroke(); } for (var ty = 0; ty < yTab; ty += tile){ ctx.beginPath(); ctx.moveTo(0, ty + 0.5); ctx.lineTo(W, ty + 0.5); ctx.stroke(); }
+      var wg = ctx.createLinearGradient(0, yTab, 0, H); wg.addColorStop(0, "#c89a6a"); wg.addColorStop(1, "#a87a4c"); ctx.fillStyle = wg; ctx.fillRect(0, yTab, W, H - yTab);
+      ctx.fillStyle = "rgba(255,255,255,.25)"; ctx.fillRect(0, yTab, W, 2); ctx.strokeStyle = "rgba(110,70,35,.25)"; for (var wl2 = 0; wl2 < 3; wl2++){ ctx.beginPath(); ctx.moveTo(0, yTab + 8 + wl2 * 9); ctx.bezierCurveTo(W * 0.3, yTab + 4 + wl2 * 9, W * 0.6, yTab + 13 + wl2 * 9, W, yTab + 7 + wl2 * 9); ctx.stroke(); }
+      /* ---------- verre ---------- */
+      var phn = W < 460, bw = phn ? W * 0.48 : Math.min(250, W * 0.5), bh = yTab - H * 0.1 - 10, bx = phn ? W * 0.08 : (W - bw) / 2, by = H * 0.1, sz = Math.round(bw * 0.4), cxm = bx + bw / 2, tap = bw * 0.06, er = 9;
+      var liqCol = liq.value === "eth" ? [214, 228, 246] : liq.value === "mer" ? [120, 190, 225] : [150, 205, 240];
+      var level = 0.62, wl = by + bh * (1 - level), bot = by + bh - 12;
+      cube.target = f < 1 ? wl - sz * (1 - f) : bot - sz - 3; cube.wl = wl; cube.sz = sz; cube.cx = cxm; cube.by = by; cube.bh = bh - 12;
+      if (cube.y == null) cube.y = by - sz * 0.9;
+      var xAt = function(y){ return tap * (y - by) / bh; };
+      ctx.save(); ctx.fillStyle = "rgba(40,30,20,.18)"; ctx.beginPath(); ctx.ellipse(cxm + 8, yTab + 6, bw * 0.55, 8, 0, 0, 6.2832); ctx.fill(); ctx.restore();
+      function glassPath(){ ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + tap, by + bh); ctx.lineTo(bx + bw - tap, by + bh); ctx.lineTo(bx + bw, by); ctx.closePath(); }
+      ctx.save(); glassPath(); ctx.fillStyle = "rgba(225,236,248,.45)"; ctx.fill(); ctx.clip();
+      /* liquide (derrière le glaçon) */
+      var lg = ctx.createLinearGradient(0, wl, 0, bot); lg.addColorStop(0, "rgba(" + liqCol.join(",") + ",.55)"); lg.addColorStop(1, "rgba(" + liqCol.map(function(v){ return Math.round(v * 0.82); }).join(",") + ",.75)");
+      ctx.fillStyle = lg; ctx.fillRect(bx, wl, bw, bot - wl);
+      /* bulles qui montent lentement */
+      for (var bb = 0; bb < 9; bb++){ var ph = (tm * 0.12 + bb * 0.137) % 1, bxp = bx + 18 + ((bb * 0.618) % 1) * (bw - 36), byp = bot - 6 - ph * (bot - wl - 12); ctx.beginPath(); ctx.arc(bxp + Math.sin(ph * 12 + bb) * 2, byp, 1.4 + (bb % 3), 0, 6.2832); ctx.strokeStyle = "rgba(255,255,255,.75)"; ctx.lineWidth = 1; ctx.stroke(); }
+      ctx.restore();
+      /* glaçon en volume : face avant, dessus, côté ; cœur blanc laiteux, fissures, bulles d'air */
+      var cyc = cube.y, amp = Math.min(1, Math.abs(cube.v) / 60), dx = sz * 0.26, dy = -sz * 0.2;
+      function iceCube(ox){
+        var x0 = cxm - sz / 2 + ox - dx / 2, y0 = cyc, x1 = x0 + sz, y1 = y0 + sz;
+        ctx.save(); ctx.lineJoin = "round"; ctx.lineWidth = sz * 0.1;
+        ctx.fillStyle = "rgba(205,228,246,.92)"; ctx.strokeStyle = ctx.fillStyle; ctx.beginPath(); ctx.moveTo(x1, y0); ctx.lineTo(x1 + dx, y0 + dy); ctx.lineTo(x1 + dx, y1 + dy); ctx.lineTo(x1, y1); ctx.closePath(); ctx.stroke(); ctx.fill();
+        ctx.fillStyle = "rgba(246,252,255,.97)"; ctx.strokeStyle = ctx.fillStyle; ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0 + dx, y0 + dy); ctx.lineTo(x1 + dx, y0 + dy); ctx.lineTo(x1, y0); ctx.closePath(); ctx.stroke(); ctx.fill();
+        var fg = ctx.createLinearGradient(x0, y0, x1, y1); fg.addColorStop(0, "rgba(236,247,255,.96)"); fg.addColorStop(1, "rgba(190,220,244,.93)");
+        ctx.fillStyle = fg; S.draw.rrect(c, x0, y0, sz, sz, sz * 0.12); ctx.fill();
+        var cg = ctx.createRadialGradient(x0 + sz * 0.55, y0 + sz * 0.5, 2, x0 + sz * 0.55, y0 + sz * 0.5, sz * 0.42); cg.addColorStop(0, "rgba(255,255,255,.85)"); cg.addColorStop(1, "rgba(255,255,255,0)"); ctx.fillStyle = cg; ctx.fillRect(x0, y0, sz, sz);
+        ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x0 + sz * 0.3, y0 + sz * 0.25); ctx.lineTo(x0 + sz * 0.48, y0 + sz * 0.45); ctx.lineTo(x0 + sz * 0.44, y0 + sz * 0.7); ctx.moveTo(x0 + sz * 0.48, y0 + sz * 0.45); ctx.lineTo(x0 + sz * 0.72, y0 + sz * 0.5); ctx.stroke();
+        [[0.25, 0.7, 2.2], [0.7, 0.28, 1.6], [0.62, 0.78, 1.8], [0.82, 0.62, 1.2]].forEach(function(q){ ctx.beginPath(); ctx.arc(x0 + sz * q[0], y0 + sz * q[1], q[2], 0, 6.2832); ctx.strokeStyle = "rgba(120,170,215,.6)"; ctx.stroke(); });
+        ctx.strokeStyle = "rgba(255,255,255,.95)"; ctx.lineWidth = 2.4; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(x0 + sz * 0.1, y0 + sz * 0.16); ctx.lineTo(x0 + sz * 0.1, y0 + sz * 0.72); ctx.moveTo(x0 + sz * 0.2, y0 + sz * 0.07); ctx.lineTo(x0 + sz * 0.75, y0 + sz * 0.07); ctx.stroke();
+        ctx.strokeStyle = "rgba(70,125,185,.8)"; ctx.lineWidth = 1.4; S.draw.rrect(c, x0, y0, sz, sz, sz * 0.12); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x1, y0 + sz * 0.1); ctx.lineTo(x1 + dx, y0 + dy + sz * 0.06); ctx.lineTo(x1 + dx, y1 + dy - sz * 0.06); ctx.stroke();
+        ctx.restore();
+      }
+      /* partie émergée telle quelle ; partie immergée vue à travers le liquide (légèrement décalée : réfraction) */
+      ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, wl); ctx.clip(); iceCube(0); ctx.restore();
+      ctx.save(); glassPath(); ctx.clip(); ctx.beginPath(); ctx.rect(0, wl, W, H); ctx.clip(); iceCube(2.5);
+      ctx.fillStyle = "rgba(" + liqCol.join(",") + ",.2)"; ctx.fillRect(bx, wl, bw, bot - wl); ctx.restore();
+      /* surface du liquide, ondulations autour du glaçon */
+      ctx.save(); glassPath(); ctx.clip();
+      ctx.fillStyle = "rgba(255,255,255,.35)"; ctx.beginPath(); ctx.ellipse(cxm, wl, bw / 2 - xAt(wl), er, 0, 0, 6.2832); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.85)"; ctx.lineWidth = 1.4; for (var rp = 0; rp < 2; rp++){ var ph2 = (tm * 0.5 + rp * 0.5) % 1; ctx.globalAlpha = (1 - ph2) * (0.4 + amp); ctx.beginPath(); ctx.ellipse(cxm, wl + 1, sz * 0.62 + ph2 * bw * 0.3, 3 + ph2 * 4, 0, 0, 6.2832); ctx.stroke(); }
+      ctx.restore();
+      /* verre : bords, fond épais, reflets, buée */
+      ctx.save(); ctx.strokeStyle = "rgba(81,98,122,.75)"; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + tap, by + bh); ctx.moveTo(bx + bw, by); ctx.lineTo(bx + bw - tap, by + bh); ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(cxm, by, bw / 2, er, 0, 0, 6.2832); ctx.stroke();
+      ctx.fillStyle = "rgba(200,215,232,.7)"; ctx.beginPath(); ctx.ellipse(cxm, by + bh, bw / 2 - tap, er * 0.8, 0, 0, 3.1416); ctx.lineTo(bx + tap + 4, bot); ctx.lineTo(bx + bw - tap - 4, bot); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.8)"; ctx.lineWidth = 4; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(bx + 12, by + 16); ctx.lineTo(bx + 12 + tap * 0.8, by + bh - 20); ctx.stroke(); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(bx + 22, by + 20); ctx.lineTo(bx + 22 + tap * 0.7, by + bh * 0.45); ctx.stroke();
+      ctx.fillStyle = "rgba(255,255,255,.55)"; for (var dd = 0; dd < 22; dd++){ var qx = bx + 8 + ((dd * 0.7548 + 0.1) % 1) * (bw - 16), qy = wl + 6 + ((dd * 0.5698 + 0.3) % 1) * (bot - wl - 12); ctx.beginPath(); ctx.ellipse(qx, qy, 1.4, 2, 0, 0, 6.2832); ctx.fill(); }
+      ctx.restore();
+      S.draw.line(c, bx + xAt(wl) + 2, wl, bx + bw - xAt(wl) - 2, wl, "rgba(31,75,158,.5)", 1.2, [5, 4]);
+      /* cotes : partie émergée / immergée */
+      var rx = bx + bw + 14, cb = Math.min(cyc + sz, bot);
+      if (f < 1 && cyc < wl - 2){
+        S.draw.line(c, rx, cyc, rx, wl, pal.red, 2); S.draw.line(c, rx - 4, cyc, rx + 4, cyc, pal.red, 2); S.draw.line(c, rx - 4, wl, rx + 4, wl, pal.red, 2);
+        S.draw.label(c, S.fmt((1 - f) * 100, 1) + " % dépasse", Math.min(rx + 8, W - 100), (cyc + wl) / 2, {color: pal.red, align: "left", size: 12});
+      }
+      if (cb > wl + 2){ var top2 = Math.max(cyc, wl);
+        S.draw.line(c, rx, top2 + 2, rx, cb, pal.acc, 2); S.draw.line(c, rx - 4, cb, rx + 4, cb, pal.acc, 2);
+        S.draw.label(c, (f < 1 ? S.fmt(f * 100, 1) : "100") + " % immergée", Math.min(rx + 8, W - 108), (top2 + cb) / 2 + 4, {color: pal.acc, align: "left", size: 12}); }
+      var lnm = liq.value === "eth" ? "éthanol" : liq.value === "mer" ? "eau de mer" : "eau";
+      if (phn){ S.draw.label(c, lnm, rx + 4, bot - 34, {color: pal.acc, align: "left", size: 11.5}); S.draw.label(c, "glace : 0,917 g/cm³", rx + 4, bot - 10, {color: "#2c5d94", align: "left", size: 11}); }
+      else { S.draw.label(c, lnm, bx - 12, wl + 22, {color: pal.acc, align: "right", size: 12}); S.draw.label(c, "glace 0,917 g/cm³", bx - 12, Math.max(18, cyc + 8), {color: "#2c5d94", align: "right", size: 11.5}); }
+      S.draw.text(c, phn ? "enfonce le glaçon : il remonte" : "attrape le glaçon et enfonce-le : il remonte", W / 2, H - 12, {size: 11.5, color: "#fff", halo: "rgba(110,70,35,.6)"});
+      if (f >= 1) S.draw.label(c, "il coule", cxm, bot - sz - 16, {color: pal.red, size: 13});
       if (mol.value){
-        g.clear(); var ctx2 = g.ctx, gw = g.W / 2;
-        S.draw.text(g, "Glace : réseau ouvert", gw / 2, 12, {size: 12}); S.draw.text(g, "Eau liquide : plus compact", gw + gw / 2, 12, {size: 12});
-        /* même zone pour les deux : glace = réseau en nid d'abeilles (ouvert) ; liquide = ≈ 9 % de molécules en plus dans la même zone (comme ρ : 1,000 / 0,917) */
-        var bx0 = gw / 2 - 70, by0 = 30, bwd = 140, bht = 100, ra = 21, ice = [], key = {}, ii, jj, kk;
-        S.draw.line(g, bx0, by0, bx0 + bwd, by0, pal.light, 1); S.draw.line(g, bx0, by0 + bht, bx0 + bwd, by0 + bht, pal.light, 1);
-        S.draw.line(g, gw + gw / 2 - 70, by0, gw + gw / 2 + 70, by0, pal.light, 1); S.draw.line(g, gw + gw / 2 - 70, by0 + bht, gw + gw / 2 + 70, by0 + bht, pal.light, 1);
-        for (jj = 0; jj < 4; jj++) for (ii = 0; ii < 4; ii++){
-          var hcx = bx0 + 4 + ii * Math.sqrt(3) * ra + (jj % 2) * Math.sqrt(3) * ra / 2, hcy = by0 + 8 + jj * 1.5 * ra;
-          for (kk = 0; kk < 6; kk++){
-            var ang = Math.PI / 6 + kk * Math.PI / 3, vx = hcx + ra * Math.cos(ang), vy = hcy + ra * Math.sin(ang), kx = Math.round(vx) + "," + Math.round(vy);
-            if (vx >= bx0 + 2 && vx <= bx0 + bwd - 2 && vy >= by0 + 4 && vy <= by0 + bht - 4 && !key[kx]){ key[kx] = 1; ice.push([vx, vy]); }
-          }
-        }
-        for (ii = 0; ii < ice.length; ii++) for (jj = ii + 1; jj < ice.length; jj++){
-          if (Math.hypot(ice[ii][0] - ice[jj][0], ice[ii][1] - ice[jj][1]) < ra * 1.08) S.draw.line(g, ice[ii][0], ice[ii][1], ice[jj][0], ice[jj][1], pal.acc, 1.5, [3, 3]);
-        }
-        ice.forEach(function(q){ C5.atom(g, q[0], q[1], 5, "#c6d6f6", ""); });
-        var nl = Math.round(ice.length * 1.09), lc = 6, lr = Math.ceil(nl / lc), lx0 = gw + gw / 2 - 70;
-        for (var m2 = 0; m2 < nl; m2++){
-          var gc = m2 % lc, gr = Math.floor(m2 / lc);
-          C5.atom(g, lx0 + 12 + gc * (116 / (lc - 1)) + 5 * Math.sin(m2 * 2.7), by0 + 12 + gr * ((bht - 24) / Math.max(1, lr - 1)) + 5 * Math.cos(m2 * 1.9), 5, "#c6d6f6", "");
-        }
-        S.draw.text(g, ice.length + " molécules dans cette zone", gw / 2, by0 + bht + 14, {size: 11, color: pal.grey}); S.draw.text(g, nl + " molécules dans la même zone", gw + gw / 2, by0 + bht + 14, {size: 11, color: pal.grey});
-        S.draw.text(g, "··· liaison H", gw / 2, g.H - 10, {size: 12, color: pal.acc});
+        var gw = g.W / 2, sc = Math.min(gw * 0.05, g.H * 0.058);
+        var bgg = g.ctx.createLinearGradient(0, 0, 0, g.H); bgg.addColorStop(0, "#f5f8fc"); bgg.addColorStop(1, "#e3e9f2"); g.ctx.fillStyle = bgg; g.ctx.fillRect(0, 0, g.W, g.H);
+        g.ctx.fillStyle = "#d0d9e5"; g.ctx.fillRect(gw - 0.5, 10, 1, g.H - 20);
+        drawLattice(ICE, gw / 2, g.H / 2 + 6, sc, false); drawLattice(LIQ, gw + gw / 2, g.H / 2 + 6, sc, true);
+        S.draw.text(g, "Glace : réseau ouvert (hexagones)", gw / 2, 13, {size: 12, halo: true}); S.draw.text(g, "Eau liquide : plus compacte", gw + gw / 2, 13, {size: 12, halo: true});
+        S.draw.text(g, ICE.O.length + " molécules dans ce volume", gw / 2, g.H - 12, {size: 11, color: pal.grey, halo: true}); S.draw.text(g, LIQ.O.length + " molécules dans le même volume", gw + gw / 2, g.H - 12, {size: 11, color: pal.grey, halo: true});
+        S.draw.text(g, "- - - liaison hydrogène · glisse pour tourner", g.W / 2, g.H - 30, {size: 10.5, color: pal.acc, halo: true});
       } else {
+        var ax = S.draw.axes(g, {x0: 0, x1: 100, y0: 0.95, y1: 1.002, xl: "T (°C)", stepX: 10, stepY: 0.01, l: 52, t: 26});
         S.draw.fn(g, ax, rhoW, pal.acc, 2.6);
         S.draw.text(g, "ρ de l'eau liquide (g/cm³)", 8, 10, {size: 12, align: "left", color: pal.grey});
         S.draw.dot(g, ax.X(4), ax.Y(rhoW(4)), 5, pal.green); S.draw.text(g, "maximum à 4 °C", ax.X(4) + 8, ax.Y(rhoW(4)) + 16, {size: 12, color: pal.green, align: "left"});

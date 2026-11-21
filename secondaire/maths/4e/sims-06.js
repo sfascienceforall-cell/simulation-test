@@ -196,17 +196,17 @@ SFA.sim({
 SFA.sim({
   id:"m4-c06-sinusoide", ch:"c06", tag:"Animation",
   titre:"La sinusoïde naît du cercle",
-  resume:"Un point tourne : sa hauteur trace la courbe de sin θ. La période est 2π.",
-  but:"Regarde le point tourner (ou fais-le glisser sur le cercle, ou sur la courbe). À gauche, le point tourne sur le cercle ; à droite, sa hauteur (sin θ) est reportée en fonction de θ. Active cos pour comparer : même courbe, décalée.",
+  resume:"Une roue tourne : la hauteur de la bille trace la courbe de sin θ sur le papier. La période est 2π.",
+  but:"Regarde la roue tourner (ou fais glisser la bille sur la roue, ou la plume sur le papier). La roue a un rayon 1 : la hauteur de la bille au-dessus de l'axe vaut sin θ, et la plume la reporte sur le papier en fonction de θ. Active cos pour comparer : même courbe, décalée.",
   aRetenir:"La courbe de sin θ se répète tous les 2π (période 2π) ; ses valeurs restent entre −1 et 1. cos a la même forme, décalée de π/2 : cos θ = sin(θ + π/2).",
   piege:"Ne confonds pas l'angle (axe horizontal du graphe, en radians) et la valeur sin θ (axe vertical). La période se lit sur l'axe des angles : 2π ≈ 6,28.",
   build:function(k,S){
     var M=window.M4, P=S.draw.palette, F=S.fmt, PI=Math.PI;
-    var c=k.canvas(0,{ratio:.52});
-    var NARROW=.68;
+    var c=k.canvas(0,{ratio:.56});
+    var NARROW=.8, clock=0;
     var th=k.slider("Angle θ",0,720,1,40,"°");
     var tc=k.toggle("Afficher aussi cos θ (vert)",false);
-    var lp=k.loop(function(dt){ var v=th.value+55*dt; if(v>720) v=0; th.set(v); k.redraw(); });
+    var lp=k.loop(function(dt){ clock+=dt; var v=th.value+55*dt; if(v>720) v=0; th.set(v); k.redraw(); });
     k.button("Animer / pause",function(){ if(lp.running) lp.pause(); else lp.play(); },true);
     var ro=k.readouts(["θ (rad)","sin θ","cos θ","Période"]);
     var geo={};
@@ -215,37 +215,71 @@ SFA.sim({
         if(id==="c"){ var a=Math.atan2(-(py-geo.cy),px-geo.cx)*180/PI; if(a<0) a+=360; var cur=th.value; d=a+360*Math.round((cur-a)/360); }
         else d=(px-geo.gx0)/geo.gs*180/PI;
         th.set(M.clamp(Math.round(d),0,720)); k.redraw(); });
+    function lin(ctx,x0,y0,x1,y1,st){ var g=ctx.createLinearGradient(x0,y0,x1,y1); st.forEach(function(q){ g.addColorStop(q[0],q[1]); }); return g; }
     k.draw(function(){
-      M.adapt(c,NARROW,.52,520);
-      var d=th.value, a=d*PI/180, W=c.W,H=c.H, narrow=W<520;
-      var r=Math.min(W*(narrow?.15:.15),H*.33), cx=r+22, cy=H/2-8; c.clear(); var ctx=c.ctx;
-      var gx0=cx+r*1.45+(narrow?16:34), gx1=W-12, gs=(gx1-gx0)/(4*PI), Y=function(v){return cy-v*r;}, G=function(u){return gx0+u*gs;};
+      if(M.adapt(c,NARROW,.56,520)) return;
+      var d=th.value, a=d*PI/180, W=c.W,H=c.H, narrow=W<520, ctx=c.ctx;
+      var tableY=H-(narrow?30:34), cy=Math.round((tableY-14)*0.52)+6;
+      var r=Math.min(W*(narrow?.17:.15),(cy-26)/1.28,(tableY-cy-24)/1.2), cx=r*1.22+(narrow?12:22);
+      var gx0=cx+r*1.5+(narrow?14:34), gx1=W-(narrow?14:22), gs=(gx1-gx0)/(4*PI), Y=function(v){return cy-v*r;}, G=function(u){return gx0+u*gs;};
       geo={r:r,cx:cx,cy:cy,gx0:gx0,gs:gs,Y:Y,G:G};
-      /* cercle */
-      ctx.save(); ctx.fillStyle="rgba(30,63,143,.05)"; ctx.beginPath(); ctx.arc(cx,cy,r,0,2*PI); ctx.fill(); ctx.strokeStyle=P.acc; ctx.lineWidth=2.2; ctx.stroke(); ctx.restore();
-      S.draw.line(c,cx-r*1.2,cy,cx+r*1.2,cy,P.axis,1.2); S.draw.line(c,cx,cy-r*1.25,cx,cy+r*1.25,P.axis,1.2);
-      M.sector(c,cx,cy,r*.3,0,a%(2*PI),P.amber,.3);
-      /* graphe */
-      for(var v=-1;v<=1;v+=0.5) S.draw.line(c,gx0,Y(v),gx1,Y(v),v===0?P.axis:P.grid,v===0?1.3:1);
-      for(var m=1;m<=4;m++){ S.draw.line(c,G(m*PI),cy-r*1.2,G(m*PI),cy+r*1.2,P.grid,1); }
+      c.clear();
+      /* atelier : mur, plinthe, table en bois */
+      ctx.fillStyle=lin(ctx,0,0,0,tableY,[[0,"#eef2f7"],[1,"#dde4ee"]]); ctx.fillRect(0,0,W,tableY);
+      ctx.strokeStyle="rgba(140,155,175,.15)"; ctx.lineWidth=1; ctx.beginPath(); for(var bx=0;bx<W;bx+=46){ for(var by=(bx/46)%2?0:12;by<tableY;by+=24){ ctx.moveTo(bx,by); ctx.lineTo(bx+44,by); } } ctx.stroke();
+      ctx.fillStyle=lin(ctx,0,tableY,0,H,[[0,"#b98a5a"],[1,"#8a6038"]]); ctx.fillRect(0,tableY,W,H-tableY);
+      ctx.fillStyle="rgba(255,255,255,.25)"; ctx.fillRect(0,tableY,W,2);
+      /* lampe : faisceau horizontal qui projette la hauteur de la bille sur le papier */
+      var py=Y(Math.sin(a)), px=cx+r*Math.cos(a);
+      ctx.save(); ctx.fillStyle=lin(ctx,px,0,gx1,0,[[0,"rgba(255,214,107,.35)"],[1,"rgba(255,214,107,.05)"]]); ctx.beginPath(); ctx.moveTo(px,py-7); ctx.lineTo(G(a),py-3); ctx.lineTo(G(a),py+3); ctx.lineTo(px,py+7); ctx.closePath(); ctx.fill(); ctx.restore();
+      /* papier d'enregistrement (le graphique) avec ses deux rouleaux */
+      var pT=Y(1.42), pB=Y(-1.42), pL=gx0-10, pR=gx1+6;
+      ctx.save(); ctx.shadowColor="rgba(15,27,45,.18)"; ctx.shadowBlur=10; ctx.shadowOffsetY=3; ctx.fillStyle="#fffdf6"; ctx.fillRect(pL,pT,pR-pL,pB-pT); ctx.restore();
+      ctx.strokeStyle="rgba(194,106,12,.12)"; ctx.lineWidth=1; ctx.beginPath(); for(var gxx=0;gxx<=4*PI+1e-6;gxx+=PI/8){ ctx.moveTo(G(gxx),pT); ctx.lineTo(G(gxx),pB); } for(var gyy=-1.4;gyy<=1.41;gyy+=0.1){ ctx.moveTo(pL,Y(gyy)); ctx.lineTo(pR,Y(gyy)); } ctx.stroke();
+      [[pL-7,pT-6],[pR-3,pT-6]].forEach(function(q){ ctx.fillStyle=lin(ctx,q[0],0,q[0]+10,0,[[0,"#c9d3df"],[0.5,"#ffffff"],[1,"#a3adba"]]); S.draw.rrect(c,q[0],q[1],10,pB-pT+12,5); ctx.fill(); });
+      for(var v=-1;v<=1;v+=0.5) S.draw.line(c,gx0,Y(v),gx1,Y(v),v===0?P.axis:"rgba(138,149,163,.35)",v===0?1.3:1);
+      for(var m=1;m<=4;m++){ S.draw.line(c,G(m*PI),Y(1.3),G(m*PI),Y(-1.3),"rgba(138,149,163,.35)",1); }
       S.draw.line(c,gx0,Y(1.3),gx0,Y(-1.3),P.axis,1.3);
-      [0,1,2,3,4].forEach(function(mm){ S.draw.text(c,mm===0?"0":(mm===1?"π":mm+"π"),G(mm*PI),cy+r*1.32+4,{size:11,color:P.grey,math:true}); });
-      S.draw.text(c,"1",gx0-8,Y(1),{size:11,color:P.grey}); S.draw.text(c,"−1",gx0-11,Y(-1),{size:11,color:P.grey});
+      [0,1,2,3,4].forEach(function(mm){ S.draw.text(c,mm===0?"0":(mm===1?"π":mm+"π"),G(mm*PI)+(mm===0?8:0),Y(-1.27)+2,{size:11,color:P.grey,math:true,halo:"#fffdf6"}); });
+      S.draw.text(c,"1",gx0-9,Y(1),{size:11,color:P.grey}); S.draw.text(c,"−1",gx0-12,Y(-1),{size:11,color:P.grey});
+      S.draw.text(c,"θ",gx1-2,cy-9,{size:12,color:P.grey,math:true,italic:true});
       /* période */
-      var yb=Y(-1.62); S.draw.line(c,G(0),yb,G(2*PI),yb,P.amber,1.6); S.draw.line(c,G(0),yb-4,G(0),yb+4,P.amber,1.6); S.draw.line(c,G(2*PI),yb-4,G(2*PI),yb+4,P.amber,1.6);
-      S.draw.text(c,"période 2π",G(PI),yb+(narrow?11:12),{size:11,color:P.amber,math:true});
-      function plot(fn,col,fill){ ctx.save(); ctx.strokeStyle=col; ctx.lineWidth=2.8; ctx.lineJoin="round"; ctx.beginPath(); for(var u=0;u<=a+1e-9;u+=0.03){ var xx=G(u), yy=Y(fn(u)); u===0?ctx.moveTo(xx,yy):ctx.lineTo(xx,yy); } ctx.lineTo(G(a),Y(fn(a))); ctx.stroke(); ctx.restore(); }
+      var yb=Math.min(Y(-1.62),tableY-10); S.draw.line(c,G(0),yb,G(2*PI),yb,P.amber,1.6); S.draw.line(c,G(0),yb-4,G(0),yb+4,P.amber,1.6); S.draw.line(c,G(2*PI),yb-4,G(2*PI),yb+4,P.amber,1.6);
+      S.draw.text(c,"période 2π",G(PI),yb+(narrow?11:12),{size:11,color:P.amber,math:true,bg:"rgba(255,255,255,.85)"});
+      function plot(fn,col){ ctx.save(); ctx.strokeStyle=col; ctx.lineWidth=2.8; ctx.lineJoin="round"; ctx.lineCap="round"; ctx.beginPath(); for(var u=0;u<=a+1e-9;u+=0.03){ var xx=G(u), yy=Y(fn(u)); u===0?ctx.moveTo(xx,yy):ctx.lineTo(xx,yy); } ctx.lineTo(G(a),Y(fn(a))); ctx.stroke(); ctx.restore(); }
       if(tc.value) plot(Math.cos,P.green);
       plot(Math.sin,P.red);
-      var px=cx+r*Math.cos(a), py=Y(Math.sin(a));
-      /* projection sur l'axe vertical puis lien horizontal vers la courbe */
+      /* support de la roue */
+      ctx.fillStyle=lin(ctx,cx-14,0,cx+14,0,[[0,"#5f6b7a"],[0.5,"#9aa7b5"],[1,"#4b5768"]]);
+      ctx.beginPath(); ctx.moveTo(cx-10,cy); ctx.lineTo(cx+10,cy); ctx.lineTo(cx+r*0.5,tableY); ctx.lineTo(cx-r*0.5,tableY); ctx.closePath(); ctx.fill();
+      ctx.fillStyle="#3c4756"; S.draw.rrect(c,cx-r*0.62,tableY-8,r*1.24,10,4); ctx.fill();
+      /* roue : jante, rayons qui tournent, secteur d'angle */
+      ctx.save(); ctx.fillStyle="rgba(31,75,158,.06)"; ctx.beginPath(); ctx.arc(cx,cy,r,0,2*PI); ctx.fill(); ctx.restore();
+      ctx.strokeStyle="rgba(95,107,122,.55)"; ctx.lineWidth=2; for(var s=0;s<8;s++){ var q=a+s*PI/4; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(q)*r,cy-Math.sin(q)*r); ctx.stroke(); }
+      ctx.save(); ctx.strokeStyle=lin(ctx,cx-r,cy-r,cx+r,cy+r,[[0,"#6b8fd6"],[1,"#1f3a78"]]); ctx.lineWidth=Math.max(6,r*0.08); ctx.beginPath(); ctx.arc(cx,cy,r,0,2*PI); ctx.stroke(); ctx.restore();
+      S.draw.line(c,cx-r*1.22,cy,cx+r*1.22,cy,P.axis,1.2); S.draw.line(c,cx,cy-r*1.22,cx,cy+r*1.18,P.axis,1.2);
+      M.sector(c,cx,cy,r*.3,0,a%(2*PI),P.amber,.35);
+      /* manivelle tournée par une main */
+      var hx=cx+Math.cos(a+PI)*r*0.42, hy=cy-Math.sin(a+PI)*r*0.42;
+      ctx.strokeStyle="#4b5768"; ctx.lineWidth=5; ctx.lineCap="round"; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(hx,hy); ctx.stroke();
+      ctx.fillStyle="#13233a"; ctx.beginPath(); ctx.arc(cx,cy,6,0,2*PI); ctx.fill(); ctx.fillStyle="#c9d3df"; ctx.beginPath(); ctx.arc(cx,cy,2.5,0,2*PI); ctx.fill();
+      ctx.fillStyle=lin(ctx,hx-5,hy-5,hx+5,hy+5,[[0,"#d9a066"],[1,"#8a5a2b"]]); ctx.beginPath(); ctx.arc(hx,hy,Math.max(5.5,r*0.075),0,2*PI); ctx.fill(); ctx.strokeStyle="rgba(15,27,45,.35)"; ctx.lineWidth=1; ctx.stroke();
+      /* projection sur l'axe vertical puis lien horizontal vers la plume */
       S.draw.line(c,cx,cy,px,py,P.ink,1.6);
       S.draw.line(c,px,py,px,cy,"rgba(36,119,90,.55)",1.4,[3,3]);
-      S.draw.line(c,cx,cy,cx,py,P.red,4); 
+      S.draw.line(c,cx,cy,cx,py,P.red,4);
       S.draw.line(c,px,py,G(a),py,P.red,1.4,[4,3]);
       if(tc.value) { S.draw.line(c,cx,cy,px,cy,P.green,4); S.draw.dot(c,G(a),Y(Math.cos(a)),5.5,P.green); }
-      M.handle(c,px,py,P.ink,7); M.handle(c,G(a),py,P.red,7);
-      M.lab(c,"sin θ = "+F(Math.sin(a),2),G(a)+(a>PI*3.4?-50:56),py+(Math.sin(a)>=0?-17:17),P.red,{size:11});
+      /* bille sur la jante */
+      var gb=ctx.createRadialGradient(px-3,py-3,1,px,py,9); gb.addColorStop(0,"#ffb3a8"); gb.addColorStop(0.4,"#e0442c"); gb.addColorStop(1,"#8a1f10");
+      S.draw.glow(c,px,py,18,"#ffd36b",0.45); ctx.fillStyle=gb; ctx.beginPath(); ctx.arc(px,py,8.5,0,2*PI); ctx.fill();
+      /* plume qui écrit */
+      var fx=G(a), fy=py; ctx.save(); ctx.translate(fx,fy); ctx.rotate(-0.7);
+      ctx.fillStyle="#13233a"; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(4,-8); ctx.lineTo(-4,-8); ctx.closePath(); ctx.fill();
+      ctx.fillStyle=lin(ctx,-5,0,5,0,[[0,"#c0321d"],[1,"#7d1d10"]]); S.draw.rrect(c,-5,-36,10,28,3); ctx.fill(); ctx.restore();
+      M.handle(c,fx,fy,P.red,4.5);
+      M.lab(c,"sin θ = "+F(Math.sin(a),2),G(a)+(a>PI*3.2?-60:62),py+(Math.sin(a)>=0?-20:20),P.red,{size:11});
+      S.draw.label(c,"rayon 1",cx-r*0.85,cy-r*1.08,{size:10.5,color:P.acc});
       ro.set(0,F(a,2)); ro.set(1,F(Math.sin(a),3)); ro.set(2,F(Math.cos(a),3)); ro.set(3,"2π ≈ 6,283");
     });
     lp.play();

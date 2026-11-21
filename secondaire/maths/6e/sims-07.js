@@ -152,31 +152,119 @@ SFA.sim({
   id:"m6-c07-variable-cachee", ch:"c07", tag:"Corrélation ≠ causalité · Niche utile",
   titre:"Glaces et noyades : la variable cachée",
   resume:"Les ventes de glaces et les noyades sont corrélées. Retire l'effet de la température : la corrélation disparaît.",
-  but:"Chaque point est un mois (données fictives). Les couleurs montrent la température. Active « Retirer l'effet de la température » : les points glissent et la relation entre glaces et noyades disparaît.",
+  but:"La plage défile mois par mois : quand il fait chaud, la file au marchand de glaces s'allonge ET il y a plus de baigneurs (donc plus de noyades). Chaque point du graphique est un mois (données fictives), avec sa météo. Touche un point (ou la plage) pour choisir un mois. Active « Retirer l'effet de la température » : les points glissent et la relation entre glaces et noyades disparaît.",
   aRetenir:"Une forte corrélation entre deux variables ne prouve pas que l'une cause l'autre : une troisième variable (ici la température) peut agir sur les deux. Quand on neutralise cette variable cachée (on regarde les écarts à la droite de régression sur T), la corrélation entre glaces et noyades devient ≈ 0.",
   piege:"« Les glaces provoquent des noyades » est une conclusion fausse tirée d'une vraie corrélation. Pour prouver une causalité, il faut une expérience contrôlée ou une explication par un mécanisme, pas seulement un r élevé. (Données fictives, construites pour l'exemple.)",
   build:function(k,S){
-    var c=M6.canvas(k,.8,350), P=S.draw.palette;
+    var sc=M6.canvas(k,.46,250), c=M6.canvas(k,.62,300), P=S.draw.palette;
     var T=[3,4,8,12,16,20,23,22,18,13,7,4], eG=[0.4,-0.6,0.5,-0.3,0.7,-0.5,0.2,0.6,-0.4,-0.2,0.3,-0.7], eN=[0.35,-0.5,-0.2,0.5,0.1,0.2,-0.3,0.4,0.5,0.3,-0.6,-0.4];
     var mois=["jan","fév","mar","avr","mai","juin","juil","août","sep","oct","nov","déc"];
+    var MOIS=["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
     var G=T.map(function(t,i){return 2+0.9*t+eG[i];}), N=T.map(function(t,i){return 1+0.35*t+eN[i];});
-    var s=0, tgt=0, lp=k.loop(function(dt){ var d=tgt-s; s+=Math.sign(d)*Math.min(Math.abs(d),dt*1.4); if(Math.abs(tgt-s)<1e-4){ s=tgt; lp.pause(); } k.redraw(); });
-    var corr=k.toggle("Retirer l'effet de la température",false,function(on){ tgt=on?1:0; lp.play(); });
+    var s=0, tgt=0, clock=0, mf=0, hold=0, geo={pts:[]};
+    var lp=k.loop(function(dt){ clock+=dt; var d=tgt-s; s+=Math.sign(d)*Math.min(Math.abs(d),dt*1.4); if(Math.abs(tgt-s)<1e-4) s=tgt;
+      if(hold>0) hold-=dt; else mf=(mf+dt/1.5)%12; k.redraw(); });
+    var corr=k.toggle("Retirer l'effet de la température",false,function(on){ tgt=on?1:0; });
     var ro=k.readouts(["r (glaces, noyades)","Pente a","r avec température (glaces)","r avec température (noyades)"]);
     var nt=k.note("","ok");
+    lp.play();
     function tcol(t){ var u=(t-3)/20; return "rgb("+Math.round(30+200*u)+","+Math.round(63-20*u)+","+Math.round(143-110*u)+")"; }
+    function lin(ctx,x0,y0,x1,y1,st){ var g=ctx.createLinearGradient(x0,y0,x1,y1); st.forEach(function(q){ g.addColorStop(q[0],q[1]); }); return g; }
+    function mix(a,b,u){ return "rgb("+[0,1,2].map(function(i){ return Math.round(a[i]+(b[i]-a[i])*u); }).join(",")+")"; }
+    /* icône météo selon la température */
+    function wx(cv,x,y,t,r){ var ctx=cv.ctx; ctx.save();
+      if(t>=17){ ctx.fillStyle="#f4b400"; ctx.beginPath(); ctx.arc(x,y,r*0.55,0,6.2832); ctx.fill(); ctx.strokeStyle="#f4b400"; ctx.lineWidth=1.5; for(var a=0;a<8;a++){ var q=a*0.785; ctx.beginPath(); ctx.moveTo(x+Math.cos(q)*r*0.75,y+Math.sin(q)*r*0.75); ctx.lineTo(x+Math.cos(q)*r,y+Math.sin(q)*r); ctx.stroke(); } }
+      else if(t>=9){ ctx.fillStyle="#f4b400"; ctx.beginPath(); ctx.arc(x-r*0.25,y-r*0.2,r*0.5,0,6.2832); ctx.fill(); ctx.fillStyle="#c9d3df"; ctx.beginPath(); ctx.arc(x,y+r*0.15,r*0.42,0,6.2832); ctx.arc(x+r*0.4,y+r*0.2,r*0.34,0,6.2832); ctx.arc(x-r*0.35,y+r*0.28,r*0.3,0,6.2832); ctx.fill(); }
+      else { ctx.strokeStyle="#2f7fd1"; ctx.lineWidth=1.6; ctx.lineCap="round"; for(var b=0;b<3;b++){ var q2=b*1.047; ctx.beginPath(); ctx.moveTo(x-Math.cos(q2)*r*0.8,y-Math.sin(q2)*r*0.8); ctx.lineTo(x+Math.cos(q2)*r*0.8,y+Math.sin(q2)*r*0.8); ctx.stroke(); } }
+      ctx.restore(); }
+    /* petit personnage (pieds en x, y) */
+    function person(ctx,x,y,h,t,seed,ph){ var u=h/100, warm=t>=15, cols=warm?["#e07a1f","#2f7fd1","#c43a7a","#24775a","#f4c542"]:["#3c4756","#5f3a8a","#1f4b9e","#6b4f36","#24775a"], col=cols[seed%5];
+      ctx.save(); ctx.translate(x,y); ctx.lineCap="round";
+      ctx.fillStyle="rgba(15,27,45,.18)"; ctx.beginPath(); ctx.ellipse(0,0,16*u,3.5*u,0,0,6.2832); ctx.fill();
+      ctx.strokeStyle=warm?"#e8b98f":"#2c3a4e"; ctx.lineWidth=9*u; var sw=Math.sin(ph)*4*u; ctx.beginPath(); ctx.moveTo(-4*u,-42*u); ctx.lineTo(-5*u+sw,-3*u); ctx.moveTo(4*u,-42*u); ctx.lineTo(5*u-sw,-3*u); ctx.stroke();
+      if(warm){ ctx.fillStyle=["#1f4b9e","#c0321d","#13233a"][seed%3]; ctx.fillRect(-10*u,-48*u,20*u,14*u); }
+      ctx.fillStyle=col; S.draw.rrect(sc,-13*u,-82*u,26*u,warm?36*u:46*u,8*u); ctx.fill();
+      ctx.strokeStyle=warm?"#e8b98f":col; ctx.lineWidth=7*u; ctx.beginPath(); ctx.moveTo(-11*u,-74*u); ctx.lineTo(-15*u,-50*u); ctx.moveTo(11*u,-74*u); ctx.lineTo(15*u,-52*u); ctx.stroke();
+      ctx.fillStyle="#f0c9a0"; ctx.beginPath(); ctx.arc(0,-92*u,10*u,0,6.2832); ctx.fill();
+      ctx.fillStyle=warm?["#3b2a1c","#c99a3a","#13233a"][seed%3]:"#c0321d"; ctx.beginPath(); ctx.arc(0,-95*u,10.5*u,Math.PI*(warm?1.05:0.95),Math.PI*(warm?1.95:2.05)); ctx.fill();
+      if(warm&&seed%2===0){ /* cornet de glace */ ctx.fillStyle="#d9a066"; ctx.beginPath(); ctx.moveTo(13*u,-52*u); ctx.lineTo(19*u,-52*u); ctx.lineTo(16*u,-40*u); ctx.closePath(); ctx.fill(); ctx.fillStyle=["#f7b6c8","#fff3d6","#b5e3c6"][seed%3]; ctx.beginPath(); ctx.arc(16*u,-55*u,4.5*u,0,6.2832); ctx.fill(); }
+      ctx.restore(); }
+    /* ---------- scène : la plage au fil des mois ---------- */
+    function scene(m,frac){
+      var ctx=sc.ctx, W=sc.W, H=sc.H, small=W<470, t=T[m]+(T[(m+1)%12]-T[m])*0, u=(T[m]-3)/20, hz=H*0.42, sea1=H*0.6;
+      sc.clear();
+      ctx.fillStyle=lin(ctx,0,0,0,hz,[[0,mix([150,165,185],[70,150,230],u)],[1,mix([205,212,222],[200,230,250],u)]]); ctx.fillRect(0,0,W,hz);
+      /* soleil : plus haut et plus gros en été */
+      var sx=W*0.62, sy=hz-(hz*0.25+hz*0.55*u); S.draw.glow(sc,sx,sy,30+40*u,"#ffd36b",0.35+0.4*u); ctx.fillStyle="#ffd36b"; ctx.beginPath(); ctx.arc(sx,sy,10+8*u,0,6.2832); ctx.fill();
+      /* nuages (plus en hiver) */
+      var nc=Math.round(4-3*u); for(var i=0;i<nc;i++){ var cx=((i*0.31+clock*0.012)%1.1)*W*1.1-40, cy=18+i*13; ctx.fillStyle="rgba(255,255,255,"+(0.85-0.3*u)+")"; ctx.beginPath(); ctx.arc(cx,cy,12,0,6.2832); ctx.arc(cx+14,cy-5,15,0,6.2832); ctx.arc(cx+30,cy,11,0,6.2832); ctx.fill(); }
+      /* mer et vagues */
+      ctx.fillStyle=lin(ctx,0,hz,0,sea1,[[0,mix([90,110,135],[30,120,190],u)],[1,mix([130,150,170],[90,190,220],u)]]); ctx.fillRect(0,hz,W,sea1-hz);
+      ctx.strokeStyle="rgba(255,255,255,.55)"; ctx.lineWidth=1.5; for(var r=0;r<3;r++){ var yy=hz+(sea1-hz)*(0.3+r*0.25); ctx.beginPath(); for(var x=0;x<=W;x+=8){ var y=yy+Math.sin(x*0.05+clock*(1.5+r*0.4)+r)*1.6; x?ctx.lineTo(x,y):ctx.moveTo(x,y); } ctx.stroke(); }
+      /* baigneurs : plus nombreux quand il fait chaud (c'est le mécanisme des noyades) */
+      var nb=Math.max(0,Math.round((T[m]-6)/2.2)); for(var b=0;b<nb;b++){ var bx=W*0.5+((b*97)%100)/100*W*0.42, by=hz+(sea1-hz)*(0.35+((b*37)%50)/100)+Math.sin(clock*2+b)*1.5; ctx.fillStyle="#f0c9a0"; ctx.beginPath(); ctx.arc(bx,by,3.6,0,6.2832); ctx.fill(); ctx.fillStyle=["#c0321d","#f4c542","#2f7fd1"][b%3]; ctx.beginPath(); ctx.arc(bx,by-1.5,3.8,Math.PI,0); ctx.fill(); ctx.strokeStyle="rgba(255,255,255,.7)"; ctx.lineWidth=1; ctx.beginPath(); ctx.ellipse(bx,by+3,7,1.8,0,0,6.2832); ctx.stroke(); }
+      /* sable */
+      ctx.fillStyle=lin(ctx,0,sea1,0,H,[[0,mix([200,195,180],[240,214,160],u)],[1,mix([175,170,158],[222,190,135],u)]]); ctx.beginPath(); ctx.moveTo(0,sea1+6); for(var x2=0;x2<=W;x2+=20) ctx.lineTo(x2,sea1+Math.sin(x2*0.03+clock*1.2)*2.5); ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle="rgba(255,255,255,.7)"; ctx.lineWidth=2; ctx.beginPath(); for(var x3=0;x3<=W;x3+=10){ var y3=sea1+Math.sin(x3*0.03+clock*1.2)*2.5; x3?ctx.lineTo(x3,y3):ctx.moveTo(x3,y3); } ctx.stroke();
+      if(T[m]<=4){ ctx.fillStyle="rgba(255,255,255,.55)"; for(var f=0;f<40;f++){ var fx=((f*53)%100)/100*W, fy=((f*29+clock*30)%H); ctx.beginPath(); ctx.arc(fx,fy,1.5,0,6.2832); ctx.fill(); } }
+      /* parasols en été */
+      var np=Math.max(0,Math.round((T[m]-12)/3)); for(var p=0;p<np;p++){ var px=W*0.56+p*W*0.07, py=H*0.86; ctx.strokeStyle="#7b8694"; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(px,py); ctx.lineTo(px,py-34); ctx.stroke(); ctx.fillStyle=["#c0321d","#1f4b9e","#24775a"][p%3]; ctx.beginPath(); ctx.moveTo(px-20,py-30); ctx.quadraticCurveTo(px,py-48,px+20,py-30); ctx.closePath(); ctx.fill(); }
+      /* marchand de glaces + file d'attente (∝ glaces vendues) */
+      var kx=small?W*0.4:W*0.4, ky=H*0.9, kw=small?62:84, kh=small?52:64;
+      ctx.fillStyle="#ffffff"; S.draw.rrect(sc,kx-kw/2,ky-kh,kw,kh,5); ctx.fill(); ctx.strokeStyle="#c9d3df"; ctx.lineWidth=1; ctx.stroke();
+      for(var a=0;a<6;a++){ ctx.fillStyle=a%2?"#ffffff":"#e8607a"; ctx.beginPath(); ctx.moveTo(kx-kw/2-6+a*(kw+12)/6,ky-kh); ctx.lineTo(kx-kw/2-6+(a+1)*(kw+12)/6,ky-kh); ctx.lineTo(kx-kw/2-6+(a+1)*(kw+12)/6,ky-kh-14); ctx.lineTo(kx-kw/2-6+a*(kw+12)/6,ky-kh-14); ctx.closePath(); ctx.fill(); }
+      ctx.fillStyle="#13233a"; S.draw.rrect(sc,kx-kw*0.38,ky-kh+6,kw*0.76,16,4); ctx.fill(); S.draw.text(sc,"GLACES",kx,ky-kh+14.5,{size:small?9:10.5,weight:800,color:"#ffd36b"});
+      ctx.fillStyle="#bfe3f4"; ctx.fillRect(kx-kw*0.38,ky-kh+28,kw*0.76,kh*0.32);
+      [0.25,0.5,0.75].forEach(function(q,i){ var gx=kx-kw*0.38+kw*0.76*q, gy=ky-kh+28+kh*0.2; ctx.fillStyle=["#f7b6c8","#fff3d6","#b5e3c6"][i]; ctx.beginPath(); ctx.arc(gx,gy-2,4.5,0,6.2832); ctx.fill(); ctx.fillStyle="#d9a066"; ctx.beginPath(); ctx.moveTo(gx-3.5,gy); ctx.lineTo(gx+3.5,gy); ctx.lineTo(gx,gy+8); ctx.closePath(); ctx.fill(); });
+      var nq=Math.max(1,Math.round(G[m]/2.6)), ph=small?38:46;
+      var q0=kx-kw/2-10, qmin=small?44:58, qsp=nq>1?Math.min(small?12:15,(q0-qmin)/(nq-1)):0;
+      for(var q=nq-1;q>=0;q--){ var qx=q0-q*qsp, qy=ky+2+(q%2)*3; person(ctx,qx,qy,ph,T[m],q+m,clock*3+q); }
+      /* poste de secours (∝ noyades) */
+      var lx=W*(small?0.86:0.88), ly=H*0.9;
+      ctx.strokeStyle="#8a6b47"; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(lx-16,ly); ctx.lineTo(lx-10,ly-46); ctx.moveTo(lx+16,ly); ctx.lineTo(lx+10,ly-46); ctx.stroke();
+      ctx.fillStyle="#c0321d"; ctx.fillRect(lx-18,ly-64,36,20); ctx.fillStyle="#ffffff"; ctx.fillRect(lx-3,ly-62,6,16); ctx.fillRect(lx-8,ly-57,16,6);
+      ctx.fillStyle="#c0321d"; ctx.beginPath(); ctx.moveTo(lx+12,ly-64); ctx.lineTo(lx+12,ly-88); ctx.stroke(); ctx.beginPath(); ctx.moveTo(lx+12,ly-88); ctx.lineTo(lx+28,ly-83+Math.sin(clock*5)*2); ctx.lineTo(lx+12,ly-78); ctx.closePath(); ctx.fill();
+      /* bouées : une par « noyade » (indice arrondi) */
+      var nn=Math.round(N[m]); for(var bb=0;bb<nn;bb++){ var bxx=lx-24+(bb%5)*12-12, byy=ly-96-Math.floor(bb/5)*12; if(small) bxx+=4; ctx.strokeStyle="#ff6b2c"; ctx.lineWidth=3.2; ctx.beginPath(); ctx.arc(bxx,byy,4.2,0,6.2832); ctx.stroke(); ctx.strokeStyle="#ffffff"; ctx.lineWidth=3.2; ctx.beginPath(); ctx.arc(bxx,byy,4.2,0.3,0.9); ctx.arc(bxx,byy,4.2,2.0,2.6); ctx.stroke(); }
+      /* thermomètre */
+      var tx=small?20:26, tTop=18, tBot=H-26, th=tBot-tTop;
+      ctx.fillStyle="rgba(255,255,255,.9)"; S.draw.rrect(sc,tx-9,tTop-4,18,th+10,9); ctx.fill(); ctx.strokeStyle="#8a95a3"; ctx.lineWidth=1; ctx.stroke();
+      var lvl=tBot-8-(T[m]+2)/28*(th-18); ctx.fillStyle=tcol(T[m]); ctx.fillRect(tx-3,lvl,6,tBot-lvl); ctx.beginPath(); ctx.arc(tx,tBot,8,0,6.2832); ctx.fill();
+      /* bandeau du mois */
+      var bxs=small?44:56;
+      S.draw.panel(sc,bxs,8,small?150:178,small?46:52,{});
+      wx(sc,bxs+(small?20:24),8+(small?23:26),T[m],small?11:13);
+      S.draw.text(sc,MOIS[m],bxs+(small?40:50),8+(small?15:17),{size:small?13:15,weight:800,align:"left",color:P.ink});
+      S.draw.text(sc,T[m]+" °C",bxs+(small?40:50),8+(small?33:37),{size:small?12:13,weight:800,align:"left",color:tcol(T[m])});
+      var rx=W-8, rw=small?118:150;
+      S.draw.panel(sc,rx-rw,8,rw,small?46:52,{});
+      S.draw.text(sc,"glaces : "+S.fmt(G[m],1),rx-rw+10,8+(small?15:17),{size:small?11:12.5,weight:800,align:"left",color:"#c43a7a"});
+      S.draw.text(sc,"noyades : "+S.fmt(N[m],1),rx-rw+10,8+(small?33:37),{size:small?11:12.5,weight:800,align:"left",color:P.red});
+      /* frise des mois */
+      var fy=H-11, fx0=small?40:50, fw=W-fx0-10; geo.fx0=fx0; geo.fw=fw;
+      ctx.fillStyle="rgba(15,27,45,.28)"; S.draw.rrect(sc,fx0-4,fy-8,fw+8,16,8); ctx.fill();
+      for(var j=0;j<12;j++){ var mx=fx0+(j+0.5)*fw/12; S.draw.text(sc,mois[j],mx,fy,{size:small?8.5:10,weight:800,color:j===m?"#ffd36b":"rgba(255,255,255,.85)"}); }
+    }
+    sc.pointer(function(type,p){ if(!geo.fw) return; if(type==="down"||type==="drag"){ mf=Math.max(0,Math.min(11.99,Math.floor((p.x-geo.fx0)/geo.fw*12))); hold=4; k.redraw(); } });
+    c.pointer(function(type,p){ if(type!=="down") return; var best=-1, bd=22; geo.pts.forEach(function(q,i){ var d=Math.hypot(q[0]-p.x,q[1]-p.y); if(d<bd){ bd=d; best=i; } }); if(best>=0){ mf=best; hold=5; k.redraw(); } });
     k.draw(function(){
-      c.clear(); var ctx=c.ctx, fs=M6.fs(c,12);
+      var m=Math.floor(mf)%12;
+      scene(m);
+      c.clear(); var ctx=c.ctx, fs=M6.fs(c,12), small=c.W<470;
       var rg=reg(T,G), rn=reg(T,N);
       var cx=G.map(function(g,i){return g-(rg.a*T[i]+rg.b);}), cy=N.map(function(n,i){return n-(rn.a*T[i]+rn.b);});
       /* repère interpolé entre « données brutes » et « écarts » */
-      var ex=M6.ease(s), x0=-2*ex, x1=25*(1-ex)+2*ex, y0=-2*ex, y1=10*(1-ex)+2*ex;
+      var ex=M6.ease(s), x0=-2*ex, x1=25*(1-ex)+2*ex, y0=-2*ex, y1=10.6*(1-ex)+2*ex;
       var ax=S.draw.axes(c,{x0:x0,x1:x1,y0:y0,y1:y1,xl:s>0.5?"écart glaces":"glaces",yl:s>0.5?"écart noyades":"noyades"});
       var xs=G.map(function(g,i){ return g*(1-ex)+cx[i]*ex; }), ys=N.map(function(n,i){ return n*(1-ex)+cy[i]*ex; });
       var R=reg(xs,ys);
       S.draw.fn(c,ax,function(x){return R.a*x+R.b;},P.red,2.8);
-      xs.forEach(function(x,i){ S.draw.dot(c,ax.X(x),ax.Y(ys[i]),7,tcol(T[i])); });
-      xs.forEach(function(x,i){ if(T[i]>=20||T[i]<=3) S.draw.text(c,mois[i],ax.X(x),ax.Y(ys[i])-13,{size:10.5,color:"#5f6b7a",weight:700}); });
+      geo.pts=[];
+      xs.forEach(function(x,i){ var px=ax.X(x), py=ax.Y(ys[i]); geo.pts.push([px,py]); if(i===m){ S.draw.glow(c,px,py,24,"#f4c542",0.6); ctx.save(); ctx.strokeStyle="#13233a"; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(px,py,11,0,6.2832); ctx.stroke(); ctx.restore(); } S.draw.dot(c,px,py,7,tcol(T[i])); });
+      /* mois et météo à côté de chaque point (décalés pour ne pas se chevaucher) */
+      var SIDE=[1,1,1,-1,1,-1,1,-1,1,1,1,-1], DY=[-5,7,0,0,0,0,0,0,0,0,0,0];
+      xs.forEach(function(x,i){ var px=ax.X(x), py=ax.Y(ys[i]), left=SIDE[i]<0;
+        wx(c,px,py-16,T[i],small?5.5:6.5); S.draw.text(c,mois[i],px+(left?-11:11),py+DY[i]+1,{size:small?9.5:10.5,weight:i===m?800:700,color:i===m?P.ink:"#5f6b7a",align:left?"right":"left",halo:"#ffffff"}); });
       /* échelle de couleur */
       var bw=Math.min(120,c.W*0.3), bx=ax.R-bw-6, by=ax.B-30, g2=ctx.createLinearGradient(bx,0,bx+bw,0); g2.addColorStop(0,tcol(3)); g2.addColorStop(1,tcol(23));
       S.draw.panel(c,bx-8,by-20,bw+16,46,{shadow:false}); ctx.fillStyle=g2; S.draw.rrect(c,bx,by,bw,8,4); ctx.fill();
@@ -185,7 +273,7 @@ SFA.sim({
       var on=corr.value;
       ro.set(0,S.fmt(R.r,3)); ro.set(1,S.fmt(R.a,3)); ro.set(2,S.fmt(reg(T,G).r,3)); ro.set(3,S.fmt(reg(T,N).r,3));
       if(on&&s>0.99) nt.set("Une fois la température neutralisée, r ≈ "+S.fmt(R.r,2)+" : glaces et noyades n'ont plus de lien. La température expliquait tout.","ok");
-      else if(!on&&s<0.01) nt.set("r = "+S.fmt(R.r,2)+" : très forte corrélation, mais ce sont les mois chauds (rouge) qui concentrent glaces ET noyades.","warn");
+      else if(!on&&s<0.01) nt.set("r = "+S.fmt(R.r,2)+" : très forte corrélation, mais ce sont les mois chauds (rouge) qui concentrent glaces ET noyades : plus de soleil, plus de glaces vendues et plus de baigneurs.","warn");
       else nt.set("Les points glissent vers leurs écarts à la droite « température → glaces » et « température → noyades »…","ok");
     });
   }

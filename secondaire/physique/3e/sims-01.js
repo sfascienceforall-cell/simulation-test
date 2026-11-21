@@ -75,66 +75,122 @@ META["p3-c01-polarisation"]={
 var SERIE = ["Fourrure de lapin","Verre","Laine","Soie","Coton","Ballon de baudruche","Polystyrène","PVC (tuyau)","Téflon"];
 var SOPT = SERIE.map(function(n,i){ return [i,n]; });
 var MATC = ["#efe3d4","#dcebf2","#e9dfe9","#f1e4ee","#f2efe6","#f6d9d9","#eef0f3","#dfe8d6","#e8e8ec"];
+function vband(c,x,y,w,h,a,b){ var g=c.ctx, gr=g.createLinearGradient(0,y,0,y+h); gr.addColorStop(0,a); gr.addColorStop(1,b); g.fillStyle=gr; g.fillRect(x,y,w,h); }
+/* matériaux dessinés : (x, y) = coin haut gauche ; ph = temps (reflets) */
+function matObj(c,i,x,y,w,h,ph){
+  var g=c.ctx, j, r=Math.min(h/2,14);
+  g.save(); g.lineJoin="round";
+  function rr(rad){ g.beginPath(); if(g.roundRect) g.roundRect(x,y,w,h,rad); else g.rect(x,y,w,h); }
+  function vgrad(a,b,cc){ var gr=g.createLinearGradient(0,y,0,y+h); gr.addColorStop(0,a); gr.addColorStop(0.5,b); gr.addColorStop(1,cc); return gr; }
+  if(i===0){ /* fourrure de lapin */
+    rr(r); g.fillStyle=vgrad("#f3e6d3","#dcc3a2","#b89670"); g.fill(); g.strokeStyle="rgba(120,90,60,.45)"; g.lineWidth=1.2;
+    for(j=0;j<w*h/90;j++){ var fx=x+4+((j*37.3)%1)*0+((j*53.7)%(w-8)), fy=y+4+((j*29.1)%(h-8)), an=-0.6+((j*7)%5)*0.12; g.beginPath(); g.moveTo(fx,fy); g.lineTo(fx+Math.cos(an)*6,fy+Math.sin(an)*6+2); g.stroke(); }
+    g.strokeStyle="rgba(150,115,80,.8)"; g.lineWidth=1.4; for(j=0;j<w;j+=5){ g.beginPath(); g.moveTo(x+j,y+2); g.lineTo(x+j-2,y-4); g.moveTo(x+j,y+h-2); g.lineTo(x+j+2,y+h+4); g.stroke(); } }
+  else if(i===1||i===7||i===8){ /* tiges : verre, PVC, téflon */
+    var cols=i===1?["rgba(225,242,255,.9)","rgba(170,210,240,.75)","rgba(110,160,210,.85)"]:i===7?["#c7ced8","#8e99a8","#5d6878"]:["#ffffff","#eceef2","#c4c9d2"];
+    g.beginPath(); g.ellipse(x+w-h*0.22,y+h/2,h*0.22,h/2,0,0,PI2); g.fillStyle=cols[2]; g.fill();
+    g.beginPath(); g.moveTo(x+h*0.22,y); g.lineTo(x+w-h*0.22,y); g.lineTo(x+w-h*0.22,y+h); g.lineTo(x+h*0.22,y+h); g.ellipse(x+h*0.22,y+h/2,h*0.22,h/2,0,Math.PI/2,Math.PI*1.5); g.closePath();
+    g.fillStyle=vgrad(cols[0],cols[1],cols[2]); g.fill(); g.strokeStyle=i===1?"rgba(70,120,170,.7)":"rgba(70,80,95,.6)"; g.lineWidth=1.4; g.stroke();
+    g.beginPath(); g.ellipse(x+h*0.22,y+h/2,h*0.22,h/2,0,0,PI2); g.fillStyle=i===7?"#4a5463":i===1?"rgba(150,200,240,.8)":"#dde1e7"; g.fill(); g.stroke();
+    if(i===7){ g.fillStyle="#2c333d"; g.beginPath(); g.ellipse(x+h*0.22,y+h/2,h*0.13,h*0.34,0,0,PI2); g.fill(); }
+    g.fillStyle="rgba(255,255,255,.65)"; g.fillRect(x+h*0.3,y+h*0.16,w-h*0.7,Math.max(2,h*0.1)); }
+  else if(i===2){ /* laine tricotée */
+    rr(r*0.6); g.fillStyle=vgrad("#d77fa1","#c25d86","#9a3f66"); g.fill(); g.strokeStyle="rgba(255,220,235,.45)"; g.lineWidth=1.6;
+    for(var yy=y+6;yy<y+h-3;yy+=8) for(var xx=x+5;xx<x+w-4;xx+=8){ g.beginPath(); g.moveTo(xx,yy); g.lineTo(xx+4,yy+5); g.lineTo(xx+8,yy); g.stroke(); } }
+  else if(i===3){ /* soie */
+    rr(r*0.6); g.fillStyle=vgrad("#f6e2f2","#e2b8dc","#b985b2"); g.fill(); g.strokeStyle="rgba(255,255,255,.7)"; g.lineWidth=2;
+    for(j=0;j<3;j++){ g.beginPath(); for(var u=0;u<=w;u+=6){ var yy2=y+h*(0.25+0.25*j)+Math.sin(u*0.05+ph*1.5+j)*3; if(u) g.lineTo(x+u,yy2); else g.moveTo(x+u,yy2); } g.stroke(); } }
+  else if(i===4){ /* coton */
+    rr(r*0.5); g.fillStyle=vgrad("#fbf8f0","#efe9da","#d6ceb8"); g.fill(); g.strokeStyle="rgba(160,150,120,.28)"; g.lineWidth=1;
+    for(j=x+3;j<x+w;j+=4){ g.beginPath(); g.moveTo(j,y+1); g.lineTo(j,y+h-1); g.stroke(); } for(j=y+3;j<y+h;j+=4){ g.beginPath(); g.moveTo(x+1,j); g.lineTo(x+w-1,j); g.stroke(); } }
+  else if(i===5){ /* ballon de baudruche */
+    g.beginPath(); g.ellipse(x+w*0.48,y+h/2,w*0.46,h/2,0,0,PI2); var gr=g.createRadialGradient(x+w*0.35,y+h*0.25,h*0.05,x+w*0.48,y+h/2,w*0.5); gr.addColorStop(0,"#ffd0d0"); gr.addColorStop(0.3,"#f0566a"); gr.addColorStop(1,"#a21c33"); g.fillStyle=gr; g.fill();
+    g.fillStyle="#a21c33"; g.beginPath(); g.moveTo(x+w*0.94,y+h/2); g.lineTo(x+w,y+h/2-6); g.lineTo(x+w,y+h/2+6); g.closePath(); g.fill();
+    g.fillStyle="rgba(255,255,255,.6)"; g.beginPath(); g.ellipse(x+w*0.3,y+h*0.26,w*0.1,h*0.08,-0.2,0,PI2); g.fill(); }
+  else { /* polystyrène */
+    rr(4); g.fillStyle=vgrad("#ffffff","#f1f3f6","#d9dde4"); g.fill(); g.strokeStyle="#b7bfcb"; g.lineWidth=1.2; g.stroke(); g.fillStyle="rgba(170,180,195,.35)";
+    for(j=0;j<w*h/60;j++){ g.beginPath(); g.arc(x+4+((j*41.7)%(w-8)),y+4+((j*23.3)%(h-8)),2.2,0,PI2); g.fill(); } }
+  g.restore();
+}
+/* main qui tient le morceau A (vue de face) : (x, y) = milieu du bord supérieur */
+function handA(c,x,y,w,hA,tilt){
+  var g=c.ctx; g.save(); g.lineCap="round"; g.lineJoin="round";
+  var sx=x+Math.min(140,w*0.7)+tilt, sy=-30; var gr=g.createLinearGradient(sx-22,0,sx+22,0); gr.addColorStop(0,"#2a5fb8"); gr.addColorStop(1,"#1d4690");
+  g.strokeStyle=gr; g.lineWidth=40; g.beginPath(); g.moveTo(sx,sy); g.quadraticCurveTo(sx-10,(sy+y)/2,x+6,y-30); g.stroke();
+  g.strokeStyle="#183c7a"; g.lineWidth=36; g.lineCap="butt"; g.beginPath(); g.moveTo(x+8,y-34); g.lineTo(x+4,y-24); g.stroke(); g.lineCap="round";
+  var sk=g.createLinearGradient(0,y-24,0,y+hA*0.5); sk.addColorStop(0,"#f6d2ae"); sk.addColorStop(1,"#e2ad80");
+  g.fillStyle=sk; g.beginPath(); g.ellipse(x,y-10,Math.min(w*0.32,34),15,0,0,PI2); g.fill();
+  for(var f=0;f<4;f++){ var fx=x-Math.min(w*0.26,27)+f*Math.min(w*0.17,18); g.beginPath(); if(g.roundRect) g.roundRect(fx-5,y-12,10,hA*0.55+8,5); else g.rect(fx-5,y-12,10,hA*0.55+8); g.fill(); g.strokeStyle="rgba(150,90,50,.35)"; g.lineWidth=1; g.stroke(); }
+  g.beginPath(); g.ellipse(x+Math.min(w*0.34,36),y-6,7,12,-0.6,0,PI2); g.fill();
+  g.restore();
+}
 SIM("p3-c01-frottement", function(k,S){
-  var c = mkc(k,0.72,0.95);
+  var c = mkc(k,0.86,1.15);
   var A = k.select("Matériau A (celui qui frotte)", SOPT, 0);
   var B = k.select("Matériau B (celui qui est frotté)", SOPT, 7);
   var t = k.slider("Durée du frottement", 0, 10, 0.5, 4, "s");
   k.button("Frotter (rejouer)", function(){ cur = 0; }, true);
   var ro = k.readouts(["Électrons transférés","Charge de A","Charge de B","Total A + B"]);
   var nt = k.note("", "");
-  var cur = 4, ph = 0, ax = 0, dragA = false, px0 = 0, el = [], bits = [0.9,0.4,1,0.6,0.3,0.8,0.5,1,0.7,0.55,0.95,0.35];
+  var cur = 0, ph = 0, ax = 0, dragA = false, px0 = 0, el = [], bits = [0.9,0.4,1,0.6,0.3,0.8,0.5,1,0.7,0.55,0.95,0.35], sparks = [];
   var lp = k.loop(function(dt){
     ph += dt; var d = t.value - cur, rub = Math.abs(d) > 1e-3;
     cur += Math.sign(d) * Math.min(Math.abs(d), dt * 2.5);
     var a = +A.value, b = +B.value, sp = a === b ? 0 : (Math.abs(a - b) / 8) * 26;
-    if (rub && sp > 0 && Math.random() < sp * dt) el.push({u:0, x:Math.random()});
-    el.forEach(function(e){ e.u += dt * 1.5; }); el = el.filter(function(e){ return e.u < 1; });
+    if ((rub || dragA) && sp > 0 && Math.random() < sp * dt) el.push({u:0, x:Math.random(), h:0.6 + Math.random() * 0.6});
+    if ((rub || dragA) && Math.random() < dt * 14) sparks.push({x:Math.random(), t:0});
+    el.forEach(function(e){ e.u += dt * 1.3; }); el = el.filter(function(e){ return e.u < 1; });
+    sparks.forEach(function(s){ s.t += dt; }); sparks = sparks.filter(function(s){ return s.t < 0.35; });
     if (rub) ax = Math.sin(ph * 10) * 0.16 * c.W; else if (!dragA) ax *= 0.85;
     k.redraw();
   });
   lp.play();
   c.pointer(function(ty,p){
-    if (ty === "down"){ dragA = p.y < c.H * 0.46; px0 = p.x; }
-    else if (ty === "drag" && dragA){ var dx = p.x - px0; px0 = p.x; ax = clamp(p.x - c.W / 2, -c.W * 0.28, c.W * 0.28); t.set(Math.min(10, t.value + Math.abs(dx) * 0.012)); }
+    if (ty === "down"){ dragA = p.y < c.H * 0.5; px0 = p.x; }
+    else if (ty === "drag" && dragA){ var dx = p.x - px0; px0 = p.x; ax = clamp(p.x - c.W / 2, -c.W * 0.28, c.W * 0.28); t.set(Math.min(10, t.value + Math.abs(dx) * 0.012)); cur = t.value; }
     else if (ty === "up"){ dragA = false; }
   });
   k.draw(function(){
-    paper(c); var W = c.W, H = c.H, f = fs(c);
+    var W = c.W, H = c.H, f = fs(c), g = c.ctx;
     var a = +A.value, b = +B.value, dlt = Math.abs(a - b);
     var frac = (dlt / 8) * (1 - Math.exp(-cur / 2.5)), N = frac * 5e10, q = N * 1.602e-10;
-    var neg = a === b ? 0 : (b > a ? 1 : -1), qa = -neg * q, qb = neg * q, n = Math.min(10, Math.round(frac * 16));
-    /* table et papiers */
-    var by0 = H * 0.44, bh = H * 0.27, bx0 = W * 0.06, bw0 = W * 0.88, tab = H * 0.92;
-    rect(c, 0, tab, W, H - tab, "#e5e9f0"); ln(c, [0, tab], [W, tab], "#c6cdd8", 2);
-    var lift = Math.min(1, q / 3.5);
-    for (var i = 0; i < 12; i++){ var bx = bx0 + 18 + i * (bw0 - 36) / 11, up = lift * bits[i] * (tab - by0 - bh - 14) * (neg ? 1 : 0), wob = Math.sin(ph * 6 + i) * 1.5 * (up > 2 ? 1 : 0);
-      c.ctx.save(); c.ctx.translate(bx, tab - 5 - up + wob); c.ctx.rotate(up > 2 ? Math.sin(ph * 4 + i * 2) * 0.35 : 0); rect(c, -6, -2.5, 12, 5, "#fff", "#9aa6b6", 1.2, 1); c.ctx.restore(); }
-    chip(c, "papiers", W - 38, tab + 13, P.grey, {size: f - 1});
-    /* bloc B (frotté) puis bloc A (qui frotte) */
-    function block(x, y, w, h, i, qv, name){
-      var col = qv > 0.02 ? "#fbe6e3" : qv < -0.02 ? "#e2eaf9" : MATC[i];
-      rect(c, x, y, w, h, col, "#8795ab", 2, 12);
-      var cols = Math.max(4, Math.round(w / 46)), rows = Math.max(2, Math.round(h / 40));
-      for (var r = 0; r < rows; r++) for (var q2 = 0; q2 < cols; q2++){ var X = x + (q2 + 0.5) * w / cols, Y = y + (r + 0.5) * h / rows;
-        T(c, "+", X - 5, Y, {size: 15, color: "#d9857b", weight: 800}); circ(c, X + 7, Y, 3.2, "#6e92e6"); }
-      T(c, name, x + w / 2, y + h / 2 + 1, {size: f + 1.5, color: "#1d2b44", halo: col});
-    }
-    var aw = W * 0.4, ah = H * 0.24, axp = W / 2 + ax - aw / 2;
-    block(bx0, by0, bw0, bh, b, qb, SERIE[b]);
-    /* échange d'électrons à l'interface */
-    if (neg){ var ox = clamp(axp, bx0, bx0 + bw0 - aw);
-      el.forEach(function(e){ var x = ox + 14 + e.x * (aw - 28), y1 = by0 - 26, y2 = by0 + 26, y = neg > 0 ? y1 + (y2 - y1) * e.u : y2 + (y1 - y2) * e.u;
-        circ(c, x, y, 5, "#2f6bdc", "#fff", 1.4); T(c, "−", x, y, {size: 11, color: "#fff"}); }); }
-    block(clamp(axp, 2, W - aw - 2), by0 - ah, aw, ah, a, qa, SERIE[a]);
-    var gx = neg > 0 ? bx0 : clamp(axp, 2, W - aw - 2), gw = neg > 0 ? bw0 : aw, gy = neg > 0 ? by0 + 10 : by0 - 10;
-    for (i = 0; i < n; i++){ circ(c, gx + 16 + i * (gw - 32) / Math.max(1, 9), gy, 5.2, "#2f6bdc", "#fff", 1.5); T(c, "−", gx + 16 + i * (gw - 32) / Math.max(1, 9), gy, {size: 11, color: "#fff"}); }
-    var lx = neg > 0 ? clamp(axp, 2, W - aw - 2) : bx0, lw2 = neg > 0 ? aw : bw0, ly = neg > 0 ? by0 - 10 : by0 + 10;
-    for (i = 0; i < n; i++) T(c, "+", lx + 16 + i * (lw2 - 32) / 9, ly, {size: 16, color: P.red, weight: 800});
-    chip(c, "A : " + F(qa, 2) + " nC", clamp(axp, 2, W - aw - 2) + aw / 2, by0 - ah - 16, qa > 0.01 ? P.red : qa < -0.01 ? P.acc : P.grey);
+    /* neg > 0 : B gagne les électrons → B négatif, A positif (correction du signe, nov. 2026) */
+    var neg = a === b ? 0 : (b > a ? 1 : -1), qa = neg * q, qb = -neg * q, n = Math.min(10, Math.round(frac * 16));
+    /* décor : mur de classe, tableau, table en bois */
+    paper(c, "#e9eef5", "#dbe3ee");
+    rect(c, W * 0.55, H * 0.04, W * 0.42, H * 0.2, "#2f4a3e", "#7a5a3a", 5, 4);
+    T(c, "e⁻  →", W * 0.66, H * 0.1, {size: 15, color: "rgba(255,255,255,.75)", weight: 700}); T(c, "+ / −", W * 0.84, H * 0.16, {size: 14, color: "rgba(255,255,255,.6)", weight: 700});
+    var tab = H * 0.88; vband(c, 0, tab, W, H - tab, "#c08a56", "#8e5f35"); rect(c, 0, tab, W, 5, "#d9a774");
+    g.save(); g.strokeStyle = "rgba(90,55,25,.25)"; g.lineWidth = 1; for (var wv = 0; wv < 4; wv++){ g.beginPath(); for (var xx = 0; xx <= W; xx += 10) g.lineTo(xx, tab + 12 + wv * 8 + Math.sin(xx * 0.03 + wv) * 2); g.stroke(); } g.restore();
+    /* B posé sur deux cales, A tenu à la main */
+    var bx0 = W * 0.06, bw0 = W * 0.88, bh = H * 0.17, by0 = H * 0.52, aw = W * 0.38, ah = H * 0.13, axp = clamp(W / 2 + ax - aw / 2, 2, W - aw - 2);
+    [bx0 + bw0 * 0.15, bx0 + bw0 * 0.85].forEach(function(x){ rect(c, x - 16, by0 + bh - 2, 32, tab - by0 - bh + 2, "#a8784a", "#7a5230", 1.5, 3); });
+    /* papiers attirés par B quand il est chargé */
+    var lift = Math.min(1, q / 3.5), top = by0 + bh;
+    for (var i = 0; i < 12; i++){ var bx = bx0 + 40 + i * (bw0 - 80) / 11, up = lift * bits[i] * (tab - top - 12) * (neg ? 1 : 0), wob = Math.sin(ph * 6 + i) * 1.5 * (up > 2 ? 1 : 0);
+      g.save(); g.fillStyle = "rgba(60,40,20,.18)"; g.beginPath(); g.ellipse(bx, tab + 1, 7, 2, 0, 0, PI2); g.fill(); g.translate(bx, tab - 4 - up + wob); g.rotate(up > 2 ? Math.sin(ph * 4 + i * 2) * 0.4 : (i % 3 - 1) * 0.3); rect(c, -7, -3, 14, 6, "#fffef8", "#a9b2bf", 1, 1); g.restore(); }
+    T(c, "petits papiers", W - 10, tab + 18, {size: f - 1.5, color: "#fff", align: "right", weight: 800});
+    function glowQ(x, y, w, h, qv){ if (Math.abs(qv) < 0.05) return; g.save(); g.shadowColor = qv > 0 ? "rgba(224,80,60,.55)" : "rgba(47,107,220,.55)"; g.shadowBlur = 8 + 10 * Math.min(1, Math.abs(qv) / 6); rect(c, x + 4, y + 4, w - 8, h - 8, qv > 0 ? "rgba(224,80,60,.15)" : "rgba(47,107,220,.15)", null, 0, 10); g.restore(); }
+    glowQ(bx0, by0, bw0, bh, qb);
+    matObj(c, b, bx0, by0, bw0, bh, ph);
+    T(c, SERIE[b], bx0 + bw0 / 2, by0 + bh * 0.62, {size: f + 1.5, color: "#1d2b44", halo: "rgba(255,255,255,.85)"});
+    /* charges en excès : électrons (−) sur celui qui gagne, + sur celui qui perd */
+    function charges(x, y, w, sign, cnt){ cnt = Math.min(cnt, Math.floor((w - 36) / 15) + 1); var stp = (w - 36) / Math.max(1, Math.min(9, Math.floor((w - 36) / 15))); for (var j = 0; j < cnt; j++){ var X = x + 18 + j * stp; if (sign < 0){ circ(c, X, y, 6, "#2f6bdc", "#fff", 1.6); T(c, "−", X, y, {size: 12, color: "#fff"}); } else { circ(c, X, y, 6.5, "#fff", P.red, 1.6); T(c, "+", X, y + 0.5, {size: 13, color: P.red, weight: 800}); } } }
+    var ox = axp;
+    if (neg){ charges(neg > 0 ? ox : bx0 + 6, by0 + 12, neg > 0 ? aw : bw0 - 12, neg > 0 ? -1 : 1, n); }
+    /* électrons qui sautent d'un matériau à l'autre */
+    if (neg){ el.forEach(function(e){ var x = ox + 16 + e.x * (aw - 32), yA = by0 - ah * 0.45, yB = by0 + bh * 0.45, u = e.u, y = neg > 0 ? yA + (yB - yA) * u : yB + (yA - yB) * u, xo = Math.sin(u * Math.PI) * 18 * e.h;
+      circ(c, x + xo, y, 5.5, "#2f6bdc", "#fff", 1.4); T(c, "−", x + xo, y, {size: 11, color: "#fff"}); }); }
+    glowQ(axp, by0 - ah, aw, ah, qa);
+    matObj(c, a, axp, by0 - ah, aw, ah, ph);
+    if (neg){ charges(neg > 0 ? axp : axp, by0 - ah + 12, aw, neg > 0 ? 1 : -1, n); }
+    sparks.forEach(function(s){ var sx = axp + 10 + s.x * (aw - 20), sy = by0, r2 = 3 + 9 * s.t; g.save(); g.globalAlpha = 1 - s.t / 0.35; g.strokeStyle = "#f4c542"; g.lineWidth = 1.6; for (var k2 = 0; k2 < 4; k2++){ var an = k2 * Math.PI / 4 + s.x * 3; g.beginPath(); g.moveTo(sx + Math.cos(an) * r2 * 0.3, sy + Math.sin(an) * r2 * 0.3); g.lineTo(sx + Math.cos(an) * r2, sy + Math.sin(an) * r2); g.stroke(); } g.restore(); });
+    handA(c, axp + aw / 2, by0 - ah, aw, ah, -ax * 0.25);
+    T(c, SERIE[a], axp + aw / 2, by0 - ah * 0.3, {size: f, color: "#1d2b44", halo: "rgba(255,255,255,.85)"});
+    chip(c, "A : " + F(qa, 2) + " nC", clamp(axp + aw + 46, 50, W - 50), by0 - ah * 0.5, qa > 0.01 ? P.red : qa < -0.01 ? P.acc : P.grey);
     chip(c, "B : " + F(qb, 2) + " nC", W / 2, by0 + bh + 14, qb > 0.01 ? P.red : qb < -0.01 ? P.acc : P.grey);
-    if (neg && q > 0.05) lab(c, "les électrons passent vers : " + SERIE[neg > 0 ? b : a].split(" (")[0], W / 2, H * 0.05, P.amber, {weight: 800});
-    else lab(c, "Glisse le bloc A sur B pour frotter", W / 2, H * 0.045, P.grey, {weight: 700});
+    if (neg && q > 0.05) chip(c, "les électrons passent vers : " + SERIE[neg > 0 ? b : a].split(" (")[0], W * 0.28, H * 0.06, P.amber, {size: f});
+    else chip(c, "Attrape A et frotte-le sur B", W * 0.28, H * 0.06, P.grey, {size: f});
     ro.set(0, N < 1 ? "0" : S.sci(N, 2)); ro.set(1, F(qa, 2) + " nC"); ro.set(2, F(qb, 2) + " nC"); ro.set(3, "0 nC");
     if (a === b) nt.set("Même matériau : aucun transfert (valeurs : ordres de grandeur, modèle simplifié).", "warn");
     else nt.set("<b>" + SERIE[neg > 0 ? b : a] + "</b> gagne des électrons et devient négatif ; <b>" + SERIE[neg > 0 ? a : b] + "</b> en perd et devient positif. Plus les deux matériaux sont éloignés dans la série, plus le transfert est grand. Total des charges : toujours 0.", "ok");
@@ -205,57 +261,92 @@ SIM("p3-c01-deux-boules", function(k,S){
 
 /* ---------- 3 · Électroscope ---------- */
 SIM("p3-c01-electroscope", function(k,S){
-  var c = mkc(k,0.8,1.05);
+  var c = mkc(k,0.92,1.2);
   var qr = k.slider("Charge de la tige", -4, 4, 0.5, 3, "u");
-  var dist = k.slider("Distance tige – pommeau", 0, 12, 0.5, 12, "cm");
+  var dist = k.slider("Distance tige – pommeau", 0, 12, 0.5, 12, "cm", function(){ goal = null; });
   var terre = k.toggle("Relier l'électroscope à la terre (doigt)", false);
+  var goal = null, t0 = 0;
   var ro = k.readouts(["Charge totale de l'électroscope","Charge des feuilles","Écartement"]);
   var nt = k.note("", "");
-  var Q = 0, touched = false;
-  function touch(){ var tr = qr.value / 2; Q += tr; qr.set(qr.value - tr); dist.set(12); touched = true; }
+  var Q = 0, touched = false, flash = 0;
+  function touch(){ var tr = qr.value / 2; Q += tr; qr.set(qr.value - tr); dist.set(12); touched = true; flash = 0.5; goal = null; }
+  k.button("▶ Approcher / éloigner la tige", function(){ goal = dist.value > 6 ? 1.5 : 12; }, true);
   k.button("Toucher le pommeau avec la tige", function(){ touch(); });
-  k.button("Tout remettre à zéro", function(){ Q = 0; qr.set(3); dist.set(12); terre.set(false); touched = false; });
+  k.button("Tout remettre à zéro", function(){ Q = 0; qr.set(3); dist.set(12); terre.set(false); touched = false; goal = null; });
   function ind(){ return 0.8 * Math.abs(qr.value) / (1 + Math.pow(dist.value / 4, 2)); }
-  var geo = {};
+  var geo = {}, ph = 0, flow = [], capPrev = null, drag = false;
   c.pointer(function(ty,p){
-    if (ty === "down" || ty === "drag"){ if (ty === "down" && Math.abs(p.x - geo.rodX) > geo.rodW + 40) return;
+    if (ty === "down") drag = Math.abs(p.x - geo.rodX) <= geo.rodW + 40 && Math.abs(p.y - geo.ky) < 70;
+    if ((ty === "down" || ty === "drag") && drag){ goal = null;
       var d = clamp((p.x - geo.kx - geo.kr - 8) / geo.px, 0, 12); dist.set(Math.round(d * 2) / 2);
       if (d <= 0.3 && !touched && qr.value !== 0) touch(); else if (d > 1.5) touched = false; k.redraw(); }
+    if (ty === "up") drag = false;
   });
-  var th0 = 0, lp = k.loop(function(dt){ k.redraw(); }); lp.play();
+  var th0 = 0, lp = k.loop(function(dt){
+    ph += dt; t0 += dt; flash = Math.max(0, flash - dt);
+    if (t0 > 0.6 && t0 - dt <= 0.6 && dist.value === 12 && Q === 0) goal = 1.5;   /* à l'ouverture : la tige s'approche */
+    if (goal != null){ var d = goal - dist.value; if (Math.abs(d) < 0.05){ dist.set(goal); goal = null; } else dist.set(dist.value + Math.sign(d) * Math.min(Math.abs(d), dt * 6)); }
+    flow.forEach(function(e){ e.u += dt * 1.4; }); flow = flow.filter(function(e){ return e.u < 1; });
+    k.redraw();
+  }); lp.play();
   k.draw(function(){
-    paper(c); var W = c.W, H = c.H, f = fs(c), s = Math.sign(qr.value), ID = ind();
+    var W = c.W, H = c.H, f = fs(c), g = c.ctx, s = Math.sign(qr.value), ID = ind();
     if (terre.value) Q = -s * ID;
     var leaf = Q + s * ID, cap = -s * ID;
-    var target = (leaf === 0 ? 0 : 72 * (1 - Math.exp(-Math.abs(leaf) / 2.5))) * Math.PI / 180; th0 += (target - th0) * 0.35; var th = th0;
-    var kx = W * 0.4, ky = H * 0.13, kr = Math.min(22, W * 0.05), jt = H * 0.34, jb = H * 0.9, jw = Math.min(W * 0.34, 150);
-    /* bocal en verre */
-    rect(c, kx - jw / 2, jt, jw, jb - jt, "rgba(205,224,244,.35)", "#8fa8c6", 2.5, 16);
-    rect(c, kx - jw / 2 + 8, jt + 8, 7, jb - jt - 30, "rgba(255,255,255,.7)", null, 0, 3);
-    rect(c, kx - jw / 2 - 6, jb - 4, jw + 12, 10, "#aab4c3", null, 0, 5);
-    rect(c, kx - 15, jt - 6, 30, 14, "#6b4f3a", null, 0, 4);                 /* bouchon */
-    var ly = jt + (jb - jt) * 0.26, ll = (jb - ly) * 0.7;
-    ln(c, [kx, ky + kr], [kx, ly], "#5b6778", 5);
-    var gr = c.ctx.createRadialGradient(kx - 6, ky - 6, 3, kx, ky, kr); gr.addColorStop(0, "#fff"); gr.addColorStop(1, "#b7c0cc"); circ(c, kx, ky, kr, gr, "#6c7889", 2);
-        function leafAt(sg){ var ex = kx + sg * ll * Math.sin(th), ey = ly + ll * Math.cos(th); c.ctx.save(); c.ctx.strokeStyle = "#e0a91a"; c.ctx.lineWidth = 9; c.ctx.lineCap = "round"; c.ctx.beginPath(); c.ctx.moveTo(kx, ly); c.ctx.lineTo(ex, ey); c.ctx.stroke(); c.ctx.strokeStyle = "#ffe58a"; c.ctx.lineWidth = 3.5; c.ctx.stroke(); c.ctx.restore(); return [ex, ey]; }
-    leafAt(-1); leafAt(1); circ(c, kx, ly, 4, "#5b6778");
-    function signs(val, x, y, dx, dy, nmax){ var n = Math.min(nmax, Math.round(Math.abs(val) * 1.6)); for (var i = 0; i < n; i++) T(c, val > 0 ? "+" : "−", x + dx * (i - (n - 1) / 2), y + dy * (i - (n - 1) / 2), {size: 16, color: val > 0 ? P.red : P.acc, weight: 800, halo: "#fff"}); }
-    signs(cap, kx, ky - kr - 12, 12, 0, 6);
+    var target = (leaf === 0 ? 0 : 72 * (1 - Math.exp(-Math.abs(leaf) / 2.5))) * Math.PI / 180; th0 += (target - th0) * 0.2; var th = th0;
+    /* électrons mobiles qui montent ou descendent dans la tige métallique quand la répartition change */
+    var ce = cap; if (capPrev != null && Math.abs(ce - capPrev) > 1e-3){ var nn = Math.min(4, Math.ceil(Math.abs(ce - capPrev) * 6)); for (var e = 0; e < nn; e++) flow.push({u: -e * 0.12, up: ce < capPrev}); } capPrev = ce;
+    /* décor : mur, paillasse */
+    paper(c, "#edf1f7", "#dde4ee");
+    var bench = H * 0.9; vband(c, 0, bench, W, H - bench, "#5b6678", "#394354"); rect(c, 0, bench, W, 4, "#7d889a");
+    var ph2 = W < 430, kx = W * (ph2 ? 0.34 : 0.33), ky = H * 0.15, kr = Math.min(30, W * 0.065), jt = H * 0.38, jb = bench - 4, jw = Math.min(W * (ph2 ? 0.5 : 0.42), 250);
+    geo.ky = ky;
+    /* bocal en verre (volume : fonds elliptiques, reflets) */
+    var ex = jw / 2, ey = Math.min(16, jw * 0.08);
+    g.save(); g.fillStyle = "rgba(15,27,45,.18)"; g.beginPath(); g.ellipse(kx + 6, jb + 2, ex + 10, ey * 0.7, 0, 0, PI2); g.fill(); g.restore();
+    g.save(); var gg = g.createLinearGradient(kx - ex, 0, kx + ex, 0); gg.addColorStop(0, "rgba(170,200,235,.55)"); gg.addColorStop(0.25, "rgba(235,244,255,.25)"); gg.addColorStop(0.75, "rgba(220,235,252,.2)"); gg.addColorStop(1, "rgba(150,185,225,.55)");
+    g.beginPath(); g.ellipse(kx, jt, ex, ey, 0, Math.PI, 0); g.lineTo(kx + ex, jb - ey); g.ellipse(kx, jb - ey, ex, ey, 0, 0, Math.PI); g.closePath(); g.fillStyle = gg; g.fill(); g.strokeStyle = "rgba(100,130,170,.8)"; g.lineWidth = 2; g.stroke();
+    g.beginPath(); g.ellipse(kx, jt, ex, ey, 0, 0, PI2); g.strokeStyle = "rgba(100,130,170,.6)"; g.lineWidth = 1.5; g.stroke(); g.restore();
+    rect(c, kx - ex - 8, jb - 8, jw + 16, 14, "#6b7787", null, 0, 4); rect(c, kx - ex - 8, jb - 8, jw + 16, 4, "#8d98a9", null, 0, 2);
+    var ly = jt + (jb - jt) * 0.2, ll = (jb - ly) * 0.74;
+    /* tige métallique, bouchon isolant, pommeau */
+    var sg = g.createLinearGradient(kx - 4, 0, kx + 4, 0); sg.addColorStop(0, "#8d98a6"); sg.addColorStop(0.5, "#e1e6ec"); sg.addColorStop(1, "#6b7685");
+    g.fillStyle = sg; g.fillRect(kx - 4, ky + kr - 2, 8, ly - ky - kr + 4);
+    rect(c, kx - 20, jt - ey - 6, 40, 20, "#3a3f47", "#202429", 1.5, 6); rect(c, kx - 16, jt - ey - 4, 32, 5, "rgba(255,255,255,.15)", null, 0, 2);
+    var gr = g.createRadialGradient(kx - kr * 0.35, ky - kr * 0.4, kr * 0.1, kx, ky, kr); gr.addColorStop(0, "#ffffff"); gr.addColorStop(0.5, "#c9d1db"); gr.addColorStop(1, "#7f8a99"); circ(c, kx, ky, kr, gr, "#5f6b7a", 1.8);
+    if (Math.abs(cap) > 0.05) D.glow(c, kx, ky, kr * 2.2, cap > 0 ? "#e0503c" : "#2f6bdc", Math.min(0.45, Math.abs(cap) * 0.15));
+    /* feuilles d'or (volume : dégradé, frémissement) */
+    function leafAt(sgn){ var a = th + Math.sin(ph * 7 + sgn) * 0.012 * (th > 0.05 ? 1 : 0); g.save(); g.translate(kx, ly); g.rotate(-sgn * a);
+      var lg = g.createLinearGradient(-6, 0, 6, 0); lg.addColorStop(0, "#b8860b"); lg.addColorStop(0.45, "#ffe58a"); lg.addColorStop(1, "#c99a1e");
+      g.fillStyle = lg; g.beginPath(); g.moveTo(-5, 0); g.lineTo(5, 0); g.quadraticCurveTo(7 + sgn * 2, ll * 0.5, 6, ll); g.lineTo(-6, ll); g.quadraticCurveTo(-7 + sgn * 2, ll * 0.5, -5, 0); g.closePath(); g.fill(); g.strokeStyle = "rgba(140,100,10,.7)"; g.lineWidth = 1; g.stroke(); g.restore(); }
+    leafAt(-1); leafAt(1); rect(c, kx - 7, ly - 6, 14, 10, "#8d98a6", "#5f6b7a", 1.2, 2);
+    function signs(val, x, y, dx, dy, nmax){ var n = Math.min(nmax, Math.round(Math.abs(val) * 1.6)); for (var i = 0; i < n; i++){ var X = x + dx * (i - (n - 1) / 2), Y = y + dy * (i - (n - 1) / 2); if (val < 0){ circ(c, X, Y, 6, "#2f6bdc", "#fff", 1.4); T(c, "−", X, Y, {size: 11, color: "#fff"}); } else { circ(c, X, Y, 6.5, "#fff", P.red, 1.5); T(c, "+", X, Y + 0.5, {size: 12, color: P.red, weight: 800}); } } }
+    signs(cap, kx, ky - kr - 13, 15, 0, 6);
     var nl = Math.min(5, Math.round(Math.abs(leaf) * 1.4));
-    for (var i = 0; i < nl; i++){ var u = (i + 1) / (nl + 1); [-1, 1].forEach(function(sg){ T(c, leaf > 0 ? "+" : "−", kx + sg * (ll * Math.sin(th) * u + 12), ly + ll * Math.cos(th) * u, {size: 15, color: leaf > 0 ? P.red : P.acc, weight: 800, halo: "#fff"}); }); }
-    if (Math.abs(leaf) > 0.02) signs(leaf * 0.4, kx + 16, jt + 30, 0, 10, 3);
-    /* tige chargée : à droite, glissable */
-    var px = Math.max(8, (W - kx - kr - 8 - 125) / 12); geo = {kx: kx, kr: kr, px: px};
-    var rx = kx + kr + 8 + dist.value * px, rw = Math.min(120, W - rx - 8);
+    for (var i = 0; i < nl; i++){ var u = (i + 1) / (nl + 1); [-1, 1].forEach(function(sgn){ var X = kx + sgn * (ll * Math.sin(th) * u + 15), Y = ly + ll * Math.cos(th) * u; if (leaf < 0){ circ(c, X, Y, 6, "#2f6bdc", "#fff", 1.4); T(c, "−", X, Y, {size: 11, color: "#fff"}); } else { circ(c, X, Y, 6.5, "#fff", P.red, 1.5); T(c, "+", X, Y + 0.5, {size: 12, color: P.red, weight: 800}); } }); }
+    /* flux d'électrons dans la tige */
+    flow.forEach(function(e){ if (e.u < 0) return; var y = e.up ? ly - (ly - ky - kr) * e.u : ky + kr + (ly - ky - kr) * e.u; circ(c, kx, y, 5, "#2f6bdc", "#fff", 1.4); T(c, "−", kx, y, {size: 10, color: "#fff"}); });
+    /* tige chargée tenue à la main, glissable */
+    var px = Math.max(8, (W - kx - kr - 8 - 150) / 12); geo.kx = kx; geo.kr = kr; geo.px = px;
+    var rx = kx + kr + 8 + dist.value * px, rw = Math.min(170, W - rx + 40), rh = 22;
     geo.rodX = rx + rw / 2; geo.rodW = rw / 2;
-    if (qr.value !== 0 && rw > 30){ var col = qr.value > 0 ? P.red : P.acc;
-      rect(c, rx, ky - 12, rw, 24, qr.value > 0 ? "#f7d3cd" : "#cfdcf6", col, 2.4, 12);
-      for (i = 0; i < 3; i++) T(c, qr.value > 0 ? "+" : "−", rx + 18 + i * (rw - 36) / 2, ky, {size: 17, color: col, weight: 800});
-      chip(c, "tige " + (qr.value > 0 ? "+" : "−") + " (glisse-la)", clamp(rx + rw / 2 - 6, 70, W - 70), ky - 32, col); }
-    else chip(c, "tige neutre", rx + 40, ky - 4, P.grey);
-    if (dist.value > 0.4 && dist.value < 11) { ln(c, [kx + kr + 4, ky + 32], [rx - 2, ky + 32], "#9aa6b8", 1.3); chip(c, F(dist.value, 1) + " cm", (kx + kr + rx) / 2, ky + 48, P.grey); }
-    if (terre.value){ ln(c, [kx, ly], [kx, jb + 8], P.green, 3, [5, 4]); chip(c, "terre", kx + 30, jb - 6, P.green); }
-    chip(c, "feuilles", kx + jw / 2 - 34, jb - 24, P.grey, {size: f - 1});
+    if (qr.value !== 0){ var col = qr.value > 0 ? P.red : P.acc;
+      D.glow(c, rx + 20, ky, 36, col, Math.min(0.5, Math.abs(qr.value) * 0.1));
+      var rg = g.createLinearGradient(0, ky - rh / 2, 0, ky + rh / 2);
+      if (qr.value > 0){ rg.addColorStop(0, "rgba(235,245,255,.95)"); rg.addColorStop(0.5, "rgba(180,210,240,.85)"); rg.addColorStop(1, "rgba(120,160,205,.95)"); } else { rg.addColorStop(0, "#5c6370"); rg.addColorStop(0.45, "#2a2f38"); rg.addColorStop(1, "#111419"); }
+      rect(c, rx, ky - rh / 2, rw, rh, rg, qr.value > 0 ? "#6f93bd" : "#0b0d10", 1.5, rh / 2); rect(c, rx + 8, ky - rh / 2 + 4, rw - 50, 3, "rgba(255,255,255,.55)", null, 0, 2);
+      for (i = 0; i < 3; i++){ var X = rx + 16 + i * 22; if (qr.value > 0){ circ(c, X, ky, 6.5, "#fff", P.red, 1.5); T(c, "+", X, ky + 0.5, {size: 12, color: P.red, weight: 800}); } else { circ(c, X, ky, 6, "#2f6bdc", "#fff", 1.4); T(c, "−", X, ky, {size: 11, color: "#fff"}); } }
+      /* main */
+      var hx = rx + rw - 30; g.save(); g.fillStyle = "#1f4b9e"; g.beginPath(); g.moveTo(hx + 18, ky - 16); g.lineTo(W + 40, ky - 40); g.lineTo(W + 40, ky + 20); g.lineTo(hx + 18, ky + 16); g.closePath(); g.fill();
+      var sk = g.createLinearGradient(0, ky - 18, 0, ky + 18); sk.addColorStop(0, "#f6d2ae"); sk.addColorStop(1, "#dca577"); g.fillStyle = sk;
+      g.beginPath(); g.ellipse(hx + 6, ky, 20, 17, 0, 0, PI2); g.fill(); for (i = 0; i < 4; i++){ g.beginPath(); g.ellipse(hx - 10 + i * 8, ky + 12, 5, 7, 0, 0, PI2); g.fill(); } g.beginPath(); g.ellipse(hx - 12, ky - 9, 9, 5, 0.3, 0, PI2); g.fill(); g.restore();
+      chip(c, (qr.value > 0 ? "tige de verre +" : "tige d'ébonite −") + " (glisse-la)", clamp(rx + rw / 2, 90, W - 90), ky - 36, col); }
+    else chip(c, "tige neutre", Math.min(rx + 50, W - 50), ky - 4, P.grey);
+    if (flash > 0) D.glow(c, kx + kr, ky, 40 * flash * 2, "#ffe58a", 0.9 * flash * 2);
+    if (dist.value > 0.4 && dist.value < 11.5){ ln(c, [kx + kr + 4, ky + 32], [rx - 2, ky + 32], "#9aa6b8", 1.3); chip(c, F(dist.value, 1) + " cm", (kx + kr + rx) / 2, ky + 46, P.grey); }
+    if (terre.value){ var gx2 = kx - ex - 30; g.save(); g.strokeStyle = P.green; g.lineWidth = 3; g.lineJoin = "round"; g.beginPath(); g.moveTo(kx - kr * 0.7, ky + kr * 0.6); g.quadraticCurveTo(gx2, ky + kr * 2, gx2, jt); g.lineTo(gx2, bench - 2); g.stroke();
+      for (i = 0; i < 3; i++) ln(c, [gx2 - 14 + i * 4, bench + 6 + i * 6], [gx2 + 14 - i * 4, bench + 6 + i * 6], P.green, 2.6); g.restore(); chip(c, "terre", gx2, jt - 14, P.green); }
+    chip(c, "feuilles d'or", kx + ex - 46, jb - 30, "#a37a10", {size: f - 1});
     ro.set(0, F(Q, 2) + " u"); ro.set(1, F(leaf, 2) + " u"); ro.set(2, F(th * 180 / Math.PI, 0) + "° / feuille");
     var msg;
     if (qr.value === 0 && Q === 0) msg = "Rien n'est chargé : les feuilles pendent.";

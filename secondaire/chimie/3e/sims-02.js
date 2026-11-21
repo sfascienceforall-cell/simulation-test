@@ -74,72 +74,138 @@ build:function(k,S){
 });
 
 /* ---------- 2 · Expérience de Rutherford ---------- */
-var CIBLES = {al:{n:"Aluminium (Z = 13)", z:13}, cu:{n:"Cuivre (Z = 29)", z:29}, ag:{n:"Argent (Z = 47)", z:47}, au:{n:"Or (Z = 79)", z:79}};
+/* refonte 21/11/2026 : montage en 3D (source, feuille, écran sphérique) qu'on fait tourner + agrandissement de la feuille */
+var CIBLES = {al:{n:"Aluminium (Z = 13)", z:13, nom:"d'aluminium", col:"#c9cfd6"}, cu:{n:"Cuivre (Z = 29)", z:29, nom:"de cuivre", col:"#d0824f"}, ag:{n:"Argent (Z = 47)", z:47, nom:"d'argent", col:"#d9dde2"}, au:{n:"Or (Z = 79)", z:79, nom:"d'or", col:"#e8b93c"}};
+function shadeR(hex,f){ var m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex); if(!m) return hex; var v=[1,2,3].map(function(i){ var x=parseInt(m[i],16); x=f<0?x*(1+f):x+(255-x)*f; return Math.max(0,Math.min(255,Math.round(x))); }); return "rgb("+v.join(",")+")"; }
+function ballR(g,x,y,r,hex,al){ if(!(r>0)||!isFinite(x)||!isFinite(y)) return; g.save(); if(al!=null) g.globalAlpha=al; var gr=g.createRadialGradient(x-r*.38,y-r*.42,r*.05,x,y,r*1.05); gr.addColorStop(0,shadeR(hex,.75)); gr.addColorStop(.45,hex); gr.addColorStop(1,shadeR(hex,-.45)); g.fillStyle=gr; g.beginPath(); g.arc(x,y,r,0,6.2832); g.fill(); g.restore(); }
+function rot3R(p,a,b){ var x=p[0]*Math.cos(a)+p[2]*Math.sin(a), z=-p[0]*Math.sin(a)+p[2]*Math.cos(a), y=p[1]; return [x,y*Math.cos(b)-z*Math.sin(b),y*Math.sin(b)+z*Math.cos(b)]; }
+function proj3R(p,st,sc,cx,cy){ var r=rot3R(p,st.a,st.b), s=1/(1-r[2]*0.11); return {x:cx+r[0]*sc*s, y:cy-r[1]*sc*s, z:r[2], s:s}; }
 SFA.sim({
   id:"c3-c02-rutherford", ch:"c02", tag:"Expérience",
   titre:"L'expérience de Rutherford : tirer sur une feuille d'or",
-  resume:"Envoie des particules α sur un atome : avec un noyau minuscule, quelques-unes sont fortement déviées.",
-  but:"Compare le modèle de Thomson (charge répartie) et celui de Rutherford (noyau). Tire des particules α sur la cible et compte celles qui sont déviées.",
+  resume:"Des particules α sur une feuille d'or : presque toutes traversent, quelques-unes rebondissent. Montage en 3D et vue au cœur de la feuille.",
+  but:"Compare le modèle de Thomson (charge répartie) et celui de Rutherford (noyau). En haut, le montage en 3D : glisse pour le faire tourner, les éclairs apparaissent là où les particules frappent l'écran. En bas, au cœur de la feuille : touche pour viser et tirer une particule α.",
   aRetenir:"Presque toutes les particules α traversent la feuille sans être déviées : l'atome est surtout du vide. Quelques-unes sont fortement déviées, certaines rebroussent chemin : il existe un noyau minuscule, très dense, chargé positivement. Plus Z est grand, plus les déviations sont fréquentes.",
-  piege:"Le noyau est dessiné beaucoup trop gros pour qu'on le voie, et les proportions de particules déviées sont volontairement exagérées (dans l'expérience réelle, environ 1 sur 8 000 rebondit). Les trajectoires sont des hyperboles ; on les a simplifiées en deux segments.",
+  piege:"Le noyau est dessiné beaucoup trop gros pour qu'on le voie, et les proportions de particules déviées sont volontairement exagérées (dans l'expérience réelle, environ 1 sur 8 000 rebondit). Les trajectoires sont des hyperboles ; on les a simplifiées. L'écran est dessiné comme une sphère complète : dans le vrai montage, un petit écran fluorescent et un microscope tournaient autour de la feuille.",
 build:function(k,S){
-    var c = k.canvas(350);
+    var c = k.canvas(0,{ratio:.74});
+    Object.defineProperty(c,"ratio",{get:function(){ var w=c.cv.parentNode?c.cv.parentNode.clientWidth:600; return w<460?1:.74; }, configurable:true}); c.resize();
+    var z = k.canvas(0,{ratio:.42});
+    Object.defineProperty(z,"ratio",{get:function(){ var w=z.cv.parentNode?z.cv.parentNode.clientWidth:600; return w<460?.62:.42; }, configurable:true}); z.resize();
     var md = k.seg("Modèle de l'atome", [["th","Thomson"],["ru","Rutherford"]], "ru");
     var cb = k.select("Cible", Object.keys(CIBLES).map(function(i){return [i,CIBLES[i].n];}), "au");
+    var cont = k.toggle("Source ouverte (tir continu)", true);
     var ro = k.readouts(["Particules tirées","Quasi tout droit (< 5°)","Déviées (5° à 90°)","Rebroussent chemin (> 90°)"]);
-    var nt = k.note("<b>Vise</b> : touche ou glisse dans la scène pour orienter le canon et tirer une particule α. Plus tu vises près du noyau, plus elle est déviée.","");
-    var R=CH.rng(11), tally, flies, flashes, aim=0.55, Bm=150;
-    function reset(){ tally={n:0,s:0,m:0,b:0}; flies=[]; flashes=[]; }
+    var nt = k.note("<b>Vise</b> : touche ou glisse dans l'agrandissement (en bas) pour tirer une particule α. Plus tu vises près du noyau, plus elle est déviée. Glisse sur le montage (en haut) pour le faire tourner.","");
+    var R=CH.rng(11), tally, flies, flashes, hist, aim=0.62, Bm=150, view={a:-0.75, b:0.34, user:false, drag:false}, tt=0, acc=0, RS=1.3;
+    function reset(){ tally={n:0,s:0,m:0,b:0}; flies=[]; flashes=[]; hist=[]; }
     reset();
-    function geom(){ var W=c.W,H=c.H; return {xn:W*0.46, yc:H*0.52, rs:Math.min(H*0.42,W*0.4), ym:Math.min(H*0.36,130)}; }
-    function shot(b, u, anim){
-      var th=md.value==="th", z=CIBLES[cb.value].z, ang;
-      if(th) ang=(R()-0.5)*0.02; else { var a=0.025*z; ang=2*Math.atan(a/Math.max(Math.abs(b),1e-6)); if(b<0) ang=-ang; }
-      var deg=Math.abs(ang)*180/Math.PI; tally.n++; if(deg<5) tally.s++; else if(deg<=90) tally.m++; else tally.b++;
-      var gm=geom(), sgn=b>=0?1:-1, y0=gm.yc+sgn*Math.abs(u)*gm.ym, aa=Math.abs(ang), dir=[Math.cos(aa),sgn*Math.sin(aa)];
-      var pts=[[24,y0]], s0=30, i, A=[gm.xn-s0,y0], C=[gm.xn,y0], E=[C[0]+dir[0]*s0,C[1]+dir[1]*s0];
-      if(th) { pts.push([gm.xn+gm.rs*Math.cos(0),y0+0]); }
-      else { for(i=0;i<=10;i++){ var q=i/10; pts.push([(1-q)*(1-q)*A[0]+2*q*(1-q)*C[0]+q*q*E[0],(1-q)*(1-q)*A[1]+2*q*(1-q)*C[1]+q*q*E[1]]); }
-        var dx=dir[0], dy=dir[1], px=C[0]-gm.xn, py=C[1]-gm.yc, bq=px*dx+py*dy, cq=px*px+py*py-gm.rs*gm.rs, t2=-bq+Math.sqrt(Math.max(0,bq*bq-cq)); pts.push([C[0]+dx*t2,C[1]+dy*t2]); }
-      var end=pts[pts.length-1], ex=th?gm.xn+Math.sqrt(Math.max(0,gm.rs*gm.rs-(y0-gm.yc)*(y0-gm.yc))):end[0]; if(th) end=[ex,y0];
-      pts[pts.length-1]=end; var fl={x:end[0],y:end[1],deg:deg};
-      if(anim) flies.push({pts:pts,d:0,fl:fl,deg:deg}); else flashes.push({x:fl.x,y:fl.y,a:1,deg:deg});
-      if(flashes.length>500) flashes.shift();
+    function cat(deg){ return deg<5?0:deg<=90?1:2; }
+    var CAT = ["#3fbf86","#f0a030","#ff5a4a"];
+    /* chemin dans l'agrandissement (coordonnées 0..1 de la largeur / hauteur), même modèle qu'avant */
+    function zPath(u, ang, th){
+      var xn=0.5, yc=0.5, ym=0.36, y0=yc+u*ym, pts=[[0,y0]];
+      if(th){ pts.push([1.02, y0+ang*0.3]); return pts; }
+      var aa=Math.abs(ang), sg=u>=0?1:-1, dir=[Math.cos(aa), sg*Math.sin(aa)], s0=0.07, A=[xn-s0,y0], C=[xn,y0], E=[C[0]+dir[0]*s0, C[1]+dir[1]*s0*1.6], i;
+      pts.push(A); for(i=1;i<=10;i++){ var q=i/10; pts.push([(1-q)*(1-q)*A[0]+2*q*(1-q)*C[0]+q*q*E[0], (1-q)*(1-q)*A[1]+2*q*(1-q)*C[1]+q*q*E[1]]); }
+      pts.push([E[0]+dir[0]*1.2, E[1]+dir[1]*1.2*1.6]); return pts;
     }
-    function randShot(){ var u=(R()*2-1), b=u*u*Bm*(u<0?-1:1)*(u<0?1:1); b=Math.abs(u)*Math.abs(u)*Bm*(u<0?-1:1); shot(b,u,false); }
-    function fire(n){ for(var i=0;i<n;i++) randShot(); }
-    k.button("Tirer 1 (visé)", function(){ var u=aim*2-1; shot(Math.abs(u)*Math.abs(u)*Bm*(u<0?-1:1),u,true); });
-    k.button("Tirer 20", function(){ for(var i=0;i<20;i++) setTimeout(randShotAnim,i*45); }, true);
-    k.button("Tirer 500", function(){ fire(500); });
+    function shot(b, u, anim){
+      var th=md.value==="th", zz=CIBLES[cb.value].z, ang;
+      if(th) ang=(R()-0.5)*0.02; else { var a=0.025*zz; ang=2*Math.atan(a/Math.max(Math.abs(b),1e-6)); if(b<0) ang=-ang; }
+      var deg=Math.abs(ang)*180/Math.PI; tally.n++; var ct=cat(deg); if(ct===0) tally.s++; else if(ct===1) tally.m++; else tally.b++;
+      /* en 3D : déviation d'angle |ang| dans un plan d'azimut phi (côté du tir) */
+      var phi=(u>=0?Math.PI/2:-Math.PI/2)+(R()-0.5)*Math.PI, aa=Math.abs(ang), by=(R()-0.5)*0.08, bz=(R()-0.5)*0.08;
+      var d=[Math.cos(aa), Math.sin(aa)*Math.sin(phi), Math.sin(aa)*Math.cos(phi)], hit=[d[0]*RS, d[1]*RS, d[2]*RS];
+      var f={p0:[-1.62,by,bz], pf:[0,by,bz], hit:hit, q:0, deg:deg, ct:ct, zp:zPath(u, th?ang:ang, th)};
+      if(anim){ flies.push(f); } else flashes.push({p:hit, a:0.6, ct:ct});
+      if(flashes.length>600) flashes.shift();
+    }
+    function bOf(u){ return Math.abs(u)*Math.abs(u)*Bm*(u<0?-1:1); }
+    function randShot(anim){ /* impacts répartis uniformément sur la surface du faisceau : |u| = √r, donc la plupart des particules passent loin du noyau */ var u=Math.sqrt(R())*(R()<0.5?-1:1); shot(bOf(u),u,anim); }
+    k.button("Tirer 1 (visé)", function(){ var u=aim*2-1; shot(bOf(u),u,true); });
+    k.button("Tirer 20", function(){ for(var i=0;i<20;i++) setTimeout(function(){ randShot(true); },i*45); }, true);
+    k.button("Tirer 500", function(){ for(var i=0;i<500;i++) randShot(false); });
     k.button("Effacer", function(){ reset(); });
-    function randShotAnim(){ var u=(R()*2-1); shot(Math.abs(u)*Math.abs(u)*Bm*(u<0?-1:1),u,true); k.redraw(); }
-    c.pointer(function(type,pt){ if(type==="move"||type==="up") return; var gm=geom(); var u=Math.max(-1,Math.min(1,(pt.y-gm.yc)/gm.ym)); aim=(u+1)/2; if(type==="down"){ shot(Math.abs(u)*Math.abs(u)*Bm*(u<0?-1:1),u,true); } k.redraw(); });
-    var lp = k.loop(function(dt){ var any=false; flies.forEach(function(f){ f.d+=dt*520; any=true; });
-      flies=flies.filter(function(f){ var L=0,i; for(i=1;i<f.pts.length;i++) L+=Math.hypot(f.pts[i][0]-f.pts[i-1][0],f.pts[i][1]-f.pts[i-1][1]); if(f.d>=L){ flashes.push({x:f.fl.x,y:f.fl.y,a:1,deg:f.deg}); return false; } return true; });
-      flashes.forEach(function(f){ if(f.a>0.35) f.a-=dt*0.9; }); if(any||flashes.some(function(f){return f.a>0.36;})) k.redraw(); });
+    c.pointer(function(type,p){ if(type==="down"){ view.drag=true; view.user=true; view.lx=p.x; view.ly=p.y; } else if(type==="drag"&&view.drag){ view.a+=(p.x-view.lx)*0.012; view.b=Math.max(-1.2,Math.min(1.3,view.b+(p.y-view.ly)*0.012)); view.lx=p.x; view.ly=p.y; } else if(type==="up") view.drag=false; });
+    z.pointer(function(type,p){ if(type==="move"||type==="up") return; var u=Math.max(-1,Math.min(1,(p.y/z.H-0.5)/0.36)); aim=(u+1)/2; if(type==="down") shot(bOf(u),u,true); k.redraw(); });
+    var lp = k.loop(function(dt){
+      tt+=dt;
+      if(cont.value){ acc+=dt*5; while(acc>=1){ acc--; randShot(true); } }
+      if(!view.user) view.a=-0.75+0.32*Math.sin(tt*0.22);
+      flies.forEach(function(f){ f.q+=dt*0.95; });
+      flies=flies.filter(function(f){ if(f.q>=1){ flashes.push({p:f.hit, a:1, ct:f.ct}); hist.push({zp:f.zp, ct:f.ct}); if(hist.length>8) hist.shift(); return false; } return true; });
+      flashes.forEach(function(f){ if(f.a>0.45) f.a-=dt*0.7; });
+      k.redraw();
+    });
     lp.play();
-    function at(f){ var d=f.d,i,p=f.pts; for(i=1;i<p.length;i++){ var l=Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]); if(d<=l){ var q=l?d/l:0; return [p[i-1][0]+(p[i][0]-p[i-1][0])*q,p[i-1][1]+(p[i][1]-p[i-1][1])*q,i]; } d-=l; } return [p[p.length-1][0],p[p.length-1][1],p.length-1]; }
+    function lerp3(a,b,t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
+    function pos3(f, q){ return q<0.5 ? lerp3(f.p0, f.pf, q/0.5) : lerp3(f.pf, f.hit, (q-0.5)/0.5); }
+    function zAt(pts, q){ var L=0,i,seg=[]; for(i=1;i<pts.length;i++){ var l=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]); seg.push(l); L+=l; } var d=q*L; for(i=1;i<pts.length;i++){ if(d<=seg[i-1]){ var t=seg[i-1]?d/seg[i-1]:0; return [pts[i-1][0]+(pts[i][0]-pts[i-1][0])*t, pts[i-1][1]+(pts[i][1]-pts[i-1][1])*t, i]; } d-=seg[i-1]; } var e=pts[pts.length-1]; return [e[0],e[1],pts.length-1]; }
     k.draw(function(){
-      c.clear(); CH.bg(c); var W=c.W,H=c.H,g=c.ctx, gm=geom(), xn=gm.xn, yc=gm.yc;
-      CH.title(c,md.value==="th"?"Modèle de Thomson : charge + répartie":"Modèle de Rutherford : noyau minuscule",md.value==="th"?P.amber:P.red);
-      // écran circulaire
-      g.save(); g.beginPath(); g.arc(xn,yc,gm.rs,0,6.2832); g.strokeStyle="rgba(46,160,120,.35)"; g.lineWidth=7; g.stroke(); g.restore();
-      D.text(c,"écran fluorescent (ZnS)",xn,yc-gm.rs-10,{size:11,color:"#4b586a"});
-      // atome
-      var ra=Math.min(gm.ym*0.95,70);
-      if(md.value==="th"){ CH.circ(c,xn,yc,ra,"rgba(214,87,70,.22)","#c77",1.5); for(var i=0;i<12;i++){ var a=i*2.4, r=ra*.78*Math.sqrt((i+.5)/12); D.text(c,"−",xn+r*Math.cos(a),yc+r*Math.sin(a),{size:17,color:P.acc}); } }
-      else { g.save(); g.setLineDash([4,4]); CH.circ(c,xn,yc,ra,null,"#aab4c4",1.4); g.restore(); D.glow(c,xn,yc,26,P.red,.5); CH.ball(c,xn,yc,6,P.red,""); D.text(c,"noyau (+)",xn+10,yc+ra*.45+8,{size:11,color:P.red,align:"left"}); }
-      // faisceau visé
-      var yaim=yc+(aim*2-1)*gm.ym; D.line(c,40,yaim,xn-ra,yaim,"rgba(31,75,158,.25)",1.2,[3,5]);
-      CH.rr(c,6,yaim-9,36,18,"#5b6677",null,0,5); CH.rr(c,38,yaim-4,10,8,"#3c4656",null,0,2); D.text(c,"α",24,yaim+1,{size:12,color:"#fff"});
-      flashes.forEach(function(f){ var col=f.deg<5?"46,107,85":f.deg<=90?"180,83,9":"180,35,24"; g.fillStyle="rgba("+col+","+f.a.toFixed(2)+")"; g.beginPath(); g.arc(f.x,f.y,f.a>.9?4:2.4,0,6.3); g.fill(); });
-      flies.forEach(function(f){ var p=at(f), col=f.deg<5?"#2e6b55":f.deg<=90?"#b45309":"#b42318"; g.strokeStyle=col; g.lineWidth=1.6; g.globalAlpha=.6; g.beginPath(); g.moveTo(f.pts[0][0],f.pts[0][1]); for(var i=1;i<p[2];i++) g.lineTo(f.pts[i][0],f.pts[i][1]); g.lineTo(p[0],p[1]); g.stroke(); g.globalAlpha=1; CH.circ(c,p[0],p[1],3.8,col,"#fff",1); });
-      D.label(c,"vert : < 5°   orange : 5–90°   rouge : > 90°",W-8,H-14,{align:"right",size:10.5,color:"#4b586a"});
+      var W=c.W, H=c.H, g=c.ctx, ph1=W<460, cib=CIBLES[cb.value], th=md.value==="th", i, j;
+      c.clear();
+      /* intérieur de la chambre à vide */
+      var bg=g.createRadialGradient(W*0.5,H*0.45,10,W*0.5,H*0.5,Math.max(W,H)*0.75); bg.addColorStop(0,"#26344a"); bg.addColorStop(1,"#0c1320"); g.fillStyle=bg; g.fillRect(0,0,W,H);
+      var sc=Math.min(W*(ph1?0.25:0.3),H*0.36), cx=W*(ph1?0.58:0.53), cy=H*0.5, P3=function(p){ return proj3R(p,view,sc,cx,cy); };
+      /* socle métallique */
+      g.save(); g.beginPath(); for(i=0;i<=40;i++){ var an=i/40*6.2832, q=P3([Math.cos(an)*1.55,-1.42,Math.sin(an)*1.55]); i?g.lineTo(q.x,q.y):g.moveTo(q.x,q.y); } g.closePath(); var gb=g.createLinearGradient(0,cy,0,H); gb.addColorStop(0,"#5d6b7f"); gb.addColorStop(1,"#2e3846"); g.fillStyle=gb; g.fill(); g.strokeStyle="rgba(255,255,255,.18)"; g.stroke(); g.restore();
+      /* écran fluorescent (sphère en fil) : moitié arrière puis moitié avant */
+      function sphere(front){
+        g.save(); g.strokeStyle=front?"rgba(90,230,170,.3)":"rgba(90,230,170,.12)"; g.lineWidth=1; g.beginPath();
+        var seg=function(p1,p2){ var a1=P3(p1), a2=P3(p2); if((a1.z+a2.z>0)===front){ g.moveTo(a1.x,a1.y); g.lineTo(a2.x,a2.y); } };
+        for(j=0;j<8;j++){ var lo=j/8*Math.PI; for(i=0;i<32;i++){ var u1=i/32*6.2832, u2=(i+1)/32*6.2832; seg([RS*Math.cos(u1)*Math.cos(lo),RS*Math.sin(u1),RS*Math.cos(u1)*Math.sin(lo)],[RS*Math.cos(u2)*Math.cos(lo),RS*Math.sin(u2),RS*Math.cos(u2)*Math.sin(lo)]); } }
+        [-0.75,-0.4,0,0.4,0.75].forEach(function(la){ var r=RS*Math.cos(la), y=RS*Math.sin(la); for(i=0;i<32;i++){ var u1=i/32*6.2832, u2=(i+1)/32*6.2832; seg([r*Math.cos(u1),y,r*Math.sin(u1)],[r*Math.cos(u2),y,r*Math.sin(u2)]); } });
+        g.stroke(); g.restore();
+      }
+      sphere(false);
+      /* éclairs à l'arrière */
+      function flashesDraw(front){ flashes.forEach(function(f){ var q=P3(f.p); if((q.z>0)!==front) return; var al=f.a*(front?1:0.55); if(f.a>0.5) D.glow(c,q.x,q.y,10*q.s,CAT[f.ct],0.7*(f.a-0.45)); g.fillStyle=CAT[f.ct]; g.globalAlpha=Math.min(1,al+0.15); g.beginPath(); g.arc(q.x,q.y,(f.a>0.9?3.2:1.9)*q.s,0,6.2832); g.fill(); g.globalAlpha=1; }); }
+      flashesDraw(false);
+      /* tige support de la feuille */
+      var t1=P3([0,-1.42,0]), t2=P3([0,-0.32,0]); D.line(c,t1.x,t1.y,t2.x,t2.y,"#7b8798",4);
+      /* source dans son bloc de plomb (boîte 3D) */
+      var bx0=-2.05, bx1=-1.62, bh=0.2, V=[[bx0,-bh,-bh],[bx1,-bh,-bh],[bx1,bh,-bh],[bx0,bh,-bh],[bx0,-bh,bh],[bx1,-bh,bh],[bx1,bh,bh],[bx0,bh,bh]].map(P3);
+      var faces=[[0,1,2,3,[0,0,-1]],[4,5,6,7,[0,0,1]],[0,1,5,4,[0,-1,0]],[3,2,6,7,[0,1,0]],[0,3,7,4,[-1,0,0]],[1,2,6,5,[1,0,0]]];
+      faces.map(function(f){ var n=rot3R(f[4],view.a,view.b); return {f:f, z:(V[f[0]].z+V[f[1]].z+V[f[2]].z+V[f[3]].z)/4, nz:n[2], ny:n[1]}; }).sort(function(p,q){ return p.z-q.z; }).forEach(function(o){ if(o.nz<-0.02) return; var l=0.35+0.4*Math.max(0,o.nz)+0.2*Math.max(0,o.ny); g.beginPath(); o.f.slice(0,4).forEach(function(ix,m){ m?g.lineTo(V[ix].x,V[ix].y):g.moveTo(V[ix].x,V[ix].y); }); g.closePath(); g.fillStyle="rgb("+Math.round(70+90*l)+","+Math.round(76+92*l)+","+Math.round(86+96*l)+")"; g.fill(); g.strokeStyle="rgba(0,0,0,.35)"; g.lineWidth=1; g.stroke();
+        if(o.f[4][0]===1){ var hc=P3([bx1+0.001,0,0]); g.fillStyle="#120c08"; g.beginPath(); g.arc(hc.x,hc.y,4*hc.s,0,6.2832); g.fill(); D.glow(c,hc.x,hc.y,10*hc.s,"#ff6a3d",0.5); } });
+      var lb=P3([(bx0+bx1)/2,bh+0.12,0]); D.label(c,"source α (plomb)",lb.x,lb.y,{size:10,color:"#ffd9c9",fill:"rgba(40,22,16,.75)"});
+      /* faisceau */
+      var s1=P3([bx1,0,0]), s2=P3([0,0,0]); g.save(); g.strokeStyle="rgba(255,110,70,.35)"; g.lineWidth=5; g.beginPath(); g.moveTo(s1.x,s1.y); g.lineTo(s2.x,s2.y); g.stroke(); g.strokeStyle="rgba(255,170,130,.6)"; g.lineWidth=1.2; g.stroke(); g.restore();
+      /* feuille métallique dans son cadre */
+      var fw=0.34, Fq=[[0,-fw,-fw],[0,fw,-fw],[0,fw,fw],[0,-fw,fw]].map(P3), Fo=[[0,-fw-0.05,-fw-0.05],[0,fw+0.05,-fw-0.05],[0,fw+0.05,fw+0.05],[0,-fw-0.05,fw+0.05]].map(P3);
+      g.save(); g.beginPath(); Fo.forEach(function(q,m){ m?g.lineTo(q.x,q.y):g.moveTo(q.x,q.y); }); g.closePath(); g.fillStyle="#6a5a44"; g.fill();
+      g.beginPath(); Fq.forEach(function(q,m){ m?g.lineTo(q.x,q.y):g.moveTo(q.x,q.y); }); g.closePath(); var gf=g.createLinearGradient(Fq[0].x,Fq[0].y,Fq[2].x,Fq[2].y), sh=(tt*0.25)%1.4-0.2; gf.addColorStop(0,shadeR(cib.col,-0.25)); gf.addColorStop(Math.max(0,Math.min(1,sh)),shadeR(cib.col,0.55)); gf.addColorStop(1,shadeR(cib.col,-0.1)); g.globalAlpha=0.88; g.fillStyle=gf; g.fill(); g.restore();
+      var fl=P3([0,-fw-0.18,0]); D.label(c,"feuille "+cib.nom+" (< 1 µm)",fl.x,fl.y+8,{size:10.5,color:"#ffe9a8",fill:"rgba(60,45,10,.7)"});
+      /* particules en vol */
+      flies.forEach(function(f){ var p=pos3(f,f.q), q=P3(p), q0=P3(pos3(f,Math.max(0,f.q-0.07))); g.save(); g.strokeStyle=CAT[f.ct]; g.globalAlpha=0.55; g.lineWidth=2; g.beginPath(); g.moveTo(q0.x,q0.y); if(f.q>0.5&&f.q-0.07<0.5){ var qm=P3(f.pf); g.lineTo(qm.x,qm.y); } g.lineTo(q.x,q.y); g.stroke(); g.restore(); D.glow(c,q.x,q.y,7*q.s,"#ff7a50",0.6); ballR(g,q.x,q.y,2.8*q.s,"#ff6a3d"); });
+      sphere(true); flashesDraw(true);
+      D.label(c, th?"Modèle de Thomson : charge + répartie":"Modèle de Rutherford : noyau minuscule", 10, 15, {align:"left", size:11.5, color:th?"#ffcf8a":"#ffb4a8", fill:"rgba(0,0,0,.35)"});
+      D.label(c, "écran fluorescent (ZnS)", ph1?10:W-10, ph1?37:15, {align:ph1?"left":"right", size:10.5, color:"#9ff0cc", fill:"rgba(0,0,0,.35)"});
+      T(c, "↻ glisse pour tourner le montage", W/2, H-12, {size:10.5, color:"rgba(220,230,245,.75)", weight:600});
+      /* ----- agrandissement : au cœur de la feuille ----- */
+      var Z=z.ctx, ZW=z.W, ZH=z.H;
+      z.clear(); var zb=Z.createLinearGradient(0,0,0,ZH); zb.addColorStop(0,th?"#2a1f28":"#1d2433"); zb.addColorStop(1,th?"#1a1218":"#121826"); Z.fillStyle=zb; Z.fillRect(0,0,ZW,ZH);
+      var ra=Math.min(ZH*0.24, ZW*0.14), dy=ZH*0.52;
+      /* une couche d'atomes de la feuille, vue de profil */
+      var fb=Z.createLinearGradient(ZW*0.5-ra*1.2,0,ZW*0.5+ra*1.2,0); fb.addColorStop(0,"rgba(232,185,60,0)"); fb.addColorStop(0.5,th?"rgba(213,109,109,.10)":"rgba(232,185,60,.12)"); fb.addColorStop(1,"rgba(232,185,60,0)"); Z.fillStyle=fb; Z.fillRect(ZW*0.5-ra*1.2,0,ra*2.4,ZH);
+      for(j=-1;j<=1;j++) for(i=0;i<=0;i++){ var ax=ZW*0.5, ay=ZH*0.5+j*dy;
+        if(th){ ballR(Z,ax,ay,ra*0.95,"#d56d6d",0.42); for(var e=0;e<5;e++){ var ea=e*1.26+i+j, er=ra*0.55*Math.sqrt((e+0.5)/5); T(z,"−",ax+er*Math.cos(ea),ay+er*Math.sin(ea),{size:11,color:"#9fc3ff"}); } }
+        else { ballR(Z,ax,ay,ra*0.95,cib.col,0.16); Z.save(); Z.setLineDash([3,4]); Z.strokeStyle="rgba(255,230,160,.25)"; Z.beginPath(); Z.arc(ax,ay,ra*0.95,0,6.2832); Z.stroke(); Z.restore(); D.glow(z,ax,ay,ra*0.32,"#ff5a4a",0.55); ballR(Z,ax,ay,Math.max(2.2,ra*0.07),"#ff4a3a"); } }
+      var ZP=function(p){ return [p[0]*ZW, p[1]*ZH]; };
+      hist.forEach(function(h,ix){ Z.save(); Z.strokeStyle=CAT[h.ct]; Z.globalAlpha=0.08+0.22*ix/hist.length; Z.lineWidth=1.4; Z.beginPath(); h.zp.forEach(function(p,m){ var q=ZP(p); m?Z.lineTo(q[0],q[1]):Z.moveTo(q[0],q[1]); }); Z.stroke(); Z.restore(); });
+      flies.forEach(function(f){ var p=zAt(f.zp,f.q), q=ZP(p); Z.save(); Z.strokeStyle=CAT[f.ct]; Z.lineWidth=2; Z.globalAlpha=0.8; Z.beginPath(); var s0=ZP(f.zp[0]); Z.moveTo(s0[0],s0[1]); for(var m=1;m<p[2];m++){ var w2=ZP(f.zp[m]); Z.lineTo(w2[0],w2[1]); } Z.lineTo(q[0],q[1]); Z.stroke(); Z.restore(); D.glow(z,q[0],q[1],8,"#ff7a50",0.7); ballR(Z,q[0],q[1],3.4,"#ff6a3d"); });
+      var ya=(0.5+(aim*2-1)*0.36)*ZH; D.line(z,26,ya,ZW*0.5-ra*1.1,ya,"rgba(255,170,130,.45)",1.2,[3,5]);
+      Z.save(); Z.fillStyle="#7b8798"; Z.beginPath(); Z.moveTo(4,ya-8); Z.lineTo(22,ya-5); Z.lineTo(22,ya+5); Z.lineTo(4,ya+8); Z.closePath(); Z.fill(); Z.restore(); T(z,"α",12,ya,{size:10,color:"#fff"});
+      D.label(z,"Au cœur de la feuille (énorme agrandissement, pas à l'échelle)",8,13,{align:"left",size:ph1?9.5:10.5,color:"#e8edf5",fill:"rgba(0,0,0,.35)"});
+      T(z,th?"atomes de Thomson : charge + étalée, électrons dedans":"noyau + minuscule au centre d'un atome presque vide",ZW/2,ZH-11,{size:ph1?9.5:10.5,color:"rgba(230,236,245,.8)",weight:600});
+      if(!ph1) D.label(z,"vert < 5° · orange 5–90° · rouge > 90°",ZW-8,13,{align:"right",size:ph1?9:10,color:"#dfe7f2",fill:"rgba(0,0,0,.35)"});
       ro.set(0,String(tally.n)); var n=Math.max(1,tally.n);
       ro.set(1,tally.s+" ("+F(100*tally.s/n,0)+" %)"); ro.set(2,tally.m+" ("+F(100*tally.m/n,0)+" %)"); ro.set(3,tally.b+" ("+F(100*tally.b/n,1)+" %)");
     });
   }
 });
+
 
 /* ---------- 3 · Constructeur d'atomes ---------- */
 var EL = [null,["H","hydrogène"],["He","hélium"],["Li","lithium"],["Be","béryllium"],["B","bore"],["C","carbone"],["N","azote"],["O","oxygène"],["F","fluor"],["Ne","néon"],["Na","sodium"],["Mg","magnésium"],["Al","aluminium"],["Si","silicium"],["P","phosphore"],["S","soufre"],["Cl","chlore"],["Ar","argon"],["K","potassium"],["Ca","calcium"]];

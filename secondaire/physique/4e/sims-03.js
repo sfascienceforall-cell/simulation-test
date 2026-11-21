@@ -14,6 +14,8 @@ function timeFall(vt, h){
 window.P4chute = {posFall:posFall, velFall:velFall, timeFall:timeFall};
 
 var OBJ = {
+  /* boule de bowling : m ≈ 7 kg, Ø ≈ 22 cm, Cx ≈ 0,47, ρair = 1,2 kg/m³ → vlim = √(2mg/(ρ·Cx·S)) ≈ 80 m/s */
+  bowling:{n:"Boule de bowling", vt:80, r:12, col:"#27305e"},
   acier:{n:"Bille d'acier", vt:120, r:8, col:"#5f6b7a"},
   tennis:{n:"Balle de tennis", vt:25, r:11, col:"#a3b81a"},
   papier:{n:"Feuille de papier à plat", vt:3, r:0, col:"#8a95a3", shape:"sheet"},
@@ -38,7 +40,7 @@ SFA.sim({
   build:function(k,S){
     var P = S.draw.palette, c = PX.canvas(k, 0.92, 1.3), st = {t:0, run:false, tt:0};
     var keys = Object.keys(OBJ), opts = keys.map(function(i){ return [i, OBJ[i].n]; });
-    var selA = k.select("Objet A (à gauche)", opts, "acier"), selB = k.select("Objet B (à droite)", opts, "plume");
+    var selA = k.select("Objet A (à gauche)", opts, "bowling"), selB = k.select("Objet B (à droite)", opts, "plume");
     var h = k.slider("Hauteur de chute", 2, 50, 1, 10, "m");
     var p = k.slider("Air dans le tube", 0, 100, 10, 100, "%");
     var sp = k.seg("Animation", [[1,"×1"],[3,"×3"]], 1);
@@ -72,6 +74,7 @@ SFA.sim({
       if (o.shape === "sheet"){ ctx.translate(fl * 9, 0); ctx.rotate(fl * 0.45); ctx.fillStyle = "#fdfdf7"; ctx.strokeStyle = "#8a95a3"; ctx.lineWidth = 1.2; PX.rr(ctx, -R * 1.5, -2, R * 3, 4, 1.5); ctx.fill(); ctx.stroke(); }
       else if (o.shape === "feather"){ ctx.translate(fl * 10, 0); ctx.rotate(0.3 + fl * 0.6); ctx.fillStyle = "#d9822b"; ctx.strokeStyle = "#8a4b0f"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.ellipse(0, 0, R * 0.42, R * 1.35, 0, 0, 6.2832); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, -R * 1.5); ctx.lineTo(0, R * 1.6); ctx.stroke(); }
       else if (o === OBJ.boule){ ctx.beginPath(); for (var a = 0; a < 9; a++){ var ang = a / 9 * 6.2832, rr = R * (0.78 + 0.18 * ((a * 7) % 3) / 2); a ? ctx.lineTo(Math.cos(ang) * rr, Math.sin(ang) * rr) : ctx.moveTo(Math.cos(ang) * rr, Math.sin(ang) * rr); } ctx.closePath(); ctx.fillStyle = "#e4e8ee"; ctx.fill(); ctx.strokeStyle = "#8a95a3"; ctx.lineWidth = 1.2; ctx.stroke(); }
+      else if (o === OBJ.bowling){ var Rb = R * 1.25; PX.ball(c, 0, 0, Rb, o.col); ctx.rotate(flying ? tt * 0.8 : 0.4); ctx.fillStyle = "rgba(220,230,255,.18)"; ctx.beginPath(); ctx.ellipse(Rb * 0.15, Rb * 0.1, Rb * 0.55, Rb * 0.32, 0.6, 0, 6.2832); ctx.fill(); ctx.fillStyle = "#0b1024"; [[-0.32, -0.42, 0.13], [0.0, -0.5, 0.13], [-0.12, -0.12, 0.16]].forEach(function(q){ ctx.beginPath(); ctx.arc(q[0] * Rb, q[1] * Rb, q[2] * Rb, 0, 6.2832); ctx.fill(); }); }
       else { PX.ball(c, 0, 0, o === OBJ.acier ? R * 0.8 : R, o.col); if (o === OBJ.tennis){ ctx.strokeStyle = "rgba(255,255,255,.85)"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(-R * 1.1, 0, R * 0.95, -0.9, 0.9); ctx.stroke(); } }
       ctx.restore();
     }

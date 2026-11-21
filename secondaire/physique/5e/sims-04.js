@@ -81,57 +81,91 @@ SFA.sim({
   id: "p5-c04-patineurs", ch: "c04", tag: "Action-réaction",
   titre: "Deux patineurs qui se repoussent",
   resume: "Masses → vitesses opposées, forces égales sur des corps différents.",
-  but: "Deux patineurs au repos se repoussent pendant une courte durée. Change leurs masses et la force de poussée. Compare les forces, les vitesses et les énergies cinétiques.",
+  but: "Deux patineurs immobiles sur la glace se repoussent pendant une courte durée. Change leurs masses et la force de poussée, puis pousse. Les traces laissées sur la glace (une marque toutes les 0,25 s) montrent les vitesses : plus les marques sont espacées, plus le patineur va vite. Compare les forces, les vitesses et les énergies cinétiques. Glisse sur la scène pour tourner la vue.",
   aRetenir: "Troisième loi : la force de A sur B est égale et opposée à celle de B sur A, mais elles s'exercent sur deux corps différents. Chacun reçoit la même impulsion F·Δt : celui qui a la plus petite masse prend la plus grande vitesse (m₁v₁ = m₂v₂).",
   piege: "Les deux forces sont égales mais les effets ne le sont pas : a = F/m est plus grande pour le plus léger. Et les forces d'une paire action-réaction ne s'annulent jamais, car elles agissent sur des corps différents.",
   build: function(k, S){
-    var c = k.canvas(260);
+    var c = k.canvas(0, {ratio: 0.7});
+    if (c.W < 470){ c.ratio = 0.95; c.resize(); }
     var m1 = k.slider("Masse du patineur A", 30, 100, 1, 50, "kg");
     var m2 = k.slider("Masse du patineur B", 30, 100, 1, 80, "kg");
     var F = k.slider("Force de poussée", 50, 300, 10, 150, "N");
     var dt = k.slider("Durée de la poussée", 0.2, 1, 0.05, 0.5, "s");
     var ro = k.readouts(["Vitesse de A", "Vitesse de B", "Quantité de mvt de A", "Quantité de mvt de B", "Ec de A", "Ec de B"]);
-    var nt = k.note("", ""), t = 0, T = 3;
-    var lp = k.loop(function(d){ t += d; if (t > T + 1.2) lp.pause(); k.redraw(); });
-    k.button("Pousser !", function(){ t = 0; lp.play(); }, true);
-    t = 0; lp.play();
-    var tx = 0;
+    var nt = k.note("", ""), t = -0.6, T = 3, view = {yaw: 0, pitch: 0.3, span: 4};
+    var lp = k.loop(function(d){ t += d; if (t > T + 1.5) lp.pause(); k.redraw(); });
+    k.button("Pousser !", function(){ t = -0.4; lp.play(); }, true);
+    lp.play();
+    P5d.orbit(c, k, view, {p0: 0.12, p1: 1.3});
+    /* public dans les gradins (positions et couleurs fixes) */
+    var crowd = [], s0 = 5;
+    for (var i = 0; i < 90; i++){ s0 = (s0 * 9301 + 49297) % 233280; var cx = -29 + 58 * s0 / 233280; s0 = (s0 * 9301 + 49297) % 233280; var row = Math.floor(4 * s0 / 233280); s0 = (s0 * 9301 + 49297) % 233280; crowd.push([cx, row, ["#c0321d", "#2f7fd1", "#f4c542", "#24775a", "#e07a1f", "#ffffff", "#6236c4"][s0 % 7]]); }
     k.draw(function(){
       var pal = S.draw.palette, ctx = c.ctx, Fo = F.value, d = dt.value, a1 = Fo / m1.value, a2 = Fo / m2.value, vA = a1 * d, vB = a2 * d;
-      P5x.sky(c, "#eef5fb", "#f8fbff"); var iy = 170;
-      ctx.fillStyle = P5x.lin(ctx, 0, iy, 0, c.H, [[0, "#cfe6f6"], [1, "#a9cfe8"]]); ctx.fillRect(0, iy, c.W, c.H - iy); ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.fillRect(0, iy, c.W, 2);
-      var tt = Math.min(t, T);
-      function pos(a, v){ return tt < d ? 0.5 * a * tt * tt : 0.5 * a * d * d + v * (tt - d); }
-      var xa = -pos(a1, vA), xb = pos(a2, vB);
-      var far = Math.max(Math.abs(0.5 * a1 * d * d + vA * (T - d)), Math.abs(0.5 * a2 * d * d + vB * (T - d)), 0.1);
-      var sc = (c.W / 2 - 60) / far, cx = c.W / 2;
-      var ax = cx + xa * sc - 22, bx = cx + xb * sc + 22, pushing = t < d;
-      var hA = 40 + m1.value * 0.55, hB = 40 + m2.value * 0.55;
-      /* traces sur la glace */
-      ctx.strokeStyle = "rgba(255,255,255,.7)"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx - 22, iy + 12); ctx.lineTo(ax, iy + 12); ctx.moveTo(cx + 22, iy + 12); ctx.lineTo(bx, iy + 12); ctx.stroke();
-      /* patineurs : les bras se tendent pendant la poussée */
-      P5x.person(c, ax, iy, hA, pal.acc, {label: "A", dir: 1, arm: pushing ? 0.34 : 0.1});
-      P5x.person(c, bx, iy, hB, pal.red, {label: "B", dir: -1, arm: pushing ? 0.34 : 0.1});
-      S.draw.line(c, ax - 16, iy + 2, ax + 16, iy + 2, "#4b5868", 3); S.draw.line(c, bx - 16, iy + 2, bx + 16, iy + 2, "#4b5868", 3);
+      var tt = Math.max(0, Math.min(t, T)), small = c.W < 470;
+      function pos(a, v, s){ return s < d ? 0.5 * a * s * s : 0.5 * a * d * d + v * (s - d); }
+      var xa = -0.42 - pos(a1, vA, tt), xb = 0.42 + pos(a2, vB, tt), pushing = t >= 0 && t < d;
+      /* caméra : suit les deux patineurs et recule quand ils s'écartent */
+      var ex = t >= d ? 1 : Math.max(0, t / d), lA = xa - ex * (0.5 + Math.min(3.5, vA * 0.5) + 1.3), lB = xb + ex * (0.5 + Math.min(3.5, vB * 0.5) + 1.3);   /* cadre : patineurs + flèches */
+      var span = Math.max(3.5, lB - lA), mid = (lA + lB) / 2;
+      ctx.fillStyle = P5x.lin(ctx, 0, 0, 0, c.H, [[0, "#1d2a44"], [0.45, "#33476b"], [1, "#46597d"]]); ctx.fillRect(0, 0, c.W, c.H);
+      var cam = {yaw: view.yaw, pitch: view.pitch, dist: 3.2 + span * 1.0, target: [mid, 0.8, 0], focal: Math.min(c.W * 1.05, c.H * 1.5), cx: c.W / 2, cy: c.H * 0.58};
+      /* 1. glace, lignes, bandes */
+      var L = P5d.scene(c, cam), RX = 30, RZ = 13;
+      L.poly([[-RX, 0, -RZ], [RX, 0, -RZ], [RX, 0, RZ], [-RX, 0, RZ]], "#e8f3fb", {flat: true});
+      for (i = -6; i < 6; i++) L.poly([[i * 5, 0.001, -RZ], [i * 5 + 5, 0.001, -RZ], [i * 5 + 5, 0.001, RZ], [i * 5, 0.001, RZ]], i % 2 ? "#e2eef8" : "#edf6fc", {flat: true});
+      L.poly([[-0.15, 0.002, -RZ], [0.15, 0.002, -RZ], [0.15, 0.002, RZ], [-0.15, 0.002, RZ]], "#d9534f", {flat: true});
+      [-9, 9].forEach(function(x){ L.poly([[x - 0.15, 0.002, -RZ], [x + 0.15, 0.002, -RZ], [x + 0.15, 0.002, RZ], [x - 0.15, 0.002, RZ]], "#3b7dd8", {flat: true}); });
+      for (i = 0; i < 40; i++){ var e0 = i / 40 * 2 * Math.PI, e1 = (i + 1) / 40 * 2 * Math.PI; L.tube([4.5 * Math.cos(e0), 0.003, 4.5 * Math.sin(e0)], [4.5 * Math.cos(e1), 0.003, 4.5 * Math.sin(e1)], 0.1, "#3b7dd8", {plain: true, butt: true}); }
+      L.draw();
+      /* 2. traces des patins et marques toutes les 0,25 s */
+      var T2 = P5d.scene(c, cam);
+      [[-0.42, xa, a1, vA, -1, pal.acc], [0.42, xb, a2, vB, 1, pal.red]].forEach(function(q){
+        if (Math.abs(q[1] - q[0]) > 0.02){ [-0.1, 0.1].forEach(function(z){ T2.tube([q[0], 0.004, z], [q[1], 0.004, z], 0.03, "#ffffff", {plain: true, alpha: 0.9}); T2.tube([q[0], 0.003, z + 0.02], [q[1], 0.003, z + 0.02], 0.02, "#a9c6df", {plain: true, alpha: 0.7}); }); }
+        for (var s = 0.25; s <= tt + 1e-9; s += 0.25){ var xm = q[0] + q[4] * pos(q[2], q[3], s); T2.poly([[xm - 0.04, 0.005, -0.28], [xm + 0.04, 0.005, -0.28], [xm + 0.04, 0.005, 0.28], [xm - 0.04, 0.005, 0.28]], q[5], {flat: true, alpha: 0.75}); }
+      });
+      T2.draw();
+      /* 3. bandes, gradins, public, patineurs */
+      var sc = P5d.scene(c, cam);
+      sc.box([0, 0.55, -RZ - 0.1], [RX, 0.55, 0.1], ["#ffffff", "#ffffff", "#ffffff", "#ffffff", "#f4c542", "#ccc"]);
+      for (i = -10; i < 10; i++) sc.poly([[i * 3 + 0.1, 0.25, -RZ + 0.001], [i * 3 + 2.9, 0.25, -RZ + 0.001], [i * 3 + 2.9, 0.85, -RZ + 0.001], [i * 3 + 0.1, 0.85, -RZ + 0.001]], ["#1f4b9e", "#c0321d", "#24775a", "#e07a1f"][(i + 20) % 4], {flat: true, bias: -0.01});
+      sc.poly([[-RX, 1.1, -RZ - 0.2], [RX, 1.1, -RZ - 0.2], [RX, 5.5, -RZ - 4.5], [-RX, 5.5, -RZ - 4.5]], "#2a3550", {flat: true, bias: 5});
+      crowd.forEach(function(p){ sc.ball([p[0], 1.6 + p[1] * 1.05, -RZ - 0.7 - p[1] * 1.05], 0.28, p[2], {bias: 2}); });
+      function skater(x, face, mass, shirt, pants, push, dir, hair){
+        var h = 1.5 + (mass - 30) / 70 * 0.38, wide = 0.85 + (mass - 30) / 70 * 0.45;
+        var pose = push ? {elL: [-0.16, 0.74, 0.18], elR: [0.16, 0.74, 0.18], haL: [-0.13, 0.74, 0.27], haR: [0.13, 0.74, 0.27], kneeL: [-0.07, 0.27, 0.07], kneeR: [0.07, 0.27, 0.03], footR: [0.07, 0, -0.06]}
+          : (t > 0 ? {elL: [-0.2, 0.62, -0.06], elR: [0.2, 0.62, -0.06], haL: [-0.24, 0.5, -0.1], haR: [0.24, 0.5, -0.1], kneeL: [-0.07, 0.26, 0.06], kneeR: [0.07, 0.26, 0.06]}
+          : {elL: [-0.16, 0.74, 0.16], elR: [0.16, 0.74, 0.16], haL: [-0.12, 0.76, 0.25], haR: [0.12, 0.76, 0.25]});
+        var who = P5d.person(sc, {at: [x, 0.07, 0], face: face, h: h, wide: wide, lean: push ? 0.12 : (t > 0 ? 0.08 : 0.04), shirt: shirt, pants: pants, hair: hair, shoes: "#1f2937", pose: pose});
+        ["footL", "footR"].forEach(function(f){ var p = who.J(f); sc.tube([p[0] - 0.16 * dir, 0.02, p[2]], [p[0] + 0.2 * dir, 0.02, p[2]], 0.025, "#c7ced8", {plain: true}); sc.tube([p[0], 0.02, p[2]], [p[0], 0.08, p[2]], 0.03, "#8a95a3", {plain: true}); });
+        return {h: h, who: who};
+      }
+      var A = skater(xa, Math.PI / 2, m1.value, "#2f7fd1", "#1f3f6e", pushing || t < 0, 1, "#5b3b25");
+      var B = skater(xb, -Math.PI / 2, m2.value, "#c0321d", "#4a2320", pushing || t < 0, -1, "#2b2118");
+      sc.label([xa, A.h + 0.25, 0], "A · " + S.fmt(m1.value, 0) + " kg", pal.acc, {size: 11.5});
+      sc.label([xb, B.h + 0.25, 0], "B · " + S.fmt(m2.value, 0) + " kg", pal.red, {size: 11.5});
       if (pushing){
-        var yy = iy - Math.min(hA, hB) * 0.62, L = 36 + Fo * 0.28;
-        P5.vec(c, ax + 10, yy, ax + 10 - L, yy, pal.acc, "F sur A", {dy: -16, size: 13, w: 3.6});
-        P5.vec(c, bx - 10, yy, bx - 10 + L, yy, pal.red, "F sur B", {dy: -16, size: 13, w: 3.6});
-        P5x.banner(c, "Pendant la poussée : forces égales, sur des corps différents", pal.ink, 20);
-      } else if (t > 0){
-        P5.vec(c, ax - 6, iy - hA - 18, ax - 6 - Math.min(90, vA * 40), iy - hA - 18, pal.acc, "", {w: 3.2});
-        P5.vec(c, bx + 6, iy - hB - 18, bx + 6 + Math.min(90, vB * 40), iy - hB - 18, pal.red, "", {w: 3.2});
-        P5x.tag(c, "vA = " + S.fmt(vA, 2) + " m/s", ax, iy - hA - 36, pal.acc, {size: 12}); P5x.tag(c, "vB = " + S.fmt(vB, 2) + " m/s", bx, iy - hB - 36, pal.red, {size: 12});
-        P5x.banner(c, "Après : mouvement rectiligne uniforme", "#4b5868", 20);
-      } else P5x.banner(c, "Au repos : p totale = 0", "#4b5868", 20);
-      /* diagramme de p et Ec en direct */
-      var EA = 0.5 * m1.value * vA * vA, EB = 0.5 * m2.value * vB * vB, pA = m1.value * vA, pB = m2.value * vB, by = c.H - 14;
-      var vis = t >= d ? 1 : Math.min(1, t / d);
-      P5x.tag(c, "p : A " + S.fmt(-pA * vis, 0) + " + B " + S.fmt(pB * vis, 0) + " = 0 kg·m/s", 10, by, pal.ink, {align: "left", size: 11.5});
-      P5x.tag(c, "Ec : " + S.fmt((EA + EB) * vis, 0) + " J", c.W - 10, by, pal.amber, {align: "right", size: 11.5});
+        var L0 = 0.25 + Fo / 300 * 1.1, yy = 1.15;
+        sc.arrow([xa + 0.05, yy, 0.25], [xa + 0.05 - L0, yy, 0.25], pal.acc, "F de B sur A", {w: 4.5, size: 11.5, dy: -12});
+        sc.arrow([xb - 0.05, yy, 0.25], [xb - 0.05 + L0, yy, 0.25], pal.red, "F de A sur B", {w: 4.5, size: 11.5, dy: -12});
+      } else if (t >= d){
+        var sv = 0.5;
+        sc.arrow([xa - 0.2, 0.06, 0.75], [xa - 0.3 - Math.min(3.5, vA * sv), 0.06, 0.75], pal.acc, "vA = " + S.fmt(vA, 2) + " m/s", {w: 4, size: 11.5, dy: 16});
+        sc.arrow([xb + 0.2, 0.06, 0.75], [xb + 0.3 + Math.min(3.5, vB * sv), 0.06, 0.75], pal.red, "vB = " + S.fmt(vB, 2) + " m/s", {w: 4, size: 11.5, dy: 16});
+      }
+      sc.draw();
+      /* bandeau d'état et bilan */
+      var tl = pushing ? ["Pendant la poussée", pal.ink, "Forces égales et opposées, sur des corps différents"] : t >= d ? ["Après la poussée", pal.green, "Plus de force horizontale : mouvement rectiligne uniforme"] : ["Au repos, mains contre mains", pal.grey, "p totale = 0"];
+      P5d.card(c, 10, 10, tl[0], [tl[2]], tl[1], {size: small ? 10.5 : 12});
+      var EA = 0.5 * m1.value * vA * vA, EB = 0.5 * m2.value * vB * vB, by = c.H - 16;
+      var tp = Math.max(0, Math.min(t, d)), vAt = a1 * tp, vBt = a2 * tp;   /* pendant la poussée : v = (F/m)·t */
+      P5x.tag(c, "p : A " + S.fmt(-m1.value * vAt, 0) + " + B " + S.fmt(m2.value * vBt, 0) + " = 0 kg·m/s", 10, by, pal.ink, {align: "left", size: small ? 10.5 : 11.5});
+      P5x.tag(c, "Ec : " + S.fmt(0.5 * m1.value * vAt * vAt + 0.5 * m2.value * vBt * vBt, 0) + " J", c.W - 10, by, pal.amber, {align: "right", size: 11.5});
+      S.draw.text(c, "▮ une marque toutes les 0,25 s", c.W - 12, small ? c.H - 40 : 18, {align: "right", size: 11, color: small ? "#2c3a4e" : "#dfe7f2", weight: 700});
+      if (!small) S.draw.text(c, "Glisse pour tourner la vue", c.W - 12, 36, {align: "right", size: 10.5, color: "rgba(223,231,242,.75)", weight: 600});
       ro.set(0, S.fmt(-vA, 2) + " m/s"); ro.set(1, S.fmt(vB, 2) + " m/s"); ro.set(2, S.fmt(-m1.value * vA, 1) + " kg·m/s"); ro.set(3, S.fmt(m2.value * vB, 1) + " kg·m/s");
       ro.set(4, S.fmt(EA, 1) + " J"); ro.set(5, S.fmt(EB, 1) + " J");
-      nt.set("p total : " + S.fmt(-m1.value * vA + m2.value * vB, 1) + " kg·m/s = 0 (avant aussi). Rapport des vitesses vA/vB = mB/mA = " + S.fmt(vA / vB, 2) + ". L'énergie cinétique totale (" + S.fmt(EA + EB, 1) + " J) vient du travail musculaire : elle n'est pas conservée.", "");
+      nt.set("p total : " + S.fmt(-m1.value * vA + m2.value * vB, 1) + " kg·m/s = 0 (avant aussi). Rapport des vitesses vA/vB = mB/mA = " + S.fmt(vA / vB, 2) + ". L'énergie cinétique totale (" + S.fmt(EA + EB, 1) + " J) vient du travail musculaire : elle n'est pas conservée. <small>(Frottement de la glace négligé.)</small>", "");
     });
   }
 });

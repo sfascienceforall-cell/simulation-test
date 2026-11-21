@@ -1,7 +1,7 @@
 """Ajoute une simulation de physique autonome à simulation-test.
 python3 kit/add_phys_sim.py <id> "<titre>" "<sous-titre de la carte>" "<phrase d'intro>" <section: PH1…PH11, MA, OS, FL, TH> <corps.html> "<mots-clés>"
 <corps.html> = le bloc <section class="sfa-sim">…</section> (canevas, contrôles, script). L'enveloppe (en-tête, colonne, habillage)
-est reprise de condensateurs-serie-parallele. Ensuite : vignette thumbs/<id>.jpg, puis node kit/build_search_index.js."""
+est reprise de condensateurs-serie-parallele. Le script régénère aussi la page de garde (build_phys_home.py). Ensuite : vignette thumbs/<id>.jpg, puis node kit/build_search_index.js."""
 import sys,os,re,json,html
 R=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sid,titre,sous,intro,sec,body,kw=sys.argv[1:8]
@@ -36,5 +36,5 @@ p=R+'/kit/extra-index.json'; raw=open(p,encoding='utf-8').read(); d=json.loads(r
 if not any(x['u']==f'universite/physique/{sid}/' for x in d):
     d.append({"k":"simulation","t":titre,"s":"Physique · "+small,"u":f"universite/physique/{sid}/","m":"physique"})
     open(p,'w',encoding='utf-8').write(json.dumps(d,ensure_ascii=False)+('\n' if raw.endswith('\n') else ''))
-os.system(f'python3 {R}/kit/build_phys_meta.py && python3 {R}/kit/sync_phys_sidebars.py')
+os.system(f'python3 {R}/kit/build_phys_meta.py && python3 {R}/kit/sync_phys_sidebars.py && python3 {R}/kit/build_phys_home.py')
 print('ok',sid,'→',small)

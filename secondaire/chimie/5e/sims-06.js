@@ -72,12 +72,16 @@ SFA.sim({
       {id: "C", n: "Charbon", dh: 394, M: 12, nC: 1, rho: 0.85, col: "#777"},
       {id: "bois", n: "Bois", dh: 2820, M: 162, nC: 6, rho: 0.45, col: "#b58b5e"}
     ];
-    var c = k.canvas(250), g = k.canvas(230);
+    var RH = function(w){ return w < 460 ? 50 : 56; };
+    var c = k.canvas(0, {ratio: 0.8}); Object.defineProperty(c, "ratio", {get: function(){ var w = Math.max(260, c.cv.parentNode ? c.cv.parentNode.clientWidth : 600); return (102 + F.length * RH(w) + 8) / w; }, configurable: true}); c.resize();
+    var g = k.canvas(250);
     var per = k.seg("Comparer par", [["kg", "masse (kg)"], ["L", "volume (litres)"]], "kg");
     var E = k.slider("Énergie utile voulue", 1, 100, 1, 17, "MJ");
     var hum = k.slider("Humidité du bois", 0, 60, 5, 20, "%");
     var ro = k.readouts(["Meilleur par " + "unité choisie", "Le moins de CO₂"]);
     var nt = k.note("100 L d'eau de 15 °C à 55 °C demandent 100 000 × 4,18 × 40 ≈ 16,7 MJ.", "");
+    var tm = 0, disp = null, dispC = null;
+    k.loop(function(dt, t){ tm = t; k.redraw(); }).play();
     function data(f){
       var e = f.dh / f.M;   /* MJ/kg : kJ/mol ÷ g/mol = kJ/g = MJ/kg */
       if (f.id === "bois"){ var h = hum.value / 100; e = (1 - h) * e - h * 2.44; }
@@ -87,23 +91,88 @@ SFA.sim({
       var co2 = f.nC > 0 ? (f.id === "bois" ? mass * (1 - hum.value / 100) * 6 * 44 / 162 : mass * 1000 / f.M * f.nC * 44 / 1000) : 0;   /* kg de CO2 */
       return {e: e, mass: mass, vol: vol, co2: co2, ev: e * rhoKgL};
     }
+    function lin(ctx, x0, y0, x1, y1, st){ var gg = ctx.createLinearGradient(x0, y0, x1, y1); st.forEach(function(q){ gg.addColorStop(q[0], q[1]); }); return gg; }
+    /* objets dessinés : bouteille de gaz, cartouche, bidon, bouteille, charbon, bûche (centrés en x, posés sur y) */
+    function icon(ctx, id, x, y, s, col){
+      ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.lineJoin = "round"; ctx.lineCap = "round";
+      ctx.fillStyle = "rgba(15,27,45,.14)"; ctx.beginPath(); ctx.ellipse(0, 0, 17, 3.2, 0, 0, 6.2832); ctx.fill();
+      if (id === "H2" || id === "CH4"){   /* bouteille de gaz haute pression */
+        ctx.fillStyle = lin(ctx, -9, 0, 9, 0, [[0, C5.shade(col, -0.35)], [0.4, C5.shade(col, 0.35)], [1, C5.shade(col, -0.45)]]);
+        S.draw.rrect({ctx: ctx}, -9, -36, 18, 36, 8); ctx.fill(); ctx.fillRect(-9, -8, 18, 8);
+        ctx.fillStyle = "#8b96a5"; ctx.fillRect(-3, -42, 6, 7); ctx.fillStyle = "#5b6676"; ctx.fillRect(-7, -45, 14, 4); ctx.fillRect(3, -41, 6, 3);
+        ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.font = "800 8px Mulish, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(id === "H2" ? "H₂" : "CH₄", 0, -18);
+      } else if (id === "C4"){   /* cartouche de camping */
+        ctx.fillStyle = lin(ctx, -13, 0, 13, 0, [[0, "#1f4f9e"], [0.4, "#4f86d8"], [1, "#183f80"]]);
+        ctx.beginPath(); ctx.moveTo(-13, -4); ctx.lineTo(-13, -20); ctx.quadraticCurveTo(-13, -28, 0, -29); ctx.quadraticCurveTo(13, -28, 13, -20); ctx.lineTo(13, -4); ctx.quadraticCurveTo(13, 0, 0, 0); ctx.quadraticCurveTo(-13, 0, -13, -4); ctx.fill();
+        ctx.fillStyle = "#f1c071"; ctx.fillRect(-13, -17, 26, 7); ctx.fillStyle = "#9aa5b3"; ctx.fillRect(-3, -34, 6, 6);
+      } else if (id === "C8"){   /* bidon d'essence */
+        ctx.fillStyle = lin(ctx, -14, 0, 14, 0, [[0, "#a8261a"], [0.45, "#e04a35"], [1, "#8f1f15"]]);
+        ctx.beginPath(); ctx.moveTo(-14, 0); ctx.lineTo(-14, -26); ctx.lineTo(-6, -32); ctx.lineTo(14, -32); ctx.lineTo(14, 0); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = "#7a170e"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-2, -32); ctx.lineTo(-2, -38); ctx.lineTo(10, -38); ctx.lineTo(10, -32); ctx.stroke();
+        ctx.fillStyle = "#3b3f46"; ctx.fillRect(-15, -36, 6, 6);
+        ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(-9, -6); ctx.lineTo(9, -24); ctx.moveTo(-9, -24); ctx.lineTo(9, -6); ctx.stroke();
+      } else if (id === "EtOH"){   /* bouteille d'alcool à brûler */
+        ctx.fillStyle = "rgba(200,225,240,.55)"; ctx.strokeStyle = "#7d8ea3"; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(-9, 0); ctx.lineTo(-9, -22); ctx.quadraticCurveTo(-9, -28, -4, -30); ctx.lineTo(-4, -38); ctx.lineTo(4, -38); ctx.lineTo(4, -30); ctx.quadraticCurveTo(9, -28, 9, -22); ctx.lineTo(9, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = "rgba(183,154,223,.85)"; ctx.fillRect(-8.4, -16, 16.8, 15.4); ctx.fillStyle = "#fff"; ctx.fillRect(-7, -14, 14, 7);
+        ctx.fillStyle = "#6236c4"; ctx.fillRect(-4.5, -42, 9, 5); ctx.fillStyle = "#6236c4"; ctx.font = "800 5.5px Mulish, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("ÉTHANOL", 0, -10.5);
+      } else if (id === "C"){   /* tas de charbon */
+        [[-10, -6, 7], [0, -7, 8], [10, -6, 7], [-5, -15, 7], [6, -15, 7], [0, -23, 6]].forEach(function(q, i){
+          ctx.fillStyle = lin(ctx, q[0] - q[2], q[1] - q[2], q[0] + q[2], q[1] + q[2], [[0, "#6c7480"], [0.5, "#2c3138"], [1, "#16191d"]]);
+          ctx.beginPath(); for (var a = 0; a < 6; a++){ var an = a / 6 * 6.2832 + i, rr = q[2] * (0.8 + 0.2 * ((a + i) % 2)); a ? ctx.lineTo(q[0] + Math.cos(an) * rr, q[1] + Math.sin(an) * rr) : ctx.moveTo(q[0] + Math.cos(an) * rr, q[1] + Math.sin(an) * rr); } ctx.closePath(); ctx.fill(); });
+      } else {   /* bûches */
+        [[-1, -7], [1, -7], [0, -18]].forEach(function(q){
+          var cx = q[0] * 8, cy = q[1];
+          ctx.fillStyle = lin(ctx, 0, cy - 6, 0, cy + 6, [[0, "#a0703f"], [0.5, "#7a4f28"], [1, "#5e3a1c"]]); S.draw.rrect({ctx: ctx}, cx - 16, cy - 6, 26, 12, 4); ctx.fill();
+          ctx.fillStyle = "#e7c48e"; ctx.beginPath(); ctx.ellipse(cx + 10, cy, 4.5, 6, 0, 0, 6.2832); ctx.fill(); ctx.strokeStyle = "#b8874f"; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.ellipse(cx + 10, cy, 2.5, 3.5, 0, 0, 6.2832); ctx.stroke();
+        });
+      }
+      ctx.restore();
+    }
+    /* chauffe-eau : la tâche à accomplir, avec sa flamme */
+    function heater(ctx, x, y, h){
+      var w = h * 0.55;
+      ctx.save(); ctx.fillStyle = "rgba(15,27,45,.12)"; ctx.beginPath(); ctx.ellipse(x, y + 2, w * 0.7, 4, 0, 0, 6.2832); ctx.fill();
+      ctx.fillStyle = lin(ctx, x - w / 2, 0, x + w / 2, 0, [[0, "#c9d2de"], [0.4, "#f7f9fc"], [1, "#b3becc"]]); S.draw.rrect(c, x - w / 2, y - h, w, h - 10, w * 0.3); ctx.fill(); ctx.strokeStyle = "#8a97a8"; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = "rgba(47,127,209,.18)"; S.draw.rrect(c, x - w / 2 + 4, y - h * 0.62, w - 8, h * 0.48, 4); ctx.fill();
+      var fl = 9 + Math.sin(tm * 9) * 1.5 + Math.sin(tm * 14) * 1;
+      ctx.fillStyle = "rgba(255,140,30,.9)"; C5.flame(ctx, x, y - 2, fl, 5, Math.sin(tm * 7) * 1.5); ctx.fill(); ctx.fillStyle = "rgba(80,120,255,.85)"; C5.flame(ctx, x, y - 2, fl * 0.45, 3, 0); ctx.fill();
+      ctx.restore();
+    }
     k.draw(function(){
       c.clear(); g.clear();
-      var D = F.map(data), byL = per.value === "L", i;
+      var D = F.map(data), byL = per.value === "L", i, ctx = c.ctx, W = c.W, rh = RH(W), phn = W < 460;
       var vals = D.map(function(d){ return byL ? d.vol : d.mass; }), mx = Math.max.apply(null, vals), mn = Math.min.apply(null, vals);
       var len = function(v){ return byL ? (Math.log(v / mn) / Math.LN10 + 0.3) / (Math.log(mx / mn) / Math.LN10 + 0.3) : v / mx; };
-      var lx = 112, W = c.W - lx - 70, rh = (c.H - 22) / F.length;
-      S.draw.text(c, byL ? "Volume nécessaire (litres) — échelle logarithmique" : "Masse nécessaire (kg)", 6, 10, {size: 12, align: "left", color: pal.grey});
-      F.forEach(function(f, j){ var y = 24 + j * rh + rh / 2, w = Math.max(2, len(vals[j]) * W);
-        S.draw.text(c, f.n, 6, y, {size: 12, align: "left"}); c.ctx.fillStyle = f.col; c.ctx.fillRect(lx, y - rh * 0.32, w, rh * 0.64);
-        S.draw.text(c, S.fmt(vals[j], vals[j] < 1 ? 3 : vals[j] < 100 ? 1 : 0), lx + w + 4, y, {size: 12, align: "left"}); });
-      var cm = Math.max.apply(null, D.map(function(d){ return d.co2; })); cm = Math.max(cm, 0.001);
-      S.draw.text(g, "CO₂ émis (kg) pour cette énergie", 6, 10, {size: 12, align: "left", color: pal.grey});
-      var rh2 = (g.H - 22) / F.length;
-      F.forEach(function(f, j){ var y = 24 + j * rh2 + rh2 / 2, w = Math.max(0, D[j].co2 / cm * (g.W - lx - 70));
-        S.draw.text(g, f.n, 6, y, {size: 12, align: "left"}); g.ctx.fillStyle = f.col; g.ctx.fillRect(lx, y - rh2 * 0.32, w, rh2 * 0.64);
-        S.draw.text(g, S.fmt(D[j].co2, 2), lx + w + 4, y, {size: 12, align: "left"}); });
+      if (!disp || disp.byL !== byL) disp = {byL: byL, v: vals.map(function(){ return 0; })};
+      vals.forEach(function(v, j){ disp.v[j] += (len(v) - disp.v[j]) * 0.12; });
+      /* en-tête : la tâche (chauffer de l'eau) */
+      var hb = ctx.createLinearGradient(0, 0, 0, 78); hb.addColorStop(0, "#fff7ec"); hb.addColorStop(1, "#fdecd6"); ctx.fillStyle = hb; S.draw.rrect(c, 6, 6, W - 12, 70, 10); ctx.fill();
+      heater(ctx, 40, 72, 62);
+      S.draw.text(c, "Besoin : " + S.fmt(E.value, 0) + " MJ utiles", 74, 26, {size: phn ? 14 : 16, align: "left", color: pal.ink, weight: 800});
+      S.draw.text(c, "≈ de quoi chauffer " + S.fmt(E.value * 1e6 / (4180 * 40), 0) + " L d'eau de 15 °C à 55 °C", 74, 48, {size: 11.5, align: "left", color: "#8a5a12"});
+      S.draw.text(c, byL ? "Volume à emporter (litres) · échelle logarithmique" : "Masse à emporter (kg)", 10, 90, {size: 12, align: "left", color: pal.grey});
+      var ix = phn ? 26 : 36, lx = phn ? 56 : 74, Wb = W - lx - 66, y0 = 102;
       var best = 0, low = 0; for (i = 1; i < F.length; i++){ if (vals[i] < vals[best]) best = i; if (D[i].co2 < D[low].co2) low = i; }
+      F.forEach(function(f, j){
+        var yb = y0 + j * rh, yc = yb + rh * 0.62, w = Math.max(3, disp.v[j] * Wb);
+        if (j % 2 === 0){ ctx.fillStyle = "#f7f9fc"; ctx.fillRect(4, yb, W - 8, rh); }
+        if (j === best) S.draw.glow(c, ix, yb + rh * 0.55, rh * 0.75, "#f4c542", 0.5);
+        icon(ctx, f.id, ix, yb + rh - 5, (rh - 8) / 44, f.col);
+        S.draw.text(c, f.n, lx, yb + 13, {size: 11.5, align: "left", color: j === best ? pal.green : pal.ink, weight: j === best ? 800 : 700});
+        ctx.fillStyle = lin(ctx, 0, yc - 8, 0, yc + 8, [[0, C5.shade(f.col, 0.35)], [1, C5.shade(f.col, -0.15)]]); S.draw.rrect(c, lx, yc - 8, w, 16, 5); ctx.fill();
+        S.draw.text(c, S.fmt(vals[j], vals[j] < 1 ? 3 : vals[j] < 100 ? 1 : 0) + (byL ? " L" : " kg"), lx + w + 5, yc, {size: 12, align: "left", color: pal.ink});
+      });
+      /* CO₂ : barres « fumée » avec bouffées qui montent */
+      var cm = Math.max.apply(null, D.map(function(d){ return d.co2; })); cm = Math.max(cm, 0.001);
+      if (!dispC) dispC = D.map(function(){ return 0; });
+      S.draw.text(g, "CO₂ émis (kg) pour cette énergie", 8, 12, {size: 12, align: "left", color: pal.grey});
+      var rh2 = (g.H - 26) / F.length, gx0 = phn ? 96 : 112, gctx = g.ctx;
+      F.forEach(function(f, j){ var y = 24 + j * rh2 + rh2 / 2; dispC[j] += (D[j].co2 / cm - dispC[j]) * 0.12; var w = Math.max(0, dispC[j] * (g.W - gx0 - 70));
+        S.draw.text(g, f.n.replace(" (gaz)", "").replace(" (liquide)", "").replace(" (octane)", ""), 8, y, {size: 12, align: "left"});
+        gctx.fillStyle = lin(gctx, 0, y - rh2 * 0.3, 0, y + rh2 * 0.3, [[0, "#9aa4b1"], [1, "#69737f"]]); S.draw.rrect(g, gx0, y - rh2 * 0.3, Math.max(0.1, w), rh2 * 0.6, 4); gctx.fill();
+        if (D[j].co2 > 0.005){ for (var q = 0; q < 3; q++){ var ph = (tm * 0.35 + q / 3 + j * 0.17) % 1, rr = (3 + 5 * Math.sqrt(D[j].co2 / cm)) * (0.6 + ph); gctx.fillStyle = "rgba(120,130,145," + (0.35 * (1 - ph)) + ")"; gctx.beginPath(); gctx.arc(gx0 + w + 4 + ph * 14, y - ph * rh2 * 0.6, rr, 0, 6.2832); gctx.fill(); } }
+        S.draw.text(g, D[j].co2 > 0 ? S.fmt(D[j].co2, 2) : "0 (seulement H₂O)", gx0 + w + (D[j].co2 > 0.005 ? 24 : 5), y, {size: 12, align: "left", color: D[j].co2 > 0 ? pal.ink : pal.teal}); });
       ro.set(0, F[best].n + " : " + S.fmt(vals[best], vals[best] < 1 ? 3 : 1) + (byL ? " L" : " kg")); ro.set(1, F[low].n + " : " + S.fmt(D[low].co2, 1) + " kg");
       var eh = D[0].e, ehv = D[0].ev;
       nt.set("Énergie par kg : H₂ " + S.fmt(eh, 0) + " MJ/kg, mais seulement " + S.fmt(ehv * 1000, 1) + " kJ par litre de gaz (≈ 20 °C, 1 atm) ; essence " + S.fmt(D[3].e, 1) + " MJ/kg et " + S.fmt(D[3].ev, 1) + " MJ/L. Bois à " + hum.value + " % d'humidité : " + S.fmt(D[6].e, 1) + " MJ/kg utiles.", "");

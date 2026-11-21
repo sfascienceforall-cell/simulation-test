@@ -76,61 +76,156 @@ SFA.sim({
   id: "p6-c03-alternateur", ch: "c03", tag: "Alternateur",
   titre: "Spire tournante : flux, tension et alternateur",
   resume: "Φ = B·A·cos(ωt) donne e = N·B·A·ω·sin(ωt) : un générateur de tension alternative.",
-  but: "Une bobine tourne dans un champ uniforme. Observe le flux (bleu) et la tension (rouge) sur deux périodes. Règle B, N, l'aire et la fréquence ; atteins la tension du réseau.",
+  but: "Une bobine tourne entre les pôles d'un aimant, dans un champ uniforme. Observe le flux (bleu) et la tension (rouge) sur deux périodes, et la lampe qui clignote au rythme de la tension. Règle B, N, l'aire et la fréquence ; atteins la tension du réseau. Glisse sur la bobine pour la tourner à la main, ailleurs pour faire pivoter la vue.",
   aRetenir: "Une bobine de N spires d'aire A tournant à la vitesse angulaire ω = 2π·f dans un champ B produit e(t) = N·B·A·ω·sin(ω·t). La tension est maximale quand le flux est nul (variation la plus rapide) et nulle quand le flux est maximal. Valeur maximale : N·B·A·ω ; valeur efficace : N·B·A·ω/√2.",
   piege: "La tension est maximale quand le flux est nul, pas quand il est maximal. L'animation de la bobine est ralentie (0,5 tour par seconde) pour qu'on la voie tourner ; les graphiques utilisent la fréquence réelle choisie.",
   build: function(k, S){
-    var c = k.canvas(240), g = k.canvas(300), P = S.draw.palette, Pm = window.PH6;
+    var P = S.draw.palette, Pm = window.PH6;
+    function rcv(desk, phone){
+      var cv = k.canvas(0, {ratio: desk});
+      Object.defineProperty(cv, "ratio", {get: function(){ var w = cv.cv.parentNode ? cv.cv.parentNode.clientWidth : 600; return w < 460 ? phone : desk; }, configurable: true});
+      cv.resize(); return cv;
+    }
+    function mix(a, b, u){ var h = function(s){ return [1, 3, 5].map(function(i){ return parseInt(s.substr(i, 2), 16); }); }, x = h(a), y = h(b); return "rgb(" + [0, 1, 2].map(function(i){ return Math.round(x[i] + (y[i] - x[i]) * u); }).join(",") + ")"; }
+    var c = rcv(0.66, 1.0), g = k.canvas(300);
     var B = k.slider("Champ B", 0.05, 0.5, 0.05, 0.1, "T");
     var N = k.slider("Nombre de spires N", 10, 300, 10, 100, "");
     var A = k.slider("Aire d'une spire", 50, 200, 10, 100, "cm²");
     var f = k.slider("Fréquence de rotation f", 1, 60, 1, 50, "Hz");
     var ro = k.readouts(["e max = N·B·A·ω", "e efficace", "Période T"]);
-    var nt = k.note("Défi : réseau belge, tension efficace 230 V (maximum 325 V) à 50 Hz. Quels réglages de N, B et A donnent e max ≈ 325 V ? Tu peux aussi attraper la spire pour la tourner à la main.", "ok");
-    var ang = 0, hold = false, geo = {};
-    var lp = k.loop(function(dt){ if (!hold) ang += dt * Math.PI; k.redraw(); }); lp.play();
+    var nt = k.note("Défi : réseau belge, tension efficace 230 V (maximum 325 V) à 50 Hz. Quels réglages de N, B et A donnent e max ≈ 325 V ? Glisse sur la bobine pour la tourner à la main ; glisse ailleurs pour tourner la vue.", "ok");
+    var ang = 0, hold = false, orb = false, last = null, cam = {a: -0.55, b: 0.38}, cur = 0, flow = 0, geo = {};
+    var lp = k.loop(function(dt){
+      if (!hold) ang += dt * Math.PI;   /* 0,5 tour par seconde */
+      var a = ((ang % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      cur += dt * Math.sin(a) * 70; flow += dt * 26;
+      k.redraw();
+    });
+    lp.play();
     c.cv.style.touchAction = "none"; c.cv.style.cursor = "grab";
-    c.pointer(function(tp, p){ if (tp === "down") hold = true; if ((tp === "down" || tp === "drag") && hold && geo.cx){ var dx = p.x - geo.cx, dy = -(p.y - geo.cy); if (dx * dx + dy * dy > 25) ang = Math.atan2(dy, dx) + Math.PI / 2; } if (tp === "up") hold = false; });
+    c.pointer(function(tp, p){
+      if (tp === "down"){
+        last = p;
+        var dx = p.x - (geo.cx || 0), dy = p.y - (geo.cy || 0);
+        if (geo.r && dx * dx + dy * dy < geo.r * geo.r) hold = true; else orb = true;
+      } else if (tp === "drag" && last){
+        if (hold) ang += (p.x - last.x) * 0.025;
+        else if (orb){ cam.a = Math.max(-1.05, Math.min(1.05, cam.a + (p.x - last.x) * 0.01)); cam.b = Math.max(0.02, Math.min(0.95, cam.b + (p.y - last.y) * 0.01)); }
+        last = p;
+      } else if (tp === "up"){ hold = false; orb = false; last = null; }
+    });
+    var LIGHT = [-0.45, 0.75, 0.5];
+    function box(pr, x0, x1, y0, y1, z0, z1, col, opt){
+      opt = opt || {}; var ctx = c.ctx;
+      var V = [[x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0], [x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]].map(function(q){ return pr(q[0], q[1], q[2]); });
+      var F = [[[0, 3, 7, 4], [-1, 0, 0]], [[1, 2, 6, 5], [1, 0, 0]], [[0, 1, 5, 4], [0, -1, 0]], [[3, 2, 6, 7], [0, 1, 0]], [[0, 1, 2, 3], [0, 0, -1]], [[4, 5, 6, 7], [0, 0, 1]]];
+      F.forEach(function(fc){ fc.d = fc[0].reduce(function(s, i){ return s + V[i][2]; }, 0) / 4; });
+      F.sort(function(p, q){ return p.d - q.d; });
+      F.forEach(function(fc){
+        var n = fc[1], li = 0.55 + 0.45 * Math.max(0, n[0] * LIGHT[0] + n[1] * LIGHT[1] + n[2] * LIGHT[2]);
+        ctx.beginPath(); fc[0].forEach(function(i, j){ j ? ctx.lineTo(V[i][0], V[i][1]) : ctx.moveTo(V[i][0], V[i][1]); }); ctx.closePath();
+        ctx.fillStyle = li >= 0.78 ? mix(col, "#ffffff", (li - 0.78) * 1.2) : mix(col, "#000000", (0.78 - li) * 0.9); ctx.fill();
+        ctx.strokeStyle = "rgba(19,35,58,.35)"; ctx.lineWidth = 1; ctx.stroke();
+        if (opt.label && n[0] === opt.side){
+          var mx = 0, my = 0; fc[0].forEach(function(i){ mx += V[i][0] / 4; my += V[i][1] / 4; });
+          S.draw.text(c, opt.label, mx, my, {size: 22, color: "rgba(255,255,255,.95)", weight: 800});
+        }
+      });
+    }
     k.draw(function(){
-      c.clear(); g.clear(); Pm.bg(c); var ctx = c.ctx, cx = c.W / 2, cy = c.H / 2 - 4, a = ((ang % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI); geo.cx = cx; geo.cy = cy;
-      var w = 2 * Math.PI * f.value, Ar = A.value * 1e-4, em = N.value * B.value * Ar * w, T = 1 / f.value, tm = 2 * T * 1000;
-      /* pôles et champ horizontal */
-      var pw = Math.max(30, c.W * 0.09), ph = c.H * 0.7;
-      [[8, P.red, "N"], [c.W - 8 - pw, P.acc, "S"]].forEach(function(m){ var gr = ctx.createLinearGradient(m[0], 0, m[0] + pw, 0); gr.addColorStop(0, Pm.mix(m[1], "#ffffff", 0.3)); gr.addColorStop(1, Pm.mix(m[1], "#000000", 0.25)); S.draw.rrect(c, m[0], cy - ph / 2, pw, ph, 8); ctx.fillStyle = gr; ctx.fill(); ctx.strokeStyle = "rgba(19,35,58,.6)"; ctx.lineWidth = 1.3; ctx.stroke(); S.draw.text(c, m[2], m[0] + pw / 2, cy, {size: 20, color: "#fff", weight: 800}); });
-      for (var j = -2; j <= 2; j++){ var yy = cy + j * ph / 6; S.draw.arrow(c, 8 + pw + 6, yy, 8 + pw + 26, yy, "#aebfdc", 2); S.draw.arrow(c, c.W - 8 - pw - 28, yy, c.W - 8 - pw - 6, yy, "#aebfdc", 2); S.draw.line(c, 8 + pw + 30, yy, c.W - 8 - pw - 32, yy, "rgba(150,170,205,.35)", 1.4); }
-      /* vue de bout : la spire est un segment dont la normale fait l'angle a avec B */
-      var rad = Math.min(70, c.W * 0.17), hx = rad * Math.sin(a), hy = rad * Math.cos(a);
-      S.draw.line(c, cx - hx, cy - hy, cx + hx, cy + hy, "#e0953a", 7); S.draw.line(c, cx - hx, cy - hy, cx + hx, cy + hy, "#f3c585", 2.5);
-      S.draw.dot(c, cx - hx, cy - hy, 7, P.ink); S.draw.dot(c, cx + hx, cy + hy, 7, P.ink);
-      S.draw.arrow(c, cx, cy, cx + 44 * Math.cos(a), cy - 44 * Math.sin(a), P.green, 3);
-      S.draw.label(c, "normale", cx + 64 * Math.cos(a), cy - 64 * Math.sin(a) - 4, {size: 11.5, color: P.green});
-      S.draw.dot(c, cx, cy, 4, P.ink);
-      var eNow = em * Math.sin(a);
-      Pm.bulb(c, c.W - 30, 24, 14, Math.min(1, Math.abs(eNow) / 250), "");
-      S.draw.label(c, "Φ = B·A·cos(ωt) = " + S.fmt(B.value * Ar * Math.cos(a) * 1000, 2) + " mWb", cx, c.H - 14, {size: 12, color: P.acc});
+      c.clear(); g.clear(); var ctx = c.ctx, W = c.W, H = c.H, ph = W < 460, a = ((ang % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      var w = 2 * Math.PI * f.value, Ar = A.value * 1e-4, em = N.value * B.value * Ar * w, T = 1 / f.value, tm = 2 * T * 1000, eNow = em * Math.sin(a);
+      /* atelier : mur, plan de travail */
+      var bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#eef2f7"); bg.addColorStop(0.62, "#dfe6ef"); bg.addColorStop(0.63, "#c9b59a"); bg.addColorStop(1, "#b29a7b"); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = "rgba(120,135,155,.13)"; ctx.lineWidth = 1; for (var xx = 0; xx < W; xx += 36){ ctx.beginPath(); ctx.moveTo(xx, 0); ctx.lineTo(xx, H * 0.62); ctx.stroke(); }
+      ctx.strokeStyle = "rgba(90,60,30,.12)"; for (var yy = H * 0.66; yy < H; yy += 9){ ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(W, yy + 3); ctx.stroke(); }
+      var sc = ph ? W / 7.6 : Math.min(W / 8.8, H / 6.0), cx = W / 2, cy = H * (ph ? 0.44 : 0.4);
+      var pr = Pm.cam(cam, sc, cx, cy, 10);
+      var kA = Math.sqrt(A.value / 100), wC = 0.95 * kA, hC = 0.8 * kA, yc = -0.25;
+      /* socle */
+      ctx.save(); ctx.fillStyle = "rgba(40,25,10,.22)"; var s0 = pr(0, -2.4, 0); ctx.beginPath(); ctx.ellipse(s0[0], s0[1] + 6, sc * 3.3, sc * 0.55, 0, 0, 7); ctx.fill(); ctx.restore();
+      box(pr, -3.0, 3.0, -2.4, -2.1, -1.45, 1.45, "#9c7650");
+      /* ordre de dessin : aimant le plus éloigné, champ, bobine, aimant le plus proche */
+      var dl = pr(-2.4, 0, 0)[2], dr = pr(2.4, 0, 0)[2];
+      function magL(){ box(pr, -2.8, -2.05, -2.1, 1.5, -1.05, 1.05, "#c0321d", {label: "N", side: 1}); }
+      function magR(){ box(pr, 2.05, 2.8, -2.1, 1.5, -1.05, 1.05, "#1f4b9e", {label: "S", side: -1}); }
+      (dl < dr ? magL : magR)();
+      /* lignes de champ B (du pôle N vers le pôle S), petits traits qui défilent */
+      ctx.save(); ctx.lineWidth = 1.6; ctx.setLineDash([7, 9]); ctx.lineDashOffset = -flow;
+      [-1, 0, 1].forEach(function(j){ [-0.7, 0.7].forEach(function(z){ var p0 = pr(-2.0, yc + j * 0.85, z), p1 = pr(2.0, yc + j * 0.85, z); ctx.strokeStyle = "rgba(47,127,209,.45)"; ctx.beginPath(); ctx.moveTo(p0[0], p0[1]); ctx.lineTo(p1[0], p1[1]); ctx.stroke(); }); });
+      ctx.restore();
+      var bA = pr(-1.95, yc + 1.25, 0), bB = pr(-1.25, yc + 1.25, 0); S.draw.arrow(c, bA[0], bA[1], bB[0], bB[1], P.blue, 2.6); S.draw.text(c, "B", bB[0] + 4, bB[1] - 12, {size: 14, color: P.blue, weight: 800, math: true});
+      /* axe, bagues et balais */
+      var sa = pr(0, -2.1, 0), sb = pr(0, yc + hC + 0.55, 0); S.draw.line(c, sa[0], sa[1], sb[0], sb[1], "#5f6b7a", Math.max(4, sc * 0.09)); S.draw.line(c, sa[0] - 1, sa[1], sb[0] - 1, sb[1], "rgba(255,255,255,.45)", 1.5);
+      [-1.55, -1.82].forEach(function(y){
+        var q = pr(0, y, 0), rx = Math.abs(pr(0.26, y, 0)[0] - pr(-0.26, y, 0)[0]) / 2 + 2, ry = Math.max(3, Math.abs(pr(0, y, 0.26)[1] - pr(0, y, -0.26)[1]) / 2);
+        var gr = ctx.createLinearGradient(q[0] - rx, 0, q[0] + rx, 0); gr.addColorStop(0, "#9a5a1f"); gr.addColorStop(0.4, "#f0b26a"); gr.addColorStop(1, "#8a4f18");
+        ctx.fillStyle = gr; ctx.fillRect(q[0] - rx, q[1] - 4, 2 * rx, 8); ctx.beginPath(); ctx.ellipse(q[0], q[1] - 4, rx, ry, 0, 0, 7); ctx.fillStyle = "#f6c88d"; ctx.fill(); ctx.strokeStyle = "#7a4515"; ctx.lineWidth = 1; ctx.stroke();
+      });
+      /* balais et fils vers la lampe */
+      var lampW = [1.5, -2.1, 1.05], lb = pr(lampW[0], lampW[1], lampW[2]);
+      [-1.55, -1.82].forEach(function(y, i){
+        var b0 = pr(0.3, y, 0), b1 = pr(0.62, y, 0);
+        S.draw.line(c, b0[0], b0[1], b1[0], b1[1], "#3d4553", 5);
+        var w1 = pr(0.62, y, 0), w2 = pr(1.2 + i * 0.1, -2.1, 0.4), w3 = pr(lampW[0] + (i ? 0.12 : -0.12), lampW[1], lampW[2]);
+        ctx.strokeStyle = i ? "#1f4b9e" : "#c0321d"; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(w1[0], w1[1]); ctx.quadraticCurveTo(w2[0], w2[1], w3[0], w3[1]); ctx.stroke();
+      });
+      /* bobine : N spires (on en dessine au plus 6), sens positif de parcours lié à la normale (règle de la main droite) */
+      var n = [Math.cos(a), 0, Math.sin(a)], t = [-Math.sin(a), 0, Math.cos(a)];
+      var corners = [[1, 1], [-1, 1], [-1, -1], [1, -1]];   /* (y, t) : C1 → C2 → C3 → C4, parcours positif autour de n */
+      var nb = Math.min(6, Math.max(2, Math.round(N.value / 50))), pts3 = [];
+      function cp(s, i, o){ var cy0 = corners[i][0] * hC, ct = corners[i][1] * wC; return [ct * t[0] + o * n[0], yc + cy0, ct * t[2] + o * n[2]]; }
+      var lum = Math.min(1, Math.abs(eNow) / Math.max(1, em) * 1.1);
+      for (var s = 0; s < nb; s++){
+        var o = (s - (nb - 1) / 2) * 0.045, P2 = [0, 1, 2, 3, 0].map(function(i){ var q = cp(s, i, o); return pr(q[0], q[1], q[2]); });
+        ctx.beginPath(); P2.forEach(function(q, j){ j ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); });
+        ctx.strokeStyle = "#8a4f18"; ctx.lineWidth = 5; ctx.lineJoin = "round"; ctx.stroke();
+        ctx.strokeStyle = s === nb - 1 ? "#f4b46a" : "#d9893a"; ctx.lineWidth = 2.6; ctx.stroke();
+        if (s === nb - 1) pts3 = P2;
+      }
+      /* courant induit : tirets qui circulent dans la spire, dans un sens puis dans l'autre */
+      if (Math.abs(eNow) > em * 0.04){
+        ctx.save(); ctx.beginPath(); pts3.forEach(function(q, j){ j ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]); });
+        ctx.setLineDash([6, 12]); ctx.lineDashOffset = -cur; ctx.strokeStyle = "rgba(255,236,140," + (0.35 + 0.65 * lum) + ")"; ctx.lineWidth = 3; ctx.stroke(); ctx.restore();
+      }
+      /* moyeu et normale */
+      var hb = pr(0, yc, 0); geo.cx = hb[0]; geo.cy = hb[1]; geo.r = sc * Math.max(wC, hC) * 1.05;
+      var ne = pr(1.25 * n[0], yc, 1.25 * n[2]); S.draw.arrow(c, hb[0], hb[1], ne[0], ne[1], P.green, 3.2);
+      S.draw.label(c, "normale", ne[0] + (ne[0] > hb[0] ? 26 : -26), ne[1] - 10, {size: 11, color: P.green});
+      S.draw.dot(c, hb[0], hb[1], 4, P.ink);
+      (dl < dr ? magR : magL)();
+      /* lampe sur le socle */
+      Pm.bulb(c, lb[0], lb[1] - 20, Math.max(11, sc * 0.24), lum, "");
+      ctx.fillStyle = "#3d4553"; S.draw.rrect(c, lb[0] - 9, lb[1] - 8, 18, 10, 3); ctx.fill();
+      /* angle et flux */
+      var deg = Math.round(a * 180 / Math.PI);
+      S.draw.label(c, "angle (normale, B) = " + deg + "°", 12, 16, {size: 11, color: P.ink, align: "left"});
+      S.draw.label(c, "Φ = B·A·cos(ωt) = " + S.fmt(B.value * Ar * Math.cos(a) * 1000, 2) + " mWb", 12, H - 14, {size: 12, color: P.acc, align: "left"});
+      if (!ph) S.draw.text(c, "glisse sur la bobine : tu la tournes · ailleurs : tu tournes la vue", W - 10, H - 14, {size: 10.5, color: "#5f4a33", align: "right", weight: 600});
+      S.draw.display(c, (eNow >= 0 ? "+" : "−") + S.fmt(Math.abs(eNow), 0) + " V", W - (ph ? 56 : 68), 34, {w: ph ? 96 : 116, h: 46, caption: "TENSION e(t)", size: ph ? 16 : 18, color: eNow >= 0 ? "#13233a" : P.red});
       /* graphes sur deux périodes : Φ (haut) et e (bas) */
-      var phm = B.value * Ar, y0 = 150;
+      var phm = B.value * Ar;
       var a1 = {L: 56, R: g.W - 14, T: 12, B: 138}, a2 = {L: 56, R: g.W - 14, T: 166, B: g.H - 24};
       [a1, a2].forEach(function(q, idx){
         var m = idx ? em : phm;
         q.X = function(t){ return q.L + t / tm * (q.R - q.L); }; q.Y = function(y){ return q.B - (y + m) / (2 * m) * (q.B - q.T); };
         var gc = g.ctx; gc.save(); gc.strokeStyle = "#8a95a3"; gc.lineWidth = 1.2; gc.beginPath(); gc.moveTo(q.L, q.Y(0)); gc.lineTo(q.R, q.Y(0)); gc.moveTo(q.L, q.T); gc.lineTo(q.L, q.B); gc.stroke();
-        gc.strokeStyle = "#edf0f4"; for (var p = 1; p <= 4; p++){ var xx = q.L + p / 4 * (q.R - q.L); gc.beginPath(); gc.moveTo(xx, q.T); gc.lineTo(xx, q.B); gc.stroke(); }
+        gc.strokeStyle = "#edf0f4"; for (var p = 1; p <= 4; p++){ var xq = q.L + p / 4 * (q.R - q.L); gc.beginPath(); gc.moveTo(xq, q.T); gc.lineTo(xq, q.B); gc.stroke(); }
         gc.fillStyle = "#5f6b7a"; gc.font = "600 12px Mulish, system-ui"; gc.textAlign = "right"; gc.textBaseline = "middle";
         [-m, 0, m].forEach(function(y){ gc.fillText(idx ? S.fmt(y, 1) : S.fmt(y * 1000, 2), q.L - 5, q.Y(y)); });
         gc.textAlign = "center"; gc.textBaseline = "top"; if (idx){ for (p = 0; p <= 4; p++) gc.fillText(S.fmt(tm * p / 4, 1), q.L + p / 4 * (q.R - q.L), q.B + 4); }
         gc.restore();
         gc.save(); gc.strokeStyle = idx ? P.red : P.acc; gc.lineWidth = 2.6; gc.beginPath();
-        for (var i = 0; i <= 300; i++){ var t = tm * i / 300, val = idx ? em * Math.sin(w * t / 1000) : phm * Math.cos(w * t / 1000); if (i) gc.lineTo(q.X(t), q.Y(val)); else gc.moveTo(q.X(t), q.Y(val)); }
+        for (var i = 0; i <= 300; i++){ var tt = tm * i / 300, val = idx ? em * Math.sin(w * tt / 1000) : phm * Math.cos(w * tt / 1000); if (i) gc.lineTo(q.X(tt), q.Y(val)); else gc.moveTo(q.X(tt), q.Y(val)); }
         gc.stroke(); gc.restore();
       });
       S.draw.text(g, "Φ (mWb)", a1.L + 4, a1.T + 8, {size: 12, align: "left", color: P.acc});
       S.draw.text(g, "e (V)", a2.L + 4, a2.T + 8, {size: 12, align: "left", color: P.red});
       S.draw.text(g, "t (ms)", a2.R, a2.B + 14, {size: 12, align: "right"});
-      /* cercle repère position instantanée (même phase que la bobine) */
-      var tcur = (a / w) * 1000 * (w / (2 * Math.PI)) / f.value * f.value; /* t tel que ωt = a */
-      tcur = a / w * 1000;
-      S.draw.dot(g, a1.X(tcur), a1.Y(phm * Math.cos(a)), 5, P.ink); S.draw.dot(g, a2.X(tcur), a2.Y(em * Math.sin(a)), 5, P.ink);
+      /* point courant : même phase que la bobine (ωt = angle) */
+      var tcur = a / w * 1000;
+      S.draw.line(g, a1.X(tcur), a1.T, a1.X(tcur), a2.B, "rgba(15,27,45,.18)", 1.2, [3, 4]);
+      S.draw.dot(g, a1.X(tcur), a1.Y(phm * Math.cos(a)), 6, P.acc); S.draw.dot(g, a2.X(tcur), a2.Y(em * Math.sin(a)), 6, P.red);
       ro.set(0, S.fmt(em, 1) + " V"); ro.set(1, S.fmt(em / Math.SQRT2, 1) + " V"); ro.set(2, S.fmt(T * 1000, 1) + " ms");
     });
   }

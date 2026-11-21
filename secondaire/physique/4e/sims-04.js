@@ -11,11 +11,11 @@ SFA.sim({
   id:"p4-c04-montagnes-russes", ch:"c04", tag:"Classique",
   titre:"Montagnes russes : barres Ec, Ep, Em",
   resume:"Un chariot sans frottement : l'énergie passe de potentielle à cinétique et inversement.",
-  but:"Glisse la ligne verte (hauteur de départ) pour lâcher le chariot de plus haut ou de plus bas. Choisis la hauteur de départ. Le chariot est lâché sans vitesse. Regarde les barres. Déplace aussi le niveau de référence de E<sub>p</sub>.",
+  but:"Glisse la ligne verte (hauteur de départ) ou attrape le wagon pour le lâcher de plus haut ou de plus bas. Le chariot est lâché sans vitesse. Regarde les barres. Déplace aussi le niveau de référence de E<sub>p</sub>.",
   aRetenir:"Sans frottement, E<sub>m</sub> = E<sub>c</sub> + E<sub>p</sub> reste constante : E<sub>c</sub> = ½·m·v², E<sub>p</sub> = m·g·h. Le chariot ne peut jamais dépasser sa hauteur de départ. Sa vitesse ne dépend pas de sa masse.",
   piege:"E<sub>p</sub> dépend du niveau choisi pour h = 0 : changer de référence change E<sub>p</sub> (et E<sub>m</sub>), mais jamais E<sub>c</sub> ni les échanges d'énergie. Si la hauteur de départ est inférieure à celle d'une bosse, le chariot ne la franchit pas.",
   build:function(k,S){
-    var c = PX.canvas(k, 0.55, 0.78), b = k.canvas(120), st = {x:0, u:0}, Gr = {};
+    var c = PX.canvas(k, 0.64, 0.95), b = k.canvas(120), st = {x:0, u:0, t:0}, Gr = {};
     var H0, m, ref;
     function reset(){ var h = H0 ? H0.value : 24; st.x = 28 / Math.PI * Math.acos(Math.max(-1, 1 - (30 - h) / 15)); st.u = 0; }
     H0 = k.slider("Hauteur de départ", 5, 29, 1, 24, "m", function(){ reset(); lp.play(); });
@@ -25,6 +25,7 @@ SFA.sim({
     var nt = k.note("", "");
     var lp = k.loop(function(dt){
       var n = Math.ceil(dt / 0.004), d = dt / n, i;
+      st.t += dt;
       for (i = 0; i < n; i++){
         var yd = trD(st.x), q = Math.sqrt(1 + yd * yd);
         st.u += -G * yd / q * d; st.x += st.u / q * d;
@@ -35,18 +36,82 @@ SFA.sim({
     k.button("▶ / ❚❚", function(){ if (lp.running) lp.pause(); else lp.play(); }, true);
     k.button("↺ Relâcher", function(){ reset(); lp.play(); });
     reset(); lp.play();
-    PX.drag(k, c, function(){ return [{x:Gr.x, y:Gr.y, r:14, set:function(px, py){ H0.set(Math.max(5, Math.min(29, Math.round((Gr.gnd - py) / Gr.sc)))); reset(); lp.play(); }}]; });
+    function setH(px, py){ H0.set(Math.max(5, Math.min(29, Math.round((Gr.gnd - py) / Gr.sc)))); reset(); lp.play(); }
+    PX.drag(k, c, function(){ return [{x:Gr.x, y:Gr.y, r:14, set:setH}, {x:Gr.wx, y:Gr.wy, r:22, set:setH}]; });
+    /* wagon : (0, 0) = point de contact sur le rail, x vers l'avant ; v = vitesse (bras levés quand ça va vite) */
+    function wagon(ctx, Lw, v, t){
+      var wr = Lw * 0.085, hb = Lw * 0.36, yb0 = -wr * 1.6, yt0 = yb0 - hb;
+      /* passagers (derrière la carrosserie) */
+      [[-0.2, "#2f7fd1", "#3b2a1c"], [0.16, "#e0a91a", "#c26a0c"]].forEach(function(p, j){
+        var px = p[0] * Lw, hy = yt0 - Lw * 0.2, up = Math.min(1, Math.max(0, (v - 7) / 6)), wave = Math.sin(t * 9 + j * 2) * 0.25 * up;
+        ctx.fillStyle = p[1]; PX.rr(ctx, px - Lw * 0.075, yt0 - Lw * 0.13, Lw * 0.15, Lw * 0.2, Lw * 0.05); ctx.fill();
+        ctx.strokeStyle = p[1]; ctx.lineWidth = Lw * 0.045; ctx.lineCap = "round";
+        [-1, 1].forEach(function(sg){ var ax = px + sg * Lw * 0.06, ay = yt0 - Lw * 0.1, ang = -Math.PI / 2 + sg * (0.35 + wave) * up + (1 - up) * sg * 1.2;
+          ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax + Math.cos(ang) * Lw * 0.15, ay + Math.sin(ang) * Lw * 0.15); ctx.stroke();
+          ctx.fillStyle = "#f0c9a0"; ctx.beginPath(); ctx.arc(ax + Math.cos(ang) * Lw * 0.16, ay + Math.sin(ang) * Lw * 0.16, Lw * 0.028, 0, 6.2832); ctx.fill(); });
+        ctx.fillStyle = "#f0c9a0"; ctx.beginPath(); ctx.arc(px, hy, Lw * 0.068, 0, 6.2832); ctx.fill();
+        ctx.fillStyle = p[2]; ctx.beginPath(); ctx.arc(px - Lw * 0.008, hy - Lw * 0.018, Lw * 0.07, Math.PI * 1.02, Math.PI * 1.98); ctx.fill();
+        if (j === 1){ ctx.beginPath(); ctx.moveTo(px - Lw * 0.06, hy - Lw * 0.02); ctx.quadraticCurveTo(px - Lw * 0.13 - up * Lw * 0.06, hy + Lw * 0.02, px - Lw * 0.1, hy + Lw * 0.07); ctx.lineWidth = Lw * 0.03; ctx.strokeStyle = p[2]; ctx.stroke(); }
+        ctx.fillStyle = "#3b2a1c"; ctx.beginPath(); ctx.arc(px + Lw * 0.03, hy - Lw * 0.005, Lw * 0.009, 0, 6.2832); ctx.fill();
+        ctx.strokeStyle = "#3b2a1c"; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(px + Lw * 0.03, hy + Lw * 0.02, Lw * 0.02 + up * Lw * 0.01, 0.2, Math.PI - 0.2); ctx.stroke();
+      });
+      /* barre de sécurité */
+      ctx.strokeStyle = "#e3e7ed"; ctx.lineWidth = Lw * 0.03; ctx.beginPath(); ctx.moveTo(-Lw * 0.36, yt0 - Lw * 0.04); ctx.lineTo(Lw * 0.3, yt0 - Lw * 0.04); ctx.stroke();
+      /* carrosserie */
+      ctx.beginPath(); ctx.moveTo(-Lw * 0.48, yb0); ctx.lineTo(Lw * 0.36, yb0); ctx.quadraticCurveTo(Lw * 0.52, yb0, Lw * 0.5, yt0 + hb * 0.25);
+      ctx.quadraticCurveTo(Lw * 0.47, yt0 - hb * 0.05, Lw * 0.34, yt0); ctx.lineTo(-Lw * 0.42, yt0); ctx.quadraticCurveTo(-Lw * 0.5, yt0, -Lw * 0.5, yt0 + hb * 0.25); ctx.lineTo(-Lw * 0.5, yb0 - 2); ctx.closePath();
+      var gb = ctx.createLinearGradient(0, yt0, 0, yb0); gb.addColorStop(0, "#f05a44"); gb.addColorStop(0.55, "#c0321d"); gb.addColorStop(1, "#7f1d10");
+      ctx.fillStyle = gb; ctx.fill(); ctx.strokeStyle = "#5c140a"; ctx.lineWidth = 1.2; ctx.stroke();
+      ctx.fillStyle = "#f4c542"; ctx.fillRect(-Lw * 0.48, yt0 + hb * 0.42, Lw * 0.95, hb * 0.14);
+      ctx.fillStyle = "rgba(255,255,255,.35)"; PX.rr(ctx, -Lw * 0.4, yt0 + hb * 0.1, Lw * 0.7, hb * 0.16, hb * 0.08); ctx.fill();
+      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(Lw * 0.44, yt0 + hb * 0.62, Lw * 0.035, 0, 6.2832); ctx.fill();
+      /* bogies et roues */
+      ctx.fillStyle = "#3c4756"; ctx.fillRect(-Lw * 0.42, yb0 - 1, Lw * 0.84, wr * 0.8);
+      [-0.3, 0.3].forEach(function(q){ var wx = q * Lw, ga = st.x * 2.1;
+        ctx.fillStyle = "#1c2433"; ctx.beginPath(); ctx.arc(wx, -wr, wr, 0, 6.2832); ctx.fill();
+        ctx.strokeStyle = "#aab4c3"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(wx - Math.cos(ga) * wr * 0.7, -wr - Math.sin(ga) * wr * 0.7); ctx.lineTo(wx + Math.cos(ga) * wr * 0.7, -wr + Math.sin(ga) * wr * 0.7); ctx.stroke();
+        ctx.fillStyle = "#aab4c3"; ctx.beginPath(); ctx.arc(wx, -wr, wr * 0.3, 0, 6.2832); ctx.fill(); });
+    }
     k.draw(function(){
-      var P = SFA.draw.palette, M = m.value, R = ref.value, Hh = H0.value, y = trY(st.x);
-      var pad = 12, gnd = c.H - 20, sc = (gnd - 24) / 32, RX = function(x){ return pad + x / 100 * (c.W - 2 * pad); }, RY = function(h){ return gnd - h * sc; };
-      c.clear(); PX.bg(c, "#d4e6f8", "#f0f6fc"); var ctx = c.ctx; ctx.beginPath(); ctx.moveTo(RX(0), gnd + 10);
-      for (var x = 0; x <= 100; x += 1) ctx.lineTo(RX(x), RY(trY(x)));
-      ctx.lineTo(RX(100), gnd + 10); ctx.closePath(); ctx.fillStyle = PX.lin(c, 0, 0, 0, c.H, [[0, "#b9c4d3"], [1, "#98a6b8"]]); ctx.fill();
-      ctx.beginPath(); for (x = 0; x <= 100; x += 1){ if (x) ctx.lineTo(RX(x), RY(trY(x))); else ctx.moveTo(RX(x), RY(trY(x))); } ctx.strokeStyle = "#5f6b7a"; ctx.lineWidth = 3; ctx.stroke();
+      var P = SFA.draw.palette, M = m.value, R = ref.value, Hh = H0.value, y = trY(st.x), ph = PX.phone(c);
+      var pad = 12, gnd = c.H - 26, Lw = Math.max(56, Math.min(100, c.W * 0.16)), sc = (gnd - Lw * 0.8 - 8) / 30, RX = function(x){ return pad + x / 100 * (c.W - 2 * pad); }, RY = function(h){ return gnd - h * sc; };
+      var ctx = c.ctx, x, i;
+      c.clear();
+      /* ciel, soleil, nuages qui dérivent, collines, parc */
+      PX.bg(c, "#8fc3ee", "#e6f2fb");
+      S.draw.glow(c, c.W * 0.86, c.H * 0.16, 60, "#ffd75e", 0.6); ctx.fillStyle = "#ffe07a"; ctx.beginPath(); ctx.arc(c.W * 0.86, c.H * 0.16, 16, 0, 6.2832); ctx.fill();
+      [[0.1, 0.12, 1], [0.45, 0.07, 0.8], [0.7, 0.2, 1.1]].forEach(function(q, j){ var xx = ((q[0] * c.W + st.t * (6 + j * 3)) % (c.W + 120)) - 60; PX.cloud(c, xx, q[1] * c.H + 10, q[2] * (ph ? 0.75 : 1), 0.9); });
+      ctx.fillStyle = "#b9d9a5"; ctx.beginPath(); ctx.moveTo(0, gnd); for (x = 0; x <= c.W; x += 10) ctx.lineTo(x, gnd - 30 - 22 * Math.sin(x / c.W * 5.5 + 1) - 10 * Math.sin(x / c.W * 13)); ctx.lineTo(c.W, gnd); ctx.closePath(); ctx.fill();
+      for (i = 0; i < 7; i++){ var tx = (i + 0.4) / 7 * c.W + (i % 2) * 14, th = 18 + (i * 7) % 12; ctx.fillStyle = "#6d4c2f"; ctx.fillRect(tx - 2, gnd - th * 0.6, 4, th * 0.6); ctx.fillStyle = i % 2 ? "#4f9a5d" : "#3f8a50"; ctx.beginPath(); ctx.arc(tx, gnd - th * 0.75, th * 0.42, 0, 6.2832); ctx.fill(); }
+      PX.ground(c, gnd + 4, "#7fb069", c.H - gnd - 4);
+      /* piliers et entretoises */
+      var pil = []; for (x = 3; x <= 97; x += ph ? 9.4 : 6.25) pil.push([RX(x), RY(trY(x)) + 7]);
+      ctx.strokeStyle = "#9aa5b4"; ctx.lineWidth = 1.2;
+      for (i = 0; i + 1 < pil.length; i++){ var a = pil[i], bq = pil[i + 1], lo = gnd + 4; if (lo - Math.max(a[1], bq[1]) > 20){ ctx.beginPath(); ctx.moveTo(a[0], a[1] + 6); ctx.lineTo(bq[0], lo - 2); ctx.moveTo(bq[0], bq[1] + 6); ctx.lineTo(a[0], lo - 2); ctx.stroke(); } }
+      pil.forEach(function(p){ if (gnd + 4 - p[1] < 4) return; ctx.fillStyle = PX.lin(c, p[0] - 3, 0, p[0] + 3, 0, [[0, "#c9d1dc"], [1, "#7d8899"]]); ctx.fillRect(p[0] - 3, p[1], 6, gnd + 4 - p[1]); ctx.fillStyle = "#5f6b7a"; ctx.fillRect(p[0] - 5, gnd + 1, 10, 4); });
+      /* rails : poutre, traverses, rail */
+      var pts = []; for (x = 0; x <= 100.001; x += 0.25) pts.push([RX(x), RY(trY(x))]);
+      ctx.lineJoin = "round"; ctx.lineCap = "round";
+      ctx.beginPath(); pts.forEach(function(p, j){ j ? ctx.lineTo(p[0], p[1] + 6) : ctx.moveTo(p[0], p[1] + 6); }); ctx.strokeStyle = "#8a1f12"; ctx.lineWidth = 7; ctx.stroke(); ctx.strokeStyle = "#c0321d"; ctx.lineWidth = 4; ctx.stroke();
+      ctx.strokeStyle = "#5f6b7a"; ctx.lineWidth = 2;
+      for (j = 0; j < pts.length; j += 4){ var p0 = pts[Math.max(0, j - 1)], p1 = pts[Math.min(pts.length - 1, j + 1)], an = Math.atan2(p1[1] - p0[1], p1[0] - p0[0]); ctx.beginPath(); ctx.moveTo(pts[j][0] + Math.sin(an) * 1, pts[j][1] - Math.cos(an) * 1); ctx.lineTo(pts[j][0] - Math.sin(an) * 7, pts[j][1] + Math.cos(an) * 7); ctx.stroke(); }
+      var j;
+      ctx.beginPath(); pts.forEach(function(p, jj){ jj ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }); ctx.strokeStyle = "#3c4756"; ctx.lineWidth = 3.4; ctx.stroke(); ctx.strokeStyle = "#dfe5ec"; ctx.lineWidth = 1.2; ctx.stroke();
+      /* lignes : hauteur de départ et niveau de référence */
       S.draw.line(c, pad, RY(Hh), c.W - pad, RY(Hh), P.green, 1.5, [6, 4]); Gr.x = c.W - 40; Gr.y = RY(Hh); Gr.gnd = gnd; Gr.sc = sc; PX.grip(c, Gr.x, Gr.y, P.green, null, 7); P4.label(c, "hauteur de départ", c.W - 16, RY(Hh) - 9, P.green, "right");
       S.draw.line(c, pad, RY(R), c.W - pad, RY(R), P.violet, 1.5, [2, 4]); P4.label(c, "Ep = 0", 18, RY(R) - 9, P.violet, "left");
-      var cx = RX(st.x), cy = RY(y); PX.ball(c, cx, cy - 9, 9, P.red);
+      /* wagon : roues avant et arrière posées sur le rail */
+      var cum = [0]; for (j = 1; j < pts.length; j++) cum.push(cum[j - 1] + Math.hypot(pts[j][0] - pts[j - 1][0], pts[j][1] - pts[j - 1][1]));
+      function at(s){ s = Math.max(0, Math.min(cum[cum.length - 1], s)); var lo2 = 0, hi2 = cum.length - 1; while (hi2 - lo2 > 1){ var md = (lo2 + hi2) >> 1; if (cum[md] < s) lo2 = md; else hi2 = md; } var u = (s - cum[lo2]) / Math.max(1e-9, cum[hi2] - cum[lo2]); return [pts[lo2][0] + (pts[hi2][0] - pts[lo2][0]) * u, pts[lo2][1] + (pts[hi2][1] - pts[lo2][1]) * u]; }
+      var fi = st.x / 0.25, i0 = Math.min(pts.length - 2, Math.floor(fi)), s0 = cum[i0] + (cum[i0 + 1] - cum[i0]) * (fi - i0);
+      var pb = at(s0 - Lw * 0.3), pf = at(s0 + Lw * 0.3), ang = Math.atan2(pf[1] - pb[1], pf[0] - pb[0]), cx = (pb[0] + pf[0]) / 2, cy = (pb[1] + pf[1]) / 2;
       var Ep = M * G * (y - R), Ec = Math.max(0, M * G * (Hh - y)), Em = M * G * (Hh - R), v = Math.sqrt(2 * Ec / M);
+      if (v > 6){ ctx.save(); ctx.strokeStyle = "rgba(255,255,255," + Math.min(0.8, (v - 6) / 12) + ")"; ctx.lineWidth = 2; var dir = st.u >= 0 ? -1 : 1;
+        for (j = 0; j < 4; j++){ var oy = -Lw * (0.12 + j * 0.09), sx = cx + dir * Lw * 0.55 * Math.cos(ang) - oy * Math.sin(ang), sy = cy + dir * Lw * 0.55 * Math.sin(ang) + oy * Math.cos(ang), ln = Lw * (0.25 + 0.03 * v) * (0.6 + 0.4 * Math.sin(st.t * 20 + j));
+          ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + dir * ln * Math.cos(ang), sy + dir * ln * Math.sin(ang)); ctx.stroke(); } ctx.restore(); }
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(ang); wagon(ctx, Lw, v, st.t); ctx.restore();
+      Gr.wx = cx + Math.sin(ang) * Lw * 0.3; Gr.wy = cy - Math.cos(ang) * Lw * 0.3;
+      S.draw.label(c, S.fmt(v * 3.6, 0) + " km/h", cx + Math.sin(ang) * Lw * 1.05 + Math.cos(ang) * Lw * 0.55, cy - Math.cos(ang) * Lw * 1.05 + Math.sin(ang) * Lw * 0.55, {color:P.ink, size:11});
       var big = Math.max(M * G * 30, 1);
       P4.bars(b, [{n:"Ep", v:Ep / 1000, col:P.green}, {n:"Ec", v:Ec / 1000, col:P.red}, {n:"Em", v:Em / 1000, col:P.acc}], {lo:-M * G * 10 / 1000, hi:big / 1000, unit:"kJ", fmt:function(q){ return S.fmt(q, 1); }});
       ro.set(0, S.fmt(y, 1) + " m"); ro.set(1, S.fmt(v, 1) + " m/s = " + S.fmt(v * 3.6, 0) + " km/h"); ro.set(2, S.fmt(Ec / 1000, 1) + " kJ"); ro.set(3, S.fmt(Ep / 1000, 1) + " kJ");

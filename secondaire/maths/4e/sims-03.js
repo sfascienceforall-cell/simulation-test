@@ -181,40 +181,252 @@ SFA.sim({
   }
 });
 
-/* ---------- trajectoire ---------- */
+/* ---------- trajectoire : un coup franc dans un stade ---------- */
+/* dessins du stade (aplats + légers dégradés) */
+var TJ = (function(){
+  var T = {}, seed = 7;
+  function rnd(){ seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+  var COLS = ["#c0321d","#1f4b9e","#f4c542","#ffffff","#24775a","#e07a1f","#6236c4","#13233a","#c43a7a","#2f7fd1"];
+  T.crowd = []; for (var i = 0; i < 230; i++) T.crowd.push({u:rnd(), v:rnd(), c:COLS[Math.floor(rnd() * COLS.length)], s:0.8 + rnd() * 0.4, p:rnd() * 6.28});
+  T.clouds = [[0.12, 0.12, 1.1], [0.47, 0.07, 0.8], [0.78, 0.16, 1.0]];
+  function lin(ctx, x0, y0, x1, y1, st){ var g = ctx.createLinearGradient(x0, y0, x1, y1); st.forEach(function(s){ g.addColorStop(s[0], s[1]); }); return g; }
+  T.lin = lin;
+  T.cloud = function(ctx, x, y, s){
+    ctx.save(); ctx.fillStyle = "rgba(255,255,255,.88)";
+    [[0, 0, 14], [15, -7, 17], [33, 0, 13], [17, 5, 14]].forEach(function(p){ ctx.beginPath(); ctx.arc(x + p[0] * s, y + p[1] * s, p[2] * s, 0, 6.2832); ctx.fill(); });
+    ctx.restore();
+  };
+  /* tribunes, toit, projecteurs et panneaux publicitaires (repère écran) */
+  T.stadium = function(c, yG, tt, cheer){
+    var ctx = c.ctx, W = c.W, top = yG - Math.max(62, c.H * 0.2), bot = yG - 14;
+    ctx.save();
+    /* projecteurs */
+    [[W * 0.06, -1], [W * 0.94, 1]].forEach(function(q){
+      var x = q[0], y0 = top - Math.max(40, c.H * 0.16);
+      ctx.fillStyle = "#7b8694"; ctx.fillRect(x - 2.5, y0, 5, top - y0 + 4);
+      ctx.fillStyle = "#3c4756"; SFA.draw.rrect(c, x - 17, y0 - 13, 34, 16, 3); ctx.fill();
+      ctx.fillStyle = "#fff6cf"; for (var i = 0; i < 4; i++){ ctx.beginPath(); ctx.arc(x - 11 + i * 7.3, y0 - 5, 2.6, 0, 6.2832); ctx.fill(); }
+      SFA.draw.glow(c, x, y0 - 5, 34, "#fff3b0", 0.45);
+    });
+    /* toit */
+    ctx.fillStyle = lin(ctx, 0, top - 16, 0, top, [[0, "#4b5768"], [1, "#2c3a4e"]]);
+    ctx.beginPath(); ctx.moveTo(0, top - 4); ctx.lineTo(W, top - 4); ctx.lineTo(W, top + 2); ctx.lineTo(0, top + 2); ctx.closePath(); ctx.fill();
+    ctx.fillRect(0, top - 12, W, 9);
+    /* gradins */
+    ctx.fillStyle = lin(ctx, 0, top, 0, bot, [[0, "#8c9bb0"], [1, "#b7c3d3"]]); ctx.fillRect(0, top + 2, W, bot - top - 2);
+    ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.lineWidth = 1; ctx.beginPath();
+    for (var r = 1; r < 6; r++){ var yy = top + 2 + (bot - top - 2) * r / 6; ctx.moveTo(0, yy); ctx.lineTo(W, yy); } ctx.stroke();
+    /* spectateurs (petites silhouettes) */
+    var hH = bot - top - 10;
+    T.crowd.forEach(function(p){
+      var x = p.u * W, y = top + 10 + p.v * hH, s = p.s * Math.max(1, c.H / 420);
+      var j = cheer ? Math.max(0, Math.sin(tt * 9 + p.p)) * 3 * s : Math.sin(tt * 1.3 + p.p) * 0.5;
+      ctx.fillStyle = p.c; ctx.globalAlpha = 0.85; SFA.draw.rrect(c, x - 3 * s, y - j, 6 * s, 7 * s, 2.4 * s); ctx.fill();
+      ctx.fillStyle = "#e7c09a"; ctx.beginPath(); ctx.arc(x, y - j - 2.6 * s, 2.4 * s, 0, 6.2832); ctx.fill();
+      if (cheer){ ctx.strokeStyle = p.c; ctx.lineWidth = 1.4 * s; ctx.beginPath(); ctx.moveTo(x - 2.6 * s, y - j); ctx.lineTo(x - 4 * s, y - j - 6 * s); ctx.moveTo(x + 2.6 * s, y - j); ctx.lineTo(x + 4 * s, y - j - 6 * s); ctx.stroke(); }
+    });
+    ctx.globalAlpha = 1;
+    /* brume légère : la scène reste lisible derrière la trajectoire */
+    ctx.fillStyle = "rgba(225,238,250,.42)"; ctx.fillRect(0, top - 12, W, bot - top + 12);
+    /* panneaux publicitaires */
+    var n = Math.ceil(W / 120);
+    for (var b = 0; b < n; b++){
+      var bx = b * 120;
+      ctx.fillStyle = b % 2 ? "#1f4b9e" : "#13233a"; ctx.fillRect(bx, bot, 120, 14);
+      ctx.fillStyle = b % 2 ? "#f4c542" : "#ffffff"; ctx.font = "800 9.5px Mulish, system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(b % 2 ? "SFA · MATHS" : "y = ax² + bx + c", bx + 60, bot + 7.5);
+    }
+    ctx.restore();
+  };
+  /* pelouse tondue en bandes de 5 m (repère du monde) */
+  T.pitch = function(c, yG, X, x0, x1){
+    var ctx = c.ctx; ctx.save();
+    ctx.fillStyle = "#5e9f4c"; ctx.fillRect(0, yG, c.W, c.H - yG);
+    for (var m = Math.floor(x0 / 5) * 5; m < x1; m += 5){ if (Math.round(m / 5) % 2 === 0) continue; ctx.fillStyle = "#68ab55"; ctx.fillRect(X(m), yG, X(m + 5) - X(m), c.H - yG); }
+    ctx.fillStyle = lin(ctx, 0, yG, 0, c.H, [[0, "rgba(255,255,255,.10)"], [1, "rgba(15,27,45,.20)"]]); ctx.fillRect(0, yG, c.W, c.H - yG);
+    ctx.fillStyle = "rgba(255,255,255,.9)"; ctx.fillRect(0, yG, c.W, 2);
+    ctx.restore();
+  };
+  /* ballon de football : sphère blanche, pièces noires qui tournent */
+  T.ball = function(c, x, y, r, rot, alpha, tint){
+    var ctx = c.ctx; ctx.save(); ctx.globalAlpha = alpha == null ? 1 : alpha;
+    var g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r * 1.05);
+    g.addColorStop(0, "#ffffff"); g.addColorStop(0.55, tint || "#f4f6f8"); g.addColorStop(1, "#9aa7b5");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill();
+    ctx.save(); ctx.clip(); ctx.fillStyle = "#1b2433";
+    function pent(px, py, s, a){ ctx.beginPath(); for (var i = 0; i < 5; i++){ var q = a + i * 1.2566; i ? ctx.lineTo(px + Math.cos(q) * s, py + Math.sin(q) * s) : ctx.moveTo(px + Math.cos(q) * s, py + Math.sin(q) * s); } ctx.closePath(); ctx.fill(); }
+    pent(x + Math.cos(rot) * r * 0.15, y + Math.sin(rot) * r * 0.15, r * 0.34, rot);
+    for (var i = 0; i < 5; i++){ var a = rot + 0.63 + i * 1.2566; pent(x + Math.cos(a) * r * 0.95, y + Math.sin(a) * r * 0.95, r * 0.3, a); }
+    ctx.restore();
+    ctx.lineWidth = 1; ctx.strokeStyle = "rgba(15,27,45,.45)"; ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.stroke();
+    ctx.restore();
+  };
+  /* footballeur : (x, y) = pieds, h = taille en px ; o = {shirt, shorts, num, dir, kick (−1 → 1), run (phase), arms (0 → 1 bras levés)} */
+  T.player = function(c, x, y, h, o){
+    var ctx = c.ctx, u = h / 100, dir = o.dir || 1; ctx.save(); ctx.translate(x, y); ctx.scale(dir, 1); ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.fillStyle = "rgba(15,27,45,.22)"; ctx.beginPath(); ctx.ellipse(0, 0, 20 * u, 4.5 * u, 0, 0, 6.2832); ctx.fill();
+    var hipY = -47 * u, Ls = 23.5 * u;
+    function leg(a, bend, back){
+      var kx = Math.sin(a) * Ls, ky = hipY + Math.cos(a) * Ls, fx = kx + Math.sin(a - bend) * Ls, fy = ky + Math.cos(a - bend) * Ls;
+      ctx.strokeStyle = back ? "#d8b18c" : "#efc8a0"; ctx.lineWidth = 9 * u;
+      ctx.beginPath(); ctx.moveTo(0, hipY); ctx.lineTo(kx, ky); ctx.stroke();
+      ctx.strokeStyle = back ? S2(o.socks, 0.82) : o.socks; ctx.lineWidth = 8.5 * u;
+      ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(fx, fy); ctx.stroke();
+      ctx.fillStyle = "#13233a"; ctx.save(); ctx.translate(fx, fy); ctx.rotate(-(a - bend)); ctx.beginPath(); ctx.ellipse(3.5 * u, -1 * u, 7.5 * u, 3.6 * u, 0, 0, 6.2832); ctx.fill(); ctx.restore();
+    }
+    var aF, aB, bF, bB;
+    if (o.kick != null){ aB = -0.08; bB = 0.05; aF = o.kick * 1.15; bF = o.kick < 0.4 ? 1.1 * (1 - Math.max(0, o.kick)) + 0.2 : 0.1; }
+    else if (o.run != null){ var s = Math.sin(o.run); aF = 0.65 * s; aB = -0.65 * s; bF = 0.25 + 0.9 * Math.max(0, -Math.cos(o.run)); bB = 0.25 + 0.9 * Math.max(0, Math.cos(o.run)); }
+    else { aF = 0.1; aB = -0.1; bF = bB = 0.05; }
+    leg(aB, bB, true);
+    /* bras arrière */
+    var arm = o.arms || 0, sw = o.run != null ? Math.sin(o.run) : (o.kick != null ? -o.kick : 0);
+    function armd(sgn, back){
+      var sx = 0, sy = -80 * u, ang = arm > 0 ? Math.PI - 0.35 * sgn : 0.35 * sgn * sw + (back ? -0.15 : 0.15), L1 = 26 * u;
+      var ex = sx + Math.sin(ang) * L1 * (arm > 0 ? 1 : 1), ey = sy + Math.cos(ang) * L1;
+      ctx.strokeStyle = back ? S2(o.shirt, 0.8) : o.shirt; ctx.lineWidth = 8 * u; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(sx + (ex - sx) * 0.45, sy + (ey - sy) * 0.45); ctx.stroke();
+      ctx.strokeStyle = back ? "#d8b18c" : "#efc8a0"; ctx.lineWidth = 6.5 * u; ctx.beginPath(); ctx.moveTo(sx + (ex - sx) * 0.45, sy + (ey - sy) * 0.45); ctx.lineTo(ex, ey); ctx.stroke();
+    }
+    armd(-1, true);
+    /* short et maillot */
+    ctx.fillStyle = o.shorts; SFA.draw.rrect(c, -12 * u, -56 * u, 24 * u, 15 * u, 4 * u); ctx.fill();
+    leg(aF, bF, false);
+    ctx.fillStyle = o.shirt; SFA.draw.rrect(c, -13 * u, -86 * u, 26 * u, 34 * u, 8 * u); ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.18)"; SFA.draw.rrect(c, -13 * u, -86 * u, 9 * u, 34 * u, 6 * u); ctx.fill();
+    if (h > 34){ ctx.fillStyle = "#ffffff"; ctx.font = "800 " + Math.round(13 * u) + "px Mulish, system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.save(); ctx.scale(dir, 1); ctx.fillText(o.num || "10", 0, -70 * u); ctx.restore(); }
+    armd(1, false);
+    /* tête */
+    ctx.fillStyle = "#efc8a0"; ctx.fillRect(-3.5 * u, -92 * u, 7 * u, 7 * u);
+    ctx.beginPath(); ctx.arc(1 * u, -96 * u, 9.5 * u, 0, 6.2832); ctx.fill();
+    ctx.fillStyle = o.hair || "#3b2a1c"; ctx.beginPath(); ctx.arc(0, -98 * u, 9.8 * u, Math.PI * 0.95, Math.PI * 2.05); ctx.fill();
+    ctx.fillStyle = "#13233a"; ctx.beginPath(); ctx.arc(6 * u, -96 * u, 1.3 * u, 0, 6.2832); ctx.fill();
+    ctx.restore();
+  };
+  function S2(col, f){ var m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(col); if (!m) return col; return "rgb(" + [m[1], m[2], m[3]].map(function(h){ return Math.round(parseInt(h, 16) * f); }).join(",") + ")"; }
+  return T;
+})();
+
 SFA.sim({
   id:"m4-c03-trajectoire", ch:"c03", tag:"Niche",
   titre:"La trajectoire d'un ballon est une parabole",
-  resume:"Règle la vitesse et l'angle de lancer : portée, hauteur maximale et angle complémentaire.",
-  but:"Lance un ballon depuis le sol. Change la vitesse v et l'angle θ. Active l'angle complémentaire (90° − θ) : que remarques-tu sur la portée ? Quel angle donne la portée maximale ?",
+  resume:"Un coup franc tiré du sol : règle la vitesse et l'angle, regarde la parabole se dessiner sous le ballon.",
+  but:"Tire un coup franc (le ballon part du sol). Change la vitesse v et l'angle θ, ou tire la flèche rouge. Le ballon laisse sa trace (une position toutes les 0,2 s) et la parabole se dessine dessous. Active l'angle complémentaire (90° − θ) : que remarques-tu sur la portée ? Quel angle donne la portée maximale ?",
   aRetenir:"Sans frottement, y = x·tan θ − g·x² / (2v²·cos²θ) : c'est une fonction du 2e degré en x avec a < 0. Portée = v²·sin(2θ)/g, hauteur maximale = v²·sin²θ/(2g) au milieu de la portée. θ et 90° − θ donnent la même portée ; le maximum est à 45°.",
-  piege:"Modèle simplifié : lancer depuis le sol, g = 9,81 m/s², sans résistance de l'air (en vrai, la portée est plus courte et la courbe n'est plus une parabole exacte).",
+  piege:"Modèle simplifié : lancer depuis le sol, g = 9,81 m/s², sans résistance de l'air (en vrai, la portée est plus courte et la courbe n'est plus une parabole exacte). Le ballon et les joueurs sont dessinés un peu plus gros que l'échelle pour rester visibles.",
   build:function(k,S){
-    var c=k.canvas(0,{ratio:.58});
-    var v=k.slider("Vitesse initiale v",5,25,1,20,"m/s");
-    var th=k.slider("Angle de lancer θ",10,80,1,45,"°");
-    var tg=k.toggle("Montrer aussi l'angle complémentaire (90° − θ)",true);
+    var c=k.canvas(0,{ratio:.66});
+    var v=k.slider("Vitesse initiale v",5,25,1,20,"m/s",function(){ kick(); });
+    var th=k.slider("Angle de lancer θ",10,80,1,45,"°",function(){ kick(); });
+    var tg=k.toggle("Montrer aussi l'angle complémentaire (90° − θ)",true,function(){ kick(); });
     var ro=k.readouts(["Équation y(x)","Portée","Hauteur maximale","Durée du vol"]);
-    var g=9.81, tt=0, M=window.M4, geo={};
-    var lp=k.loop(function(dt){ tt+=dt; k.redraw(); });
-    M.grab(c,function(){ if(!geo.ax) return []; var r=th.value*Math.PI/180; return [{id:"v",x:geo.ax.X(v.value*Math.cos(r)*1.1),y:geo.ax.Y(v.value*Math.sin(r)*1.1),r:28}]; },
-      function(id,px,py){ var x=geo.ax.ix(px)/1.1, y=geo.ax.iy(py)/1.1; th.set(M.clamp(Math.round(Math.atan2(y,x)*180/Math.PI),10,80)); v.set(M.clamp(Math.round(Math.hypot(x,y)),5,25)); tt=0; if(!lp.running) lp.play(); k.redraw(); });
-    k.button("Lancer / pause",function(){ if(lp.running) lp.pause(); else { tt=0; lp.play(); } },true); lp.play();
-    function traj(V,T){ var r=T*Math.PI/180; return function(x){ return x*Math.tan(r)-g*x*x/(2*V*V*Math.cos(r)*Math.cos(r)); }; }
+    var g=9.81, M=window.M4, geo={}, st={tt:-0.7, clock:0, s:0};
+    var D=Math.PI/180, RUN=0.7, HOLD=2.2;
+    function kick(){ st.tt=-RUN; }
+    var lp=k.loop(function(dt){
+      st.clock+=dt; st.tt+=dt;
+      var r=th.value*D, Tf=2*v.value*Math.sin(r)/g, Tc=2*v.value*Math.cos(r)/g, Tm=tg.value?Math.max(Tf,Tc):Tf;
+      if(st.tt>Tm+HOLD) st.tt=-RUN;
+      if(geo.sT) st.s+=(geo.sT-st.s)*Math.min(1,dt*3.5);
+      k.redraw();
+    });
+    M.grab(c,function(){ return geo.tip?[{id:"v",x:geo.tip[0],y:geo.tip[1],r:30}]:[]; },
+      function(id,px,py){ var dx=px-geo.ox, dy=geo.yG-py; th.set(M.clamp(Math.round(Math.atan2(dy,dx)/D),10,80)); v.set(M.clamp(Math.round(Math.hypot(dx,dy)/geo.kpx),5,25)); kick(); if(!lp.running) lp.play(); k.redraw(); });
+    k.button("⚽ Tirer le coup franc",function(){ kick(); lp.play(); },true);
+    k.button("❚❚ Pause",function(){ if(lp.running) lp.pause(); else lp.play(); });
+    lp.play();
+    function traj(V,T){ var r=T*D; return function(x){ return x*Math.tan(r)-g*x*x/(2*V*V*Math.cos(r)*Math.cos(r)); }; }
+    function txt(s){ return String(s).replace(/<[^>]+>/g,""); }
     k.draw(function(){
-      var V=v.value, T=th.value, r=T*Math.PI/180;
+      if(M.adapt(c,.95,.66,520)) return;
+      var V=v.value, T=th.value, r=T*D, comp=tg.value&&T!==45, Tc_=90-T, rc=Tc_*D;
       var R=V*V*Math.sin(2*r)/g, Hm=V*V*Math.sin(r)*Math.sin(r)/(2*g), Tf=2*V*Math.sin(r)/g;
+      var Hc=V*V*Math.sin(rc)*Math.sin(rc)/(2*g), Tc=2*V*Math.sin(rc)/g;
+      var W=c.W, H=c.H, ctx=c.ctx, phone=W<520;
+      var yG=Math.round(H*(phone?0.84:0.85)), L=40, ox=L+(phone?30:46), top=phone?48:56;
+      /* échelle : même échelle en x et en y, le cadre suit les trajectoires */
+      var xr=Math.max(20,(comp?Math.max(R,V*V/g*Math.sin(2*rc)):R)*1.1+2), yr=Math.max(6,(comp?Math.max(Hm,Hc):Hm)*1.15+2.5);
+      var sT=Math.min((W-ox-14)/xr,(yG-top)/yr); geo.sT=sT; if(!(st.s>0)) st.s=sT;
+      var s=st.s, X=function(x){ return ox+x*s; }, Y=function(y){ return yG-y*s; };
+      geo.ox=ox; geo.yG=yG;
       c.clear();
-      var ax=geo.ax=S.draw.axes(c,{x0:0,x1:70,y0:0,y1:35,xl:"x (m)",yl:"y (m)",stepX:10,stepY:10});
-      c.ctx.save(); c.ctx.fillStyle="rgba(36,119,90,.14)"; c.ctx.fillRect(ax.L,ax.Y(0),ax.R-ax.L,5); c.ctx.restore();
-      if(tg.value && T!==45){ S.draw.fn(c,ax,function(x){var y=traj(V,90-T)(x); return y<0?NaN:y;},P.amber,2.2,[6,4]); }
-      S.draw.fn(c,ax,function(x){var y=traj(V,T)(x); return y<0?NaN:y;},P.acc,3);
-      S.draw.dot(c,ax.X(R/2),ax.Y(Hm),5,P.red); M.lab(c,"sommet "+S.fmt(Hm,1)+" m",ax.X(R/2),ax.Y(Hm)-17,P.red,{size:11});
-      S.draw.dot(c,ax.X(R),ax.Y(0),5,P.green); M.lab(c,"portée "+S.fmt(R,1)+" m",ax.X(R),ax.Y(0)-17,P.green,{size:11});
-      S.draw.arrow(c,ax.X(0),ax.Y(0),ax.X(V*Math.cos(r)*1.1),ax.Y(V*Math.sin(r)*1.1),P.red,2.4); M.handle(c,ax.X(V*Math.cos(r)*1.1),ax.Y(V*Math.sin(r)*1.1),P.red,6.5); M.lab(c,"v = "+S.fmt(V,0)+" m/s ; "+S.fmt(T,0)+"°",ax.R-62,ax.T+14,P.red,{size:11});
-      if(lp.running||tt>0){ var tp=tt%(Tf+0.6); if(tp<=Tf){ var bx=V*Math.cos(r)*tp, by=V*Math.sin(r)*tp-g*tp*tp/2; S.draw.dot(c,ax.X(bx),ax.Y(Math.max(0,by)),8,P.red); } }
+      /* ciel, nuages, stade, pelouse */
+      ctx.fillStyle=TJ.lin(ctx,0,0,0,yG,[[0,"#8fc0ec"],[1,"#dcecf9"]]); ctx.fillRect(0,0,W,yG);
+      TJ.clouds.forEach(function(q){ var cx=((q[0]*W+st.clock*8*q[2])%(W+120))-60; TJ.cloud(ctx,cx,q[1]*H+10,q[2]*(phone?0.7:1)); });
+      var tFly=Math.max(0,st.tt), landed=tFly>=Tf;
+      TJ.stadium(c,yG,st.clock,landed&&st.tt>=0);
+      TJ.pitch(c,yG,X,-ox/s,(W-ox)/s);
+      /* règles graduées : sol (x) et verticale (y) */
+      var span=(W-ox)/s, stp = span/ (phone?5:9) <= 2 ? 2 : span/(phone?5:9) <= 5 ? 5 : 10;
+      ctx.save(); ctx.font="800 10.5px Mulish, system-ui, sans-serif"; ctx.textAlign="center"; ctx.textBaseline="top";
+      for(var m=0;X(m)<W-8;m+=stp){ ctx.fillStyle="rgba(255,255,255,.95)"; ctx.fillRect(X(m)-1,yG,2,7); ctx.fillStyle="#ffffff"; ctx.fillText(S.fmt(m,0)+(m===0?"":""),X(m),yG+10); }
+      ctx.textAlign="right"; ctx.fillText("x (m)",W-8,yG+(phone?24:26));
+      ctx.restore();
+      var ys=(yG-top)/s/(phone?4:6); ys = ys<=1?1:ys<=2?2:ys<=5?5:10;
+      ctx.save(); ctx.fillStyle="rgba(255,255,255,.6)"; SFA.draw.rrect(c,4,top-20,L-6,yG-top+20,7); ctx.fill();
+      ctx.strokeStyle="#5f6b7a"; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(L-4,yG); ctx.lineTo(L-4,top-6); ctx.stroke();
+      ctx.font="800 10.5px Mulish, system-ui, sans-serif"; ctx.fillStyle="#2c3a4e"; ctx.textAlign="right"; ctx.textBaseline="middle";
+      for(var yv=ys;Y(yv)>top-4;yv+=ys){ ctx.beginPath(); ctx.moveTo(L-9,Y(yv)); ctx.lineTo(L-4,Y(yv)); ctx.stroke(); ctx.fillText(S.fmt(yv,0),L-11,Y(yv)); }
+      ctx.textAlign="center"; ctx.fillText("y (m)",L/2+1,top-12);
+      ctx.restore();
+      /* tailles dessinées */
+      var hp=Math.min(Math.max(1.8*s,phone?40:52),(yG-top)*0.42), rb=Math.max(phone?6:7.5,Math.min(12,0.22*s));
+      /* trajectoire prévue (pâle) */
+      function curve(f,x1,col,w,dash,alpha){
+        if(!(x1>0)) return; ctx.save(); ctx.globalAlpha=alpha==null?1:alpha; ctx.strokeStyle=col; ctx.lineWidth=w; ctx.lineJoin="round"; ctx.lineCap="round"; ctx.setLineDash(dash||[]);
+        ctx.beginPath(); for(var i=0;i<=160;i++){ var x=x1*i/160, y=Math.max(0,f(x)); i?ctx.lineTo(X(x),Y(y)-0):ctx.moveTo(X(x),Y(y)); } ctx.stroke(); ctx.restore();
+      }
+      var f1=traj(V,T), f2=traj(V,Tc_), Rc=V*V*Math.sin(2*rc)/g;
+      curve(f1,R,"#ffffff",2,[3,6],0.75);
+      if(comp) curve(f2,Rc,"#fff3d6",2,[3,6],0.6);
+      /* trace + parabole qui se dessine */
+      function flight(Th,Tfl,col,ghost,lab){
+        var rr_=Th*D, vx=V*Math.cos(rr_), vy=V*Math.sin(rr_), t=Math.min(tFly,Tfl), xb=vx*t;
+        curve(traj(V,Th),xb,col,3.4,lab?[]:[8,5]);
+        ctx.save();
+        for(var q=0.2;q<t-1e-6;q+=0.2){ var gx=vx*q, gy=vy*q-g*q*q/2; ctx.globalAlpha=0.55; ctx.fillStyle=ghost; ctx.strokeStyle="rgba(15,27,45,.35)"; ctx.lineWidth=1; ctx.beginPath(); ctx.arc(X(gx),Y(gy)-rb*0.6,rb*0.62,0,6.2832); ctx.fill(); ctx.stroke(); }
+        ctx.restore();
+        var yb=Math.max(0,vy*t-g*t*t/2), bx=X(xb), by=Y(yb)-rb;
+        /* ombre au sol */
+        ctx.save(); ctx.fillStyle="rgba(15,27,45,"+(0.28-Math.min(0.2,yb*s/900))+")"; ctx.beginPath(); ctx.ellipse(bx,yG+2,rb*(1.1-Math.min(.5,yb*s/1200)),rb*0.3,0,0,6.2832); ctx.fill(); ctx.restore();
+        if(st.tt>0&&t<Tfl){ ctx.save(); ctx.strokeStyle="rgba(255,255,255,.7)"; ctx.lineWidth=rb*0.9; ctx.lineCap="round"; var tb=Math.max(0,t-0.08); ctx.globalAlpha=0.45; ctx.beginPath(); ctx.moveTo(X(vx*tb),Y(vy*tb-g*tb*tb/2)-rb); ctx.lineTo(bx,by); ctx.stroke(); ctx.restore(); }
+        TJ.ball(c,bx,by,rb,-xb*0.9/Math.max(rb/s,0.11)*0.12,1,lab?null:"#ffe2b8");
+        return {x:xb,t:t,done:tFly>=Tfl&&st.tt>0};
+      }
+      /* joueurs */
+      var ph=st.tt<0?(st.tt+RUN)/RUN:1;   /* 0 → 1 pendant l'élan */
+      var kx=ox-rb-hp*0.34-(1-ph)*hp*0.55;
+      var kickA=st.tt<0?(ph<0.55?Math.sin(ph/0.55*Math.PI*2)*0.3:-1+(ph-0.55)/0.45*1.9):Math.max(0.05,0.9-Math.max(0,st.tt)*1.6);
+      var Tmax=comp?Math.max(Tf,Tc):Tf, both=tFly>=Tmax&&st.tt>0;
+      if(st.tt<0&&ph<0.55) TJ.player(c,kx,yG+1,hp,{shirt:"#c0321d",shorts:"#ffffff",socks:"#c0321d",num:"10",run:ph*9});
+      else TJ.player(c,kx,yG+1,hp,{shirt:"#c0321d",shorts:"#ffffff",socks:"#c0321d",num:"10",kick:kickA,arms:both?1:0});
+      /* coéquipier qui court vers le point de chute */
+      var rx0=R+Math.max(5,hp*1.2/s), rt=Math.min(1,tFly/Math.max(Tf,0.3)), rxx=rx0-(rx0-(R+hp*0.3/s))*rt;
+      if(X(rxx)<W+hp) TJ.player(c,X(rxx),yG+1,hp*0.97,{shirt:"#c0321d",shorts:"#ffffff",socks:"#c0321d",num:"9",dir:-1,hair:"#a86b2d",run:rt<1&&st.tt>0?st.clock*11:null,arms:both&&!comp?1:0});
+      var b2=comp?flight(Tc_,Tc,P.amber,"#ffd9a3",false):null;
+      var b1=flight(T,Tf,P.acc,"#ffffff",true);
+      /* repères : sommet, portée, équation */
+      if(tFly>=Tf/2&&st.tt>0){ S.draw.dot(c,X(R/2),Y(Hm),5,P.red); M.lab(c,"sommet "+S.fmt(Hm,1)+" m",X(R/2),Y(Hm)-rb*2-14,P.red,{size:11}); ctx.save(); ctx.setLineDash([4,4]); ctx.strokeStyle="rgba(192,50,29,.6)"; ctx.lineWidth=1.4; ctx.beginPath(); ctx.moveTo(X(R/2),Y(Hm)); ctx.lineTo(X(R/2),yG); ctx.stroke(); ctx.restore(); }
+      if(b1.done){
+        var yd=yG+(phone?30:34);
+        ctx.save(); ctx.strokeStyle="#ffffff"; ctx.fillStyle="#ffffff"; ctx.lineWidth=1.6; ctx.beginPath(); ctx.moveTo(X(0),yd); ctx.lineTo(X(R),yd); ctx.stroke(); ctx.restore();
+        S.draw.arrow(c,X(R/2),yd,X(R),yd,"#ffffff",1.6); S.draw.arrow(c,X(R/2),yd,X(0),yd,"#ffffff",1.6);
+        S.draw.text(c,"portée "+txt(S.fmt(R,1))+" m",X(R/2),yd+(phone?13:12),{size:11.5,weight:800,color:P.green,bg:"rgba(255,255,255,.95)"});
+        S.draw.dot(c,X(R),yG,5,P.green);
+        var bs=txt(S.fmt(Math.tan(r),3)), eqs="y = "+txt(S.fmt(-g/(2*V*V*Math.cos(r)*Math.cos(r)),4))+"x² + "+(bs==="1"?"":bs)+"x";
+        S.draw.text(c,eqs,X(R*0.5),Math.max(top+8,Y(Hm)-rb*2-40),{size:phone?12.5:14.5,weight:800,color:P.acc,bg:"rgba(255,255,255,.93)",math:true});
+      }
+      if(comp&&both) M.lab(c,"θ = "+T+"° et 90° − θ = "+Tc_+"° : même portée !",W/2,top-30,P.green,{size:phone?10.5:12});
+      /* flèche de vitesse (déplaçable) */
+      var kpx=Math.min(W-ox-30,yG-top)*0.5/25; geo.kpx=kpx;
+      var tip=[ox+V*kpx*Math.cos(r),yG-rb-V*kpx*Math.sin(r)]; geo.tip=tip;
+      if(st.tt<0.25){ S.draw.arrow(c,ox,yG-rb,tip[0],tip[1],P.red,3); M.handle(c,tip[0],tip[1],P.red,6.5); M.lab(c,"v = "+S.fmt(V,0)+" m/s ; "+S.fmt(T,0)+"°",tip[0]+10,tip[1]-18,P.red,{size:11}); }
+      else { ctx.save(); ctx.globalAlpha=0.55; S.draw.arrow(c,ox,yG-rb,tip[0],tip[1],P.red,2.4); ctx.restore(); M.handle(c,tip[0],tip[1],P.red,5.5); }
+      if(st.tt<0) TJ.ball(c,ox,yG-rb,rb,0,1);
+      /* chrono */
+      S.draw.display(c,S.fmt(Math.min(tFly,Tmax),2)+" s",W-(phone?50:62),phone?26:32,{w:phone?82:100,h:phone?36:42,caption:"CHRONO",size:phone?14:17});
       var a=-g/(2*V*V*Math.cos(r)*Math.cos(r)), b=Math.tan(r);
-      ro.set(0,"y = "+S.fmt(a,4)+"x² + "+S.fmt(b,3)+"x");
+      var bstr=txt(S.fmt(b,3));
+      ro.set(0,"y = "+S.fmt(a,4)+"x² + "+(bstr==="1"?"":S.fmt(b,3))+"x");
       ro.set(1,S.fmt(R,1)+" m"); ro.set(2,S.fmt(Hm,1)+" m"); ro.set(3,S.fmt(Tf,2)+" s");
     });
   }

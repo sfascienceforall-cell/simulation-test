@@ -135,36 +135,199 @@ SFA.sim({
   }
 });
 
+/* canevas dont la hauteur est une fonction de la largeur (scène + graphe) */
+C5.cvF = C5.cvF || function(k, fn){
+  var c = k.canvas(0, {ratio: 0.6});
+  Object.defineProperty(c, "ratio", {get: function(){ var w = Math.max(260, c.cv.parentNode ? c.cv.parentNode.clientWidth : 600); return fn(w) / w; }, configurable: true});
+  c.resize(); return c;
+};
+
 SFA.sim({
   id: "c5-c05-plage-mer", ch: "c05", tag: "Niche utile",
   titre: "Pourquoi la plage brûle et la mer reste fraîche",
-  resume: "Même énergie solaire, sable (c = 0,80) contre eau (c = 4,18).",
-  but: "Fais varier la puissance reçue et la durée. Compare l'échauffement de 1 kg de sable et de 1 kg d'eau, puis de 1 L de chaque. Trouve combien de fois le sable chauffe plus vite.",
+  resume: "Même soleil, même énergie : le sable (c = 0,80) chauffe bien plus vite que l'eau (c = 4,18).",
+  but: "Lance l'exposition au soleil : les deux thermomètres montent, mais pas à la même vitesse. Fais varier la puissance reçue et la durée, compare 1 kg de sable et 1 kg d'eau, puis 1 L de chaque. Trouve combien de fois le sable chauffe plus vite.",
   aRetenir: "À énergie égale, ΔT = Q/(m·c) : plus c est grand, moins ça chauffe. L'eau (c = 4,18 J/(g·K)) a une grande capacité thermique : elle stocke beaucoup d'énergie pour peu d'élévation de température. C'est ce qui rend la mer plus fraîche le jour et plus chaude la nuit que la plage.",
-  piege: "Ne confonds pas « même masse » et « même volume » : 1 L de sable sec pèse 1,6 kg (masse volumique 1,6 kg/L), donc le rapport change (≈ 3,3 au lieu de ≈ 5,2). Modèle simplifié : pas de mélange de l'eau, pas d'évaporation, pas de pertes.",
+  piege: "Ne confonds pas « même masse » et « même volume » : 1 L de sable sec pèse 1,6 kg (masse volumique 1,6 kg/L), donc le rapport change (≈ 3,3 au lieu de ≈ 5,2). Modèle simplifié : pas de mélange de l'eau, pas d'évaporation, pas de pertes (c'est pourquoi le sable peut monter très haut). Les réactions du baigneur sont illustratives.",
   build: function(k, S){
-    var pal = S.draw.palette, CS = 0.80, CW = 4.18, RS = 1.6;
-    var c = k.canvas(280);
+    var pal = S.draw.palette, CS = 0.80, CW = 4.18, RS = 1.6, GH = 230;
+    var c = C5.cvF(k, function(w){ return w >= 760 ? Math.round(w * 0.52) : Math.round(w * (w < 460 ? 1.08 : 0.8)) + GH; });
+    var an = {on: false}, tm = 0;
     var comp = k.seg("Comparer", [["m", "Même masse (1 kg)"], ["v", "Même volume (1 L)"]], "m");
     var P = k.slider("Puissance reçue par chaque échantillon", 5, 60, 1, 30, "W");
-    var t = k.slider("Durée d'exposition", 0, 60, 1, 30, "min");
+    var t = k.slider("Durée d'exposition", 0, 60, 1, 30, "min", function(){ an.on = false; });
+    k.button("▶ Exposer au soleil (0 → 60 min)", function(){ t.set(0); an.on = true; }, true);
+    k.button("❚❚ Pause", function(){ an.on = false; });
     var ro = k.readouts(["Énergie reçue", "ΔT du sable", "ΔT de l'eau", "Rapport ΔT sable / ΔT eau"]);
     var nt = k.note("", "");
+    /* grains de sable (tirés une fois) */
+    var rnd = (function(s){ return function(){ s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; }; })(17), grains = [];
+    for (var i = 0; i < 190; i++) grains.push([rnd(), rnd(), 0.5 + rnd() * 1.3, rnd() < 0.5]);
+    t.set(0); an.on = true;   /* l'exposition démarre à l'ouverture */
+    k.loop(function(dt, tt){ tm = tt; if (an.on){ var v = Math.min(60, t.value + dt * 6); t.set(v); if (v >= 60) an.on = false; } k.redraw(); }).play();
+
+    function lin(x0, y0, x1, y1, st){ var g = c.ctx.createLinearGradient(x0, y0, x1, y1); st.forEach(function(q){ g.addColorStop(q[0], q[1]); }); return g; }
+    function cloud(x, y, s, a){ var ctx = c.ctx; ctx.save(); ctx.fillStyle = "rgba(255,255,255," + a + ")"; [[0, 0, 14], [14, -7, 17], [32, 0, 13], [16, 4, 14]].forEach(function(q){ ctx.beginPath(); ctx.arc(x + q[0] * s, y + q[1] * s, q[2] * s, 0, 6.2832); ctx.fill(); }); ctx.restore(); }
+    function bubble(txt, x, y, col, size){
+      var ctx = c.ctx; ctx.save(); ctx.font = "800 " + size + "px Mulish, system-ui, sans-serif"; var w = ctx.measureText(txt).width + 16, h = size + 12;
+      ctx.fillStyle = "rgba(255,255,255,.96)"; ctx.strokeStyle = col; ctx.lineWidth = 1.6; S.draw.rrect(c, x - w / 2, y - h, w, h, 9); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x - 6, y - 1); ctx.lineTo(x + 2, y + 9); ctx.lineTo(x + 6, y - 1); ctx.closePath(); ctx.fill(); ctx.beginPath(); ctx.moveTo(x - 6, y); ctx.lineTo(x + 2, y + 9); ctx.lineTo(x + 6, y); ctx.stroke();
+      ctx.fillStyle = col; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(txt, x, y - h / 2); ctx.restore();
+    }
+    /* enfant de profil (pieds en (x, y)), qui sautille quand le sable brûle */
+    function kid(x, y, hh, mood){
+      var ctx = c.ctx, u = hh / 100, hop = mood === 2, ph = tm * 11;
+      var l0 = hop ? Math.max(0, Math.sin(ph)) * 11 * u : 0, l1 = hop ? Math.max(0, Math.sin(ph + Math.PI)) * 11 * u : 0, bob = hop ? -Math.abs(Math.sin(ph)) * 3 * u : 0;
+      var skin = "#e7b08a", skD = "#c98a63";
+      ctx.save(); ctx.translate(x, y); ctx.lineCap = "round"; ctx.lineJoin = "round";
+      ctx.fillStyle = "rgba(90,60,20,.22)"; ctx.beginPath(); ctx.ellipse(2 * u, 1.5 * u, 20 * u, 4.5 * u, 0, 0, 6.2832); ctx.fill();
+      [[-3, l1, skD], [3, l0, skin]].forEach(function(L){
+        ctx.strokeStyle = L[2]; ctx.lineWidth = 9 * u; ctx.beginPath(); ctx.moveTo(L[0] * u, -44 * u + bob); ctx.lineTo((L[0] + 1) * u, -6 * u - L[1]); ctx.stroke();
+        ctx.fillStyle = L[2]; ctx.beginPath(); ctx.ellipse((L[0] + 6) * u, -3 * u - L[1], 9 * u, 3.6 * u, 0, 0, 6.2832); ctx.fill();
+        ctx.strokeStyle = "rgba(120,70,40,.5)"; ctx.lineWidth = 1; ctx.stroke();
+      });
+      ctx.translate(0, bob);
+      ctx.fillStyle = "#1f8fbf"; S.draw.rrect(c, -11 * u, -56 * u, 22 * u, 16 * u, 5 * u); ctx.fill();
+      ctx.fillStyle = "#f4c542"; ctx.fillRect(-11 * u, -50 * u, 22 * u, 2.4 * u);
+      var arm = hop ? Math.sin(ph * 0.5) : 0;
+      ctx.strokeStyle = skD; ctx.lineWidth = 6.5 * u; ctx.beginPath(); ctx.moveTo(-2 * u, -80 * u); ctx.lineTo((-12 - 4 * arm) * u, (hop ? -98 : -58) * u); ctx.stroke();
+      ctx.fillStyle = lin(0, -86 * u, 0, -54 * u, [[0, "#f07a63"], [1, "#d65a45"]]); S.draw.rrect(c, -11 * u, -86 * u, 22 * u, 33 * u, 8 * u); ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,.85)"; ctx.font = "800 " + Math.round(9 * u) + "px Mulish, sans-serif"; ctx.textAlign = "center"; ctx.fillText("SFA", 0, -66 * u);
+      ctx.strokeStyle = skin; ctx.lineWidth = 6.5 * u; ctx.beginPath(); ctx.moveTo(3 * u, -80 * u); ctx.lineTo((14 + 4 * arm) * u, (hop ? -100 : -58) * u); ctx.stroke();
+      ctx.fillStyle = skin; ctx.beginPath(); ctx.arc(3 * u, -97 * u, 11.5 * u, 0, 6.2832); ctx.fill();
+      ctx.fillStyle = "#5a3a22"; ctx.beginPath(); ctx.arc(1 * u, -100 * u, 11.8 * u, Math.PI * 0.95, Math.PI * 2.05); ctx.fill();
+      ctx.fillStyle = "#f4c542"; ctx.beginPath(); ctx.ellipse(2 * u, -108 * u, 15 * u, 3.5 * u, 0, 0, 6.2832); ctx.fill(); ctx.beginPath(); ctx.arc(2 * u, -108 * u, 9 * u, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = "#1d2433"; ctx.beginPath(); ctx.arc(9 * u, -98 * u, 1.5 * u, 0, 6.2832); ctx.fill();
+      ctx.strokeStyle = "#8a3b2a"; ctx.lineWidth = 1.6 * u; ctx.beginPath();
+      if (mood === 2){ ctx.fillStyle = "#8a3b2a"; ctx.ellipse(10 * u, -91 * u, 2 * u, 2.6 * u, 0, 0, 6.2832); ctx.fill(); } else if (mood === 1){ ctx.moveTo(7 * u, -91 * u); ctx.lineTo(12 * u, -91 * u); ctx.stroke(); } else { ctx.arc(9 * u, -93 * u, 3.4 * u, 0.3, 1.9); ctx.stroke(); }
+      ctx.restore();
+    }
+    /* thermomètre planté : xT, yG = niveau du sol (0 °C), L = longueur visible */
+    function thermo(xT, yG, L, T, ymax, step, buried){
+      var ctx = c.ctx, tw = Math.max(11, L * 0.07), yTop = yG - L, yBulb = yG + tw * 1.4, f = Math.max(0, Math.min(1.02, T / ymax));
+      ctx.save(); ctx.beginPath(); ctx.rect(xT - L, yTop - 30, 2 * L, yG - yTop + 32); ctx.clip();
+      ctx.shadowColor = "rgba(15,27,45,.25)"; ctx.shadowBlur = 6; ctx.shadowOffsetX = 2;
+      ctx.fillStyle = lin(xT - tw / 2, 0, xT + tw / 2, 0, [[0, "#dfe8f2"], [0.45, "#ffffff"], [1, "#c5d2e0"]]);
+      S.draw.rrect(c, xT - tw / 2, yTop - 4, tw, yBulb - yTop + 4, tw / 2); ctx.fill(); ctx.shadowColor = "transparent";
+      ctx.strokeStyle = "#7d8ea3"; ctx.lineWidth = 1.2; ctx.stroke();
+      ctx.beginPath(); ctx.arc(xT, yBulb, tw * 0.95, 0, 6.2832); ctx.fillStyle = "#fff"; ctx.fill(); ctx.stroke();
+      ctx.fillStyle = lin(xT - tw, 0, xT + tw, 0, [[0, "#b8261a"], [0.4, "#ef5a43"], [1, "#a01e14"]]);
+      ctx.beginPath(); ctx.arc(xT, yBulb, tw * 0.68, 0, 6.2832); ctx.fill();
+      var yl = yG - f * (L - 8); ctx.fillRect(xT - tw * 0.2, yl, tw * 0.4, yBulb - yl);
+      ctx.fillStyle = "rgba(255,255,255,.7)"; ctx.fillRect(xT - tw * 0.32, yTop + 2, tw * 0.12, yBulb - yTop - 6);
+      ctx.strokeStyle = "#51627a"; ctx.lineWidth = 1; ctx.font = "700 9.5px Mulish, sans-serif"; ctx.fillStyle = "#2c3a4e"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
+      for (var v = 0; v <= ymax + 1e-9; v += step / 2){ var yy = yG - v / ymax * (L - 8), big = Math.abs(v / step - Math.round(v / step)) < 1e-6; ctx.beginPath(); ctx.moveTo(xT + tw / 2, yy); ctx.lineTo(xT + tw / 2 + (big ? 6 : 3), yy); ctx.stroke(); if (big && v > 0) ctx.fillText(String(v), xT - tw / 2 - 3, yy); }
+      ctx.restore();
+      buried(yG, yBulb + tw);
+      return yTop;
+    }
     k.draw(function(){
+      var W = c.W, H = c.H, wide = W >= 760, ctx = c.ctx, PW = P.value;
       var ms = comp.value === "m" ? 1000 : 1000 * RS, mw = 1000, T0 = 20;
-      function Ts(tt){ return T0 + P.value * tt * 60 / (ms * CS); } function Tw(tt){ return T0 + P.value * tt * 60 / (mw * CW); }
+      function Ts(tt){ return T0 + PW * tt * 60 / (ms * CS); } function Tw(tt){ return T0 + PW * tt * 60 / (mw * CW); }
+      var tv = t.value, ts = Ts(tv), tw = Tw(tv);
+      var ymax = Math.max(60, Math.ceil(Math.max(Ts(60), Tw(60)) / 20) * 20), step = ymax > 200 ? 50 : 20;
+      var sw = wide ? Math.round(W * 0.6) : W, sh = wide ? H : H - GH, x0 = 0, y0 = 0, us = Math.min(sw / 540, sh / 430);
       c.clear();
-      var ymax = Math.max(60, Math.ceil(Math.max(Ts(60), Tw(60)) / 20) * 20);
-      var ax = S.draw.axes(c, {x0: 0, x1: 60, y0: 0, y1: ymax, xl: "durée (min)", yl: "T (°C)", stepX: 10, stepY: ymax > 200 ? 50 : 20, l: 50});
-      S.draw.fn(c, ax, Ts, pal.amber, 2.8); S.draw.fn(c, ax, Tw, pal.acc, 2.8);
+      /* ---------- scène ---------- */
+      ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, sw, sh); ctx.clip();
+      var yH = y0 + sh * 0.36, yS = yH + sh * 0.07, yB = y0 + sh;
+      ctx.fillStyle = lin(0, y0, 0, yH, [[0, "#4ea7e4"], [1, "#cdebf9"]]); ctx.fillRect(x0, y0, sw, yH - y0 + 1);
+      var sx = x0 + sw * 0.5, sy = y0 + sh * 0.12, rs = (13 + PW * 0.3) * us;
+      S.draw.glow(c, sx, sy, rs * 3.6, "#ffd34d", 0.35 + PW / 200);
+      ctx.save(); ctx.translate(sx, sy); ctx.rotate(tm * 0.25); ctx.strokeStyle = "rgba(255,200,60,.75)"; ctx.lineWidth = 2.5 * us; ctx.lineCap = "round";
+      for (var r = 0; r < 12; r++){ ctx.rotate(Math.PI / 6); ctx.beginPath(); ctx.moveTo(rs * 1.25, 0); ctx.lineTo(rs * (1.55 + 0.12 * Math.sin(tm * 3 + r)), 0); ctx.stroke(); }
+      ctx.restore();
+      var sg = ctx.createRadialGradient(sx - rs * 0.3, sy - rs * 0.3, rs * 0.1, sx, sy, rs); sg.addColorStop(0, "#fffbe0"); sg.addColorStop(0.6, "#ffd84a"); sg.addColorStop(1, "#f9b51f");
+      ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(sx, sy, rs, 0, 6.2832); ctx.fill();
+      cloud(x0 + ((tm * 9 + 40) % (sw + 160)) - 80, y0 + sh * 0.09, 0.9 * us, 0.85); cloud(x0 + ((tm * 6 + sw * 0.7) % (sw + 160)) - 80, y0 + sh * 0.2, 0.65 * us, 0.75);
+      /* mer */
+      ctx.fillStyle = lin(0, yH, 0, yB, [[0, "#2f86c4"], [0.25, "#3ea6d4"], [1, "#56c6d3"]]); ctx.fillRect(x0, yH, sw, yB - yH);
+      ctx.fillStyle = "rgba(255,255,255,.55)"; ctx.fillRect(x0, yH, sw, 1.5);
+      var wash = Math.sin(tm * 1.3) * sw * 0.012;
+      function shore(y, e){ return x0 + sw * (0.30 + 0.27 * (y - yS) / (yB - yS)) + (e || 0) + Math.sin(y * 0.07 + tm * 1.1) * 3 * us; }
+      ctx.save(); ctx.strokeStyle = "rgba(255,255,255,.4)"; ctx.lineWidth = 1.4;
+      for (var wv = 0; wv < 9; wv++){ var wy = yH + 8 + wv * (yB - yH) / 9, amp = 1.5 + wv * 0.35; ctx.beginPath(); for (var wx = shore(wy, 24) ; wx < x0 + sw; wx += 6){ var yy = wy + Math.sin(wx * 0.045 + tm * 1.6 + wv) * amp; wx <= shore(wy, 24) ? ctx.moveTo(wx, yy) : ctx.lineTo(wx, yy); } ctx.stroke(); }
+      ctx.restore();
+      /* sable : sable mouillé puis sable sec, avec écume */
+      function sandPath(e){ ctx.beginPath(); ctx.moveTo(x0, yS); for (var y = yS; y <= yB + 2; y += 6) ctx.lineTo(shore(y, e), y); ctx.lineTo(x0, yB + 2); ctx.closePath(); }
+      sandPath(wash + 14 * us); ctx.fillStyle = "rgba(255,255,255,.75)"; ctx.fill();
+      sandPath(wash + 8 * us); ctx.fillStyle = "#c9a56a"; ctx.fill();
+      sandPath(-4 * us); ctx.fillStyle = lin(0, yS, 0, yB, [[0, "#f3dca6"], [1, "#e2bf7c"]]); ctx.fill();
+      ctx.save(); sandPath(-4 * us); ctx.clip();
+      grains.forEach(function(g){ ctx.fillStyle = g[3] ? "rgba(150,110,50,.35)" : "rgba(255,255,255,.55)"; ctx.fillRect(x0 + g[0] * sw * 0.6, yS + g[1] * (yB - yS), g[2] * us, g[2] * us); });
+      var hot = Math.max(0, Math.min(1, (ts - 22) / 120)); ctx.fillStyle = "rgba(255,95,30," + (0.32 * hot) + ")"; ctx.fillRect(x0, yS, sw, yB - yS);
+      ctx.restore();
+      /* parasol et serviette */
+      var px = x0 + sw * 0.07, py = y0 + sh * 0.70;
+      ctx.save(); ctx.fillStyle = "rgba(90,60,20,.18)"; ctx.beginPath(); ctx.ellipse(px + 14 * us, py + 4 * us, 46 * us, 9 * us, 0, 0, 6.2832); ctx.fill();
+      ctx.fillStyle = "#2f7fd1"; ctx.beginPath(); ctx.moveTo(px - 10 * us, py + 14 * us); ctx.lineTo(px + 52 * us, py + 14 * us); ctx.lineTo(px + 40 * us, py - 2 * us); ctx.lineTo(px - 18 * us, py - 2 * us); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#fff"; for (var st2 = 0; st2 < 3; st2++){ ctx.beginPath(); var a1 = st2 * 0.33 + 0.08; ctx.moveTo(px - 10 * us + 62 * us * a1, py + 14 * us); ctx.lineTo(px - 10 * us + 62 * us * (a1 + 0.12), py + 14 * us); ctx.lineTo(px - 18 * us + 58 * us * (a1 + 0.12), py - 2 * us); ctx.lineTo(px - 18 * us + 58 * us * a1, py - 2 * us); ctx.closePath(); ctx.fill(); }
+      ctx.strokeStyle = "#6b5a48"; ctx.lineWidth = 3 * us; ctx.beginPath(); ctx.moveTo(px, py + 6 * us); ctx.lineTo(px + 6 * us, py - 92 * us); ctx.stroke();
+      ctx.translate(px + 6 * us, py - 92 * us); ctx.rotate(0.12);
+      for (var sgm = 0; sgm < 6; sgm++){ ctx.beginPath(); ctx.moveTo(0, -4 * us); var aa = Math.PI + sgm * Math.PI / 6, bb = aa + Math.PI / 6; ctx.arc(0, 4 * us, 44 * us, aa, bb); ctx.closePath(); ctx.fillStyle = sgm % 2 ? "#ffffff" : "#e8513e"; ctx.fill(); }
+      ctx.restore();
+      /* empreintes de pas vers la mer */
+      ctx.save(); ctx.fillStyle = "rgba(150,105,45,.35)";
+      for (var fp = 0; fp < 5; fp++){ var fx = x0 + sw * (0.43 + fp * 0.022), fy = y0 + sh * (0.93 - fp * 0.012) + (fp % 2 ? 5 : -2) * us; ctx.beginPath(); ctx.ellipse(fx, fy, 5 * us, 2 * us, -0.15, 0, 6.2832); ctx.fill(); }
+      ctx.restore();
+      /* rayons du soleil : même énergie vers les deux échantillons */
+      var xs = x0 + sw * 0.22, ysg = y0 + sh * 0.84, xw = x0 + sw * 0.86, ywg = y0 + sh * 0.80, Lt = sh * 0.42;
+      ctx.save(); ctx.strokeStyle = "rgba(255,186,30,.9)"; ctx.lineWidth = 2.2 * us; ctx.setLineDash([9, 7]); ctx.lineDashOffset = -tm * 34;
+      [[xs, ysg], [xw, ywg]].forEach(function(q){ for (var j = -1; j <= 1; j++){ ctx.beginPath(); ctx.moveTo(sx + j * rs * 0.5, sy + rs * 0.9); ctx.lineTo(q[0] + j * 26 * us + (q[0] < sx ? 22 : -22) * us, q[1] - 6 * us); ctx.stroke(); } });
+      ctx.restore();
+      S.draw.label(c, "même soleil : " + PW + " W pour chacun", sx, sy + rs * 1.9 + 8, {color: pal.amber, size: Math.max(10.5, 12 * us)});
+      /* chaleur qui ondule au-dessus du sable brûlant */
+      var shim = Math.max(0, Math.min(1, (ts - 35) / 40));
+      if (shim > 0){ ctx.save(); ctx.strokeStyle = "rgba(255,255,255," + (0.5 * shim) + ")"; ctx.lineWidth = 1.6;
+        for (var hs = 0; hs < 7; hs++){ var hx = x0 + sw * (0.03 + hs * 0.06), base = y0 + sh * (0.62 + (hs % 3) * 0.08), ph2 = (tm * 0.6 + hs * 0.37) % 1; ctx.globalAlpha = Math.sin(ph2 * Math.PI);
+          ctx.beginPath(); for (var q2 = 0; q2 <= 30; q2 += 3){ var yy2 = base - ph2 * 22 * us - q2 * us; q2 ? ctx.lineTo(hx + Math.sin(q2 * 0.35 + tm * 6 + hs) * 3 * us, yy2) : ctx.moveTo(hx, yy2); } ctx.stroke(); }
+        ctx.restore(); }
+      /* baigneur dans la mer */
+      var bx = x0 + sw * 0.70, by = y0 + sh * 0.60 + Math.sin(tm * 2) * 2 * us, ur = us;
+      ctx.save(); ctx.strokeStyle = "rgba(255,255,255,.8)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.ellipse(bx, by + 9 * ur, 22 * ur, 4 * ur, 0, 0, 6.2832); ctx.stroke();
+      ctx.strokeStyle = "#e7b08a"; ctx.lineWidth = 5 * ur; ctx.lineCap = "round"; var sa = tm * 2.4;
+      ctx.beginPath(); ctx.moveTo(bx - 8 * ur, by + 6 * ur); ctx.lineTo(bx - 8 * ur - Math.cos(sa) * 16 * ur, by + 6 * ur - Math.abs(Math.sin(sa)) * 14 * ur); ctx.stroke();
+      ctx.fillStyle = "#e7b08a"; ctx.beginPath(); ctx.arc(bx, by, 9 * ur, 0, 6.2832); ctx.fill();
+      ctx.fillStyle = "#e8513e"; ctx.beginPath(); ctx.arc(bx, by - 1 * ur, 9.4 * ur, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = "#1d2433"; ctx.fillRect(bx + 1 * ur, by + 0.5 * ur, 7 * ur, 2.6 * ur);
+      ctx.fillStyle = "rgba(62,166,212,.85)"; ctx.fillRect(bx - 14 * ur, by + 6 * ur, 28 * ur, 6 * ur); ctx.restore();
+      /* thermomètres */
+      /* partie enfouie : petit monticule de sable ; partie immergée : vue à travers l'eau */
+      var sandBury = function(yG){ ctx.save(); ctx.fillStyle = "rgba(150,105,45,.25)"; ctx.beginPath(); ctx.ellipse(xs + 4, yG + 4, 30 * us, 6 * us, 0, 0, 6.2832); ctx.fill();
+        ctx.fillStyle = lin(0, yG - 9 * us, 0, yG + 5, [[0, "#f6e2b4"], [1, "#d8b471"]]); ctx.beginPath(); ctx.moveTo(xs - 26 * us, yG + 4); ctx.quadraticCurveTo(xs - 10 * us, yG - 12 * us, xs, yG - 9 * us); ctx.quadraticCurveTo(xs + 12 * us, yG - 12 * us, xs + 26 * us, yG + 4); ctx.closePath(); ctx.fill(); ctx.restore(); };
+      var seaBury = function(yG, yEnd){ ctx.save(); ctx.globalAlpha = 0.45; ctx.fillStyle = "#c9e4f2"; S.draw.rrect(c, xw - 6 * us, yG, 12 * us, yEnd - yG - 10 * us, 5); ctx.fill(); ctx.fillStyle = "#d8402e"; ctx.beginPath(); ctx.arc(xw + 3, yEnd - 8 * us, 7 * us, 0, 6.2832); ctx.fill(); ctx.restore();
+        ctx.save(); ctx.strokeStyle = "rgba(255,255,255,.85)"; ctx.lineWidth = 1.5; for (var rr = 0; rr < 2; rr++){ var ph3 = (tm * 0.5 + rr * 0.5) % 1; ctx.globalAlpha = 1 - ph3; ctx.beginPath(); ctx.ellipse(xw, yG, (10 + ph3 * 22) * us, (2.5 + ph3 * 4) * us, 0, 0, 6.2832); ctx.stroke(); } ctx.restore(); };
+      var ys = thermo(xs, ysg, Lt, ts, ymax, step, sandBury), yw = thermo(xw, ywg, Lt, tw, ymax, step, seaBury);
+      var dw = Math.max(72, 86 * us), dh = Math.max(36, 42 * us);
+      S.draw.display(c, S.fmt(ts, 0) + " °C", xs, ys - dh / 2 - 8, {w: dw, h: dh, caption: "SABLE", size: Math.round(dh * 0.42), screen: ts > 45 ? "#ffe1d2" : "#e8f3ec", color: ts > 45 ? "#b0261a" : "#13233a"});
+      S.draw.display(c, S.fmt(tw, 0) + " °C", xw, yw - dh / 2 - 8, {w: dw, h: dh, caption: "MER", size: Math.round(dh * 0.42), screen: "#dff0fb"});
+      var lab1 = comp.value === "m" ? "1 kg de sable · c = 0,80" : "1 L de sable (1,6 kg) · c = 0,80", lab2 = comp.value === "m" ? "1 kg d'eau · c = 4,18" : "1 L d'eau (1 kg) · c = 4,18";
+      S.draw.label(c, lab1, Math.max(x0 + 70 * us + 20, xs), yB - 12 * us - 4, {color: "#8a5a12", size: Math.max(10, 11.5 * us)});
+      S.draw.label(c, lab2, Math.min(x0 + sw - 64 * us - 18, xw - 10), yB - 12 * us - 4, {color: pal.acc, size: Math.max(10, 11.5 * us)});
+      /* l'enfant sur le sable */
+      var mood = ts >= 45 ? 2 : ts >= 35 ? 1 : 0, kx = x0 + sw * 0.41, ky = y0 + sh * 0.91;
+      kid(kx, ky, sh * 0.3, mood);
+      if (mood === 2) bubble("Aïe ! Ça brûle !", kx + 4, ky - sh * 0.3 - 22 * us, pal.red, Math.max(11, 13 * us));
+      else if (mood === 1) bubble("C'est chaud…", kx + 4, ky - sh * 0.3 - 22 * us, pal.amber, Math.max(11, 13 * us));
+      if (mood === 2 && tw < 30) bubble("Ici, c'est frais !", bx, by - 16 * us, pal.acc, Math.max(10, 12 * us));
+      S.draw.display(c, S.fmt(tv, 0) + " min", x0 + 50 * Math.max(0.8, us), y0 + 30 * Math.max(0.8, us), {w: Math.max(80, 92 * us), h: Math.max(36, 42 * us), caption: "AU SOLEIL", size: Math.round(Math.max(36, 42 * us) * 0.4)});
+      ctx.restore();
+      /* ---------- graphe ---------- */
+      var gx = wide ? sw : 0, gy = wide ? 0 : sh, gw = wide ? W - sw : W, gh = wide ? H : GH;
+      ctx.save(); ctx.fillStyle = "#ffffff"; ctx.fillRect(gx, gy, gw, gh); ctx.fillStyle = "#e3e7ed"; if (wide) ctx.fillRect(gx, gy, 1, gh); else ctx.fillRect(gx, gy, gw, 1); ctx.restore();
+      S.draw.text(c, "Température des deux échantillons", gx + 12, gy + 14, {size: 12, align: "left", color: pal.grey});
+      var ax = S.draw.axes(c, {x0: 0, x1: 60, y0: 0, y1: ymax, xl: "durée (min)", yl: "T (°C)", stepX: 10, stepY: step, l: gx + 50, r: W - gx - gw + 14, t: gy + 30, b: H - gy - gh + 34});
+      S.draw.fn(c, ax, Ts, S.draw.tint(pal.amber, 0.3), 2); S.draw.fn(c, ax, Tw, S.draw.tint(pal.acc, 0.3), 2);
+      S.draw.fn(c, ax, function(x){ return x <= tv + 1e-9 ? Ts(x) : NaN; }, pal.amber, 3.2); S.draw.fn(c, ax, function(x){ return x <= tv + 1e-9 ? Tw(x) : NaN; }, pal.acc, 3.2);
       S.draw.text(c, "sable", ax.X(60) - 6, ax.Y(Ts(60)) + 12, {size: 12, color: pal.amber, align: "right"}); S.draw.text(c, "eau", ax.X(60) - 6, ax.Y(Tw(60)) - 12, {size: 12, color: pal.acc, align: "right"});
-      S.draw.line(c, ax.X(t.value), ax.T, ax.X(t.value), ax.B, pal.grey, 1.2, [4, 4]);
-      S.draw.dot(c, ax.X(t.value), ax.Y(Ts(t.value)), 6, pal.amber); S.draw.dot(c, ax.X(t.value), ax.Y(Tw(t.value)), 6, pal.acc);
+      S.draw.line(c, ax.X(tv), ax.T, ax.X(tv), ax.B, pal.grey, 1.2, [4, 4]);
+      S.draw.dot(c, ax.X(tv), ax.Y(ts), 6, pal.amber); S.draw.dot(c, ax.X(tv), ax.Y(tw), 6, pal.acc);
       if (ymax >= 100) S.draw.line(c, ax.X(0), ax.Y(100), ax.X(60), ax.Y(100), pal.red, 1, [3, 4]);
-      var ds = Ts(t.value) - T0, dw = Tw(t.value) - T0, E = P.value * t.value * 60;
-      ro.set(0, S.fmt(E / 1000, 1) + " kJ"); ro.set(1, S.fmt(ds, 1) + " K → " + S.fmt(Ts(t.value), 0) + " °C"); ro.set(2, S.fmt(dw, 1) + " K → " + S.fmt(Tw(t.value), 0) + " °C"); ro.set(3, dw > 0 ? S.fmt(ds / dw, 1) : "—");
+      var ds = ts - T0, dw2 = tw - T0, E = PW * tv * 60;
+      ro.set(0, S.fmt(E / 1000, 1) + " kJ"); ro.set(1, S.fmt(ds, 1) + " K → " + S.fmt(ts, 0) + " °C"); ro.set(2, S.fmt(dw2, 1) + " K → " + S.fmt(tw, 0) + " °C"); ro.set(3, dw2 > 1e-9 ? S.fmt(ds / dw2, 1) : "—");
       var ratioTheo = comp.value === "m" ? CW / CS : CW / (CS * RS);
-      nt.set(Tw(t.value) > 100 ? "L'eau dépasserait 100 °C : elle bouillirait, le modèle n'est plus valable. (Rapport théorique " + S.fmt(ratioTheo, 1) + ".)" : "Rapport théorique = c(eau)/c(sable)" + (comp.value === "v" ? " ÷ 1,6 (masse volumique du sable)" : "") + " = " + S.fmt(ratioTheo, 1) + " : il ne dépend ni de P ni de t.", Tw(t.value) > 100 ? "warn" : "");
+      nt.set(tw > 100 ? "L'eau dépasserait 100 °C : elle bouillirait, le modèle n'est plus valable. (Rapport théorique " + S.fmt(ratioTheo, 1) + ".)" : "Rapport théorique = c(eau)/c(sable)" + (comp.value === "v" ? " ÷ 1,6 (masse volumique du sable)" : "") + " = " + S.fmt(ratioTheo, 1) + " : il ne dépend ni de P ni de t.", tw > 100 ? "warn" : "");
     });
   }
 });

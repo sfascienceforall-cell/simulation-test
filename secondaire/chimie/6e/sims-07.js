@@ -256,72 +256,128 @@ SFA.sim({
 });
 
 /* ---------- rouille ---------- */
+/* refonte 21/11/2026 : vrai clou couché dans un bécher, taches de rouille qui apparaissent, zoom 3D sur le réseau du fer */
+function shadeF(hex,f){ var m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex); if(!m) return hex; var v=[1,2,3].map(function(i){ var x=parseInt(m[i],16); x=f<0?x*(1+f):x+(255-x)*f; return Math.max(0,Math.min(255,Math.round(x))); }); return "rgb("+v.join(",")+")"; }
+function ballF(g,x,y,r,hex,al){ if(!(r>0)||!isFinite(x)||!isFinite(y)) return; g.save(); if(al!=null) g.globalAlpha=al; var gr=g.createRadialGradient(x-r*.38,y-r*.42,r*.05,x,y,r*1.05); gr.addColorStop(0,shadeF(hex,.75)); gr.addColorStop(.45,hex); gr.addColorStop(1,shadeF(hex,-.45)); g.fillStyle=gr; g.beginPath(); g.arc(x,y,r,0,6.2832); g.fill(); g.restore(); }
+function rot3F(p,a,b){ var x=p[0]*Math.cos(a)+p[2]*Math.sin(a), z=-p[0]*Math.sin(a)+p[2]*Math.cos(a), y=p[1]; return [x,y*Math.cos(b)-z*Math.sin(b),y*Math.sin(b)+z*Math.cos(b)]; }
+function proj3F(p,st,sc,cx,cy){ var r=rot3F(p,st.a,st.b), s=1/(1-r[2]*0.1); return {x:cx+r[0]*sc*s, y:cy-r[1]*sc*s, z:r[2], s:s}; }
+/* réseau cubique centré du fer (3 × 3 × 2 mailles) ; surf = atome de la face du dessus, au contact de l'eau */
+var FE3 = (function(){ var A = [], i, j, k2;
+  for (i = 0; i <= 3; i++) for (j = 0; j <= 2; j++) for (k2 = 0; k2 <= 3; k2++) A.push([i-1.5, j-1, k2-1.5]);
+  for (i = 0; i < 3; i++) for (j = 0; j < 2; j++) for (k2 = 0; k2 < 3; k2++) A.push([i-1, j-0.5, k2-1]);
+  return A.map(function(p, n){ return {p:p, surf:p[1] >= 0.99, th:((n*0.618)%1)*0.8+0.05}; }); })();
 SFA.sim({
   id: "c6-c07-rouille", ch: "c07", tag: "Original",
   titre: "La rouille d'un clou : eau, air, sel, contact",
-  resume: "Quelles conditions font rouiller le fer ? Compare un clou seul, dans l'eau salée, au contact du cuivre ou du zinc.",
-  but: "Active ou non l'eau, l'oxygène, le sel, puis choisis un métal au contact. Fais passer les jours et suis la quantité de rouille (indice qualitatif) : en bleu, le fer s'oxyde (indicateur ferroxyle) ; en rose, les ions OH⁻ se forment.",
+  resume: "Quelles conditions font rouiller le fer ? Un vrai clou dans un bécher : seul, dans l'eau salée, au contact du cuivre, du zinc ou du magnésium. La rouille apparaît au fil des jours.",
+  but: "Active ou non l'eau, l'oxygène, le sel, puis choisis un métal au contact. Fais passer les jours : les taches de rouille apparaissent et la rouille se dépose au fond (indice qualitatif). En bleu, le fer s'oxyde (indicateur ferroxyle) ; en rose, les ions OH⁻ se forment. En haut à droite, glisse pour faire tourner le réseau d'atomes de fer.",
   aRetenir: "Il faut du fer, de l'eau et du dioxygène : à l'anode, Fe → Fe²⁺ + 2 e⁻ ; à la cathode, O₂ + 2 H₂O + 4 e⁻ → 4 OH⁻. Le sel rend la solution plus conductrice et accélère la corrosion. Au contact d'un métal moins noble (zinc), c'est ce métal qui s'oxyde à la place du fer, qui est protégé ; au contact d'un métal plus noble (cuivre), le fer est sacrifié et rouille plus vite.",
   piege: "Modèle qualitatif : l'indice de corrosion n'est pas une mesure, seulement un classement relatif (0 à 10). L'eau seule sans dioxygène (eau bouillie sous huile) ne fait pas rouiller le fer, et l'air sec non plus.",
   build: function(k, S){
-    var c = k.canvas(430), P = S.draw.palette, H = window.C6, tt = 0, go = false;
+    var c = k.canvas(0, {ratio:0.95}), P = S.draw.palette, H = window.C6, tt = 0, go = false, view = {a:0.6, b:0.45, drag:false}, box3 = null;
+    Object.defineProperty(c, "ratio", {get:function(){ var w = c.cv.parentNode ? c.cv.parentNode.clientWidth : 600; return w < 460 ? 1.3 : 0.95; }, configurable:true}); c.resize();
     var tw = k.toggle("Eau liquide", true), to = k.toggle("Dioxygène (air dissous)", true), ts = k.toggle("Sel (NaCl)", false);
     var ct = k.seg("Métal au contact du clou", [["0", "Aucun"], ["cu", "Cuivre"], ["zn", "Zinc"], ["mg", "Magnésium"]], "0");
     var jr = k.slider("Durée", 0, 60, 1, 20, "jours");
-    var lp = k.loop(function(dt, t){ tt = t; if (go){ var v = jr.value + dt * 9; if (v >= 60){ v = 60; go = false; } jr.set(v); } k.redraw(); }); lp.play();
+    var lp = k.loop(function(dt, t){ tt = t; if (go){ var v = jr.value+dt*9; if (v >= 60){ v = 60; go = false; } jr.set(v); } if (!view.drag) view.a += dt*0.35; k.redraw(); }); lp.play();
     k.button("▶ Faire passer les jours", function(){ jr.set(0); go = true; }, true);
     var ro = k.readouts(["Indice de corrosion (0–10)", "Quantité de rouille", "Qui s'oxyde ?"]);
     var nt = k.note("", "ok");
+    c.pointer(function(type, p){
+      if (type === "down" && box3 && p.x > box3.x && p.x < box3.x+box3.w && p.y > box3.y && p.y < box3.y+box3.h){ view.drag = true; view.lx = p.x; view.ly = p.y; }
+      else if (type === "drag" && view.drag){ view.a += (p.x-view.lx)*0.012; view.b = Math.max(-1.2, Math.min(1.3, view.b+(p.y-view.ly)*0.012)); view.lx = p.x; view.ly = p.y; }
+      else if (type === "up") view.drag = false;
+    });
+    /* taches de rouille : position le long du clou (u), côté (v), seuil d'apparition ; plus nombreuses près de la tête et de la pointe */
+    var SP = []; (function(){ for (var i = 0; i < 46; i++){ var r1 = H.rnd(i, 7), u = i%3 === 0 ? r1*0.18 : i%3 === 1 ? 0.82+r1*0.18 : r1; SP.push({u:u, v:H.rnd(i, 8)*2-1, th:H.rnd(i, 9)*0.75, s:0.6+H.rnd(i, 10)*0.9, k:i}); } })();
+    function blob(ctx, x, y, r, seed){ ctx.beginPath(); for (var j = 0; j <= 8; j++){ var a = j/8*6.2832, rr = r*(0.7+0.45*H.rnd(seed, j)); j ? ctx.lineTo(x+Math.cos(a)*rr, y+Math.sin(a)*rr*0.8) : ctx.moveTo(x+Math.cos(a)*rr, y+Math.sin(a)*rr*0.8); } ctx.closePath(); }
     k.draw(function(){
-      c.clear(); H.bg(c, {top: "#fbfcfd", bottom: "#eef2f7"});
-      var idx = 0, ctx = c.ctx, ox = "le fer (Fe → Fe²⁺)", i, wet = tw.value, air = to.value;
+      var W = c.W, Hc = c.H, ctx = c.ctx, ph1 = W < 460, i;
+      c.clear();
+      /* modèle (inchangé) */
+      var idx = 0, ox = "le fer (Fe → Fe²⁺)", wet = tw.value, air = to.value;
       if (wet && air){
-        idx = 2 + (ts.value ? 4 : 0);
-        if (ct.value === "cu") idx = Math.min(10, idx * 1.6);
+        idx = 2+(ts.value ? 4 : 0);
+        if (ct.value === "cu") idx = Math.min(10, idx*1.6);
         if (ct.value === "zn" || ct.value === "mg"){ idx = 0.1; ox = ct.value === "zn" ? "le zinc (Zn → Zn²⁺) : le fer est protégé" : "le magnésium (Mg → Mg²⁺) : le fer est protégé"; }
       } else ox = "rien : il manque eau ou dioxygène";
-      var rust = (wet && air) ? 1 - Math.exp(-idx * jr.value / 30) : 0, prot = ct.value === "zn" || ct.value === "mg";
-      /* récipient */
-      var bx = 20, bw = c.W - 40, by = 120, bh = 270, lvl = 0.78, top = by + bh - (bh - 6) * lvl;
-      if (wet) H.glass(c, "beaker", bx, by, bw, bh, {level: lvl, color: ts.value ? [200, 225, 240] : [214, 232, 246], alpha: 0.55, shine: true});
-      else { ctx.strokeStyle = "#5b6e86"; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx, by + bh); ctx.lineTo(bx + bw, by + bh); ctx.lineTo(bx + bw, by); ctx.stroke(); S.draw.text(c, "air sec (pas d'eau liquide)", c.W / 2, by + bh / 2, {size: 13, color: P.grey}); }
-      /* particules : O₂, ions Na⁺/Cl⁻ */
-      if (wet){
-        if (air) for (i = 0; i < 16; i++){ var p = H.wander(i, tt, 0.6), ox2 = bx + 12 + p[0] * (bw - 24), oy = top + 14 + p[1] * (by + bh - top - 28); H.ball(c, ox2 - 5, oy, 5, P.red, ""); H.ball(c, ox2 + 5, oy, 5, P.red, ""); }
-        if (ts.value) for (i = 0; i < 14; i++){ var q = H.wander(50 + i, tt, 0.5), sx = bx + 12 + q[0] * (bw - 24), sy = top + 14 + q[1] * (by + bh - top - 28); S.draw.dot(c, sx, sy, 3.8, i % 2 ? "#3aa860" : "#8a5cd6"); }
-      }
-      /* clou */
-      var cx = c.W * 0.42, cy = 28, chh = 230, nw = 22;
-      var gN = ctx.createLinearGradient(cx - nw / 2, 0, cx + nw / 2, 0); gN.addColorStop(0, "#9aa4b0"); gN.addColorStop(0.45, "#e1e5ea"); gN.addColorStop(1, "#8a95a2");
-      function nailPath(){ ctx.beginPath(); ctx.moveTo(cx - nw / 2, cy); ctx.lineTo(cx - nw / 2, cy + chh); ctx.lineTo(cx, cy + chh + 30); ctx.lineTo(cx + nw / 2, cy + chh); ctx.lineTo(cx + nw / 2, cy); ctx.closePath(); }
-      /* halos ferroxyle : bleu = anode (Fe²⁺), rose = cathode (OH⁻) */
-      if (wet && air && !prot){
-        var ia = Math.min(1, idx / 8) * Math.min(1, 0.25 + jr.value / 25);
-        S.draw.glow(c, cx, cy + chh + 24, 46, "#2f5fd0", 0.55 * ia); S.draw.glow(c, cx, top + 6, 46, "#2f5fd0", 0.35 * ia);
-        S.draw.glow(c, cx, cy + 150, 56, "#e0509c", 0.35 * ia);
-        if (ia > 0.1) { S.draw.label(c, "Fe²⁺ (bleu)", cx - 40, cy + chh + 46, {color: "#2f5fd0", size: 11, align: "right"}); S.draw.label(c, "OH⁻ (rose)", cx + 60, cy + 150, {color: "#c43a7a", size: 11, align: "left"}); }
-      }
-      ctx.save(); nailPath(); ctx.fillStyle = gN; ctx.fill();
-      ctx.clip(); ctx.fillStyle = "rgba(150,64,18," + Math.min(0.92, rust * 1.1).toFixed(2) + ")"; ctx.fillRect(cx - nw, cy, nw * 2, chh + 40);
-      for (i = 0; i < 40 * rust; i++){ ctx.fillStyle = "rgba(120,48,12,.5)"; ctx.fillRect(cx - nw / 2 + H.rnd(i, 1) * nw, cy + 40 + H.rnd(i, 2) * (chh - 20), 2 + H.rnd(i, 3) * 4, 2 + H.rnd(i, 4) * 5); }
-      ctx.restore(); ctx.save(); nailPath(); ctx.strokeStyle = "rgba(15,27,45,.5)"; ctx.lineWidth = 1.4; ctx.stroke(); ctx.restore();
-      S.draw.rrect(c, cx - 22, cy - 8, 44, 10, 4); ctx.fillStyle = "#b9c0c8"; ctx.fill(); ctx.strokeStyle = "rgba(15,27,45,.4)"; ctx.stroke();
-      S.draw.text(c, "clou en fer", cx - 34, cy + 14, {size: 12, color: P.grey, align: "right"});
-      /* Fe²⁺ qui s'échappent de la pointe */
-      if (wet && air && !prot && rust > 0.02) for (i = 0; i < 6; i++){ var u = (tt * 0.5 + i / 6) % 1; S.draw.dot(c, cx + Math.sin(i * 2.4 + tt) * 14, cy + chh + 30 + u * 26, 3.2, "rgba(47,95,208," + (1 - u).toFixed(2) + ")"); }
-      /* métal au contact */
+      var rust = (wet && air) ? 1-Math.exp(-idx*jr.value/30) : 0, prot = ct.value === "zn" || ct.value === "mg", corr = wet && air && !prot;
+      /* décor : mur carrelé + paillasse */
+      var benchY = Hc*0.9, gw = ctx.createLinearGradient(0, 0, 0, benchY); gw.addColorStop(0, "#f1f4f8"); gw.addColorStop(1, "#dfe6ee"); ctx.fillStyle = gw; ctx.fillRect(0, 0, W, benchY);
+      ctx.save(); ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = 1; for (var yy = 20; yy < benchY; yy += 28){ ctx.beginPath(); ctx.moveTo(0, yy); ctx.lineTo(W, yy); ctx.stroke(); } for (var xx = 14; xx < W; xx += 36){ ctx.beginPath(); ctx.moveTo(xx, 0); ctx.lineTo(xx, benchY); ctx.stroke(); } ctx.restore();
+      var gbn = ctx.createLinearGradient(0, benchY, 0, Hc); gbn.addColorStop(0, "#4a5566"); gbn.addColorStop(1, "#2b323d"); ctx.fillStyle = gbn; ctx.fillRect(0, benchY, W, Hc-benchY);
+      /* bécher */
+      var bx = W*0.06, bw = W*0.88, by = Hc*(ph1 ? 0.44 : 0.42), bh = benchY-by-2, lvl = 0.8, top = by+bh-(bh-6)*lvl;
+      var wcol = rust > 0.05 && corr ? [Math.round(214-15*rust), Math.round(230-30*rust), Math.round(244-60*rust)] : ts.value ? [200, 225, 240] : [214, 232, 246];
+      ctx.save(); ctx.fillStyle = "rgba(15,27,45,.25)"; ctx.beginPath(); ctx.ellipse(bx+bw/2, benchY, bw*0.52, 5, 0, 0, 6.2832); ctx.fill(); ctx.restore();
+      if (wet) H.glass(c, "beaker", bx, by, bw, bh, {level:lvl, color:wcol, alpha:0.55, shine:true});
+      else H.glass(c, "beaker", bx, by, bw, bh, {level:0, shine:true});
+      /* couche d'huile quand il n'y a pas de dioxygène (eau bouillie sous huile) */
+      if (wet && !air){ ctx.save(); var go2 = ctx.createLinearGradient(0, top-10, 0, top+4); go2.addColorStop(0, "rgba(232,190,60,.75)"); go2.addColorStop(1, "rgba(214,160,30,.85)"); ctx.fillStyle = go2; ctx.fillRect(bx+1, top-10, bw-2, 12); ctx.restore(); S.draw.label(c, "eau bouillie + huile (pas d'O₂)", bx+bw/2, top-22, {color:"#8a5a00", size:11}); }
+      /* clou couché au fond */
+      var nl = bw*0.72, nx0 = bx+bw*0.12, ny = by+bh-30, nr = Math.max(9, Math.min(15, bw*0.03)), hx = nx0, tipx = nx0+nl;
+      /* dépôt de rouille au fond */
+      if (corr && rust > 0.08){ ctx.save(); ctx.fillStyle = "rgba(150,64,18,"+Math.min(0.85, rust).toFixed(2)+")"; for (i = 0; i < 24; i++){ var sx0 = bx+12+H.rnd(i, 21)*(bw-24); if (H.rnd(i, 22) > rust+0.15) continue; blob(ctx, sx0, by+bh-4, 3+H.rnd(i, 23)*6*rust, i+90); ctx.fill(); } ctx.restore(); }
+      /* halos de l'indicateur ferroxyle */
+      if (corr){ var ia = Math.min(1, idx/8)*Math.min(1, 0.25+jr.value/25);
+        S.draw.glow(c, hx+6, ny, 50, "#2f5fd0", 0.5*ia); S.draw.glow(c, tipx, ny, 50, "#2f5fd0", 0.55*ia);
+        for (i = 1; i <= 3; i++) S.draw.glow(c, nx0+nl*i/4, ny-6, 46, "#e0509c", 0.3*ia);
+        if (ia > 0.1){ S.draw.label(c, "Fe²⁺ (bleu)", tipx-8, ny-62, {color:"#2f5fd0", size:11, align:"right"}); S.draw.label(c, "OH⁻ (rose)", nx0+nl*0.76, ny-38, {color:"#c43a7a", size:11}); } }
+      if (prot && wet && air){ for (i = 1; i <= 3; i++) S.draw.glow(c, nx0+nl*i/4, ny-4, 46, "#e0509c", 0.32); }
+      ctx.save();
+      /* tige (dégradé cylindrique), stries sous la tête, pointe, tête */
+      var gn = ctx.createLinearGradient(0, ny-nr, 0, ny+nr); gn.addColorStop(0, "#8d97a3"); gn.addColorStop(0.35, "#eef1f4"); gn.addColorStop(0.6, "#aab3bd"); gn.addColorStop(1, "#5d6772");
+      function shank(){ ctx.beginPath(); ctx.moveTo(hx+4, ny-nr*0.62); ctx.lineTo(tipx-nr*2.4, ny-nr*0.62); ctx.lineTo(tipx, ny+nr*0.05); ctx.lineTo(tipx-nr*2.4, ny+nr*0.62); ctx.lineTo(hx+4, ny+nr*0.62); ctx.closePath(); }
+      shank(); ctx.fillStyle = gn; ctx.fill();
+      ctx.save(); shank(); ctx.clip();
+      ctx.strokeStyle = "rgba(60,68,80,.45)"; ctx.lineWidth = 1; for (i = 0; i < 7; i++){ ctx.beginPath(); ctx.moveTo(hx+10+i*4, ny-nr*0.62); ctx.lineTo(hx+6+i*4, ny+nr*0.62); ctx.stroke(); }
+      if (rust > 0){ ctx.fillStyle = "rgba(140,60,20,"+(0.55*rust).toFixed(2)+")"; ctx.fillRect(hx, ny-nr, nl, nr*2); }
+      SP.forEach(function(sp){ var a = Math.max(0, Math.min(1, (rust-sp.th)/0.2)); if (a <= 0) return; var x = hx+8+sp.u*(nl-14), y = ny+sp.v*nr*0.45, r = nr*sp.s*(0.35+0.65*a); ctx.fillStyle = "rgba("+(150+H.rnd(sp.k, 3)*40|0)+","+(62+H.rnd(sp.k, 4)*30|0)+",18,"+(0.85*a).toFixed(2)+")"; blob(ctx, x, y, r, sp.k); ctx.fill(); if (a > 0.6){ ctx.fillStyle = "rgba(95,38,10,.45)"; blob(ctx, x+r*0.15, y+r*0.1, r*0.45, sp.k+50); ctx.fill(); } });
+      ctx.restore();
+      shank(); ctx.strokeStyle = "rgba(15,27,45,.55)"; ctx.lineWidth = 1.2; ctx.stroke();
+      var gh = ctx.createLinearGradient(hx-4, 0, hx+5, 0); gh.addColorStop(0, "#7b8592"); gh.addColorStop(0.5, "#e6eaee"); gh.addColorStop(1, "#8d97a3");
+      ctx.fillStyle = gh; ctx.beginPath(); ctx.ellipse(hx, ny, 5, nr*1.7, 0, 0, 6.2832); ctx.fill(); ctx.stroke();
+      if (rust > 0.2){ ctx.fillStyle = "rgba(140,60,20,"+(0.7*rust).toFixed(2)+")"; ctx.beginPath(); ctx.ellipse(hx, ny, 5, nr*1.7, 0, 0, 6.2832); ctx.fill(); }
+      ctx.restore();
+      S.draw.label(c, "clou en fer", hx-4, ny-nr*1.7-30, {size:11, color:"#4b586a", align:"left"});
+      /* métal au contact : fil de cuivre enroulé ou ruban de zinc / magnésium */
       if (ct.value !== "0"){
-        var mc = {cu: "#c46a3c", zn: "#9aa5b1", mg: "#c7ccd2"}[ct.value], mx = cx + 86, mh = 120 * (prot ? Math.max(0.35, 1 - 0.4 * (1 - Math.exp(-jr.value / 40))) : 1), mw = 28, my = by + bh - 20 - mh;
-        ctx.save(); ctx.fillStyle = mc; S.draw.rrect(c, mx - mw / 2, my, mw, mh, 3); ctx.fill(); ctx.strokeStyle = "rgba(15,27,45,.45)"; ctx.stroke(); ctx.restore();
-        ctx.save(); ctx.strokeStyle = P.ink; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(mx, cy + 40); ctx.lineTo(cx + nw / 2, cy + 40); ctx.stroke(); ctx.restore();
-        S.draw.label(c, {cu: "Cu", zn: "Zn", mg: "Mg"}[ct.value] + " · fil", mx + 20, cy + 52, {color: P.ink, size: 11, align: "left"});
-        if (prot && wet && air && jr.value > 1) for (i = 0; i < 5; i++){ var v2 = (tt * 0.45 + i / 5) % 1; S.draw.dot(c, mx + Math.sin(i * 3) * 10, my - v2 * 40, 2.6, "rgba(255,255,255,.8)"); }
-        if (prot && wet && air){ for (i = 0; i < 4; i++){ var w2 = ((tt * 0.7 + i / 4) % 1); S.draw.dot(c, mx - w2 * (mx - cx), cy + 40 + (1 - w2) * 0, 3, "#f4c542"); } S.draw.label(c, "e⁻ vers le clou", (mx + cx) / 2, cy + 24, {color: P.amber, size: 10.5}); }
+        var mx = nx0+nl*0.42, cw = nl*0.16;
+        if (ct.value === "cu"){ ctx.save(); ctx.lineWidth = 2.6; ctx.lineCap = "round"; for (i = 0; i < 9; i++){ var x1 = mx+i*cw/9; ctx.strokeStyle = "#8a4a22"; ctx.beginPath(); ctx.moveTo(x1+cw/18, ny-nr*0.72); ctx.lineTo(x1, ny+nr*0.72); ctx.stroke(); ctx.strokeStyle = "#e09060"; ctx.beginPath(); ctx.moveTo(x1, ny+nr*0.72); ctx.lineTo(x1+cw/9, ny-nr*0.72); ctx.stroke(); } ctx.restore(); }
+        else {
+          var dep = 1-Math.exp(-jr.value/40), base = ct.value === "zn" ? "#9aa5b1" : "#c7ccd2", gz = ctx.createLinearGradient(0, ny-nr, 0, ny+nr); gz.addColorStop(0, shadeF(base, -0.2)); gz.addColorStop(0.4, shadeF(base, 0.5)); gz.addColorStop(1, shadeF(base, -0.35));
+          var th2 = nr*(1.05-0.25*(wet && air ? dep : 0)); ctx.save(); ctx.fillStyle = gz; S.draw.rrect(c, mx, ny-th2, cw, th2*2, 3); ctx.fill(); ctx.strokeStyle = "rgba(15,27,45,.45)"; ctx.lineWidth = 1; ctx.stroke();
+          if (wet && air){ ctx.fillStyle = "rgba(255,255,255,"+(0.75*dep).toFixed(2)+")"; for (i = 0; i < 12; i++){ blob(ctx, mx+3+H.rnd(i, 31)*(cw-6), ny+(H.rnd(i, 32)-0.5)*th2*1.6, 2+H.rnd(i, 33)*3*dep, i+200); ctx.fill(); } }
+          ctx.restore();
+          if (wet && air && ct.value === "mg") for (i = 0; i < 6; i++){ var v2 = (tt*0.45+i/6)%1; ctx.strokeStyle = "rgba(255,255,255,"+(0.9*(1-v2)).toFixed(2)+")"; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(mx+cw*(0.2+0.12*i), ny-th2-v2*(ny-th2-top-6), 2.2, 0, 6.2832); ctx.stroke(); }
+          if (wet && air){ for (i = 0; i < 5; i++){ var w2 = (tt*0.6+i/5)%1, ex = mx-w2*(mx-hx-20); S.draw.dot(c, ex, ny+nr*0.1, 2.6, "#f4c542"); } S.draw.label(c, "e⁻ → fer", (hx+mx)/2+12, ny-nr-16, {color:P.amber, size:10.5}); }
+        }
+        S.draw.label(c, {cu:"fil de Cu", zn:"ruban de Zn", mg:"ruban de Mg"}[ct.value], mx+cw/2, ny-nr-16, {color:P.ink, size:10.5});
       }
-      S.draw.label(c, wet ? (air ? "eau aérée" : "eau sans O₂") + (ts.value ? " + sel" : "") : "sans eau", bx + 10, by + 16, {color: P.acc, align: "left"});
-      S.draw.legend(c, [[P.red, "O₂ dissous"]].concat(ts.value ? [["#8a5cd6", "Na⁺ / Cl⁻"]] : []), c.W - 14, 14, {align: "right"});
-      ro.set(0, S.fmt(idx, 1)); ro.set(1, S.fmt(rust * 100, 0) + " %"); ro.set(2, ox);
-      nt.set((idx === 0 && !(wet && air) ? "Sans eau liquide ou sans dioxygène : pas de corrosion." : prot ? "Protection cathodique : le métal moins noble est consommé, le clou reste intact." : ct.value === "cu" ? "Le fer est moins noble que le cuivre : il s'oxyde plus vite au contact du cuivre." : ts.value ? "L'eau salée conduit mieux : la corrosion est nettement plus rapide." : "Eau aérée : corrosion lente.") + "<br>Anode : Fe → Fe²⁺ + 2 e⁻ · cathode : O₂ + 2 H₂O + 4 e⁻ → 4 OH⁻ · bilan : 2 Fe + O₂ + 2 H₂O → 2 Fe(OH)₂, puis oxydation en rouille (Fe₂O₃·nH₂O).", "ok");
+      /* particules dans l'eau : O₂ dissous, ions du sel, flocons de rouille qui tombent */
+      if (wet){
+        if (air) for (i = 0; i < 14; i++){ var p = H.wander(i, tt, 0.6), ox2 = bx+14+p[0]*(bw-28), oy = top+12+p[1]*(ny-nr*2-top-24); ballF(ctx, ox2-4, oy, 4.2, "#d9382b"); ballF(ctx, ox2+4, oy, 4.2, "#d9382b"); }
+        if (ts.value) for (i = 0; i < 14; i++){ var q = H.wander(50+i, tt, 0.5), sx = bx+14+q[0]*(bw-28), sy = top+12+q[1]*(by+bh-top-24); ballF(ctx, sx, sy, i%2 ? 3.6 : 4.4, i%2 ? "#8a5cd6" : "#3aa860"); }
+        if (corr && rust > 0.1) for (i = 0; i < Math.round(10*rust); i++){ var u2 = (tt*0.18+H.rnd(i, 41))%1; blob(ctx, nx0+H.rnd(i, 42)*nl, ny+nr+u2*(by+bh-ny-nr-6), 2.2, i+300); ctx.fillStyle = "rgba(150,64,18,"+(0.8*(1-u2*0.5)).toFixed(2)+")"; ctx.fill(); }
+      }
+      S.draw.label(c, wet ? (air ? "eau aérée" : "eau sans O₂") + (ts.value ? " + sel" : "") : "air sec, sans eau", bx+12, by+14, {color:P.acc, align:"left", size:11});
+      /* calendrier (jours) + légende */
+      S.draw.display(c, "J "+Math.round(jr.value), 16+(ph1 ? 38 : 48), 30, {w:ph1 ? 76 : 96, h:ph1 ? 36 : 42, caption:"JOURS ÉCOULÉS", size:ph1 ? 15 : 18});
+      S.draw.legend(c, [["#d9382b", "O₂ dissous"]].concat(ts.value ? [["#8a5cd6", "Na⁺ / Cl⁻"]] : []).concat(corr && rust > 0.05 ? [["#96401a", "rouille Fe₂O₃·nH₂O"]] : []), 12, ph1 ? 58 : 62, {});
+      /* zoom 3D : réseau cubique centré du fer, la surface s'oxyde */
+      var iw = Math.min(ph1 ? 170 : 210, W*0.46), ih = Math.min(by-16, iw*0.92), ix = W-iw-10, iy = 8; box3 = {x:ix, y:iy, w:iw, h:ih};
+      S.draw.panel(c, ix, iy, iw, ih, {title:"À l'échelle des atomes", fill:"rgba(20,28,40,.94)", stroke:"#2c3a4e", titleColor:"#c9d3df"});
+      var sc3 = Math.min(iw, ih)*0.14, cx3 = ix+iw/2, cy3 = iy+ih*0.58, items = [];
+      FE3.forEach(function(a2){ var pp = proj3F(a2.p, view, sc3, cx3, cy3), gone = corr && a2.surf && rust > a2.th; items.push({x:pp.x, y:pp.y, z:pp.z, r:sc3*0.27*pp.s, col:gone ? "#b5531c" : "#9aa3ad", al:gone ? 0.9 : 1});
+        if (gone && a2.th < rust-0.05){ var ph3 = (tt*0.35+a2.th*3)%1, up = proj3F([a2.p[0], a2.p[1]+0.4+ph3*1.4, a2.p[2]], view, sc3, cx3, cy3); items.push({x:up.x, y:up.y, z:up.z, r:sc3*0.2*up.s, col:"#3f7fe0", al:1-ph3, ion:true}); } });
+      if (wet && air) for (i = 0; i < 4; i++){ var w3 = H.wander(70+i, tt, 0.5), cp = [(w3[0]-0.5)*3, 1.6+w3[1]*0.8, (H.rnd(i, 5)-0.5)*3], ax3 = [Math.cos(tt+i)*0.2, 0, Math.sin(tt+i)*0.2], q1 = proj3F([cp[0]+ax3[0], cp[1], cp[2]+ax3[2]], view, sc3, cx3, cy3), q2 = proj3F([cp[0]-ax3[0], cp[1], cp[2]-ax3[2]], view, sc3, cx3, cy3); items.push({x:q1.x, y:q1.y, z:q1.z, r:sc3*0.17*q1.s, col:"#e0453a", al:1}); items.push({x:q2.x, y:q2.y, z:q2.z, r:sc3*0.17*q2.s, col:"#e0453a", al:1}); }
+      ctx.save(); ctx.beginPath(); ctx.rect(ix+2, iy+22, iw-4, ih-24); ctx.clip();
+      items.sort(function(a, b){ return a.z-b.z; }).forEach(function(it){ ballF(ctx, it.x, it.y, it.r, it.col, it.al); });
+      ctx.restore();
+      S.draw.text(c, prot && wet && air ? "fer protégé : "+(ct.value === "zn" ? "Zn" : "Mg")+" s'oxyde à sa place" : corr ? "surface : Fe → Fe²⁺ (bleu) + 2 e⁻" : "pas de réaction", cx3, iy+ih-11, {size:ph1 ? 9.5 : 10.5, color:"#dfe7f2", weight:700});
+      S.draw.text(c, "↻", ix+iw-12, iy+12, {size:12, color:"#c9d3df"});
+      ro.set(0, S.fmt(idx, 1)); ro.set(1, S.fmt(rust*100, 0)+" %"); ro.set(2, ox);
+      nt.set((idx === 0 && !(wet && air) ? "Sans eau liquide ou sans dioxygène : pas de corrosion." : prot ? "Protection cathodique : le métal moins noble est consommé, le clou reste intact." : ct.value === "cu" ? "Le fer est moins noble que le cuivre : il s'oxyde plus vite au contact du cuivre." : ts.value ? "L'eau salée conduit mieux : la corrosion est nettement plus rapide." : "Eau aérée : corrosion lente.")+"<br>Anode : Fe → Fe²⁺ + 2 e⁻ · cathode : O₂ + 2 H₂O + 4 e⁻ → 4 OH⁻ · bilan : 2 Fe + O₂ + 2 H₂O → 2 Fe(OH)₂, puis oxydation en rouille (Fe₂O₃·nH₂O).", "ok");
     });
   }
 });

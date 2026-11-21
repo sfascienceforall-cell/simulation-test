@@ -247,66 +247,170 @@ SFA.sim({
   id: "p5-c03-ascenseur", ch: "c03", tag: "Poids apparent",
   titre: "L'ascenseur et la balance : le poids apparent",
   resume: "Accélération de la cabine → indication de la balance.",
-  but: "Place une personne sur une balance dans une cabine et fais varier l'accélération de la cabine. Que lit la balance au démarrage en montée, à vitesse constante, et si le câble casse (a = −g) ?",
+  but: "Une personne se tient sur une balance à aiguille dans une cabine vitrée. Lance le trajet (ou choisis un étage) et regarde l'aiguille au démarrage, à vitesse constante et au freinage. En mode manuel, règle toi-même l'accélération, jusqu'au câble rompu (a = −g). Glisse sur la scène pour tourner autour de la cabine.",
   aRetenir: "La balance mesure la réaction normale N : N − m·g = m·a, donc N = m·(g + a) (a positif vers le haut). a > 0 : plus lourd ; a = 0 : poids normal ; a = −g : N = 0, impondérabilité.",
   piege: "La balance ne donne pas la vitesse : monter ou descendre à vitesse constante donne la même lecture. C'est le signe de l'accélération qui compte (monter en freinant donne a < 0, comme descendre en accélérant).",
   build: function(k, S){
-    var c = k.canvas(330), gr = k.canvas(170);
-    var a = k.slider("Accélération de la cabine (+ : vers le haut)", -12, 6, 0.1, 2, "m/s²");
+    var c = k.canvas(0, {ratio: 0.95});
+    if (c.W < 470){ c.ratio = 1.15; c.resize(); }
+    var gr = k.canvas(0, {ratio: 0.3});
+    if (gr.W < 470){ gr.ratio = 0.5; gr.resize(); }
+    var g = P5.g, HF = 3, NF = 5, AA = 2, VMAX = 3;
+    var st = {y: 0, v: 0, mode: "auto", goal: null, target: null, door: 1, wait: 0, t: 0, hist: [], needle: 1, nv: 0, yaw: -0.5, pitch: 0.16, flag: ""};
+    var fl = k.seg("Aller à l'étage", [[0, "RDC"], [1, "1"], [2, "2"], [3, "3"], [4, "4"], [5, "5"]], -1, function(v){ goFloor(+v); });
+    var a = k.slider("Accélération de la cabine (+ : vers le haut)", -12, 6, 0.05, 0, "m/s²", function(){ manual(); });
     var m = k.slider("Masse de la personne", 40, 100, 1, 70, "kg");
-    k.button("Démarrage en montée", function(){ a.set(2); });
-    k.button("Vitesse constante", function(){ a.set(0); });
-    k.button("Câble rompu", function(){ a.set(-9.81); });
+    var bTrip = k.button("▶ Monter au 5e étage", function(){ goFloor(st.target === NF || (st.target === null && st.y > NF * HF / 2) ? 0 : NF); }, true);
+    k.button("Démarrage en montée", function(){ manual(); a.set(2); });
+    k.button("Vitesse constante", function(){ manual(); a.set(0); });
+    k.button("Câble rompu", function(){ manual(); a.set(-9.81); });
     var ro = k.readouts(["Poids réel m·g", "Réaction N", "La balance indique", "N / (m·g)"]);
     var nt = k.note("", "");
-    var pos = 0.5, vel = 0, tt = 0;
-    var lp = k.loop(function(dt){ dt = Math.min(dt, 0.05); var A = a.value; vel += A * dt; pos += vel * dt * 0.05;
-      if (pos > 0.9 || pos < 0.1){ pos = Math.min(0.9, Math.max(0.1, pos)); vel = 0; }
-      k.redraw(); });
+    function manual(){ st.mode = "man"; st.goal = null; st.target = null; st.door = 0; fl.set(-1); }
+    function goFloor(f){ st.mode = "auto"; if (Math.abs(st.v) > 0.05 && st.goal === null){ st.goal = null; } st.target = f; st.goal = f * HF; st.wait = 0; fl.set(f); }
+    /* commande automatique (comme un vrai ascenseur) : démarrage à +AA, palier à VMAX, freinage pour s'arrêter pile à l'étage */
+    function control(h){
+      if (st.mode !== "auto"){ return a.value; }
+      if (st.goal === null) return 0;
+      if (st.door > 0.01) return 0;                                  /* on attend que les portes soient fermées */
+      var d = st.goal - st.y, s = d >= 0 ? 1 : -1, vt = st.v * s, ad = Math.abs(d);
+      if (ad < 0.003 && Math.abs(st.v) < 0.04){ st.y = st.goal; st.v = 0; st.goal = null; return 0; }
+      if (vt < 0) return s * AA;
+      var ds = vt * vt / (2 * AA);
+      if (ds >= ad - 1e-4){ var req = vt * vt / (2 * Math.max(ad, 1e-4)); return -s * Math.min(req, 1.3 * AA); }
+      if (vt < VMAX - 1e-6) return s * Math.min(AA, (VMAX - vt) / h);
+      return 0;
+    }
+    var lp = k.loop(function(dt){
+      var n = 4, h = dt / n;
+      for (var i = 0; i < n; i++){
+        var acc = control(h);
+        if (st.mode === "auto"){ a.set(Math.round(acc * 100) / 100); acc = a.value; }
+        st.v += acc * h; st.y += st.v * h; st.t += h;
+        if (st.mode === "auto" && st.goal === null){ st.v = 0; }
+      }
+      /* portes : s'ouvrent à l'arrêt en mode automatique */
+      var stopped = st.mode === "auto" && st.goal === null && Math.abs(st.v) < 1e-3;
+      st.door += (stopped ? 1 : -1) * dt * 1.6; st.door = Math.max(0, Math.min(1, st.door));
+      if (stopped && st.target !== null && st.door >= 1) { st.target = null; fl.set(-1); }
+      /* aiguille de la balance : petit ressort amorti (elle suit N avec un léger retard, comme une vraie) */
+      var goalN = Math.max(0, g + a.value) / g;
+      st.nv += ((goalN - st.needle) * 260 - st.nv * 26) * dt; st.needle += st.nv * dt;
+      st.hist.push({t: st.t, a: a.value, v: st.v, n: Math.max(0, g + a.value) / g});
+      while (st.hist.length && st.hist[0].t < st.t - 12.5) st.hist.shift();
+      var tx = (st.target === NF || (st.target === null && st.y > NF * HF / 2)) ? "▶ Redescendre au RDC" : "▶ Monter au 5e étage"; if (bTrip.textContent !== tx) bTrip.textContent = tx;
+      k.redraw();
+    });
     lp.play();
+    P5d.orbit(c, k, st, {p0: -0.25, p1: 0.9});
+    function phase(){
+      var A = a.value, v = st.v, ev = 0.03;
+      if (Math.abs(A + g) < 0.06) return ["Chute libre : a = −g", S.draw.palette.red, "La personne et la balance tombent ensemble : N = 0, impondérabilité."];
+      if (A < -g) return ["a < −g : plaquée au plafond", S.draw.palette.red, "La cabine descend plus vite qu'en chute libre : N = 0 sur la balance."];
+      if (Math.abs(A) < 0.03){
+        if (Math.abs(v) < ev) return ["À l'arrêt", "#13233a", "a = 0 : N = P. La balance indique la vraie masse."];
+        return [(v > 0 ? "▲ Montée" : "▼ Descente") + " à vitesse constante", S.draw.palette.green, "a = 0 : N = P, comme à l'arrêt. La vitesse ne change rien."];
+      }
+      if (A > 0) return [v < -ev ? "▼ Freinage en descendant" : "▲ Démarrage vers le haut", S.draw.palette.acc, "a vers le haut : la balance indique plus que la masse."];
+      return [v > ev ? "▲ Freinage en montant" : "▼ Démarrage vers le bas", S.draw.palette.amber, "a vers le bas : la balance indique moins que la masse."];
+    }
+    function dial(x, y, r, kg, mass){
+      var ctx = c.ctx, pal = S.draw.palette, MAX = 160;
+      ctx.save();
+      ctx.fillStyle = "#13233a"; P5x.rr(ctx, x - r - 12, y - r - 30, 2 * r + 24, 2 * r + 64, 12); ctx.fill();
+      S.draw.text(c, "BALANCE", x - r - 2, y - r - 17, {align: "left", size: 10, color: "#9fb0c6", weight: 800});
+      if (r > 40) S.draw.text(c, "m = " + S.fmt(mass, 0) + " kg", x + r + 2, y - r - 17, {align: "right", size: 10, color: "#9fb0c6", weight: 700});
+      var gd = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.1, x, y, r); gd.addColorStop(0, "#ffffff"); gd.addColorStop(1, "#dfe5ec");
+      ctx.fillStyle = gd; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.strokeStyle = "#8a95a3"; ctx.lineWidth = 2; ctx.stroke();
+      var A0 = Math.PI * 0.75, A1 = Math.PI * 2.25;
+      function ang(q){ return A0 + (A1 - A0) * Math.max(0, Math.min(1.03, q / MAX)); }
+      /* zone de la vraie masse */
+      ctx.strokeStyle = "rgba(36,119,90,.35)"; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(x, y, r * 0.8, ang(mass - 1.5), ang(mass + 1.5)); ctx.stroke();
+      for (var q = 0; q <= MAX; q += 5){ var an = ang(q), big = q % 20 === 0; ctx.strokeStyle = big ? "#13233a" : "#8a95a3"; ctx.lineWidth = big ? 2 : 1;
+        ctx.beginPath(); ctx.moveTo(x + Math.cos(an) * r * (big ? 0.74 : 0.82), y + Math.sin(an) * r * (big ? 0.74 : 0.82)); ctx.lineTo(x + Math.cos(an) * r * 0.9, y + Math.sin(an) * r * 0.9); ctx.stroke();
+        if (big && r > 40) S.draw.text(c, "" + q, x + Math.cos(an) * r * 0.58, y + Math.sin(an) * r * 0.58, {size: 9.5, color: "#2c3a4e", weight: 700}); }
+      var an2 = ang(kg); ctx.strokeStyle = pal.red; ctx.lineWidth = 3; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(x - Math.cos(an2) * r * 0.12, y - Math.sin(an2) * r * 0.12); ctx.lineTo(x + Math.cos(an2) * r * 0.86, y + Math.sin(an2) * r * 0.86); ctx.stroke();
+      ctx.fillStyle = "#13233a"; ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.fill();
+      S.draw.text(c, "kg", x, y + r * 0.42, {size: 10, color: "#5f6b7a"});
+      ctx.restore();
+    }
     k.draw(function(){
-      var pal = S.draw.palette, ctx = c.ctx, g = P5.g, A = a.value;
-      var N = Math.max(0, m.value * (g + A)), P = m.value * g;
-      c.clear(); P5x.sky(c, "#eef3fa", "#f9fbfe");
-      var sx = c.W / 2 - 100, sw = 200, top = 14, bot = c.H - 14;
-      /* gaine */
-      ctx.fillStyle = "#dde5ef"; ctx.fillRect(sx - 8, top, sw + 16, bot - top); ctx.fillStyle = "#f4f7fb"; ctx.fillRect(sx, top, sw, bot - top);
-      for (var yy = top + 20; yy < bot; yy += 40){ ctx.fillStyle = "#c9d3df"; ctx.fillRect(sx - 8, yy, 8, 2); ctx.fillRect(sx + sw, yy, 8, 2); }
-      var ch = 236, cy = top + 14 + (1 - pos) * (bot - top - ch - 28);
-      ctx.strokeStyle = "#6b7685"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(c.W / 2, top); ctx.lineTo(c.W / 2, cy); ctx.stroke();
-      var cx = sx + 20, cw = sw - 40;
-      ctx.save(); ctx.shadowColor = "rgba(15,27,45,.25)"; ctx.shadowBlur = 10; ctx.shadowOffsetY = 3;
-      P5x.rr(ctx, cx, cy, cw, ch, 6); ctx.fillStyle = P5x.lin(ctx, 0, cy, 0, cy + ch, [[0, "#fdfefe"], [1, "#e4ecf6"]]); ctx.fill(); ctx.restore();
-      ctx.strokeStyle = pal.acc; ctx.lineWidth = 2.5; P5x.rr(ctx, cx, cy, cw, ch, 6); ctx.stroke();
-      ctx.fillStyle = "#13233a"; ctx.fillRect(cx, cy + ch - 12, cw, 12);
-      /* balance */
-      var bx = c.W / 2, by = cy + ch - 12;
-      P5x.rr(ctx, bx - 38, by - 12, 76, 12, 3); ctx.fillStyle = "#9aa6b6"; ctx.fill();
-      S.draw.display(c, S.fmt(N / g, 1) + " kg", cx + cw - 54, cy + 52, {w: 84, h: 44, size: 14, caption: "balance"});
-      /* personne : s'écrase un peu si N > P, flotte si N = 0 */
-      var lift = N === 0 ? 10 : 0, sq = Math.max(-0.08, Math.min(0.1, (N / P - 1) * 0.12));
-      P5x.person(c, bx, by - 12 - lift, 92 * (1 - sq), pal.amber, {arm: 0.2});
-      /* vecteurs : P et N à côté de la personne */
-      var sc = 40 / P, hy = by - 112;
-      P5.vec(c, bx + 46, hy, bx + 46, hy + P * sc, pal.ink, "P", {dx: 14});
-      if (N > 0) P5.vec(c, bx - 46, hy, bx - 46, hy - N * sc, pal.red, "N", {dx: -14});
-      /* accélération */
-      if (Math.abs(A) > 0.05){ var al = Math.max(-80, Math.min(80, A * 9)); P5.vec(c, sx - 34, top + 150, sx - 34, top + 150 - al, pal.green, "a", {dx: -14}); }
-      S.draw.label(c, "a = " + S.fmt(A, 1) + " m/s²", sx - 34, top + 14, {color: pal.green, size: 12});
-      S.draw.label(c, "ΣF = N − P = m·a", sx + sw + 12, top + 14, {color: pal.acc, size: 12, align: "left"});
-      if (N === 0) S.draw.label(c, "impondérabilité", bx, cy + 18, {color: pal.amber, size: 12});
-      /* graphe N(a) */
-      gr.clear();
-      var ax = S.draw.axes(gr, {x0: -12, x1: 6, y0: 0, y1: m.value * (g + 6) * 1.05 / 1, xl: "a (m/s²)", yl: "N (N)", stepX: 3, l: 56});
-      S.draw.fn(gr, ax, function(x){ return Math.max(0, m.value * (g + x)); }, pal.acc);
-      S.draw.dot(gr, ax.X(A), ax.Y(N), 6, pal.red);
-      S.draw.line(gr, ax.X(-g), ax.Y(0), ax.X(-g), ax.Y(ax.y1 * 0.3), pal.amber, 1.5, [4, 4]); S.draw.text(gr, "−g", ax.X(-g) + 4, ax.Y(ax.y1 * 0.33), {align: "left", size: 12, color: pal.amber});
+      var pal = S.draw.palette, ctx = c.ctx, A = a.value, M = m.value, N = Math.max(0, M * (g + A)), P = M * g, small = c.W < 470;
+      var yc = st.y, door = st.door;
+      ctx.fillStyle = P5x.lin(ctx, 0, 0, 0, c.H, [[0, "#e7edf4"], [1, "#d6dee8"]]); ctx.fillRect(0, 0, c.W, c.H);
+      var cam = {yaw: st.yaw, pitch: st.pitch, dist: 8.6, target: [0.2, yc + 1.25, 0], focal: Math.min(c.H * 1.7, c.W * 1.75), cx: c.W * (c.W < 470 ? 0.42 : 0.5), cy: c.H * 0.54};
+      var sc = P5d.scene(c, cam), n0 = Math.floor((yc - 5) / HF), n1 = Math.floor((yc + 7) / HF), i, n;
+      /* cage : mur du fond, poteaux, poutres, paliers d'étage */
+      for (n = n0; n <= n1; n++){
+        var y0 = n * HF, y1 = y0 + HF;
+        sc.poly([[-1.35, y0, -1.4], [1.35, y0, -1.4], [1.35, y1, -1.4], [-1.35, y1, -1.4]], n % 2 ? "#c9ced6" : "#d3d8df", {bias: 0.5});
+        sc.poly([[-1.35, y0, -1.4], [-1.35, y0, 1.3], [-1.35, y0 + 0.25, 1.3], [-1.35, y0 + 0.25, -1.4]], "#9aa3af");
+        [[-1.3, -1.3], [1.3, -1.3], [-1.3, 1.3], [1.3, 1.3]].forEach(function(q){ sc.tube([q[0], y0, q[1]], [q[0], y1, q[1]], 0.14, "#5f6b7a", {butt: true}); });
+        sc.tube([-1.3, y0, 1.3], [1.3, y0, 1.3], 0.12, "#6b7685"); sc.tube([1.3, y0, -1.3], [1.3, y0, 1.3], 0.12, "#6b7685"); sc.tube([-1.3, y0, -1.3], [1.3, y0, -1.3], 0.12, "#6b7685");
+        /* palier (dalle d'étage à gauche) avec garde-corps */
+        sc.box([-3.6, y0 - 0.18, 0.4], [2.2, 0.18, 1.9], ["#b9c0ca", "#b9c0ca", "#b9c0ca", "#b9c0ca", "#e4e7eb", "#9aa3af"]);
+        sc.tube([-5.8, y0 + 1, 2.3], [-1.45, y0 + 1, 2.3], 0.05, "#8a95a3"); sc.tube([-5.8, y0, 2.3], [-5.8, y0 + 1, 2.3], 0.05, "#8a95a3"); sc.tube([-1.45, y0, 2.3], [-1.45, y0 + 1, 2.3], 0.05, "#8a95a3");
+        if (n >= 0) sc.label([-0.2, y0 + 2.3, -1.38], n === 0 ? "RDC" : "Étage " + n, "#5f6b7a", {size: 11});
+      }
+      /* contrepoids (descend quand la cabine monte) */
+      var ycw = -yc + 9;
+      sc.box([0.85, ycw, -1.15], [0.35, 0.7, 0.12], "#8a6d4f");
+      sc.tube([0.85, ycw + 0.7, -1.15], [0.85, yc + 14, -1.15], 0.04, "#3b4250");
+      /* cabine : plancher, plafond, montants, parois vitrées, portes coulissantes */
+      sc.box([0, yc + 0.06, 0], [1.05, 0.06, 1.05], ["#4b5563", "#4b5563", "#4b5563", "#4b5563", "#9aa6b6", "#374151"]);
+      sc.box([0, yc + 2.5, 0], [1.05, 0.07, 1.05], ["#4b5563", "#4b5563", "#4b5563", "#4b5563", "#6b7685", "#e9edf2"]);
+      [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function(q){ sc.tube([q[0], yc + 0.1, q[1]], [q[0], yc + 2.45, q[1]], 0.07, "#374151", {butt: true}); });
+      sc.poly([[-1, yc + 0.12, -1], [1, yc + 0.12, -1], [1, yc + 2.44, -1], [-1, yc + 2.44, -1]], "#bcd6ee", {alpha: 0.38, stroke: "rgba(120,150,180,.5)"});
+      sc.poly([[-1, yc + 0.12, -1], [-1, yc + 0.12, 1], [-1, yc + 2.44, 1], [-1, yc + 2.44, -1]], "#bcd6ee", {alpha: 0.28, stroke: "rgba(120,150,180,.5)"});
+      sc.poly([[1, yc + 0.12, -1], [1, yc + 0.12, 1], [1, yc + 2.44, 1], [1, yc + 2.44, -1]], "#bcd6ee", {alpha: 0.28, stroke: "rgba(120,150,180,.5)"});
+      sc.tube([-0.9, yc + 0.95, -0.95], [0.9, yc + 0.95, -0.95], 0.04, "#c7ced8");
+      var dw = 0.5 * (1 - door) + 0.02;
+      [[-1, -1 + dw * 2], [1 - dw * 2, 1]].forEach(function(q){ sc.poly([[q[0], yc + 0.12, 1.01], [q[1], yc + 0.12, 1.01], [q[1], yc + 2.44, 1.01], [q[0], yc + 2.44, 1.01]], "#cfe0f1", {alpha: 0.3, stroke: "rgba(90,110,135,.7)", lw: 1.4}); });
+      sc.tube([0, yc + 2.57, 0], [0, yc + 14, 0], 0.05, "#2c3340");
+      /* balance et personne */
+      sc.box([0.05, yc + 0.155, 0.1], [0.24, 0.035, 0.2], ["#f2f4f7", "#e5e8ec", "#e5e8ec", "#e5e8ec", "#ffffff", "#9aa3af"]);
+      var Nr = N / P, sq = Math.max(-0.06, Math.min(0.1, (Nr - 1) * 0.05)), lift = A < -g - 0.06 ? Math.min(0.4, 0.15 + (-g - A) * 0.08) : 0, flt = Math.max(0, Math.min(1, 1 - Nr));
+      var arm = 0.5 + flt * 0.32, el = 0.63 + flt * 0.12;
+      P5d.person(sc, {at: [0.05, yc + 0.19 + lift, 0.08], face: 0, h: 1.72 * (1 - sq * 0.5), shirt: "#e0a43a", pants: "#4a5568", hair: "#3a2a1e",
+        pose: {kneeL: [-0.07, 0.27 - sq * 0.4, 0.02 + sq * 0.6], kneeR: [0.07, 0.27 - sq * 0.4, 0.02 + sq * 0.6], elL: [-0.17 - flt * 0.05, el, -0.01], elR: [0.17 + flt * 0.05, el, -0.01], haL: [-0.18 - flt * 0.1, arm, 0.03], haR: [0.18 + flt * 0.1, arm, 0.03]}, shadow: false});
+      /* forces sur la personne (échelle : P ↔ 1,1 m) et accélération de la cabine */
+      var u = 1.1 / P, bx = 0.05, bz = 0.55, by = yc + 1.15 + lift;
+      sc.arrow([bx - 0.38, by, bz], [bx - 0.38, by - P * u, bz], pal.ink, "P = " + S.fmt(P, 0) + " N", {w: 4, size: 11.5});
+      if (N > 0.5) sc.arrow([bx + 0.38, yc + 0.25, bz], [bx + 0.38, yc + 0.25 + Math.min(2.4, N * u), bz], pal.acc, "N = " + S.fmt(N, 0) + " N", {w: 4, size: 11.5});
+      if (Math.abs(A) > 0.05) sc.arrow([1.75, yc + 1.25, 0.8], [1.75, yc + 1.25 + Math.max(-1.8, Math.min(1.8, A * 0.25)), 0.8], pal.green, "a", {w: 3.6});
+      if (Math.abs(st.v) > 0.05) sc.arrow([2.25, yc + 1.25, 0.8], [2.25, yc + 1.25 + Math.max(-1.8, Math.min(1.8, st.v * 0.3)), 0.8], pal.teal, "v", {w: 3.6});
+      sc.draw();
+      /* lecture de la phase */
+      var ph = phase();
+      P5d.card(c, 10, 10, ph[0], [ph[2].length > 46 && small ? ph[2].slice(0, 44) + "…" : ph[2], "N = m(g + a) = " + S.fmt(M, 0) + " × (" + S.fmt(g, 2) + " " + (A < 0 ? "− " : "+ ") + S.fmt(Math.abs(A), 2) + ") = " + S.fmt(N, 0) + " N"], ph[1], {size: small ? 10.5 : 11.5, maxW: small ? c.W * 0.62 : c.W * 0.66});
+      /* balance à aiguille + affichage */
+      var r = small ? 34 : 52, dx = c.W - r - 22, dy = small ? c.H - r - 50 : r + 42;
+      dial(dx, dy, r, st.needle * M, M);
+      S.draw.text(c, S.fmt(N / g, 1) + " kg", dx, dy + r + 18, {size: small ? 15 : 17, color: "#ffffff", weight: 800});
+      /* indicateur d'étage */
+      var flr = Math.round(yc / HF), arrow = st.v > 0.05 ? "▲ " : st.v < -0.05 ? "▼ " : "";
+      S.draw.display(c, arrow + (flr === 0 ? "RDC" : flr), 58, c.H - 34, {w: 92, h: 40, size: 16, caption: "ÉTAGE", screen: "#1f2937", color: "#ffb347"});
+      S.draw.label(c, "v = " + S.fmt(st.v, 2) + " m/s", 116, c.H - 34, {align: "left", color: pal.teal, size: 11.5});
+      P5d.grabHint(c, small ? "Glisse : vue" : "Glisse pour tourner autour de la cabine");
+      /* graphes a(t), v(t), indication de la balance */
+      gr.clear(); var gx = gr.ctx, Lm = gr.W < 470 ? 44 : 58, Rm = 12, T0 = 6, gap = 6, sh = (gr.H - T0 - 16 - 2 * gap) / 3, pw = gr.W - Lm - Rm, t1 = st.t, tA = t1 - 12;
+      var strips = [["a (m/s²)", pal.amber, -12, 6, function(p){ return p.a; }, S.fmt(A, 2) + " m/s²"], ["v (m/s)", pal.teal, -6, 6, function(p){ return Math.max(-6, Math.min(6, p.v)); }, S.fmt(st.v, 2) + " m/s"], ["balance (kg)", pal.acc, 0, 160, function(p){ return p.n * M; }, S.fmt(N / g, 1) + " kg"]];
+      strips.forEach(function(s, j){
+        var y0 = T0 + j * (sh + gap), Y = function(v){ return y0 + sh - (v - s[2]) / (s[3] - s[2]) * sh; }, X = function(t){ return Lm + (t - tA) / 12 * pw; };
+        gx.fillStyle = "#f5f7fa"; gx.fillRect(Lm, y0, pw, sh);
+        var ref = j === 2 ? M : 0; gx.strokeStyle = j === 2 ? "rgba(36,119,90,.7)" : "#c3cbd5"; gx.lineWidth = 1; gx.setLineDash(j === 2 ? [5, 4] : []); gx.beginPath(); gx.moveTo(Lm, Y(ref)); gx.lineTo(Lm + pw, Y(ref)); gx.stroke(); gx.setLineDash([]);
+        if (j === 2) S.draw.text(gr, "m = " + S.fmt(M, 0) + " kg", Lm + pw * 0.3, Y(ref) - 7, {align: "left", size: 9.5, color: pal.green});
+        gx.strokeStyle = s[1]; gx.lineWidth = 2; gx.beginPath(); st.hist.forEach(function(p, q){ var xx = X(p.t), yy = Y(Math.max(s[2], Math.min(s[3], s[4](p)))); if (q) gx.lineTo(xx, yy); else gx.moveTo(xx, yy); }); gx.stroke();
+        S.draw.text(gr, s[0], 6, y0 + sh / 2, {align: "left", size: 10.5, color: s[1]});
+        S.draw.text(gr, s[5], Lm + pw - 4, y0 + 9, {align: "right", size: 10.5, color: s[1]});
+      });
+      S.draw.text(gr, "12 dernières secondes →", Lm + pw, gr.H - 6, {align: "right", size: 9.5, color: pal.grey});
       ro.set(0, S.fmt(P, 0) + " N"); ro.set(1, S.fmt(N, 0) + " N"); ro.set(2, S.fmt(N / g, 1) + " kg"); ro.set(3, S.fmt(N / P, 2));
       if (Math.abs(A + g) < 0.06) nt.set("a ≈ −g : chute libre, N ≈ 0 : la personne et la balance tombent ensemble, la balance indique ≈ 0 kg (impondérabilité).", "warn");
       else if (A < -g) nt.set("a < −g : la cabine descend plus vite qu'en chute libre ; la personne est plaquée au plafond et la balance indique 0 (N = 0 sur la balance).", "bad");
-      else if (A > 0) nt.set("a > 0 (vers le haut) : la balance indique " + S.fmt(N / g, 1) + " kg, plus que " + S.fmt(m.value, 0) + " kg : la cabine monte en accélérant ou descend en freinant.", "");
+      else if (A > 0) nt.set("a > 0 (vers le haut) : la balance indique " + S.fmt(N / g, 1) + " kg, plus que " + S.fmt(M, 0) + " kg : la cabine monte en accélérant ou descend en freinant.", "");
       else if (A < 0) nt.set("a < 0 (vers le bas) : la balance indique " + S.fmt(N / g, 1) + " kg : la cabine monte en freinant ou descend en accélérant.", "");
-      else nt.set("a = 0 : N = m·g, la balance indique la masse " + S.fmt(m.value, 0) + " kg, que la cabine soit à l'arrêt, monte ou descende à vitesse constante.", "ok");
+      else nt.set("a = 0 : N = m·g, la balance indique la masse " + S.fmt(M, 0) + " kg, que la cabine soit à l'arrêt, monte ou descende à vitesse constante." + (st.mode === "man" ? " <small>(Mode manuel : la cage est supposée assez haute pour ne jamais en atteindre le bout.)</small>" : ""), "ok");
     });
   }
 });

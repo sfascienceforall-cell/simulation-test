@@ -11,13 +11,12 @@ R = sys.argv[1] if len(sys.argv) > 1 else os.path.dirname(os.path.dirname(os.pat
 src = open(R + '/universite/physique/catalogue.html', encoding='utf-8').read()
 
 # chapitre de simulations -> chapitre (0-based) de la page d'exercices (même table que build_phys_meta.py)
-EXO = {'MA': 1, 'PH1': 3, 'PH2': 5, 'PH3': 7, 'PH4': 8, 'OS': None, 'FL': 10, 'PH5': 9, 'PH6': 13, 'PH7': 13, 'PH8': 11,
+EXO = {'TR': 0, 'PR': 2, 'QM': 6, 'MA': 1, 'PH1': 3, 'PH2': 5, 'PH3': 7, 'PH4': 8, 'OS': None, 'FL': 10, 'PH5': 9, 'PH6': 13, 'PH7': 13, 'PH8': 11,
        'PH9': 14, 'PH10': 14, 'PH11': 12, 'NU': 19, 'TH': 18}
 # exercices par chapitre de la page d'exercices (index 0 à 19), relevés le 13/11/2026
 EXN = [9, 20, 23, 9, 13, 11, 11, 22, 9, 9, 9, 9, 9, 9, 13, 30, 30, 15, 8, 8]
 # chapitres d'exercices sans simulations propres : proposés à part
-EXTRA = [(0, 'Rappels de trigonométrie'), (2, 'Projections dans les axes'), (6, 'Quantité de mouvement et impulsion'),
-         (15, 'QCM 1 — révision tous chapitres'), (16, 'QCM 2 — révision tous chapitres'),
+EXTRA = [(15, 'QCM 1 — révision tous chapitres'), (16, 'QCM 2 — révision tous chapitres'),
          (17, 'QCM 3 — impulsion, produits scalaire et vectoriel')]
 BASE = 'https://sfascienceforall-cell.github.io/simulation-test/universite/physique/'
 
@@ -40,7 +39,7 @@ for m in re.finditer(r'<section id="([A-Z0-9]+)"><h2>([^<]*)<em[^>]*>[^<]*</em><
         sims.append({'id': sid2, 'h': href, 'i': img, 't': txt(b), 'd': txt(d), 'n': 1 if new else 0})
     e = EXO.get(sid)
     chs.append({'k': sid, 't': txt(t), 'x': e, 'xn': EXN[e] if e is not None else 0, 's': sims})
-assert len(chs) >= 15, len(chs)
+assert len(chs) >= 18, len(chs)
 NS = sum(len(c['s']) for c in chs)
 NX = sum(EXN)
 DATA = json.dumps({'ch': chs, 'extra': [{'x': i, 't': t, 'n': EXN[i]} for i, t in EXTRA]}, ensure_ascii=False)

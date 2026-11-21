@@ -207,26 +207,27 @@ SFA.sim({
   }
 });
 
-/* ---------- navigation ---------- */
+/* ---------- navigation : traversée d'un large fleuve ---------- */
 SFA.sim({
   id:"m4-c08-navigation", ch:"c08", tag:"Défi",
   titre:"Bateau et courant : vitesse propre + courant = vitesse sol",
-  resume:"Règle le cap, la vitesse et le courant : la route réelle est la somme de deux vecteurs.",
-  but:"Un bateau avance à vitesse propre vₚ dans la direction de son cap. Le courant le pousse. Défi : avec un courant vers l'est, règle le cap (glisse la pointe rouge) pour que la route réelle soit plein nord malgré la dérive, puis lance la traversée.",
+  resume:"Traverse le fleuve : la route réelle du bateau est la somme de sa vitesse propre et du courant.",
+  but:"Un bateau part de la bouée, au milieu d'un large fleuve, et avance à vitesse propre vₚ dans la direction de son cap. Le courant le pousse. Défi : avec un courant vers l'est, règle le cap (glisse la pointe rouge) pour que la route réelle soit plein nord, vers le quai d'en face, malgré la dérive. La traversée (1 h) se rejoue en boucle.",
   aRetenir:"Vitesse par rapport au sol = vitesse propre + vitesse du courant (somme de vecteurs). Pour un cap θ mesuré depuis le nord vers l'est : composantes (v·sin θ ; v·cos θ). La route est la direction de la vitesse sol ; la dérive est l'écart entre route et cap.",
-  piege:"Le bateau ne va pas dans la direction où il pointe : le courant le déporte. On ne soustrait ni n'additionne les normes : on additionne les composantes.",
+  piege:"Le bateau ne va pas dans la direction où il pointe : le courant le déporte (regarde l'avant du bateau et son sillage). On ne soustrait ni n'additionne les normes : on additionne les composantes.",
   build:function(k,S){
     var M=window.M4, P=S.draw.palette, F=S.fmt, D2R=Math.PI/180;
-    var c=k.canvas(0,{ratio:.95});
-    var vp=k.slider("Vitesse propre vₚ",4,12,1,8,"km/h");
-    var cap=k.slider("Cap (depuis le nord, sens horaire)",0,359,1,40,"°");
-    var vc=k.slider("Vitesse du courant",0,8,1,3,"km/h");
-    var dc=k.slider("Direction du courant (vers…)",0,355,5,90,"°");
-    var prog=0, geo={};
-    var lp=k.loop(function(dt){ prog+=dt*0.45; if(prog>=1.15){ prog=1.15; lp.pause(); } k.redraw(); });
-    k.button("Lancer la traversée",function(){ prog=0; lp.play(); },true);
+    var c=k.canvas(0,{ratio:1.16});
+    var vp=k.slider("Vitesse propre vₚ",4,12,1,8,"km/h",function(){ prog=0; });
+    var cap=k.slider("Cap (depuis le nord, sens horaire)",0,359,1,40,"°",function(){ prog=0; });
+    var vc=k.slider("Vitesse du courant",0,8,1,3,"km/h",function(){ prog=0; });
+    var dc=k.slider("Direction du courant (vers…)",0,355,5,90,"°",function(){ prog=0; });
+    var prog=0, clock=0, flow=0, geo={}, sail=true;
+    var lp=k.loop(function(dt){ clock+=dt; flow+=dt*vc.value*0.9; if(sail){ prog+=dt*0.25; if(prog>=1.45) prog=0; } k.redraw(); });
+    k.button("Lancer la traversée",function(){ prog=0; sail=true; lp.play(); },true);
     var ro=k.readouts(["Vitesse propre","Courant","Vitesse sol","Route (depuis le nord)","Dérive"]);
     var nt=k.note("","");
+    lp.play();
     function vec(n,a){ return [n*Math.sin(a*D2R), n*Math.cos(a*D2R)]; }
     M.grab(c,function(){ if(!geo.X) return []; var V=vec(vp.value,cap.value), C=vec(vc.value,dc.value);
         return [{id:"v",x:geo.X(V[0]),y:geo.Y(V[1])},{id:"c",x:geo.X(V[0]+C[0]),y:geo.Y(V[1]+C[1])}]; },
@@ -234,40 +235,85 @@ SFA.sim({
         if(id==="v"){ var n=Math.hypot(x,y); vp.set(M.clamp(Math.round(n),4,12)); if(n>0.5) cap.set(Math.round(((Math.atan2(x,y)/D2R)+360)%360)%360); }
         else { var V=vec(vp.value,cap.value), cx=x-V[0], cy=y-V[1], n2=Math.hypot(cx,cy); vc.set(M.clamp(Math.round(n2),0,8)); if(n2>0.8) dc.set(Math.round(((Math.atan2(cx,cy)/D2R)+360)%360/5)*5%360); }
         prog=0; k.redraw(); });
+    function lin(ctx,x0,y0,x1,y1,st){ var g=ctx.createLinearGradient(x0,y0,x1,y1); st.forEach(function(q){ g.addColorStop(q[0],q[1]); }); return g; }
+    var TREES=[], HOUSES=[], seed=5; function rnd(){ seed=(seed*16807)%2147483647; return seed/2147483647; }
+    for(var i0=0;i0<26;i0++) TREES.push([rnd(),rnd(),0.7+rnd()*0.6,rnd()<0.5]);
+    for(i0=0;i0<6;i0++) HOUSES.push([rnd(),rnd()<0.5,["#c0321d","#8a4b2a","#5f6b7a"][i0%3],rnd()]);
+    /* rive : bande de terre (haut ou bas) avec herbe, sable, arbres et maisons vues d'en haut */
+    function bank(ctx,W,y0,y1,north){
+      var edge=north?y1:y0, inner=north?y0:y1;
+      ctx.fillStyle=lin(ctx,0,inner,0,edge,[[0,"#8fbf6a"],[1,"#a6cf80"]]); ctx.fillRect(0,Math.min(y0,y1),W,Math.abs(y1-y0));
+      /* route le long de la rive */
+      var ry=north?y0+(y1-y0)*0.3:y1-(y1-y0)*0.3; ctx.fillStyle="#c9c3b5"; ctx.fillRect(0,ry-5,W,10); ctx.strokeStyle="rgba(255,255,255,.8)"; ctx.setLineDash([10,10]); ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(0,ry); ctx.lineTo(W,ry); ctx.stroke(); ctx.setLineDash([]);
+      /* sable de la berge */
+      ctx.fillStyle="#e9d9ae"; ctx.beginPath(); ctx.moveTo(0,edge); for(var x=0;x<=W;x+=16) ctx.lineTo(x,edge+(north?-1:1)*(6+Math.sin(x*0.05+(north?1:3))*3)); ctx.lineTo(W,edge); ctx.closePath(); ctx.fill();
+      HOUSES.forEach(function(h){ if(h[1]!==north) return; var hx=h[0]*W, hy=north?y0+(y1-y0)*0.08:y1-(y1-y0)*0.08-14; if(Math.abs(y1-y0)<40) return; ctx.fillStyle="rgba(15,27,45,.18)"; ctx.fillRect(hx+3,hy+3,24,16); ctx.fillStyle=h[2]; ctx.fillRect(hx,hy,24,16); ctx.strokeStyle="rgba(0,0,0,.25)"; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(hx,hy+8); ctx.lineTo(hx+24,hy+8); ctx.stroke(); });
+      TREES.forEach(function(t){ if(t[3]!==north) return; var tx=t[0]*W, ty=north?y0+(y1-y0)*(0.45+t[1]*0.4):y0+(y1-y0)*(0.1+t[1]*0.4), r=9*t[2];
+        ctx.fillStyle="rgba(15,27,45,.18)"; ctx.beginPath(); ctx.arc(tx+3,ty+3,r,0,6.2832); ctx.fill();
+        var g=ctx.createRadialGradient(tx-r*0.3,ty-r*0.3,1,tx,ty,r); g.addColorStop(0,"#7fbf5a"); g.addColorStop(1,"#3f7a3a"); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(tx,ty,r,0,6.2832); ctx.fill(); });
+    }
+    /* bateau à moteur vu d'en haut, orienté selon le cap */
+    function boat(ctx,x,y,ang,L,moving,tt){
+      ctx.save(); ctx.translate(x,y); ctx.rotate(ang); var u=L/40;
+      if(moving){ ctx.strokeStyle="rgba(255,255,255,.75)"; ctx.lineWidth=2.2; for(var w=0;w<3;w++){ var s=((tt*1.6+w/3)%1); ctx.globalAlpha=1-s; ctx.beginPath(); ctx.moveTo(-6*u-s*14*u,18*u+s*30*u); ctx.lineTo(0,16*u); ctx.lineTo(6*u+s*14*u,18*u+s*30*u); ctx.stroke(); } ctx.globalAlpha=1;
+        ctx.fillStyle="rgba(255,255,255,.6)"; ctx.beginPath(); ctx.ellipse(0,24*u,3.5*u,8*u,0,0,6.2832); ctx.fill(); }
+      ctx.fillStyle="rgba(15,27,45,.25)"; ctx.beginPath(); ctx.ellipse(2*u,3*u,9.5*u,20*u,0,0,6.2832); ctx.fill();
+      ctx.fillStyle=lin(ctx,-9*u,0,9*u,0,[[0,"#d9dee6"],[0.5,"#ffffff"],[1,"#c9d3df"]]);
+      ctx.beginPath(); ctx.moveTo(0,-20*u); ctx.bezierCurveTo(9*u,-10*u,9*u,6*u,8*u,16*u); ctx.lineTo(-8*u,16*u); ctx.bezierCurveTo(-9*u,6*u,-9*u,-10*u,0,-20*u); ctx.closePath(); ctx.fill(); ctx.strokeStyle="#13233a"; ctx.lineWidth=1.2; ctx.stroke();
+      ctx.fillStyle="#c0321d"; ctx.beginPath(); ctx.moveTo(0,-20*u); ctx.bezierCurveTo(9*u,-10*u,9*u,6*u,8*u,16*u); ctx.lineTo(6.5*u,16*u); ctx.bezierCurveTo(7.5*u,6*u,7.5*u,-9*u,0,-18*u); ctx.bezierCurveTo(-7.5*u,-9*u,-7.5*u,6*u,-6.5*u,16*u); ctx.lineTo(-8*u,16*u); ctx.bezierCurveTo(-9*u,6*u,-9*u,-10*u,0,-20*u); ctx.fill();
+      ctx.fillStyle="#9fc4e8"; ctx.beginPath(); ctx.moveTo(-5.5*u,-4*u); ctx.quadraticCurveTo(0,-9*u,5.5*u,-4*u); ctx.lineTo(5*u,-1*u); ctx.quadraticCurveTo(0,-5*u,-5*u,-1*u); ctx.closePath(); ctx.fill();
+      ctx.fillStyle="#e3e7ed"; S.draw.rrect(c,-5*u,-1*u,10*u,9*u,2*u); ctx.fill();
+      ctx.fillStyle="#13233a"; S.draw.rrect(c,-3*u,15*u,6*u,6*u,1.5*u); ctx.fill();
+      ctx.restore();
+    }
     k.draw(function(){
       var V=vec(vp.value,cap.value), Cc=vec(vc.value,dc.value), G=[V[0]+Cc[0],V[1]+Cc[1]], ng=Math.hypot(G[0],G[1]);
       c.clear(); var W=c.W,H=c.H,ctx=c.ctx;
       var R=Math.max(12,Math.ceil((Math.max(Math.hypot(V[0],V[1]),Math.hypot(G[0],G[1]),Math.abs(V[0]+Cc[0]),Math.abs(V[1]+Cc[1]))+3)/2)*2);
-      var sc=(Math.min(W,H)/2-16)/R, ox=W/2, oy=H/2+6;
+      var bankH=Math.max(34,(H-W)/2+26), sc=Math.min(W/2-16,(H-2*bankH)/2-6)/R, ox=W/2, oy=H/2;
       geo.X=function(x){return ox+x*sc;}; geo.Y=function(y){return oy-y*sc;}; geo.ix=function(px){return (px-ox)/sc;}; geo.iy=function(py){return (oy-py)/sc;};
-      var X=geo.X,Y=geo.Y;
-      /* mer */
-      var g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,"#e6f3fa"); g.addColorStop(1,"#cfe6f3"); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-      /* cercles de portée */
-      ctx.save(); ctx.strokeStyle="rgba(30,63,143,.14)"; ctx.lineWidth=1; for(var r=4;r<=R;r+=4){ ctx.beginPath(); ctx.arc(ox,oy,r*sc,0,2*Math.PI); ctx.stroke(); } 
-      ctx.beginPath(); ctx.moveTo(ox,oy-R*sc); ctx.lineTo(ox,oy+R*sc); ctx.moveTo(ox-R*sc,oy); ctx.lineTo(ox+R*sc,oy); ctx.stroke(); ctx.restore();
-      /* stries du courant */
-      if(vc.value>0){ ctx.save(); ctx.strokeStyle="rgba(14,127,150,.30)"; ctx.lineWidth=2; ctx.lineCap="round";
-        var ux=Cc[0]/vc.value, uy=Cc[1]/vc.value, off=(prog>0&&lp.running?prog*18:0);
-        for(var i=-6;i<=6;i++) for(var j=-3;j<=3;j++){ var bx=ox+(i*58+((j%2)*29)), by=oy-(j*66)-30; var tx=bx+ux*((off+j*7)%28), ty=by-uy*((off+j*7)%28); ctx.beginPath(); ctx.moveTo(tx,ty); ctx.lineTo(tx+ux*14,ty-uy*14); ctx.stroke(); }
-        ctx.restore(); }
-      /* route voulue : plein nord + phare */
-      S.draw.line(c,ox,oy,ox,oy-R*sc,"rgba(36,119,90,.55)",1.6,[6,5]);
+      var X=geo.X,Y=geo.Y, wT=bankH, wB=H-bankH;
+      /* eau du fleuve */
+      ctx.fillStyle=lin(ctx,0,wT,0,wB,[[0,"#4f9cc9"],[0.5,"#3d8dbf"],[1,"#4f9cc9"]]); ctx.fillRect(0,wT-8,W,wB-wT+16);
+      /* reflets et stries du courant (elles avancent avec le courant) */
+      ctx.save(); ctx.beginPath(); ctx.rect(0,wT,W,wB-wT); ctx.clip();
+      if(vc.value>0){ var ux=Cc[0]/vc.value, uy=Cc[1]/vc.value, sp=sc*1; ctx.strokeStyle="rgba(255,255,255,.35)"; ctx.lineWidth=2; ctx.lineCap="round";
+        for(var i=0;i<46;i++){ var bx=((i*137)%W), by=wT+((i*89)%(wB-wT)), d=((flow*sp+i*23)%(W+H)); var tx=bx+ux*d, ty=by-uy*d; tx=((tx%W)+W)%W; ty=wT+(((ty-wT)%(wB-wT))+(wB-wT))%(wB-wT); ctx.beginPath(); ctx.moveTo(tx,ty); ctx.lineTo(tx+ux*(8+vc.value*2.5),ty-uy*(8+vc.value*2.5)); ctx.stroke(); } }
+      else { ctx.strokeStyle="rgba(255,255,255,.22)"; ctx.lineWidth=1.5; for(var i2=0;i2<20;i2++){ var qx=(i2*97)%W, qy=wT+(i2*61)%(wB-wT); ctx.beginPath(); ctx.arc(qx,qy,6+3*Math.sin(clock*2+i2),0.2,2.9); ctx.stroke(); } }
+      ctx.restore();
+      /* berges */
+      bank(ctx,W,0,wT,true); bank(ctx,W,wB,H,false);
+      /* quai visé, plein nord */
       var route0=ng<0.01?NaN:((Math.atan2(G[0],G[1])/D2R)+360)%360, north=!isNaN(route0)&&(route0<1.5||route0>358.5);
-      var lx=ox,ly=oy-R*sc+12; ctx.save(); S.draw.glow(c,lx,ly,22,north?P.yellow:"#ffffff",north?.9:.45);
-      ctx.fillStyle="#fff"; ctx.strokeStyle=P.ink; ctx.lineWidth=1.4; ctx.beginPath(); ctx.moveTo(lx-5,ly+9); ctx.lineTo(lx-3,ly-6); ctx.lineTo(lx+3,ly-6); ctx.lineTo(lx+5,ly+9); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle=P.red; ctx.fillRect(lx-3,ly-9,6,4); ctx.restore();
-      S.draw.text(c,"N",ox+12,oy-R*sc+4,{size:12,color:P.green,align:"left"}); S.draw.text(c,"E",ox+R*sc-8,oy-10,{size:12,color:P.grey});
+      ctx.fillStyle="#8a6b47"; ctx.fillRect(ox-16,wT-10,32,22); ctx.strokeStyle="rgba(0,0,0,.25)"; ctx.lineWidth=1; for(var p=-12;p<=12;p+=6){ ctx.beginPath(); ctx.moveTo(ox+p,wT-10); ctx.lineTo(ox+p,wT+12); ctx.stroke(); }
+      S.draw.glow(c,ox,wT-22,26,north?P.yellow:"#ffffff",north?.95:.45);
+      ctx.fillStyle="#ffffff"; ctx.beginPath(); ctx.arc(ox,wT-22,9,0,6.2832); ctx.fill(); ctx.strokeStyle=P.red; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(ox,wT-22,6.5,0,6.2832); ctx.stroke(); ctx.fillStyle="#f4c542"; ctx.beginPath(); ctx.arc(ox,wT-22,3,0,6.2832); ctx.fill();
+      S.draw.text(c,"quai visé",ox+16,wT-22,{size:11,weight:800,color:"#13233a",align:"left",bg:"rgba(255,255,255,.85)"});
+      /* route voulue : plein nord */
+      S.draw.line(c,ox,oy,ox,wT+10,"rgba(255,255,255,.75)",1.6,[6,5]);
+      /* rose des vents */
+      var rx=W-40, ry=wB+Math.min(34,(H-wB)/2);
+      ctx.save(); ctx.fillStyle="rgba(255,255,255,.9)"; ctx.beginPath(); ctx.arc(rx,ry,17,0,6.2832); ctx.fill(); ctx.fillStyle=P.red; ctx.beginPath(); ctx.moveTo(rx,ry-14); ctx.lineTo(rx+4,ry); ctx.lineTo(rx-4,ry); ctx.closePath(); ctx.fill(); ctx.fillStyle="#13233a"; ctx.beginPath(); ctx.moveTo(rx,ry+14); ctx.lineTo(rx+4,ry); ctx.lineTo(rx-4,ry); ctx.closePath(); ctx.fill(); ctx.restore();
+      S.draw.text(c,"N",rx,ry-24,{size:11,weight:800,color:P.red,halo:"#a6cf80"}); S.draw.text(c,"E",rx+24,ry,{size:10.5,weight:800,color:"#13233a"});
+      /* bouée de départ */
+      ctx.fillStyle="#f4c542"; ctx.beginPath(); ctx.arc(ox,oy,7,0,6.2832); ctx.fill(); ctx.strokeStyle="#c26a0c"; ctx.lineWidth=2; ctx.stroke();
       /* vecteurs */
-      S.draw.arrow(c,X(0),Y(0),X(V[0]),Y(V[1]),P.red,3.2);
-      if(vc.value>0) S.draw.arrow(c,X(V[0]),Y(V[1]),X(G[0]),Y(G[1]),P.teal,3.2);
-      if(ng>0.01) S.draw.arrow(c,X(0),Y(0),X(G[0]),Y(G[1]),P.acc,4.6);
-      /* trace + bateau */
-      var f=Math.min(1,prog), bp=[G[0]*f,G[1]*f];
-      if(prog>0){ S.draw.line(c,X(0),Y(0),X(bp[0]),Y(bp[1]),"rgba(255,255,255,.95)",5); S.draw.line(c,X(0),Y(0),X(bp[0]),Y(bp[1]),P.acc,1.6,[2,4]); }
-      var bx=X(bp[0]), by=Y(bp[1]), a=cap.value*D2R; ctx.save(); ctx.translate(bx,by); ctx.rotate(a); ctx.fillStyle="#fff"; ctx.strokeStyle=P.ink; ctx.lineWidth=1.6; ctx.beginPath(); ctx.moveTo(0,-14); ctx.quadraticCurveTo(8,-4,6,11); ctx.lineTo(-6,11); ctx.quadraticCurveTo(-8,-4,0,-14); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.fillStyle=P.red; ctx.fillRect(-1,-4,2,9); ctx.restore();
-      M.lab(c,"vₚ = "+F(vp.value,0),X(V[0]/2)-(V[0]>=0?30:-30),Y(V[1]/2),P.red,{size:11});
-      if(vc.value>0) M.lab(c,"courant "+F(vc.value,0),X(V[0]+Cc[0]/2)+(Cc[0]>=0?36:-36),Y(V[1]+Cc[1]/2)-10,P.teal,{size:11});
-      M.handle(c,X(V[0]),Y(V[1]),P.red,6.5); if(vc.value>0||true) M.handle(c,X(G[0]),Y(G[1]),P.teal,6.5);
+      S.draw.arrow(c,X(0),Y(0),X(V[0]),Y(V[1]),"#ff5a3c",3.4);
+      if(vc.value>0) S.draw.arrow(c,X(V[0]),Y(V[1]),X(G[0]),Y(G[1]),"#7ff0e0",3.4);
+      if(ng>0.01) S.draw.arrow(c,X(0),Y(0),X(G[0]),Y(G[1]),"#13233a",4.4);
+      /* trajet + bateau (pointé selon le cap, il glisse selon la route) */
+      /* le bateau suit sa route jusqu'à une berge (ou au bord de la carte) */
+      var tEnd=0; if(ng>0.01){ tEnd=1e9; if(G[1]>1e-9) tEnd=Math.min(tEnd,geo.iy(wT+6)/G[1]); if(G[1]<-1e-9) tEnd=Math.min(tEnd,geo.iy(wB-6)/G[1]); if(G[0]>1e-9) tEnd=Math.min(tEnd,geo.ix(W-12)/G[0]); if(G[0]<-1e-9) tEnd=Math.min(tEnd,geo.ix(12)/G[0]); }
+      var f=Math.min(1,prog)*tEnd, bp=[G[0]*f,G[1]*f], landed=prog>=1&&ng>0.01, hitN=landed&&G[1]>1e-9&&Math.abs(geo.iy(wT+6)/G[1]-tEnd)<1e-9;
+      if(prog>0){ S.draw.line(c,X(0),Y(0),X(bp[0]),Y(bp[1]),"rgba(255,255,255,.95)",4); S.draw.line(c,X(0),Y(0),X(bp[0]),Y(bp[1]),"#13233a",1.6,[2,4]); }
+      var bob=Math.sin(clock*2.2)*0.04;
+      boat(ctx,X(bp[0]),Y(bp[1]),cap.value*D2R+bob,Math.max(42,Math.min(62,W*0.1)),prog>0&&prog<1&&ng>0.01,clock);
+      if(landed){ var msg2=hitN?(north?"Arrivé au quai visé !":(X(bp[0])>ox?"Accosté à l'est du quai":"Accosté à l'ouest du quai")):"Emporté loin du quai"; S.draw.text(c,msg2,M.clamp(X(bp[0]),80,W-80),hitN?wT+30:M.clamp(Y(bp[1])+30,wT+20,wB-20),{size:12.5,weight:800,color:north&&hitN?P.green:P.red,bg:"rgba(255,255,255,.94)"}); }
+      S.draw.text(c,"vₚ = "+F(vp.value,0),X(V[0]/2)-(V[0]>=0?32:-32),Y(V[1]/2),{size:11,weight:800,color:P.red,bg:"rgba(255,255,255,.92)"});
+      if(vc.value>0) S.draw.text(c,"courant "+F(vc.value,0),X(V[0]+Cc[0]/2)+(Cc[0]>=0?36:-36),Y(V[1]+Cc[1]/2)-12,{size:11,weight:800,color:P.teal,bg:"rgba(255,255,255,.92)"});
+      M.handle(c,X(V[0]),Y(V[1]),P.red,6.5); M.handle(c,X(G[0]),Y(G[1]),P.teal,6.5);
+      /* légende */
+      S.draw.legend(c,[["#ff5a3c","vitesse propre (cap)"],["#3fc9b8","courant"],["#13233a","vitesse sol (route)"]],8,wB-66,{});
       /* lectures */
       var route=ng<0.01?NaN:((Math.atan2(G[0],G[1])/D2R)+360)%360, der=isNaN(route)?NaN:(((route-cap.value+540)%360)-180);
       ro.set(0,F(vp.value,0)+" km/h, cap "+F(cap.value,0)+"°"); ro.set(1,F(vc.value,0)+" km/h vers "+F(dc.value,0)+"°");

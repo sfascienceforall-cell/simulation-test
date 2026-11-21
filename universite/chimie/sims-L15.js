@@ -237,8 +237,8 @@ function iupac(spec){
 
 /* ---------- rendu 3D commun ---------- */
 function drawMol(c, mol, st, o){
-  var ctx = c.ctx, W = c.W, H = c.H, items = [], sc = Math.min(W * 0.52, H * 0.52) / (mol.rmax + 0.3);
-  var cx = W * 0.5, cy = H * 0.5, pr = mol.atoms.map(function(a){ return proj3(a.p, st, sc, cx, cy); });
+  var ctx = c.ctx, W = c.W, H = c.H, items = [], sc = (o.fit || Math.min(W * 0.52, H * 0.52)) / (mol.rmax + 0.3);
+  var cx = W * 0.5, cy = o.cy != null ? o.cy : H * 0.5, pr = mol.atoms.map(function(a){ return proj3(a.p, st, sc, cx, cy); });
   var showH = o.showH !== false;
   mol.bonds.forEach(function(b){
     var A = mol.atoms[b.a], B = mol.atoms[b.b]; if (!showH && (A.el === "H" || B.el === "H")) return;
@@ -288,13 +288,28 @@ SFA.sim({
   aRetenir:"Méthode : (1) chaîne principale = la plus longue qui contient le groupe prioritaire ; (2) numérotation : d'abord le plus petit locant pour le groupe principal, ensuite pour les insaturations (C=C, C≡C), puis pour l'ensemble des substituants ; si égalité, le substituant cité en premier par ordre alphabétique a le plus petit locant ; (3) substituants par ordre alphabétique (di-, tri- ne comptent pas) ; (4) suffixes : –ane, –ène, –yne ; –ol, –al, –one, acide –oïque. Ordre de priorité des groupes : acide > aldéhyde > cétone > alcool > C=C > C≡C > halogéno et alkyle (préfixes).",
   piege:"On ne choisit pas le sens de numérotation au hasard : le groupe principal d'abord, même si les substituants reçoivent alors de plus grands locants. Un halogène ou un alkyle n'est jamais un suffixe. Et le « di » de diméthyl ne compte pas dans l'ordre alphabétique : éthyl passe avant diméthyl, qui se classe à « m ».",
   build:function(k, S){
-    var c = k.canvas(360), st = {a:0.6, b:0.35, spin:true, last:""};
+    /* scène haute : la molécule remplit le cadre, son nom s'affiche en grand dessous ; réglages par onglets */
+    var c = k.canvas(0, {ratio:0.78}), r0 = c.resize, st = {a:0.2, b:0.35, spin:true, last:"", t:0, nmT:-9, nm:""};
+    c.resize = function(){ var w = c.cv.parentNode ? c.cv.parentNode.clientWidth : 600; c.ratio = w < 600 ? 1.08 : 0.74; r0(); }; c.resize();
     dragView(c, st); st.onview = function(){ st.spin = false; spinT.set(false); k.redraw(); };
+    var presets = [
+      ["Isooctane", {n:5, f:"none", p:1, u:"none", up:2, s:[["CH3", 2], ["CH3", 2], ["CH3", 4]]}],
+      ["Ac. 3-méthylbutanoïque", {n:4, f:"oic", p:1, u:"none", up:2, s:[["CH3", 3], ["", 3], ["", 3]]}],
+      ["Pent-3-én-2-ol", {n:5, f:"ol", p:4, u:"ene", up:2, s:[["", 3], ["", 3], ["", 3]]}],
+      ["2-Bromo-3-méthylpentane", {n:5, f:"none", p:1, u:"none", up:2, s:[["Br", 2], ["CH3", 3], ["", 3]]}]
+    ];
+    var exS = k.select("Exemple tout prêt", [["", "— choisir un exemple —"]].concat(presets.map(function(p, i){ return [String(i), p[0]]; })), "", function(v){
+      if (v === "") return;
+      var pv = presets[+v][1]; nS.set(pv.n); fS.set(pv.f); pS.set(pv.p); uS.set(pv.u); upS.set(pv.up);
+      pv.s.forEach(function(s, i){ sub[i].t.set(s[0]); sub[i].p.set(s[1]); });
+      exS.set("");
+    });
+    var tab = k.seg("Réglages", [["ch", "1 · Chaîne"], ["gr", "2 · Groupe"], ["su", "3 · Substituants"], ["vu", "Affichage"]], "ch");
     var nS = k.slider("Longueur de la chaîne principale", 3, 8, 1, 5, "C");
-    var fS = k.select("Groupe caractéristique", SUFS, "none");
-    var pS = k.slider("Position du groupe (–OH, C=O)", 1, 8, 1, 2, "");
     var uS = k.select("Insaturation", [["none", "Aucune"], ["ene", "Double liaison C=C"], ["yne", "Triple liaison C≡C"]], "none");
     var upS = k.slider("Position de l'insaturation (1er carbone)", 1, 7, 1, 2, "");
+    var fS = k.select("Groupe caractéristique", SUFS, "none");
+    var pS = k.slider("Position du groupe (–OH, C=O)", 1, 8, 1, 2, "");
     var sub = [];
     for (var q = 0; q < 3; q++) (function(q){
       var t = k.select("Substituant " + (q + 1), SUBS, q === 0 ? "CH3" : "");
@@ -304,22 +319,14 @@ SFA.sim({
     var hlT = k.toggle("Chaîne principale en bleu, branches en orange", true);
     var HT = k.toggle("Afficher les hydrogènes", true);
     var spinT = k.toggle("Rotation automatique", true, function(v){ st.spin = v; });
-    var presets = [
-      ["Isooctane", {n:5, f:"none", p:1, u:"none", up:2, s:[["CH3", 2], ["CH3", 2], ["CH3", 4]]}],
-      ["Ac. 3-méthylbutanoïque", {n:4, f:"oic", p:1, u:"none", up:2, s:[["CH3", 3], ["", 3], ["", 3]]}],
-      ["Pent-3-én-2-ol", {n:5, f:"ol", p:4, u:"ene", up:2, s:[["", 3], ["", 3], ["", 3]]}],
-      ["2-Bromo-3-méthylpentane", {n:5, f:"none", p:1, u:"none", up:2, s:[["Br", 2], ["CH3", 3], ["", 3]]}]
-    ];
-    presets.forEach(function(pr){
-      k.button(pr[0], function(){
-        var v = pr[1]; nS.set(v.n); fS.set(v.f); pS.set(v.p); uS.set(v.u); upS.set(v.up);
-        v.s.forEach(function(s, i){ sub[i].t.set(s[0]); sub[i].p.set(s[1]); });
-      });
-    });
+    function box(o){ return (o.el || o).closest ? (o.el || o).closest(".ctl") : null; }
+    var TABS = {ch:[nS, uS, upS], gr:[fS, pS], su:[sub[0].t, sub[0].p, sub[1].t, sub[1].p, sub[2].t, sub[2].p], vu:[]};
+    /* les bascules n'exposent pas leur élément : on les retrouve dans le DOM (trois dernières .ctl.tg) */
+    var tgs = Array.prototype.slice.call(k.ctrl.querySelectorAll(".ctl.tg")).slice(-3);
     var ro = k.readouts(["Nom IUPAC", "Formule brute", "Masse molaire M", "Insaturations"]);
     var nt = k.note("", "ok");
     var cache = {key:"", mol:null};
-    var lp = k.loop(function(dt){ if (st.spin && !st.drag){ st.t = (st.t || 0) + dt; st.a = 0.35 + 0.8 * Math.sin(st.t * 0.55); k.redraw(); } });
+    var lp = k.loop(function(dt){ st.t += dt; if (st.spin && !st.drag){ st.ts = (st.ts || 0) + dt; st.a = 0.2 + 0.62 * Math.sin(st.ts * 0.5); st.b = 0.33 + 0.12 * Math.sin(st.ts * 0.31); } k.redraw(); });
     lp.play();
     function readSpec(){
       var n = Math.round(nS.value), suf = fS.value, sp = Math.round(pS.value), notes = [];
@@ -332,21 +339,42 @@ SFA.sim({
       sub.forEach(function(s){ if (s.t.value){ subs.push({t:s.t.value, p:Math.max(1, Math.min(n, Math.round(s.p.value)))}); } });
       return {spec:{n:n, suf:suf, sp:sp, unsat:un, up:up, subs:subs}, notes:notes};
     }
+    function fitText(ctx, txt, maxW, size, weight){ var s = size; ctx.font = weight + " " + s + "px Mulish, system-ui, sans-serif"; while (s > 12 && ctx.measureText(txt).width > maxW){ s -= 1; ctx.font = weight + " " + s + "px Mulish, system-ui, sans-serif"; } return s; }
     k.draw(function(){
-      var rs = readSpec(), spec = rs.spec, key = JSON.stringify(spec);
-      pS.el.closest(".ctl").style.display = spec.suf === "ol" || spec.suf === "one" ? "" : "none";
-      upS.el.closest(".ctl").style.display = spec.unsat === "none" ? "none" : "";
+      var rs = readSpec(), spec = rs.spec, key = JSON.stringify(spec), T = tab.value;
+      Object.keys(TABS).forEach(function(tk){ TABS[tk].forEach(function(o){ var b = box(o); if (b) b.style.display = tk === T ? "" : "none"; }); });
+      tgs.forEach(function(b){ b.style.display = T === "vu" ? "" : "none"; });
+      if (T === "gr") box(pS).style.display = spec.suf === "ol" || spec.suf === "one" ? "" : "none";
+      if (T === "ch") box(upS).style.display = spec.unsat === "none" ? "none" : "";
+      if (T === "su") sub.forEach(function(s){ box(s.p).style.display = s.t.value ? "" : "none"; });
+      var ctx = c.ctx, W = c.W, H = c.H, ph = W < 480;
       c.clear();
+      /* fond : dégradé doux + reflet au sol */
+      var bg = ctx.createRadialGradient(W * 0.5, H * 0.38, 10, W * 0.5, H * 0.45, Math.max(W, H) * 0.75);
+      bg.addColorStop(0, "#ffffff"); bg.addColorStop(1, "#e6ecf4"); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
       if (key !== cache.key){ cache.key = key; cache.mol = build(spec); cache.nm = cache.mol.err ? null : iupac(spec); }
-      var mol = cache.mol, ctx = c.ctx;
+      var mol = cache.mol, banH = ph ? 70 : 84, top = 26, area = H - banH - top;
       if (mol.err){
-        S.draw.text(c, "Combinaison impossible", c.W / 2, c.H / 2 - 12, {size:16, color:"#c0392b", align:"center"});
+        S.draw.text(c, "Combinaison impossible", W / 2, H / 2 - 12, {size:16, color:"#c0392b", align:"center"});
         ro.set(0, "—"); ro.set(1, "—"); ro.set(2, "—"); ro.set(3, "—");
         nt.set(mol.err, "warn"); return;
       }
       var nm = cache.nm, f = formula(mol);
-      drawMol(c, mol, st, {showH:HT.value, hl:hlT.value, num:function(i){ return String(nm.pick.d === 1 ? i : spec.n + 1 - i); }});
+      if (nm.name !== st.nm){ st.nm = nm.name; st.nmT = st.t; }
+      ctx.save(); ctx.fillStyle = "rgba(15,27,45,.07)"; ctx.beginPath(); ctx.ellipse(W / 2, top + area * 0.93, Math.min(W * 0.36, area * 0.6), area * 0.05, 0, 0, 7); ctx.fill(); ctx.restore();
+      drawMol(c, mol, st, {showH:HT.value, hl:hlT.value, cy:top + area * 0.5, fit:Math.min(W * 0.5, area * 0.56), num:function(i){ return String(nm.pick.d === 1 ? i : spec.n + 1 - i); }});
       S.draw.text(c, "chaîne principale : " + spec.n + " C (« " + STEM[spec.n] + " »)", 10, 14, {size:11.5, color:"#2c3a4e", align:"left"});
+      if (!ph) S.draw.text(c, "glisse pour tourner", W - 10, 14, {size:11, color:"#8a95a3", align:"right"});
+      /* bandeau du nom : il « se forme » (glisse et apparaît) à chaque changement */
+      var e = Math.min(1, (st.t - st.nmT) / 0.45), ee = 1 - Math.pow(1 - e, 3), by = H - banH - 8;
+      ctx.save(); ctx.fillStyle = "rgba(255,255,255,.94)"; ctx.strokeStyle = "#d9e0ea"; ctx.lineWidth = 1; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(10, by, W - 20, banH, 12); else ctx.rect(10, by, W - 20, banH); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = "#2a6fdb"; ctx.fillRect(10, by + 12, 4, banH - 24);
+      ctx.globalAlpha = ee; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillStyle = "#13233a";
+      var fsz = fitText(ctx, nm.name, W - 56, ph ? 21 : 27, "800");
+      ctx.fillText(nm.name, W / 2, by + banH * 0.4 + (1 - ee) * 10);
+      ctx.font = "700 " + (ph ? 12 : 13) + "px Mulish, system-ui, sans-serif"; ctx.fillStyle = "#5f6b7a";
+      ctx.fillText(f.txt.replace(/<sub>(\d+)<\/sub>/g, function(m, d){ return d.split("").map(function(x){ return "₀₁₂₃₄₅₆₇₈₉"[+x]; }).join(""); }) + "   ·   M = " + S.fmt(f.M, 2) + " g/mol   ·   " + S.fmt(f.dbe, 0) + " insaturation" + (f.dbe > 1 ? "s" : ""), W / 2, by + banH * 0.78);
+      ctx.restore();
       ro.set(0, nm.name); ro.set(1, f.txt); ro.set(2, S.fmt(f.M, 2) + " g/mol"); ro.set(3, S.fmt(f.dbe, 0));
       var msg = "Numérotation " + (nm.pick.d === 1 ? "de gauche à droite" : "de droite à gauche") + " : " + nm.why + ". ";
       if (spec.unsat === "ene" || spec.unsat === "yne") msg += "Les C=C ne précisent pas ici Z/E (voir L16). ";

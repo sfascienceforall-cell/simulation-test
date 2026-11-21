@@ -82,40 +82,143 @@ SFA.sim({
   id: "p6-c10-radiographie", ch: "c10", tag: "Imagerie",
   titre: "Radiographie : atténuation, énergie des rayons X et contraste",
   resume: "I = I₀·e^(−μ·x) : l'os absorbe plus que les tissus, surtout à basse énergie.",
-  but: "Des rayons X traversent des tissus mous (équivalent eau) avec ou sans os. Règle l'énergie, l'épaisseur de tissu et l'épaisseur d'os. Compare les images (grises) et lis le contraste.",
+  but: "Des rayons X traversent une main et un avant-bras posés sur le détecteur. Règle l'énergie, l'épaisseur de tissu et l'épaisseur d'os, puis prends la radio : l'os ressort en blanc, d'autant plus que le contraste est grand. Promène la souris (ou le doigt) sur le cliché pour lire la transmission de l'air, des tissus ou de l'os.",
   aRetenir: "Un faisceau de rayons X traversant une épaisseur x d'un matériau est atténué : I = I₀·e^(−μ·x). Le coefficient μ dépend du matériau (os > tissus mous > air) et de l'énergie des photons. À basse énergie (30 à 50 keV), l'os absorbe beaucoup plus que les tissus : fort contraste, mais le patient absorbe plus d'énergie. À haute énergie, le faisceau traverse mieux, au prix d'un contraste plus faible. La radiographie utilise un rayonnement ionisant : on applique le principe ALARA (dose aussi basse que raisonnablement possible).",
-  piege: "Une zone claire sur un cliché est une zone qui a reçu peu de rayons X (os), pas l'inverse de ce qu'on croit : l'os « blanc » est l'os qui absorbe. Les valeurs de μ sont tirées de tables usuelles (eau et os cortical) ; le modèle ignore la diffusion et le rayonnement secondaire.",
+  piege: "Sur un cliché, une zone claire est une zone qui a reçu peu de rayons X : l'os « blanc » est l'os qui absorbe ; l'air, qui laisse tout passer, est noir. Les valeurs de μ sont tirées de tables usuelles (eau et os cortical) ; le modèle ignore la diffusion et le rayonnement secondaire et prend la même épaisseur de tissu partout. Cliché simulé : exposition réglée pour que les tissus soient gris foncé, la clarté de l'os traduit le contraste calculé.",
   build: function(k, S){
-    var c = k.canvas(250), P = S.draw.palette;
-    var en = k.select("Énergie des rayons X", [["30", "30 keV"], ["40", "40 keV"], ["50", "50 keV"], ["60", "60 keV"], ["80", "80 keV"], ["100", "100 keV"]], "60");
-    var tis = k.slider("Épaisseur de tissus mous", 5, 25, 1, 15, "cm");
-    var os = k.slider("Épaisseur d'os", 0, 4, 0.25, 2, "cm");
+    var P = S.draw.palette;
+    function rcv(desk, phone){
+      var cv = k.canvas(0, {ratio: desk});
+      Object.defineProperty(cv, "ratio", {get: function(){ var w = cv.cv.parentNode ? cv.cv.parentNode.clientWidth : 600; return w < 460 ? phone : desk; }, configurable: true});
+      cv.resize(); return cv;
+    }
+    var c = rcv(0.78, 1.5);
+    var en = k.select("Énergie des rayons X", [["30", "30 keV"], ["40", "40 keV"], ["50", "50 keV"], ["60", "60 keV"], ["80", "80 keV"], ["100", "100 keV"]], "60", function(){ dev = 0; });
+    var tis = k.slider("Épaisseur de tissus mous", 5, 25, 1, 15, "cm", function(){ dev = Math.min(dev, 0.6); });
+    var os = k.slider("Épaisseur d'os", 0, 4, 0.25, 2, "cm", function(){ dev = Math.min(dev, 0.6); });
+    k.button("▶ Prendre la radio", function(){ dev = 0; flash = 1; }, true);
     var ro = k.readouts(["Transmission : tissus seuls", "Transmission : tissus + os", "Contraste os / tissus", "Absorbé par les tissus"]);
     var nt = k.note("", "ok");
     var tab = {"30": [0.3756, 1.331], "40": [0.2683, 0.6655], "50": [0.2269, 0.4242], "60": [0.2059, 0.3148], "80": [0.1837, 0.2229], "100": [0.1707, 0.1855]};
     var RHOB = 1.92;
     function tr(e, tcm, ocm){ var t = tab[e]; return {mu1: t[0] * 1.0, mu2: t[1] * RHOB, a: Math.exp(-t[0] * tcm), b: Math.exp(-t[0] * (tcm - ocm) - t[1] * RHOB * ocm)}; }
+    /* main et avant-bras : capsules (segment + rayon), unité = longueur de la main + avant-bras */
+    var TIS = [[0, 1.08, 0, 0.5, 0.135], [-0.075, 0.21, 0.08, 0.21, 0.12], [-0.075, 0.37, 0.075, 0.37, 0.13], [0, 0.22, 0, 0.4, 0.15]], BON = [];
+    var FG = [[-0.125, -0.13, 0.31], [-0.04, -0.035, 0.345], [0.045, 0.05, 0.32], [0.125, 0.15, 0.25]];
+    FG.forEach(function(q){ var dx = Math.sin(q[1]), dy = -Math.cos(q[1]), L = q[2], x = q[0], y = 0.16;
+      TIS.push([x, y + 0.03, x + dx * L, y + dy * L, 0.048]);
+      BON.push([x * 0.55, 0.385, x, 0.175, 0.017]);
+      [[0.03, 0.41], [0.46, 0.72], [0.77, 0.93]].forEach(function(s){ BON.push([x + dx * L * s[0], y + dy * L * s[0], x + dx * L * s[1], y + dy * L * s[1], 0.0145 - s[0] * 0.005]); });
+    });
+    (function(){ var x = -0.15, y = 0.39, a = -0.8, dx = Math.sin(a), dy = -Math.cos(a), L = 0.32;
+      TIS.push([x, y, x + dx * L, y + dy * L, 0.054]);
+      [[0.04, 0.36], [0.42, 0.67], [0.72, 0.9]].forEach(function(s, i){ BON.push([x + dx * L * s[0], y + dy * L * s[0], x + dx * L * s[1], y + dy * L * s[1], i ? 0.016 : 0.019]); });
+    })();
+    BON.push([-0.05, 1.1, -0.056, 0.53, 0.031], [0.058, 1.1, 0.062, 0.54, 0.025], [-0.056, 0.515, -0.056, 0.515, 0.046], [0.062, 0.525, 0.062, 0.525, 0.032]);
+    [[-0.078, 0.468], [-0.027, 0.474], [0.024, 0.474], [0.072, 0.466], [-0.074, 0.424], [-0.024, 0.43], [0.028, 0.43], [0.077, 0.423]].forEach(function(p){ BON.push([p[0], p[1], p[0], p[1], 0.023]); });
+    function dseg(px, py, s){ var vx = s[2] - s[0], vy = s[3] - s[1], l2 = vx * vx + vy * vy, u = l2 ? Math.max(0, Math.min(1, ((px - s[0]) * vx + (py - s[1]) * vy) / l2)) : 0, dx = px - s[0] - u * vx, dy = py - s[1] - u * vy; return Math.sqrt(dx * dx + dy * dy); }
+    function inside(list, x, y){ for (var i = 0; i < list.length; i++) if (dseg(x, y, list[i]) < list[i][4]) return true; return false; }
+    function caps(ctx, list, M, col){ ctx.save(); ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineCap = "round";
+      list.forEach(function(s){ var a = M(s[0], s[1]), b = M(s[2], s[3]); ctx.lineWidth = 2 * s[4] * M.u; ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0] + 0.01, b[1]); ctx.stroke(); });
+      ctx.restore(); }
+    var dev = 0, flash = 1, t = 0, phot = [], probe = null, G = {}, seed = 5;
+    function rnd(){ seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+    var lp = k.loop(function(dt){
+      t += dt; dev = Math.min(1, dev + dt / 1.1); flash = Math.max(0, flash - dt * 2.5);
+      if (phot.length < 46 && Math.random() < dt * 60) phot.push({u: Math.random() * 2 - 1, y: 0, hit: -1});
+      phot.forEach(function(p){ p.y += dt * 1.25; }); phot = phot.filter(function(p){ return p.y < 1.25; });
+      k.redraw();
+    });
+    lp.play();
+    c.pointer(function(tp, p){
+      if (!G.rw) return;
+      if (p.x > G.rx && p.x < G.rx + G.rw && p.y > G.ry && p.y < G.ry + G.rh) probe = {x: p.x, y: p.y};
+      else if (tp === "move" || tp === "down") probe = null;
+    });
+    /* notation scientifique lisible au canevas (S.sci renvoie du HTML avec <sup>) */
+    function sciTxt(x){ var SUP = {"0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹", "−": "⁻", "-": "⁻"}; return String(S.sci(x)).replace(/<sup>(.*?)<\/sup>/g, function(m, q){ return q.split("").map(function(ch){ return SUP[ch] || ch; }).join(""); }).replace(/<[^>]+>/g, ""); }
+    function gray(v){ var g = Math.round(12 + 243 * Math.max(0, Math.min(1, v))); return "rgb(" + g + "," + g + "," + Math.min(255, g + 6) + ")"; }
     k.draw(function(){
-      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, T = tr(en.value, tis.value, os.value);
-      var x0 = 30, xb = W * 0.55, cy = 96;
-      /* tube, corps, détecteur (coupe) */
-      S.draw.dot(c, x0, cy, 12, P.amber); S.draw.text(c, "tube", x0, cy + 26, {size: 12});
-      ctx.fillStyle = "#f2d3b8"; ctx.fillRect(x0 + 90, 30, 120, 130);
-      ctx.fillStyle = "#e9e5df"; ctx.fillRect(x0 + 90, 95 - Math.min(60, os.value * 14) / 2 + 0, 120, Math.min(60, os.value * 14)); S.draw.text(c, "tissus", x0 + 150, 46, {size: 12, color: "#8a5a3a"}); S.draw.text(c, "os", x0 + 150, 95, {size: 12, color: P.ink});
-      [-1, 1].forEach(function(s){ S.draw.line(c, x0 + 12, cy, x0 + 90, cy + s * 40, "rgba(244,197,66,.9)", 1.5, [4, 3]); });
-      S.draw.arrow(c, x0 + 214, 60, x0 + 262, 60, P.amber, 3); S.draw.arrow(c, x0 + 214, 125, x0 + 262, 125, P.amber, 3);
-      /* image du détecteur : deux plages */
-      function gray(v){ var g = Math.round(255 * Math.pow(v, 0.35)); return "rgb(" + g + "," + g + "," + g + ")"; }
-      var ix = W * 0.62, iw = W - ix - 16;
-      ctx.fillStyle = gray(T.a); ctx.fillRect(ix, 30, iw, 62); ctx.fillStyle = gray(T.b); ctx.fillRect(ix, 98, iw, 62);
-      ctx.strokeStyle = P.ink; ctx.lineWidth = 1; ctx.strokeRect(ix, 30, iw, 130);
-      S.draw.text(c, "image (clair = peu absorbé)", ix + iw / 2, 18, {size: 12});
-      S.draw.text(c, "tissus seuls", ix + iw / 2, 61, {size: 12, color: T.a > 0.2 ? "#111" : "#fff"}); S.draw.text(c, "tissus + os", ix + iw / 2, 129, {size: 12, color: T.b > 0.2 ? "#111" : "#fff"});
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, ph = W < 460, T = tr(en.value, tis.value, os.value), E = parseFloat(en.value);
       var contrast = 1 - T.b / T.a;
+      /* niveaux de gris du cliché (exposition réglée sur les tissus) */
+      var gT = 0.2 + 0.25 * Math.min(1, -Math.log(T.a) / Math.LN10 / 3), gB = gT + (1 - gT) * Math.pow(Math.max(0, contrast), 0.7);
+      /* --- zones --- */
+      var sx0, sx1, sy0, sy1, rx, ry, rw, rh, by0;
+      if (ph){ sx0 = 0; sx1 = W; sy0 = 0; sy1 = H * 0.37; rx = W * 0.14; rw = W * 0.72; ry = H * 0.4; rh = H * 0.39; by0 = H * 0.86; }
+      else { sx0 = 0; sx1 = W * 0.52; sy0 = 0; sy1 = H * 0.8; rx = W * 0.56; rw = W * 0.41; ry = H * 0.09; rh = H * 0.68; by0 = H * 0.84; }
+      G.rx = rx; G.ry = ry; G.rw = rw; G.rh = rh;
+      /* salle de radiologie */
+      var bg = ctx.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, "#e9eef4"); bg.addColorStop(1, "#d5dde7"); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#c3ccd8"; ctx.fillRect(0, 0, W, 8); ctx.fillStyle = "#aab5c3"; ctx.fillRect(0, 8, W, 3);
+      /* tube à rayons X suspendu */
+      var tx = (sx0 + sx1) / 2, tyTop = sy0 + 11, tH = (sy1 - sy0) * 0.2, tW = Math.min(110, (sx1 - sx0) * 0.42), tY = tyTop + (sy1 - sy0) * 0.1;
+      ctx.fillStyle = "#8f9aab"; ctx.fillRect(tx - 5, tyTop, 10, tY - tyTop);
+      var gt = ctx.createLinearGradient(0, tY, 0, tY + tH); gt.addColorStop(0, "#f2f4f7"); gt.addColorStop(1, "#a9b3c1");
+      ctx.save(); ctx.shadowColor = "rgba(15,27,45,.25)"; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4; S.draw.rrect(c, tx - tW / 2, tY, tW, tH, tH / 2.4); ctx.fillStyle = gt; ctx.fill(); ctx.restore();
+      ctx.strokeStyle = "#7b8798"; ctx.lineWidth = 1; S.draw.rrect(c, tx - tW / 2, tY, tW, tH, tH / 2.4); ctx.stroke();
+      ctx.fillStyle = "#f4c542"; ctx.beginPath(); ctx.arc(tx + tW / 2 - tH * 0.32, tY + tH * 0.5, tH * 0.13, 0, 7); ctx.fill(); ctx.strokeStyle = "#13233a"; ctx.stroke();
+      S.draw.text(c, "tube à rayons X", tx - tW / 2 + 10, tY + tH * 0.5, {size: 9.5, color: "#2c3a4e", weight: 800, align: "left"});
+      var cTop = tY + tH, cW = tW * 0.32; ctx.fillStyle = "#5f6b7a"; ctx.beginPath(); ctx.moveTo(tx - cW / 2, cTop); ctx.lineTo(tx + cW / 2, cTop); ctx.lineTo(tx + cW * 0.32, cTop + tH * 0.45); ctx.lineTo(tx - cW * 0.32, cTop + tH * 0.45); ctx.closePath(); ctx.fill();
+      /* table et détecteur */
+      var tabY = sy1 - (sy1 - sy0) * 0.2, tabX0 = sx0 + 10, tabX1 = sx1 - 10;
+      var gd = ctx.createLinearGradient(0, tabY, 0, tabY + 16); gd.addColorStop(0, "#3a4658"); gd.addColorStop(1, "#1d2735"); ctx.fillStyle = gd; S.draw.rrect(c, tabX0, tabY, tabX1 - tabX0, 16, 4); ctx.fill();
+      ctx.fillStyle = "#7b8798"; ctx.fillRect(tabX0 + 20, tabY + 16, 10, sy1 - tabY - 16); ctx.fillRect(tabX1 - 30, tabY + 16, 10, sy1 - tabY - 16);
+      S.draw.text(c, "détecteur (plaque sous la main)", (tabX0 + tabX1) / 2, tabY + 28, {size: 9.5, color: "#4b5a70", weight: 800});
+      /* faisceau */
+      var bTop = cTop + tH * 0.45, bHalf = (tabX1 - tabX0) * 0.36;
+      var gb = ctx.createLinearGradient(0, bTop, 0, tabY); gb.addColorStop(0, "rgba(244,197,66," + (0.38 + 0.4 * flash) + ")"); gb.addColorStop(1, "rgba(244,197,66," + (0.1 + 0.3 * flash) + ")");
+      ctx.fillStyle = gb; ctx.beginPath(); ctx.moveTo(tx - cW * 0.3, bTop); ctx.lineTo(tx + cW * 0.3, bTop); ctx.lineTo(tx + bHalf, tabY); ctx.lineTo(tx - bHalf, tabY); ctx.closePath(); ctx.fill();
+      /* main posée sur le détecteur (vue d'en haut, en perspective) : doigts vers la droite */
+      var hu = Math.min((tabX1 - tabX0) / 1.3, (sy1 - sy0) * 1.2), hcx = tx - hu * 0.2, hcy = tabY - 2;
+      var Ms = function(x, y){ return [hcx - (y - 0.45) * hu, hcy + x * hu * 0.5]; }; Ms.u = hu * 0.44;
+      var Msh = function(x, y){ return [hcx - (y - 0.45) * hu + 3, hcy + x * hu * 0.5 + 5]; }; Msh.u = hu * 0.44;
+      ctx.save(); ctx.globalAlpha = 0.22; caps(ctx, TIS, Msh, "#13233a"); ctx.restore();
+      Ms.u = hu * 0.44; caps(ctx, TIS, Ms, "#c98f6b"); Ms.u = hu * 0.37; caps(ctx, TIS, Ms, "#f2c7a5");
+      /* photons : la plupart sont absorbés dans la main */
+      phot.forEach(function(p){
+        var y = bTop + p.y * (tabY - bTop), x = tx + p.u * (cW * 0.3 + (bHalf - cW * 0.3) * p.y);
+        if (y > tabY - 10){
+          if (p.hit < 0){ var onHand = Math.abs(x - hcx) < hu * 0.75; p.hit = onHand && Math.random() > T.a ? 1 : 0; }
+          if (p.hit === 1){ S.draw.glow(c, x, tabY - 8, 7, "#ffffff", 0.6); return; }
+        }
+        if (y > tabY) return;
+        ctx.fillStyle = "rgba(196,120,10,.85)"; ctx.beginPath(); ctx.arc(x, y, 2, 0, 7); ctx.fill();
+      });
+      if (flash > 0) S.draw.glow(c, tx, cTop, 60, "#fff6c8", 0.8 * flash);
+      /* négatoscope et cliché */
+      var fr = 8; ctx.save(); ctx.shadowColor = "rgba(15,27,45,.3)"; ctx.shadowBlur = 12; ctx.shadowOffsetY = 4;
+      ctx.fillStyle = "#e6eaf0"; S.draw.rrect(c, rx - fr, ry - fr, rw + 2 * fr, rh + 2 * fr + 14, 8); ctx.fill(); ctx.restore();
+      ctx.fillStyle = "#b8c2cf"; 
+      ctx.fillStyle = gray(0); ctx.fillRect(rx, ry, rw, rh);
+      var U = Math.min(rw / 0.72, rh / 1.36), ox = rx + rw / 2 + 0.02 * U, oy = ry + 0.27 * U;
+      var Mr = function(x, y){ return [ox + x * U, oy + y * U]; }; Mr.u = U;
+      ctx.save(); ctx.beginPath(); ctx.rect(rx, ry, rw, rh); ctx.clip();
+      ctx.globalAlpha = dev; caps(ctx, TIS, Mr, gray(gT));
+      if (os.value > 0){ ctx.shadowColor = gray(gB); ctx.shadowBlur = 4; caps(ctx, BON, Mr, gray(gB)); ctx.shadowBlur = 0; }
+      ctx.globalAlpha = 1;
+      /* grain du film */
+      seed = 5; ctx.fillStyle = "rgba(255,255,255,.05)"; for (var q = 0; q < 140; q++) ctx.fillRect(rx + rnd() * rw, ry + rnd() * rh, 1.5, 1.5);
+      ctx.restore();
+      S.draw.text(c, "R", rx + 10, ry + 12, {size: 12, color: "rgba(255,255,255,.7)", weight: 800});
+      S.draw.text(c, E + " keV", rx + rw - 8, ry + 12, {size: 10.5, color: "rgba(255,255,255,.75)", align: "right", weight: 700, mono: true});
+      S.draw.text(c, "blanc = rayons X absorbés · noir = air", rx + rw / 2, ry + rh + 11, {size: rw < 230 ? 9 : 10, color: "#3d4a5c", weight: 700});
+      /* sonde sur le cliché */
+      if (probe){
+        var lxp = (probe.x - ox) / U, lyp = (probe.y - oy) / U, isB = os.value > 0 && inside(BON, lxp, lyp), isT = inside(TIS, lxp, lyp);
+        var lab = isB ? "os + tissus : " + sciTxt(T.b * 100) + " %" : isT ? "tissus seuls : " + sciTxt(T.a * 100) + " %" : "air : 100 %";
+        ctx.strokeStyle = "#f4c542"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(probe.x, probe.y, 9, 0, 7); ctx.moveTo(probe.x - 14, probe.y); ctx.lineTo(probe.x - 5, probe.y); ctx.moveTo(probe.x + 5, probe.y); ctx.lineTo(probe.x + 14, probe.y); ctx.stroke();
+        S.draw.label(c, "transmis — " + lab, Math.max(rx + 70, Math.min(rx + rw - 70, probe.x)), probe.y > ry + 30 ? probe.y - 22 : probe.y + 22, {size: 10.5, color: isB ? "#7a5a00" : P.ink, fill: "rgba(255,248,220,.95)"});
+      } else S.draw.text(c, "promène la souris sur le cliché", rx + 8, ry + rh - 14, {size: 9.5, color: "rgba(255,255,255,.6)", weight: 600, align: "left"});
       /* barres de transmission */
-      ctx.fillStyle = "#e3e7ed"; ctx.fillRect(30, 190, W - 60, 12); ctx.fillStyle = P.acc; ctx.fillRect(30, 190, (W - 60) * T.a, 12);
-      ctx.fillStyle = "#e3e7ed"; ctx.fillRect(30, 220, W - 60, 12); ctx.fillStyle = P.red; ctx.fillRect(30, 220, (W - 60) * T.b, 12);
-      S.draw.text(c, "tissus seuls : " + S.sci(T.a * 100) + " %", 30, 182, {size: 12, align: "left"}); S.draw.text(c, "tissus + os : " + S.sci(T.b * 100) + " %", 30, 212, {size: 12, align: "left"});
+      var bx = 16, bw = W - 32, bh = ph ? 9 : 11, g1 = by0 + (ph ? 6 : 10), g2 = g1 + (ph ? 26 : 30);
+      ctx.fillStyle = "rgba(255,255,255,.7)"; S.draw.rrect(c, 8, by0 - 6, W - 16, H - by0, 8); ctx.fill();
+      [[T.a, P.acc, "tissus seuls : " + sciTxt(T.a * 100) + " %", g1], [T.b, P.red, "tissus + os : " + sciTxt(T.b * 100) + " %", g2]].forEach(function(r){
+        ctx.fillStyle = "#e3e7ed"; S.draw.rrect(c, bx, r[3] + 8, bw, bh, bh / 2); ctx.fill();
+        ctx.fillStyle = r[1]; S.draw.rrect(c, bx, r[3] + 8, Math.max(bh, bw * r[0]), bh, bh / 2); ctx.fill();
+        S.draw.text(c, r[2], bx, r[3], {size: 11.5, align: "left", color: P.ink});
+      });
+      S.draw.text(c, "part des rayons X transmise", W - 16, g1, {size: 10.5, align: "right", color: P.grey, weight: 600});
       ro.set(0, S.sci(T.a * 100) + " %"); ro.set(1, S.sci(T.b * 100) + " %"); ro.set(2, S.fmt(contrast * 100, 0) + " %"); ro.set(3, S.fmt((1 - T.a) * 100, 1) + " %");
       nt.set(os.value === 0 ? "Sans os, les deux plages sont identiques : pas de contraste." : (en.value === "30" || en.value === "40") ? "Basse énergie : l'os absorbe beaucoup plus que les tissus (fort contraste), mais les tissus absorbent aussi plus : dose plus élevée pour le patient." : en.value === "100" ? "Haute énergie : le faisceau traverse presque aussi bien l'os que les tissus : contraste faible." : "Énergie intermédiaire : compromis courant en radiographie.", "ok");
     });

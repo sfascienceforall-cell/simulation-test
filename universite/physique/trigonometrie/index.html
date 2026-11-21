@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cercle trigonométrique et triangle rectangle · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#TR">Trigonométrie</a>›<b>Cercle trigonométrique et triangle rectangle</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Trigonométrie</span><span class="sfa-chip free">Gratuit</span></div><h1>Cercle trigonométrique et triangle rectangle</h1><p>Un seul angle θ, deux images : le point M sur le cercle de rayon 1 donne cos θ et sin θ ; l’échelle contre le mur donne les mêmes rapports dans un triangle rectangle.</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:62vh;min-height:500px;cursor:default" aria-label="Cercle trigonométrique et échelle posée contre un mur : sinus, cosinus et tangente d'un même angle"></canvas>
+
+<div class="fml" id="fml"><b style="color:#185fa5">cos θ</b> = abscisse du point M du cercle de rayon 1 = côté <b>adjacent</b> / hypoténuse. <b style="color:#a32d2d">sin θ</b> = ordonnée de M = côté <b>opposé</b> / hypoténuse. <b style="color:#0F6E56">tan θ</b> = sin θ / cos θ = opposé / adjacent. Pour l’échelle : <b>hauteur = L·sin θ</b>, <b>pied = L·cos θ</b>.</div>
+
+<div class="row">
+  <span class="pill" style="min-width:140px">θ &nbsp;angle</span>
+  <input type="range" id="sA" min="0" max="360" step="1" value="35" style="accent-color:#BA7517;">
+  <span class="val" id="vA" style="color:#9a5f0f"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:140px">L &nbsp;longueur de l’échelle</span>
+  <input type="range" id="sL" min="2" max="6" step="0.5" value="4" style="accent-color:#5b6b7d;">
+  <span class="val" id="vL"></span>
+</div>
+<div class="row">
+  <span class="pill">Mode</span>
+  <button class="btn on" id="mC">Cercle et échelle</button>
+  <button class="btn" id="mR">Retrouver l’angle à partir de sin θ</button>
+  <button class="btn" id="snap">Aimanter aux angles remarquables</button>
+  <button class="btn" id="anim">▶ Faire tourner</button>
+  <button class="btn" id="lab">Masquer les écritures</button>
+</div>
+<div class="row" id="rowS" style="display:none">
+  <span class="pill" style="min-width:140px;color:#a32d2d">sin θ = s &nbsp;valeur connue</span>
+  <input type="range" id="sS" min="-1" max="1" step="0.01" value="0.5" style="accent-color:#E24B4A;">
+  <span class="val" id="vS" style="color:#a32d2d"></span>
+</div>
+<div class="row"><span class="hint">Astuce : attrape le point M sur le cercle, ou le haut de l’échelle.</span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const INK='#2c3440',BLUE='#378ADD',BLUE_D='#185fa5',RED='#E24B4A',RED_D='#a32d2d',GREEN='#1D9E75',GREEN_D='#0F6E56',OR='#BA7517',OR_D='#9a5f0f',AX='#c3c9d0',GREY='#8a939c';
+const FS='600 12px Mulish,system-ui,sans-serif',FB='800 14px Mulish,system-ui,sans-serif',FBIG='800 16px Mulish,system-ui,sans-serif';
+const $=id=>document.getElementById(id),fr=(v,d)=>(Math.abs(v)<5e-10?0:v).toFixed(d).replace('.',',').replace(/^-/,'−');
+const R2=Math.SQRT2/2,R3=Math.sqrt(3)/2;
+let th=35,L=4,mode='c',snap=false,anim=false,noLab=false,s=0.5,drag=null;
+const rad=()=>th*Math.PI/180;
+// valeurs exactes des angles remarquables
+const EX={0:['0','1','0'],30:['1/2','√3/2','√3/3'],45:['√2/2','√2/2','1'],60:['√3/2','1/2','√3'],90:['1','0','—']};
+function exact(a){a=((Math.round(a)%360)+360)%360;const r=a<=90?a:a<=180?180-a:a<=270?a-180:360-a;if(!(r in EX))return null;
+  const sn=Math.sin(a*Math.PI/180),cs=Math.cos(a*Math.PI/180),sg=(v,t)=>(t==='0'?'0':(v<0?'−':'')+t);
+  return{s:sg(sn,EX[r][0]),c:sg(cs,EX[r][1]),t:r===90?'non définie':sg(sn*cs,EX[r][2])};}
+let W=0,H=0,dpr=1;
+function size(){const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.round(b.width)||800,h=Math.round(b.height)||500;if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);}
+function tag(t,x,y,col,font,al){if(noLab)return;ctx.font=font||FS;ctx.textAlign=al||'center';ctx.textBaseline='middle';{const w=ctx.measureText(t).width,A=al||'center';const lo=A==='left'?4:A==='right'?w+4:w/2+4,hi=A==='left'?W-w-4:A==='right'?W-4:W-w/2-4;x=Math.max(lo,Math.min(hi,x));y=Math.max(9,Math.min(H-9,y));}ctx.lineJoin='round';ctx.lineWidth=4;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.strokeText(t,x,y);ctx.fillStyle=col;ctx.fillText(t,x,y);ctx.textBaseline='alphabetic';}
+function seg(x1,y1,x2,y2,col,w,dash){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.setLineDash([]);}
+function geom(){const side=W>=760,pw=side?W*0.5:W,ph=side?H:H*0.52;const R=Math.min(pw*0.36,ph*0.38);
+  return{side,cx:pw*0.5,cy:side?H*0.52:ph*0.53,R,lx:side?pw:0,ly:side?0:ph,lw:side?W-pw:W,lh:side?H:H-ph};}
+function drawCircle(g){
+  const {cx,cy,R}=g,a=rad(),mx=cx+R*Math.cos(a),my=cy-R*Math.sin(a);
+  // quadrants : signes
+  if(!noLab){[['+','+',1,1],['−','+',-1,1],['−','−',-1,-1],['+','−',1,-1]].forEach(([c,sn,qx,qy],i)=>{ctx.font=FS;ctx.textAlign='center';ctx.fillStyle='#b9c0c8';ctx.fillText('cos '+c+' · sin '+sn,cx+qx*R*0.62,cy-qy*R*0.62);});}
+  seg(cx-R*1.25,cy,cx+R*1.32,cy,AX,1.2);seg(cx,cy+R*1.2,cx,cy-R*1.22,AX,1.2);
+  ctx.strokeStyle='#5b6b7d';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.stroke();
+  // angles remarquables
+  for(let d=0;d<360;d+=15){const r=d*Math.PI/180,big=d%30===0||d%45===0;seg(cx+R*Math.cos(r)*(big?0.95:0.97),cy-R*Math.sin(r)*(big?0.95:0.97),cx+R*Math.cos(r)*1.03,cy-R*Math.sin(r)*1.03,'#9aa4ae',big?1.6:1);}
+  if(!noLab){const lab={0:'0',30:'π/6',45:'π/4',60:'π/3',90:'π/2',120:'2π/3',135:'3π/4',150:'5π/6',180:'π',210:'7π/6',225:'5π/4',240:'4π/3',270:'3π/2',300:'5π/3',315:'7π/4',330:'11π/6'};
+    Object.keys(lab).forEach(d=>{const r=d*Math.PI/180;ctx.font='600 11px Mulish,system-ui,sans-serif';ctx.fillStyle='#8a939c';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(lab[d],cx+R*1.13*Math.cos(r),cy-R*1.13*Math.sin(r));});ctx.textBaseline='alphabetic';}
+  // tangente
+  const ta=Math.tan(a),okT=Math.abs(Math.cos(a))>0.02;
+  seg(cx+R,cy-R*1.2,cx+R,cy+R*1.2,'#cfe8df',1.5,[4,4]);
+  if(okT&&Math.abs(ta)<1.18){seg(cx,cy,cx+R,cy-R*ta,GREEN,1.2,[3,3]);seg(cx+R,cy,cx+R,cy-R*ta,GREEN_D,4);tag('tan θ',cx+R+30,cy-R*ta/2,GREEN_D,FB);}
+  // angle
+  ctx.fillStyle='rgba(186,117,23,.15)';ctx.strokeStyle=OR;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,R*0.22,0,-a,a>0);ctx.closePath();ctx.fill();ctx.beginPath();ctx.arc(cx,cy,R*0.22,0,-a,a>0);ctx.stroke();
+  tag('θ',cx+R*0.3*Math.cos(a/2),cy-R*0.3*Math.sin(a/2),OR_D,FB);
+  // cos et sin
+  seg(cx,cy,mx,my,INK,2.5);
+  seg(mx,my,mx,cy,RED,1.2,[4,4]);seg(mx,my,cx,my,BLUE,1.2,[4,4]);
+  seg(cx,cy,mx,cy,BLUE_D,5);seg(mx,cy,mx,my,RED_D,5);
+  tag('cos θ = '+fr(Math.cos(a),3),(cx+mx)/2,cy+(Math.sin(a)>=0?18:-18),BLUE_D,FB);
+  tag('sin θ = '+fr(Math.sin(a),3),mx+(Math.cos(a)>=0?62:-62),(cy+my)/2,RED_D,FB);
+  ctx.fillStyle=OR;ctx.beginPath();ctx.arc(mx,my,9,0,7);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2.5;ctx.stroke();tag('M',mx+14*Math.cos(a)+8,my-14*Math.sin(a)-8,OR_D,FB);
+  tag('rayon 1',cx+R*0.55*Math.cos(a)-14*Math.sin(a),cy-R*0.55*Math.sin(a)-14*Math.cos(a),INK,FS);
+  return{mx,my};
+}
+function drawRetrouver(g){
+  const {cx,cy,R}=g,a1=Math.asin(s),a2=Math.PI-a1,yy=cy-R*s;
+  seg(cx-R*1.25,yy,cx+R*1.25,yy,RED,1.5,[6,5]);tag('y = '+fr(s,2),cx-R*1.25+34,yy-12,RED_D,FS);
+  [[a1,BLUE_D,'θ₁ = '+fr(a1*180/Math.PI,1)+'° (calculatrice)'],[a2,GREEN_D,'θ₂ = 180° − θ₁ = '+fr(a2*180/Math.PI,1)+'°']].forEach(([a,col,t],i)=>{
+    const x=cx+R*Math.cos(a),y=cy-R*Math.sin(a);seg(cx,cy,x,y,col,3);ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,9,0,7);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2.5;ctx.stroke();
+    tag(t,x+(i?-10:10),y+(s>=0?-22:22),col,FB,i?'right':'left');});
+}
+function drawLadder(g){
+  const x0=g.lx+18,y0=g.ly+10,w=g.lw-36,h=g.lh-20;ctx.save();ctx.beginPath();ctx.rect(x0,y0,w,h);ctx.clip();
+  // ciel, sol, mur
+  ctx.fillStyle='#eef5fb';ctx.fillRect(x0,y0,w,h);
+  const gy=y0+h*0.86,wx=x0+w*0.8;
+  ctx.fillStyle='#d9cdb6';ctx.fillRect(x0,gy,w,h-gy+y0);ctx.fillStyle='#c4b596';for(let x=x0;x<x0+w;x+=18)ctx.fillRect(x,gy+6+((x/18)%2)*8,10,3);
+  ctx.fillStyle='#e9d9c4';ctx.fillRect(wx,y0,x0+w-wx,gy-y0);ctx.strokeStyle='#cbb79c';ctx.lineWidth=1;
+  for(let yb=gy;yb>y0;yb-=16){ctx.beginPath();ctx.moveTo(wx,yb);ctx.lineTo(x0+w,yb);ctx.stroke();const off=((gy-yb)/16)%2?14:0;for(let xb=wx+off;xb<x0+w;xb+=28){ctx.beginPath();ctx.moveTo(xb,yb);ctx.lineTo(xb,yb-16);ctx.stroke();}}
+  // angle de référence
+  let a=((th%360)+360)%360,ref=a<=90?a:a<=180?180-a:a<=270?a-180:360-a;ref=Math.max(3,Math.min(87,ref));const ar=ref*Math.PI/180;
+  const sc=Math.min((wx-x0-30)/6.2,(gy-y0-34)/6.2),Lp=L*sc,fx=wx-Lp*Math.cos(ar),fy=gy,tx=wx,ty=gy-Lp*Math.sin(ar);
+  // cotes
+  seg(fx,gy+20,wx,gy+20,BLUE_D,4);tag('pied = L·cos θ = '+fr(L*Math.cos(ar),2)+' m',(fx+wx)/2,gy+36,BLUE_D,FB);
+  seg(wx+14,gy,wx+14,ty,RED_D,4);tag('hauteur = L·sin θ = '+fr(L*Math.sin(ar),2)+' m',wx-10,ty-18,RED_D,FB,'right');
+  // échelle : deux montants et barreaux
+  const ux=(tx-fx)/Lp,uy=(ty-fy)/Lp,nx=-uy*9,ny=ux*9;
+  ctx.strokeStyle='#8a5a2b';ctx.lineWidth=5;ctx.lineCap='round';[[1],[-1]].forEach(([k])=>{ctx.beginPath();ctx.moveTo(fx+nx*k,fy+ny*k);ctx.lineTo(tx+nx*k,ty+ny*k);ctx.stroke();});
+  ctx.lineWidth=3.5;const nb=Math.max(4,Math.round(L*3));for(let i=1;i<nb;i++){const px=fx+(tx-fx)*i/nb,py=fy+(ty-fy)*i/nb;ctx.beginPath();ctx.moveTo(px+nx,py+ny);ctx.lineTo(px-nx,py-ny);ctx.stroke();}
+  ctx.lineCap='butt';
+  // angle au sol
+  ctx.fillStyle='rgba(186,117,23,.18)';ctx.strokeStyle=OR;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(fx,fy);ctx.arc(fx,fy,42,0,-ar,true);ctx.closePath();ctx.fill();ctx.beginPath();ctx.arc(fx,fy,42,0,-ar,true);ctx.stroke();
+  tag('θ = '+Math.round(ref)+'°',fx+62,fy-16,OR_D,FB,'left');
+  tag('L = '+fr(L,1)+' m',(fx+tx)/2-20,(fy+ty)/2-16,'#6b4420',FB);
+  // angle droit
+  ctx.strokeStyle=INK;ctx.lineWidth=1.5;ctx.strokeRect(wx-12,gy-12,12,12);
+  if(a!==ref&&!(th%360===0)&&!noLab){ctx.font=FS;ctx.fillStyle=GREY;ctx.textAlign='left';ctx.fillText('θ = '+Math.round(a)+'° : l’échelle prend l’angle de référence '+Math.round(ref)+'°',x0+10,y0+20);ctx.fillText('(mêmes valeurs, au signe près)',x0+10,y0+36);}
+  else tag('opposé = hauteur · adjacent = pied · hypoténuse = échelle',x0+10,y0+20,GREY,FS,'left');
+  ctx.restore();return{tx,ty,fx,gy,wx,sc};
+}
+let last=0,LG=null;
+function frame(now){
+  size();const dt=Math.min(.05,(now-(last||now))/1000);last=now;
+  if(anim&&mode==='c'){th=(th+dt*30)%360;$('sA').value=Math.round(th);syncLab();}
+  ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+  const g=geom();
+  if(mode==='c')drawCircle(g);else{const keep=th;drawCircle(Object.assign({},g));drawRetrouver(g);}
+  LG=drawLadder(g);
+  if(g.side){seg(g.lx,10,g.lx,H-10,'#e3e6ea',1);}
+  info();requestAnimationFrame(frame);
+}
+function info(){
+  const a=rad(),e=exact(Math.round(th)),c=Math.cos(a),sn=Math.sin(a),t=Math.abs(c)<1e-9?null:sn/c;
+  let h='θ = <b>'+fr(th,0)+'°</b> = <b>'+fr(a,3)+' rad</b> (θ_rad = θ° × π/180) &nbsp;·&nbsp; <b style="color:#185fa5">cos θ = '+fr(c,3)+'</b> · <b style="color:#a32d2d">sin θ = '+fr(sn,3)+'</b> · <b style="color:#0F6E56">tan θ = '+(t===null?'non définie':fr(t,3))+'</b> · cos²θ + sin²θ = 1';
+  if(e&&Number.isInteger(th))h+='<br>Valeurs exactes : cos θ = '+e.c+' · sin θ = '+e.s+' · tan θ = '+e.t;
+  if(mode==='r'){const a1=Math.asin(s)*180/Math.PI;h='Tu connais <b>sin θ = '+fr(s,2)+'</b>. La calculatrice donne <b>θ₁ = arcsin('+fr(s,2)+') = '+fr(a1,1)+'°</b>, mais <b>θ₂ = 180° − θ₁ = '+fr(180-a1,1)+'°</b> a le même sinus : les deux points du cercle sont à la même hauteur. En physique, c’est le schéma (angle aigu ou obtus ?) qui tranche.';}
+  $('info').innerHTML=h;}
+function syncLab(){$('vA').textContent=Math.round(th)+'° = '+fr(th*Math.PI/180,2)+' rad';}
+function setTh(v){if(snap){const st=[0,30,45,60,90,120,135,150,180,210,225,240,270,300,315,330,360];v=st.reduce((b,x)=>Math.abs(x-v)<Math.abs(b-v)?x:b,0);}th=v%360===0&&v>0?(v===360?0:v):v;$('sA').value=Math.round(th);syncLab();}
+$('sA').addEventListener('input',e=>{anim=false;$('anim').textContent='▶ Faire tourner';setTh(+e.target.value);});
+$('sL').addEventListener('input',e=>{L=+e.target.value;$('vL').textContent=fr(L,1)+' m';});
+$('sS').addEventListener('input',e=>{s=+e.target.value;$('vS').textContent=fr(s,2);});
+$('mC').onclick=()=>{mode='c';$('mC').classList.add('on');$('mR').classList.remove('on');$('rowS').style.display='none';};
+$('mR').onclick=()=>{mode='r';anim=false;$('anim').textContent='▶ Faire tourner';$('mR').classList.add('on');$('mC').classList.remove('on');$('rowS').style.display='';};
+$('snap').onclick=()=>{snap=!snap;$('snap').classList.toggle('on',snap);setTh(th);};
+$('anim').onclick=()=>{anim=!anim;$('anim').textContent=anim?'❚❚ Arrêter':'▶ Faire tourner';if(anim)$('mC').click();};
+$('lab').onclick=()=>{noLab=!noLab;$('lab').textContent=noLab?'Afficher les écritures':'Masquer les écritures';$('lab').classList.toggle('on',noLab);};
+const pos=e=>{const b=cv.getBoundingClientRect();return{x:e.clientX-b.left,y:e.clientY-b.top};};
+cv.addEventListener('pointerdown',e=>{const p=pos(e),g=geom(),a=rad(),mx=g.cx+g.R*Math.cos(a),my=g.cy-g.R*Math.sin(a);
+  if(mode==='c'&&Math.hypot(p.x-mx,p.y-my)<26)drag='m';else if(LG&&Math.hypot(p.x-LG.tx,p.y-LG.ty)<30)drag='l';
+  if(drag){anim=false;$('anim').textContent='▶ Faire tourner';cv.setPointerCapture(e.pointerId);}});
+cv.addEventListener('pointermove',e=>{const p=pos(e),g=geom();
+  if(drag==='m'){let d=Math.atan2(-(p.y-g.cy),p.x-g.cx)*180/Math.PI;if(d<0)d+=360;setTh(Math.round(d));}
+  else if(drag==='l'){const dy=Math.max(5,LG.gy-p.y),d=Math.asin(Math.min(1,dy/(L*LG.sc)))*180/Math.PI;setTh(Math.round(Math.max(3,Math.min(87,d))));}
+  else{const a=rad(),mx=g.cx+g.R*Math.cos(a),my=g.cy-g.R*Math.sin(a);cv.style.cursor=(mode==='c'&&Math.hypot(p.x-mx,p.y-my)<26)||(LG&&Math.hypot(p.x-LG.tx,p.y-LG.ty)<30)?'grab':'default';}});
+cv.addEventListener('pointerup',()=>drag=null);
+setTh(35);$('vL').textContent='4 m';$('vS').textContent='0,5';
+window.__trig={set:v=>setTh(v),get:()=>({th,L,cos:Math.cos(rad()),sin:Math.sin(rad())}),mode:m=>$(m==='r'?'mR':'mC').click()};
+requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Rappels de trigonométrie<span>1 simulation</span></h2><ol><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/trigonometrie/"><i>01</i>Cercle trigonométrique et triangle rectangle</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

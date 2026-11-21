@@ -162,68 +162,123 @@ SFA.sim({
 });
 
 var LED = [["1.8", "Rouge (≈ 1,8 V)"], ["2.1", "Verte (≈ 2,1 V)"], ["3.0", "Bleue (≈ 3,0 V)"]];
+/* refonte 21/11/2026 : aides de dessin (sphère ombrée, nuances) */
+function shadeF(hex,f){ var m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex); if(!m) return hex; var v=[1,2,3].map(function(i){ var x=parseInt(m[i],16); x=f<0?x*(1+f):x+(255-x)*f; return Math.max(0,Math.min(255,Math.round(x))); }); return "rgb("+v.join(",")+")"; }
+function ballF(g,x,y,r,hex,al){ if(!(r>0)||!isFinite(x)||!isFinite(y)) return; g.save(); if(al!=null) g.globalAlpha=al; var gr=g.createRadialGradient(x-r*.38,y-r*.42,r*.05,x,y,r*1.05); gr.addColorStop(0,shadeF(hex,.75)); gr.addColorStop(.45,hex); gr.addColorStop(1,shadeF(hex,-.45)); g.fillStyle=gr; g.beginPath(); g.arc(x,y,r,0,6.2832); g.fill(); g.restore(); }
 SFA.sim({
   id: "c6-c08-citron", ch: "c08", tag: "Dans la vraie vie",
   titre: "La pile au citron : combien de citrons pour allumer une LED ?",
-  resume: "Tension et intensité ne sont pas la même chose : compare des citrons en série et en parallèle.",
-  but: "Règle le nombre de citrons, le montage (série ou parallèle), la taille des électrodes et la couleur de la LED. Clique sur un citron pour en ajouter. Le graphe montre l'intensité en fonction du nombre de citrons.",
+  resume: "De vrais citrons, des électrodes de zinc et de cuivre, des pinces crocodiles et une LED : compare série et parallèle.",
+  but: "Règle le nombre de citrons, le montage (série ou parallèle), la taille des électrodes et la couleur de la LED. Touche les citrons pour en ajouter un. L'ampèremètre affiche l'intensité ; le graphe montre l'intensité en fonction du nombre de citrons.",
   aRetenir: "En série, les f.é.m. s'additionnent (n × E), mais les résistances internes aussi. En parallèle, la tension reste celle d'un seul citron, mais l'intensité fournie augmente. Une LED ne s'allume que si la tension dépasse son seuil (rouge ≈ 1,8 V) ET si l'intensité est suffisante (quelques dixièmes de mA au moins).",
-  piege: "Beaucoup de tension ne suffit pas : un citron produit une très faible intensité (forte résistance interne). Modèle simplifié, valeurs typiques d'ordre de grandeur : f.é.m. d'un citron Zn–Cu ≈ 0,9 V (inférieure aux 1,10 V standards), résistance interne ≈ 1,5 kΩ (petites électrodes) ou 300 Ω (grandes).",
+  piege: "Beaucoup de tension ne suffit pas : un citron produit une très faible intensité (forte résistance interne). Modèle simplifié, valeurs typiques d'ordre de grandeur : f.é.m. d'un citron Zn–Cu ≈ 0,9 V (inférieure aux 1,10 V standards), résistance interne ≈ 1,5 kΩ (petites électrodes) ou 300 Ω (grandes). Le citron n'est que l'électrolyte : l'énergie vient de l'oxydation du zinc.",
   build: function(k, S){
-    var c = k.canvas(490), P = S.draw.palette, H = window.C6, tt = 0;
+    var c = k.canvas(0, {ratio:0.62}), gc = k.canvas(210), P = S.draw.palette, H = window.C6, tt = 0, zone = null;
+    Object.defineProperty(c, "ratio", {get:function(){ var w = c.cv.parentNode ? c.cv.parentNode.clientWidth : 600; return w < 460 ? 1.0 : 0.62; }, configurable:true}); c.resize();
     var n = k.slider("Nombre de citrons", 1, 8, 1, 3, "");
     var mon = k.seg("Montage", [["s", "En série"], ["p", "En parallèle"]], "s");
     var el = k.seg("Électrodes", [["0.9", "Zn–Cu"], ["0.5", "Fe–Cu"]], "0.9");
     var tl = k.seg("Taille", [["1500", "Petites"], ["300", "Grandes"]], "1500");
     var le = k.select("LED", LED, "1.8");
+    k.button("▶ Ajouter un citron", function(){ n.set(n.value >= 8 ? 1 : n.value+1); }, true);
     var ro = k.readouts(["f.é.m. du montage", "Résistance interne", "Intensité", "LED"]);
     var nt = k.note("", "ok");
     var lp = k.loop(function(dt, t){ tt = t; k.redraw(); }); lp.play();
-    c.pointer(function(type, p){ if (type === "down" && p.y > 95 && p.y < 175){ n.set(n.value >= 8 ? 1 : n.value + 1); k.redraw(); } });
+    c.pointer(function(type, p){ if (type === "down" && zone && p.y > zone.y0 && p.y < zone.y1 && p.x < zone.x1){ n.set(n.value >= 8 ? 1 : n.value+1); k.redraw(); } });
     function I(nn, m){ var E = parseFloat(el.value), r = parseFloat(tl.value), Vf = parseFloat(le.value), Rd = 20;
-      var Et = m === "s" ? nn * E : E, rt = m === "s" ? nn * r : r / nn; return Et > Vf ? (Et - Vf) / (rt + Rd) * 1000 : 0; }
+      var Et = m === "s" ? nn*E : E, rt = m === "s" ? nn*r : r/nn; return Et > Vf ? (Et-Vf)/(rt+Rd)*1000 : 0; }
     var LEDC = {"1.8": [255, 70, 50], "2.1": [60, 220, 90], "3.0": [70, 130, 255]};
-    function wire(pts, col, w){ var ctx = c.ctx; ctx.save(); ctx.strokeStyle = col || "#2c3a4e"; ctx.lineWidth = w || 2.4; ctx.lineJoin = "round"; ctx.beginPath(); pts.forEach(function(p, i){ i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); }); ctx.stroke(); ctx.restore(); }
+    /* fil souple (courbe de Bézier) ; renvoie une fonction point(u) pour animer les électrons */
+    function cable(x1, y1, x2, y2, lift, col){ var ctx = c.ctx, c1 = [x1, y1-lift], c2 = [x2, y2-lift];
+      ctx.save(); ctx.lineCap = "round"; ctx.strokeStyle = "rgba(0,0,0,.25)"; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(x1, y1+2); ctx.bezierCurveTo(c1[0], c1[1]+2, c2[0], c2[1]+2, x2, y2+2); ctx.stroke();
+      ctx.strokeStyle = col; ctx.lineWidth = 3.6; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.bezierCurveTo(c1[0], c1[1], c2[0], c2[1], x2, y2); ctx.stroke();
+      ctx.strokeStyle = "rgba(255,255,255,.35)"; ctx.lineWidth = 1; ctx.stroke(); ctx.restore();
+      return function(u){ var a = (1-u)*(1-u)*(1-u), b = 3*(1-u)*(1-u)*u, d = 3*(1-u)*u*u, e = u*u*u; return [a*x1+b*c1[0]+d*c2[0]+e*x2, a*y1+b*c1[1]+d*c2[1]+e*y2]; }; }
+    /* pince crocodile sur le haut d'une électrode */
+    function clip(x, y, col){ var ctx = c.ctx; ctx.save(); ctx.fillStyle = col; S.draw.rrect(c, x-5, y-9, 10, 12, 3); ctx.fill(); ctx.fillStyle = "#c9ced6"; ctx.beginPath(); ctx.moveTo(x-5, y+2); for (var i = 0; i <= 4; i++) ctx.lineTo(x-5+i*2.5, y+(i%2 ? 6 : 3)); ctx.lineTo(x+5, y+2); ctx.closePath(); ctx.fill(); ctx.restore(); }
+    function lemon(x, y, w, h, seed){
+      var ctx = c.ctx, nb = w*0.08;
+      ctx.save(); ctx.fillStyle = "rgba(60,40,10,.25)"; ctx.beginPath(); ctx.ellipse(x+3, y+h*0.48, w*0.5, h*0.12, 0, 0, 6.2832); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(x-w/2-nb, y); ctx.bezierCurveTo(x-w/2, y-h*0.2, x-w*0.36, y-h/2, x, y-h/2); ctx.bezierCurveTo(x+w*0.36, y-h/2, x+w/2, y-h*0.2, x+w/2+nb, y); ctx.bezierCurveTo(x+w/2, y+h*0.2, x+w*0.36, y+h/2, x, y+h/2); ctx.bezierCurveTo(x-w*0.36, y+h/2, x-w/2, y+h*0.2, x-w/2-nb, y); ctx.closePath();
+      var g = ctx.createRadialGradient(x-w*0.18, y-h*0.22, 2, x, y, w*0.62); g.addColorStop(0, "#fff7a8"); g.addColorStop(0.45, "#f6d928"); g.addColorStop(1, "#c79a06"); ctx.fillStyle = g; ctx.fill(); ctx.strokeStyle = "rgba(150,110,0,.6)"; ctx.lineWidth = 1.2; ctx.stroke();
+      ctx.clip(); ctx.fillStyle = "rgba(170,125,0,.35)"; for (var i = 0; i < 22; i++){ ctx.beginPath(); ctx.arc(x+(H.rnd(i+seed, 1)-0.5)*w, y+(H.rnd(i+seed, 2)-0.5)*h, 0.9, 0, 6.2832); ctx.fill(); }
+      ctx.fillStyle = "rgba(255,255,255,.45)"; ctx.beginPath(); ctx.ellipse(x-w*0.16, y-h*0.24, w*0.16, h*0.08, -0.3, 0, 6.2832); ctx.fill(); ctx.restore();
+      ctx.save(); ctx.fillStyle = "#6f8f2a"; ctx.beginPath(); ctx.ellipse(x+w/2+nb*0.6, y, 2.4, 3.2, 0, 0, 6.2832); ctx.fill(); ctx.restore();
+    }
     k.draw(function(){
-      c.clear(); H.bg(c, {top: "#fbfcfd", bottom: "#eef2f7"});
-      var N = n.value, E = parseFloat(el.value), r = parseFloat(tl.value), Vf = parseFloat(le.value), ctx = c.ctx, i, ser = mon.value === "s";
-      var Et = ser ? N * E : E, rt = ser ? N * r : r / N, Iv = I(N, mon.value), on = Iv > 0.15;
-      var xL = c.W - 34, w = Math.min(52, (c.W - 96) / N), x0 = 18 + w / 2, yc = 134, topR = 56, botR = 212, stubT = 98, stubB = 172, X = function(j){ return x0 + j * w * 1.02; };
-      /* fils (sous les citrons) */
-      var xs = []; for (i = 0; i < N; i++) xs.push(X(i));
-      if (ser){
-        for (i = 0; i < N - 1; i++){ var gx = (xs[i] + xs[i + 1]) / 2 + w * 0.02; wire([[xs[i] + 9, stubT], [xs[i] + 9, 86], [gx, 86], [gx, 190], [xs[i + 1] - 9, 190], [xs[i + 1] - 9, stubB]]); }
-        wire([[xs[N - 1] + 9, stubT], [xs[N - 1] + 9, topR], [xL, topR], [xL, yc - 18]]); wire([[xs[0] - 9, stubB], [xs[0] - 9, botR], [xL, botR], [xL, yc + 18]]);
-      } else {
-        wire([[xs[0] + 9, topR], [xL, topR], [xL, yc - 18]]); wire([[xs[0] - 9, botR], [xL, botR], [xL, yc + 18]]);
-        for (i = 0; i < N; i++){ wire([[xs[i] + 9, stubT], [xs[i] + 9, topR]]); wire([[xs[i] - 9, stubB], [xs[i] - 9, botR]]); }
-      }
-      /* citrons + électrodes */
+      var W = c.W, Hc = c.H, ctx = c.ctx, ph1 = W < 460, N = n.value, E = parseFloat(el.value), r = parseFloat(tl.value), Vf = parseFloat(le.value), i, ser = mon.value === "s", big = tl.value === "300";
+      var Et = ser ? N*E : E, rt = ser ? N*r : r/N, Iv = I(N, mon.value), on = Iv > 0.15, lc = LEDC[le.value], glow = Math.min(1, Iv/2);
+      c.clear();
+      /* décor : mur + table en bois */
+      var benchY = Hc*0.78, gw = ctx.createLinearGradient(0, 0, 0, benchY); gw.addColorStop(0, on ? "#eceff3" : "#f2f4f7"); gw.addColorStop(1, "#dde3ea"); ctx.fillStyle = gw; ctx.fillRect(0, 0, W, benchY);
+      var gb = ctx.createLinearGradient(0, benchY, 0, Hc); gb.addColorStop(0, "#c49a6c"); gb.addColorStop(1, "#9c7448"); ctx.fillStyle = gb; ctx.fillRect(0, benchY, W, Hc-benchY);
+      ctx.save(); ctx.strokeStyle = "rgba(90,55,20,.18)"; ctx.lineWidth = 1.2; for (i = 0; i < 4; i++){ ctx.beginPath(); var yy = benchY+8+i*(Hc-benchY)/4; ctx.moveTo(0, yy); ctx.bezierCurveTo(W*0.3, yy+4, W*0.7, yy-4, W, yy+2); ctx.stroke(); } ctx.restore();
+      /* zone de droite : LED et ampèremètre */
+      var xR = W*(ph1 ? 0.74 : 0.78), ledX = xR+(W-xR)/2-4, ledY = Hc*0.3, mmX = ledX, mmY = benchY-Hc*0.1;
+      /* citrons */
+      var x0 = 16, x1 = xR-18, lw = Math.min(ph1 ? 64 : 92, (x1-x0)/N*0.86), lh = lw*0.66, ly = benchY-lh*0.42, step = (x1-x0)/N;
+      zone = {y0:ly-lh*1.6, y1:benchY+6, x1:x1};
+      var xs = []; for (i = 0; i < N; i++) xs.push(x0+step*(i+0.5));
+      var elH = lh*0.95, zw = big ? 7 : 4.5, cuw = big ? 10 : 6, zcol = el.value === "0.9" ? "#9aa5b1" : "#6f6258";
+      var zx = function(j){ return xs[j]-lw*0.24; }, cx2 = function(j){ return xs[j]+lw*0.24; }, topY = ly-lh*0.5-elH*0.55;
       for (i = 0; i < N; i++){
-        var lx = xs[i], gl = ctx.createRadialGradient(lx - w * 0.15, yc - 12, 4, lx, yc, w * 0.6); gl.addColorStop(0, "#fbf07a"); gl.addColorStop(1, "#e2c21c");
-        ctx.save(); ctx.shadowColor = "rgba(15,27,45,.22)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3; ctx.fillStyle = gl; ctx.beginPath(); ctx.ellipse(lx, yc, w / 2, 30, 0, 0, 7); ctx.fill(); ctx.restore();
-        ctx.strokeStyle = "#b8a000"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.ellipse(lx, yc, w / 2, 30, 0, 0, 7); ctx.stroke();
-        S.draw.rrect(c, lx + 5, stubT - 4, 8, 44, 3); ctx.fillStyle = "#c46a3c"; ctx.fill(); S.draw.rrect(c, lx - 13, yc - 6, 8, 46, 3); ctx.fillStyle = el.value === "0.9" ? "#9aa5b1" : "#7c6a5c"; ctx.fill();
+        /* électrodes derrière puis citron devant */
+        var gz = ctx.createLinearGradient(zx(i)-zw/2, 0, zx(i)+zw/2, 0); gz.addColorStop(0, shadeF(zcol, -0.3)); gz.addColorStop(0.5, shadeF(zcol, 0.5)); gz.addColorStop(1, shadeF(zcol, -0.3));
+        ctx.fillStyle = gz; ctx.fillRect(zx(i)-zw/2, topY, zw, elH);
+        var gcu = ctx.createLinearGradient(cx2(i)-cuw/2, 0, cx2(i)+cuw/2, 0); gcu.addColorStop(0, "#9c4f25"); gcu.addColorStop(0.5, "#f0a070"); gcu.addColorStop(1, "#9c4f25");
+        ctx.fillStyle = gcu; ctx.fillRect(cx2(i)-cuw/2, topY, cuw, elH);
+        lemon(xs[i], ly, lw, lh, i*7);
+        S.draw.text(c, "−", zx(i), topY-18, {size:12, color:"#2c3a4e"}); S.draw.text(c, "+", cx2(i), topY-18, {size:12, color:"#c0321d"});
       }
-      S.draw.legend(c, [["#c46a3c", "électrode de cuivre (+)"], [el.value === "0.9" ? "#9aa5b1" : "#7c6a5c", el.value === "0.9" ? "électrode de zinc (−)" : "électrode de fer (−)"]], 14, 224, {});
-      /* LED */
-      var lc = LEDC[le.value], glow = Math.min(1, Iv / 2);
-      if (on) S.draw.glow(c, xL, yc, 22 + 40 * glow, "rgb(" + lc.join(",") + ")", 0.35 + 0.6 * glow);
-      ctx.save(); ctx.beginPath(); ctx.arc(xL, yc, 13, 0, 7); ctx.fillStyle = on ? "rgb(" + lc.map(function(v){ return Math.round(v + (255 - v) * glow * 0.6); }).join(",") + ")" : "rgba(" + lc.join(",") + ",.28)"; ctx.fill(); ctx.strokeStyle = "#2c3a4e"; ctx.lineWidth = 2; ctx.stroke(); ctx.restore();
-      S.draw.text(c, "LED", xL, yc + 32, {size: 11, color: P.grey, weight: 800});
-      /* courant */
-      if (on) for (i = 0; i < 6; i++){ var u = (tt * 0.45 * Math.min(1.5, 0.4 + Iv) + i / 6) % 1, span = xL - (xs[N - 1] + 9); S.draw.dot(c, xs[N - 1] + 9 + u * span, topR, 3, "#f4c542"); }
-      S.draw.text(c, N + " citron" + (N > 1 ? "s" : "") + " " + (ser ? "en série" : "en parallèle") + " · " + S.fmt(Et, 2) + " V", 14, 20, {size: 13, color: P.ink, align: "left", weight: 800});
-      S.draw.text(c, on ? "LED allumée" : Et <= Vf ? "tension trop faible" : "courant trop faible", c.W - 14, 20, {size: 12, color: on ? P.green : P.red, align: "right", weight: 800});
+      /* câbles */
+      var pathE = [];   /* trajet des électrons : de la borne − du montage vers la borne + à travers le circuit extérieur */
+      var ledA = [ledX+5, ledY+34], ledK = [ledX-5, ledY+34], mmIn = [mmX-14, mmY-24], mmOut = [mmX+14, mmY-24];
+      if (ser){
+        for (i = 0; i < N-1; i++){ cable(cx2(i), topY, zx(i+1), topY, lh*0.55, "#3c4656"); }
+        pathE.push(cable(zx(0), topY, mmIn[0], mmIn[1], lh*1.4, "#1f2733"));
+        cable(mmOut[0], mmOut[1], ledK[0], ledK[1], -10, "#1f2733");
+        cable(cx2(N-1), topY, ledA[0], ledA[1], lh*1.1, "#c0321d");
+      } else {
+        var busC = topY-lh*0.55, busZ = topY-lh*0.3;
+        ctx.save(); ctx.lineCap = "round"; ctx.strokeStyle = "#c0321d"; ctx.lineWidth = 3.6; ctx.beginPath(); ctx.moveTo(cx2(0), busC); ctx.lineTo(xR-10, busC); ctx.stroke(); ctx.strokeStyle = "#1f2733"; ctx.beginPath(); ctx.moveTo(zx(0), busZ); ctx.lineTo(xR-26, busZ); ctx.stroke();
+        for (i = 0; i < N; i++){ ctx.strokeStyle = "#c0321d"; ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(cx2(i), topY); ctx.lineTo(cx2(i), busC); ctx.stroke(); ctx.strokeStyle = "#1f2733"; ctx.beginPath(); ctx.moveTo(zx(i), topY); ctx.lineTo(zx(i), busZ); ctx.stroke(); }
+        ctx.restore();
+        pathE.push(cable(xR-26, busZ, mmIn[0], mmIn[1], -20, "#1f2733"));
+        cable(mmOut[0], mmOut[1], ledK[0], ledK[1], -10, "#1f2733");
+        cable(xR-10, busC, ledA[0], ledA[1], 30, "#c0321d");
+      }
+      for (i = 0; i < N; i++){ clip(zx(i), topY, "#2b2f36"); clip(cx2(i), topY, "#c0321d"); }
+      /* ampèremètre */
+      ctx.save(); ctx.shadowColor = "rgba(15,27,45,.3)"; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3; ctx.fillStyle = "#f2c230"; S.draw.rrect(c, mmX-34, mmY-30, 68, 58, 9); ctx.fill(); ctx.restore();
+      ctx.fillStyle = "#2b2f36"; S.draw.rrect(c, mmX-29, mmY-25, 58, 48, 6); ctx.fill();
+      S.draw.display(c, S.fmt(Iv, 2), mmX, mmY-6, {w:52, h:28, size:13, screen:"#cfe3d2"});
+      S.draw.text(c, "mA", mmX, mmY+15, {size:10, color:"#f2c230", weight:800});
+      ballF(ctx, mmIn[0], mmIn[1], 4, "#1f2733"); ballF(ctx, mmOut[0], mmOut[1], 4, "#c0321d");
+      /* LED : pattes, dôme coloré, halo */
+      ctx.save(); ctx.strokeStyle = "#9aa5b1"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(ledX-5, ledY+6); ctx.lineTo(ledK[0], ledK[1]); ctx.moveTo(ledX+5, ledY+6); ctx.lineTo(ledA[0], ledA[1]+6); ctx.stroke(); ctx.restore();
+      var lhex = "#"+lc.map(function(v){ return (v < 16 ? "0" : "")+v.toString(16); }).join("");
+      if (on){ S.draw.glow(c, ledX, ledY-8, 30+60*glow, lhex, 0.35+0.55*glow); ctx.save(); ctx.strokeStyle = "rgba("+lc.join(",")+","+(0.25+0.4*glow).toFixed(2)+")"; ctx.lineWidth = 2; for (i = 0; i < 8; i++){ var an = -Math.PI/2+(i-3.5)*0.4, r1 = 22, r2 = 30+24*glow; ctx.beginPath(); ctx.moveTo(ledX+Math.cos(an)*r1, ledY-8+Math.sin(an)*r1); ctx.lineTo(ledX+Math.cos(an)*r2, ledY-8+Math.sin(an)*r2); ctx.stroke(); } ctx.restore(); }
+      ctx.save(); var ld = ctx.createLinearGradient(ledX-10, 0, ledX+10, 0), base = on ? lc.map(function(v){ return Math.round(v+(255-v)*glow*0.5); }) : lc.map(function(v){ return Math.round(v*0.55+90); });
+      ld.addColorStop(0, "rgba("+base.join(",")+",.85)"); ld.addColorStop(0.4, "rgba(255,255,255,.9)"); ld.addColorStop(1, "rgba("+base.join(",")+",.95)");
+      ctx.fillStyle = ld; ctx.beginPath(); ctx.moveTo(ledX-10, ledY+4); ctx.lineTo(ledX-10, ledY-12); ctx.arc(ledX, ledY-12, 10, Math.PI, 0); ctx.lineTo(ledX+10, ledY+4); ctx.closePath(); ctx.fill(); ctx.strokeStyle = "rgba(15,27,45,.45)"; ctx.lineWidth = 1; ctx.stroke();
+      ctx.fillStyle = "rgba("+base.join(",")+",1)"; S.draw.rrect(c, ledX-12, ledY+2, 24, 5, 2); ctx.fill(); ctx.restore();
+      S.draw.text(c, "LED", ledX, ledY-38-(on ? 24*glow : 0), {size:11, color:P.grey, weight:800});
+      S.draw.text(c, "+", ledA[0]+8, ledA[1]-4, {size:11, color:"#c0321d"}); S.draw.text(c, "−", ledK[0]-8, ledK[1]-4, {size:11, color:"#2c3a4e"});
+      /* électrons dans le fil qui sort de la borne − */
+      if (on && pathE.length){ var f = pathE[0]; for (i = 0; i < 7; i++){ var u = (tt*0.35*Math.min(1.6, 0.4+Iv)+i/7)%1, pp = f(u); S.draw.dot(c, pp[0], pp[1], 3, "#f4c542"); } S.draw.text(c, "e⁻", f(0.5)[0], f(0.5)[1]-12, {size:12, color:P.amber}); }
+      /* bandeau */
+      S.draw.label(c, N+" citron"+(N > 1 ? "s" : "")+" "+(ser ? "en série" : "en parallèle")+" · "+S.fmt(Et, 2)+" V", 12, 16, {size:ph1 ? 11 : 12.5, color:P.ink, align:"left"});
+      S.draw.label(c, on ? "LED allumée" : Et <= Vf ? "tension trop faible" : "courant trop faible", W-10, 16, {size:ph1 ? 11 : 12, color:on ? P.green : P.red, align:"right"});
+      S.draw.text(c, "touche les citrons pour en ajouter un", (x0+x1)/2, Hc-12, {size:11, color:"#5a3a18", weight:600});
       /* graphe I(n) */
-      var ax = S.draw.axes(c, {x0: 0.5, x1: 8.5, y0: 0, y1: 3, stepX: 1, stepY: 0.5, xl: "nombre de citrons", yl: "I (mA)", t: 276, b: 36});
-      S.draw.fn(c, ax, function(x){ return I(Math.max(1, Math.round(x)), "s"); }, P.acc, 2.4);
-      S.draw.fn(c, ax, function(x){ return I(Math.max(1, Math.round(x)), "p"); }, P.amber, 2.4, [6, 4]);
-      S.draw.legend(c, [[P.acc, "série"], [P.amber, "parallèle", true]], ax.R - 6, ax.T + 4, {align: "right"});
-      S.draw.line(c, ax.L, ax.Y(0.3), ax.R, ax.Y(0.3), P.light, 1.3, [4, 3]); S.draw.text(c, "seuil visible ≈ 0,3 mA", ax.L + 6, ax.Y(0.3) - 8, {size: 12, color: P.grey, align: "left"});
-      S.draw.dot(c, ax.X(N), ax.Y(Math.min(3, Iv)), 6, P.red);
-      ro.set(0, S.fmt(Et, 2) + " V"); ro.set(1, S.fmt(rt, 0) + " Ω"); ro.set(2, S.fmt(Iv, 2) + " mA"); ro.set(3, Et <= Vf ? "éteinte (tension < seuil)" : Iv < 0.3 ? "à peine visible" : Iv < 1.5 ? "faible" : "bien allumée");
-      nt.set(Et <= Vf ? "La tension totale (" + S.fmt(Et, 2) + " V) est inférieure au seuil de la LED (" + S.fmt(Vf, 1) + " V) : aucun courant." : "Intensité : I = (" + S.fmt(Et, 2) + " − " + S.fmt(Vf, 1) + ") / (" + S.fmt(rt, 0) + " + 20) = " + S.fmt(Iv, 2) + " mA.", "ok");
+      gc.clear(); var ax = S.draw.axes(gc, {x0:0.5, x1:8.5, y0:0, y1:3, stepX:1, stepY:0.5, xl:"nombre de citrons", yl:"I (mA)"});
+      S.draw.fn(gc, ax, function(x){ return I(Math.max(1, Math.round(x)), "s"); }, P.acc, 2.4);
+      S.draw.fn(gc, ax, function(x){ return I(Math.max(1, Math.round(x)), "p"); }, P.amber, 2.4, [6, 4]);
+      S.draw.legend(gc, [[P.acc, "série"], [P.amber, "parallèle", true]], ax.R-6, ax.T+4, {align:"right"});
+      S.draw.line(gc, ax.L, ax.Y(0.3), ax.R, ax.Y(0.3), P.light, 1.3, [4, 3]); S.draw.text(gc, "seuil visible ≈ 0,3 mA", ax.L+6, ax.Y(0.3)-8, {size:12, color:P.grey, align:"left"});
+      S.draw.dot(gc, ax.X(N), ax.Y(Math.min(3, Iv)), 6, P.red);
+      ro.set(0, S.fmt(Et, 2)+" V"); ro.set(1, S.fmt(rt, 0)+" Ω"); ro.set(2, S.fmt(Iv, 2)+" mA"); ro.set(3, Et <= Vf ? "éteinte (tension < seuil)" : Iv < 0.3 ? "à peine visible" : Iv < 1.5 ? "faible" : "bien allumée");
+      nt.set(Et <= Vf ? "La tension totale ("+S.fmt(Et, 2)+" V) est inférieure au seuil de la LED ("+S.fmt(Vf, 1)+" V) : aucun courant." : "Intensité : I = ("+S.fmt(Et, 2)+" − "+S.fmt(Vf, 1)+") / ("+S.fmt(rt, 0)+" + 20) = "+S.fmt(Iv, 2)+" mA.", "ok");
     });
   }
 });

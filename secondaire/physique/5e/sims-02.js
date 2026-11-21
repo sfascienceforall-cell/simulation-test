@@ -142,72 +142,127 @@ SFA.sim({
   id: "p5-c02-train", ch: "c02", tag: "Référentiels",
   titre: "Le pendule dans un train qui accélère",
   resume: "Accélération du train → inclinaison du fil.",
-  but: "Fais accélérer ou freiner le train. Observe l'angle du fil, puis change la masse : l'angle change-t-il ? Relève le défi pour retrouver l'accélération à partir de l'angle.",
+  but: "Fais accélérer ou freiner le train (curseur, ou attrape la boule et déplace-la). Observe l'angle du fil, puis change la masse : l'angle change-t-il ? Les poignées suspendues au plafond penchent du même angle. Relève le défi pour retrouver l'accélération à partir de l'angle. Glisse ailleurs sur la scène pour tourner la vue.",
   aRetenir: "Vu du quai (référentiel galiléen), la boule accélère avec le train : T + P = m·a, d'où tan θ = a/g. L'angle ne dépend pas de la masse. La tension vaut T = m·√(g² + a²).",
   piege: "Dans le train, on dit « une force pousse la boule vers l'arrière » : c'est une force d'inertie, apparente, qui n'existe que dans un référentiel qui accélère. Dans un référentiel galiléen, aucune force ne pousse vers l'arrière.",
   build: function(k, S){
-    var c = k.canvas(320);
+    var c = k.canvas(0, {ratio: 0.72});
+    if (c.W < 470){ c.ratio = 0.8; c.resize(); }
     var a = k.slider("Accélération du train (+ : accélère, − : freine)", -6, 6, 0.1, 2, "m/s²");
     var m = k.slider("Masse de la boule", 0.1, 2, 0.1, 0.5, "kg");
     var seg = k.seg("Vue", [["quai", "Vue du quai"], ["train", "Vue du train"]], "quai");
     var ro = k.readouts(["Angle avec la verticale", "Tangente de l'angle (= a/g)", "Tension du fil", "Poids de la boule", "ΣF = m·a"]);
     var tg = [8, 18, 25], di = 0, nt = k.note("", "");
     k.button("Nouveau défi", function(){ di = (di + 1) % tg.length; });
-    var th = 0, om = 0, sc = 0, L = 104, bob = {x: 0, y: 0};
-    /* le fil se met en mouvement puis s'amortit vers l'angle d'équilibre : tan θ = a/g */
+    var L = 1.75, HL = [0.55, 0.55, 0.55, 0.55], hx = [-3.1, -1.9, 1.9, 3.1];
+    var st = {th: Math.atan(a.value / P5.g), om: 0, sth: hx.map(function(){ return Math.atan(a.value / P5.g); }), som: hx.map(function(){ return 0; }), v: 22, x: 0, yaw: 0, pitch: 0.1};
+    /* le fil se met en mouvement puis s'amortit vers l'angle d'équilibre : tan θ = a/g (même chose pour chaque poignée) */
+    function pend(th, om, Lp, dt){ var g = P5.g, A = a.value, n = 4, h = dt / n; for (var i = 0; i < n; i++){ var al = (A * Math.cos(th) - g * Math.sin(th)) / Lp - 3.2 * om; om += al * h; th += om * h; } return [th, om]; }
     var lp = k.loop(function(dt){
-      var g = P5.g, A = a.value, n = 4, h = dt / n;
-      for (var i = 0; i < n; i++){ var al = (A * Math.cos(th) - g * Math.sin(th)) / (L / 100) - 3.2 * om; om += al * h; th += om * h; }
-      sc += (14 + A * 5) * dt * 6; k.redraw();
+      var r = pend(st.th, st.om, L, dt); st.th = r[0]; st.om = r[1];
+      for (var j = 0; j < hx.length; j++){ r = pend(st.sth[j], st.som[j], HL[j], dt); st.sth[j] = r[0]; st.som[j] = r[1]; }
+      /* défilement du paysage : la vitesse du train varie avec a (décor seulement : elle reste entre 6 et 40 m/s) */
+      st.v += a.value * dt; if (st.v > 40) st.v = 6; if (st.v < 6) st.v = 40;
+      st.x += st.v * dt; k.redraw();
     });
-    th = Math.atan(a.value / P5.g); lp.play();
-    /* manipulation directe : on attrape la boule, l'angle choisi fixe a = g·tan θ */
-    P5x.drag(c, k, function(){ return [{x: bob.x, y: bob.y, r: 34, set: function(px){ var s = P5.clamp((bob.cx - px) / L, -0.52, 0.52); a.set(Math.round(P5.g * Math.tan(Math.asin(s)) * 10) / 10); }}]; });
+    lp.play();
+    var PIV = [0, 3.38, -0.1], cam0 = null, drag = null;
+    function bobAt(th){ return [PIV[0] - Math.sin(th) * L, PIV[1] - Math.cos(th) * L, PIV[2]]; }
+    c.pointer(function(type, q){
+      if (!cam0) return;
+      if (type === "down"){ var b = cam0.p(bobAt(st.th)); drag = Math.hypot(b.x - q.x, b.y - q.y) < 36 ? {bob: true} : {x: q.x, y: q.y, yaw: st.yaw, pitch: st.pitch}; }
+      else if (type === "drag" && drag){
+        if (drag.bob){ var best = 0, bd = 1e9; for (var t = -0.55; t <= 0.55; t += 0.005){ var p = cam0.p(bobAt(t)), d = Math.hypot(p.x - q.x, p.y - q.y); if (d < bd){ bd = d; best = t; } } a.set(Math.round(P5.g * Math.tan(best) * 10) / 10); }
+        else { st.yaw = Math.max(-1, Math.min(1, drag.yaw - (q.x - drag.x) * 0.008)); st.pitch = Math.max(0, Math.min(0.9, drag.pitch + (q.y - drag.y) * 0.006)); }
+        k.redraw();
+      } else if (type === "up") drag = null;
+    });
+    c.cv.style.touchAction = "none";
     k.draw(function(){
-      var pal = S.draw.palette, ctx = c.ctx, g = P5.g, A = a.value, eq = Math.atan(A / g);
-      var cx = c.W / 2, top = 96, wx0 = Math.max(14, cx - 215), wx1 = Math.min(c.W - 14, cx + 215), wy0 = 40, wy1 = 262;
-      P5x.sky(c, "#cfe6fa", "#eaf4fb");
-      /* paysage défilant : collines, poteaux, rails */
-      var rel = seg.value === "quai" ? 1 : -1;
-      ctx.fillStyle = "#cfe3d3"; ctx.beginPath(); ctx.moveTo(0, 250); for (var x = 0; x <= c.W; x += 20) ctx.lineTo(x, 226 + 12 * Math.sin((x + sc * 0.08) / 52)); ctx.lineTo(c.W, 300); ctx.lineTo(0, 300); ctx.fill();
-      ctx.fillStyle = "#9bc3a4"; ctx.fillRect(0, 270, c.W, c.H - 270);
-      ctx.fillStyle = "#6b5a4a"; ctx.fillRect(0, 278, c.W, 5);
-      var off = ((sc * (seg.value === "quai" ? 0 : 1)) % 46 + 46) % 46; ctx.fillStyle = "rgba(0,0,0,.35)"; for (var q = -46; q < c.W + 46; q += 46) ctx.fillRect(q - off, 280, 8, 7);
-      var po = ((sc * (seg.value === "quai" ? 0 : 1)) % 130 + 130) % 130;
-      for (var p = -130; p < c.W + 130; p += 130){ var px = p - po; ctx.fillStyle = "#7d6a58"; ctx.fillRect(px, 196, 4, 84); ctx.fillRect(px - 10, 200, 24, 3); }
-      /* wagon (légèrement transparent dans la vue du quai : on voit le pendule) */
-      ctx.save(); ctx.shadowColor = "rgba(15,27,45,.18)"; ctx.shadowBlur = 12; P5x.rr(ctx, wx0, wy0, wx1 - wx0, wy1 - wy0, 14); ctx.fillStyle = "#f4f8fd"; ctx.fill(); ctx.restore();
-      ctx.lineWidth = 3; ctx.strokeStyle = pal.acc; P5x.rr(ctx, wx0, wy0, wx1 - wx0, wy1 - wy0, 14); ctx.stroke();
-      ctx.fillStyle = pal.acc; ctx.fillRect(wx0 + 4, wy1 - 26, wx1 - wx0 - 8, 22);
-      for (var w = 0; w < 3; w++){ var wxx = wx0 + 30 + w * ((wx1 - wx0 - 60) / 3) + (w === 1 ? 0 : 0); if (w === 1) continue; ctx.fillStyle = "rgba(190,220,245,.45)"; P5x.rr(ctx, wxx, wy0 + 14, (wx1 - wx0 - 60) / 3 - 10, 54, 6); ctx.fill(); }
-      S.draw.dot(c, wx0 + 60, wy1 + 14, 13, "#13233a"); S.draw.dot(c, wx1 - 60, wy1 + 14, 13, "#13233a"); S.draw.dot(c, wx0 + 60, wy1 + 14, 5, "#8fa0b5"); S.draw.dot(c, wx1 - 60, wy1 + 14, 5, "#8fa0b5");
-      /* flèche du sens de marche et accélération du train */
-      P5x.tag(c, "sens de marche →", wx1 - 6, wy0 - 14, "#4b5868", {align: "right"});
-      if (Math.abs(A) > 0.05) P5.vec(c, cx - 6, wy1 - 14, cx - 6 + A * 14, wy1 - 14, pal.green, "", {w: 4});
-      P5x.tag(c, "a = " + S.fmt(A, 1) + " m/s²", cx - 10 + Math.min(0, A * 14), wy1 - 34, pal.green, {align: "left"});
-      /* pendule */
-      var bx = cx - Math.sin(th) * L, by = top + Math.cos(th) * L; bob.x = bx; bob.y = by; bob.cx = cx;
-      S.draw.line(c, cx, top, cx, top + L + 14, "rgba(15,27,45,.28)", 1.3, [4, 4]);
-      ctx.fillStyle = "#8a95a3"; ctx.fillRect(cx - 14, top - 8, 28, 8);
-      S.draw.line(c, cx, top, bx, by, pal.ink, 2.2);
-      P5x.ball(c, bx, by, 12 + m.value * 2.5, pal.amber);
-      /* angle */
-      ctx.strokeStyle = pal.ink; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(cx, top, 44, Math.PI / 2, Math.PI / 2 + th, th < 0); ctx.stroke();
-      if (Math.abs(th) > 0.04) S.draw.text(c, "θ", cx - Math.sin(th / 2) * 60, top + Math.cos(th / 2) * 60, {size: 14, color: pal.ink, math: true, italic: true});
-      var P = m.value * g, T = m.value * Math.sqrt(g * g + A * A), s = 46 / P;
-      P5.vec(c, bx, by, bx, by + P * s, pal.ink, "P", {dx: 12});
-      var dxu = (cx - bx) / L, dyu = (top - by) / L;
-      P5.vec(c, bx, by, bx + dxu * T * s, by + dyu * T * s, pal.red, "T", {dx: -12});
-      if (seg.value === "quai"){
-        if (Math.abs(A) > 0.05) P5.vec(c, bx + 4, by, bx + 4 + m.value * A * s, by, pal.green, "m·a", {dy: 16, size: 12.5});
-        P5x.tag(c, "Vue du quai : T + P = m·a", cx, wy1 + 38, pal.green, {size: 12.5});
-      } else {
-        if (Math.abs(A) > 0.05) P5.vec(c, bx - 4, by, bx - 4 - m.value * A * s, by, pal.violet, "−m·a", {dy: 16, size: 12.5});
-        P5x.tag(c, "Vue du train : T + P + (−m·a) = 0, force d'inertie", cx, wy1 + 38, pal.violet, {size: 12.5});
+      var pal = S.draw.palette, ctx = c.ctx, g = P5.g, A = a.value, eq = Math.atan(A / g), small = c.W < 470, i;
+      var cam = {yaw: st.yaw, pitch: st.pitch, dist: small ? 11.5 : 12.5, target: [0, 2.0, 0], focal: Math.min(c.W * 1.5, c.H * 2.2), cx: c.W / 2, cy: c.H * 0.5};
+      var C0 = new P5d.Cam(cam); cam0 = C0;
+      ctx.fillStyle = P5x.lin(ctx, 0, 0, 0, c.H, [[0, "#8ec3ec"], [0.6, "#d4e9f7"], [1, "#e8f2ea"]]); ctx.fillRect(0, 0, c.W, c.H);
+      var hz = C0.p([0, 0, -3000]).y;
+      /* collines lointaines (défilent lentement : parallaxe) */
+      [[0.02, "#b9d7b0", 26, 90], [0.06, "#a3c99a", 18, 55]].forEach(function(Lh){
+        ctx.fillStyle = Lh[1]; ctx.beginPath(); ctx.moveTo(0, hz + 2);
+        for (var x = 0; x <= c.W + 10; x += 10){ var u = x + st.x * Lh[0] * 8; ctx.lineTo(x, hz - Lh[2] * (0.55 + 0.45 * Math.sin(u / Lh[3])) - 6 * Math.sin(u / 23)); }
+        ctx.lineTo(c.W, hz + 2); ctx.fill(); });
+      ctx.fillStyle = "#9cc58a"; ctx.fillRect(0, hz, c.W, c.H - hz);
+      /* 1. sol, ballast, traverses et rails */
+      var G = P5d.scene(c, cam), off = ((st.x % 0.8) + 0.8) % 0.8;
+      G.poly([[-60, -0.02, -40], [60, -0.02, -40], [60, -0.02, 20], [-60, -0.02, 20]], "#9cc58a", {flat: true});
+      G.poly([[-60, 0, -1.9], [60, 0, -1.9], [60, 0, 1.9], [-60, 0, 1.9]], "#a89f92", {flat: true});
+      for (var x = -30 - off; x < 30; x += 0.8) G.poly([[x - 0.13, 0.01, -1.3], [x + 0.13, 0.01, -1.3], [x + 0.13, 0.01, 1.3], [x - 0.13, 0.01, 1.3]], "#6b5a4a", {flat: true});
+      G.draw();
+      var sc = P5d.scene(c, cam);
+      [-0.72, 0.72].forEach(function(z){ sc.tube([-40, 0.08, z], [40, 0.08, z], 0.09, "#8a95a3", {plain: true, bias: 2}); });
+      /* poteaux de caténaire et arbres (défilent) */
+      var po = ((st.x % 24) + 24) % 24;
+      for (x = -36 - po; x < 36; x += 24){ sc.tube([x, 0, -2.6], [x, 5.6, -2.6], 0.2, "#7d6a58"); sc.tube([x, 5.3, -2.6], [x, 5.3, 0.4], 0.12, "#7d6a58"); }
+      sc.tube([-40, 5.0, 0], [40, 5.0, 0], 0.03, "#3b3328", {plain: true});
+      var to = ((st.x % 17) + 17) % 17;
+      for (x = -40 - to; x < 40; x += 17){ var tz = -7 - 3 * Math.abs(Math.sin(Math.floor((x + st.x) / 17) * 1.7)); sc.tube([x, 0, tz], [x, 1.8, tz], 0.4, "#7a5a3a"); sc.ball([x, 3.2, tz], 1.7, "#5d9c4f"); }
+      /* wagons voisins (fermés) */
+      [-11, 11].forEach(function(cx){
+        sc.box([cx, 2.05, 0], [6.4, 1.35, 1.4], ["#1f4b9e", "#1f4b9e", "#1f4b9e", "#1f4b9e", "#d6dde6", null]);
+        for (var w = -2; w <= 2; w++) sc.poly([[cx + w * 2.4 - 0.8, 2.35, 1.41], [cx + w * 2.4 + 0.8, 2.35, 1.41], [cx + w * 2.4 + 0.8, 3.0, 1.41], [cx + w * 2.4 - 0.8, 3.0, 1.41]], "#bfdcf2", {bias: -0.02});
+      });
+      /* wagon central, en coupe : paroi du fond, plancher, plafond, sièges, voyageurs */
+      sc.poly([[-4.2, 0.7, -1.4], [4.2, 0.7, -1.4], [4.2, 3.4, -1.4], [-4.2, 3.4, -1.4]], "#eef2f7", {bias: 1});
+      for (var w2 = -1; w2 <= 1; w2++) sc.poly([[w2 * 2.4 - 0.85, 1.75, -1.39], [w2 * 2.4 + 0.85, 1.75, -1.39], [w2 * 2.4 + 0.85, 2.75, -1.39], [w2 * 2.4 - 0.85, 2.75, -1.39]], "#a9d2ef", {bias: 0.9, stroke: "#8a95a3"});
+      sc.box([0, 0.62, 0], [4.2, 0.1, 1.4], ["#1f4b9e", "#1f4b9e", "#1f4b9e", "#1f4b9e", "#b7a993", "#333"]);
+      sc.box([0, 3.45, -0.1], [4.2, 0.06, 1.3], ["#d6dde6", "#d6dde6", "#d6dde6", "#d6dde6", "#c4ccd6", "#f4f6f8"]);
+      sc.box([0, 3.6, 0], [4.2, 0.12, 1.45], ["#1f4b9e", "#1f4b9e", "#1f4b9e", "#1f4b9e", "#9aa6b6", null]);
+      sc.box([0, 0.42, 1.38], [4.2, 0.28, 0.04], "#173a7c");
+      sc.tube([-4.2, 0.7, 1.38], [-4.2, 3.55, 1.38], 0.12, "#173a7c"); sc.tube([4.2, 0.7, 1.38], [4.2, 3.55, 1.38], 0.12, "#173a7c");
+      sc.tube([-4.1, 3.3, -0.1], [4.1, 3.3, -0.1], 0.05, "#c7ced8");
+      var COL = ["#c43a7a", "#24775a", "#e07a1f", "#6236c4"];
+      [-3.5, -2.3, 2.3, 3.5].forEach(function(sx, j){
+        sc.box([sx, 1.0, -0.9], [0.55, 0.22, 0.45], ["#3b4a63", "#3b4a63", "#3b4a63", "#3b4a63", "#2f7fd1", null]);
+        sc.box([sx + 0.5 * (j < 2 ? -1 : 1), 1.55, -0.9], [0.08, 0.55, 0.45], "#2f7fd1");
+        P5d.person(sc, {at: [sx + 0.12 * (j < 2 ? -1 : 1), 0.72, -0.9], face: j < 2 ? Math.PI / 2 : -Math.PI / 2, h: 1.65, shirt: COL[j], pants: "#2c3a4e", hair: ["#3a2a1e", "#d9b26a", "#1f1a17", "#a0612b"][j], shadow: false,
+          pose: {footL: [-0.08, 0, 0.3], footR: [0.08, 0, 0.3], kneeL: [-0.08, 0.27, 0.3], kneeR: [0.08, 0.27, 0.3], hipL: [-0.07, 0.29, 0.02], hipR: [0.07, 0.29, 0.02], shL: [-0.13, 0.6, -0.02], shR: [0.13, 0.6, -0.02], elL: [-0.15, 0.45, 0.06], elR: [0.15, 0.45, 0.06], haL: [-0.1, 0.38, 0.2], haR: [0.1, 0.38, 0.2], head: [0, 0.71, 0]}});
+      });
+      /* poignées suspendues : de petits pendules */
+      hx.forEach(function(px, j){ var t = st.sth[j], top = [px, 3.3, 0.3], bot = [px - Math.sin(t) * HL[j], 3.3 - Math.cos(t) * HL[j], 0.3]; sc.tube(top, bot, 0.03, "#5f6b7a", {plain: true}); sc.ball(bot, 0.08, "#f4c542"); });
+      /* le pendule étudié */
+      var bob = bobAt(st.th), rb = 0.12 + m.value * 0.045;
+      sc.box([PIV[0], PIV[1] + 0.05, PIV[2]], [0.18, 0.05, 0.08], "#8a95a3");
+      var Vp = C0.p(PIV), Vv = C0.p([PIV[0], PIV[1] - L - 0.15, PIV[2]]);
+      sc.add(-1e3, function(cx){ cx.save(); cx.strokeStyle = "rgba(15,27,45,.35)"; cx.lineWidth = 1.3; cx.setLineDash([4, 4]); cx.beginPath(); cx.moveTo(Vp.x, Vp.y); cx.lineTo(Vv.x, Vv.y); cx.stroke(); cx.restore(); });
+      sc.tube(PIV, bob, 0.022, "#0f1b2d", {plain: true, bias: -0.5});
+      sc.ball(bob, rb, pal.amber, {bias: -0.6});
+      /* bogies et roues qui tournent */
+      [-2.8, 2.8].forEach(function(bx){
+        sc.box([bx, 0.48, 0.9], [1.2, 0.12, 0.08], "#2c3340");
+        [-0.75, 0.75].forEach(function(dx){ var c0 = [bx + dx, 0.45, 1.0]; sc.tube(c0, [c0[0], c0[1], 1.1], 0.86, "#1f2329", {plain: true});
+          var P0 = C0.p([c0[0], c0[1], 1.12]), rr = 0.36 * P0.s, an = -st.x / 0.43;
+          sc.add(P0.d - 0.2, function(cx){ cx.save(); cx.strokeStyle = "#9aa6b6"; cx.lineWidth = 2; cx.beginPath(); for (var q = 0; q < 3; q++){ var aa = an + q * Math.PI / 3; cx.moveTo(P0.x - Math.cos(aa) * rr, P0.y - Math.sin(aa) * rr); cx.lineTo(P0.x + Math.cos(aa) * rr, P0.y + Math.sin(aa) * rr); } cx.stroke(); cx.restore(); });
+        });
+      });
+      /* forces sur la boule (1 N ↔ 0,1 m) */
+      var P = m.value * g, T = m.value * Math.sqrt(g * g + A * A), u = 0.95 / P;
+      var dxu = (PIV[0] - bob[0]) / L, dyu = (PIV[1] - bob[1]) / L;
+      sc.arrow(bob, [bob[0], bob[1] - P * u, bob[2]], pal.ink, "P", {w: 3.6});
+      sc.arrow(bob, [bob[0] + dxu * T * u, bob[1] + dyu * T * u, bob[2]], pal.red, "T", {w: 3.6});
+      if (Math.abs(A) > 0.05){
+        if (seg.value === "quai") sc.arrow([bob[0], bob[1], bob[2] + 0.02], [bob[0] + m.value * A * u, bob[1], bob[2] + 0.02], pal.green, "m·a", {w: 3.6, dy: 14, size: 12});
+        else sc.arrow([bob[0], bob[1], bob[2] + 0.02], [bob[0] - m.value * A * u, bob[1], bob[2] + 0.02], pal.violet, "−m·a", {w: 3.6, dy: 14, size: 12});
+        sc.arrow([-1.1, 0.95, 1.2], [-1.1 + Math.max(-2.2, Math.min(2.2, A * 0.35)), 0.95, 1.2], pal.green, "a du train", {w: 4.4, size: 11.5});
       }
-      P5x.handle(c, bx, by - 14 - m.value * 2.5 + 2, pal.amber, 6.5);
-      P5x.hint(c, "Attrape la boule et déplace-la : tu règles l'accélération", {y: 16, size: 12});
-      var deg = eq * 180 / Math.PI, d = Math.abs(deg), ok = Math.abs(d - tg[di]) < 0.6;
+      sc.draw();
+      /* angle θ */
+      var Pp = C0.p(PIV), Pb = C0.p(bob), rA = Math.hypot(Pb.x - Pp.x, Pb.y - Pp.y) * 0.45, aV = Math.PI / 2, aB = Math.atan2(Pb.y - Pp.y, Pb.x - Pp.x);
+      ctx.save(); ctx.strokeStyle = pal.ink; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.arc(Pp.x, Pp.y, rA, Math.min(aV, aB), Math.max(aV, aB)); ctx.stroke(); ctx.restore();
+      if (Math.abs(st.th) > 0.04) S.draw.text(c, "θ", Pp.x + Math.cos((aV + aB) / 2) * (rA + 12), Pp.y + Math.sin((aV + aB) / 2) * (rA + 12), {size: 14, color: pal.ink, math: true, italic: true});
+      P5x.handle(c, Pb.x, Pb.y - rb * Pb.s - 8, pal.amber, 6);
+      /* bandeau */
+      var d = Math.abs(eq * 180 / Math.PI), ok = Math.abs(d - tg[di]) < 0.6;
+      P5d.card(c, 10, 10, seg.value === "quai" ? "Vue du quai : T + P = m·a" : "Vue du train : T + P + (−m·a) = 0", [A > 0.05 ? "Le train accélère : le fil penche vers l'arrière" : A < -0.05 ? "Le train freine : le fil penche vers l'avant" : "Vitesse constante : le fil reste vertical", "tan θ = a/g = " + S.fmt(Math.abs(A / g), 3) + " → θ = " + S.fmt(d, 1) + " °"], seg.value === "quai" ? pal.green : pal.violet, {size: small ? 10.5 : 11.5});
+      S.draw.label(c, "sens de marche →", c.W - 12, small ? c.H - 30 : 18, {align: "right", color: "#2c3a4e", size: 11.5});
+      S.draw.text(c, small ? "Glisse : vue · attrape la boule" : "Attrape la boule pour régler a · glisse ailleurs pour tourner la vue", c.W - 10, c.H - 11, {align: "right", size: 10.5, color: "rgba(44,58,78,.75)", weight: 600});
       ro.set(0, S.fmt(d, 1) + " °" + (A > 0 ? " vers l'arrière" : A < 0 ? " vers l'avant" : "")); ro.set(1, S.fmt(Math.abs(A / g), 3));
       ro.set(2, S.fmt(T, 2) + " N"); ro.set(3, S.fmt(P, 2) + " N"); ro.set(4, S.fmt(m.value * A, 2) + " N");
       nt.set("<b>Défi " + (di + 1) + "/3.</b> Règle l'accélération pour que le fil fasse " + tg[di] + " ° avec la verticale. " + (ok ? "Réussi : a = g·tan θ = " + S.fmt(g * Math.tan(tg[di] * Math.PI / 180), 2) + " m/s² (calcule-le).": "Pas encore."), ok ? "ok" : "");

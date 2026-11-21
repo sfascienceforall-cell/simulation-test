@@ -133,35 +133,104 @@ SFA.sim({
   id: "p6-c06-stationnaire", ch: "c06", tag: "Ondes stationnaires",
   titre: "Ondes stationnaires : nœuds, ventres et harmoniques",
   resume: "Une corde fixée aux deux bouts ne vibre bien qu'à certaines fréquences : f_n = n·v/(2L).",
-  but: "Choisis l'harmonique n, la longueur de la corde et la célérité. Observe les nœuds (rouges) qui ne bougent jamais et les ventres (verts). Affiche les deux ondes progressives qui se superposent.",
+  but: "Un vibreur fait osciller une corde tendue par une masse (expérience de Melde). Choisis l'harmonique n, la longueur de la corde (ou glisse le chevalet) et la célérité. Observe les nœuds (rouges) qui ne bougent jamais et les ventres (verts). Affiche les deux ondes progressives qui se superposent.",
   aRetenir: "Sur une corde de longueur L fixée aux deux extrémités, l'onde se réfléchit et se superpose à elle-même : seules les fréquences f_n = n·v/(2L) donnent une onde stationnaire, avec n fuseaux, n + 1 nœuds (bouts compris) et longueur d'onde λ_n = 2L/n. Le fondamental est n = 1. Raccourcir la corde (ou la tendre) rend le son plus aigu.",
-  piege: "Dans une onde stationnaire, l'énergie ne se propage pas : les nœuds restent immobiles. La distance entre deux nœuds voisins est λ/2, pas λ. Animation ralentie : la fréquence réelle est donnée dans les mesures.",
+  piege: "Dans une onde stationnaire, l'énergie ne se propage pas : les nœuds restent immobiles. La distance entre deux nœuds voisins est λ/2, pas λ. Animation ralentie : la fréquence réelle est donnée dans les mesures. (Le vibreur bouge très peu : on assimile son extrémité à un nœud.)",
   build: function(k, S){
-    var c = k.canvas(260), P = S.draw.palette;
+    var P = S.draw.palette;
+    function rcv(desk, phone){
+      var cv = k.canvas(0, {ratio: desk});
+      Object.defineProperty(cv, "ratio", {get: function(){ var w = cv.cv.parentNode ? cv.cv.parentNode.clientWidth : 600; return w < 460 ? phone : desk; }, configurable: true});
+      cv.resize(); return cv;
+    }
+    var c = rcv(0.6, 0.95);
     var n = k.slider("Harmonique n", 1, 8, 1, 3, "");
     var L = k.slider("Longueur L de la corde", 0.5, 2, 0.05, 0.65, "m");
     var v = k.slider("Célérité v des ondes", 50, 300, 10, 120, "m/s");
     var comp = k.toggle("Montrer les deux ondes progressives", true);
     var ro = k.readouts(["Fréquence f_n", "Longueur d'onde λ_n = 2L/n", "Nœuds (bouts compris)", "Fondamental f₁"]);
-    var t = 0;
+    var t = 0, geo = {}, drag = false;
     var lp = k.loop(function(dt){ t += dt; k.redraw(); }); lp.play();
+    c.cv.style.touchAction = "none";
+    c.pointer(function(tp, p){
+      if (tp === "move"){ c.cv.style.cursor = geo.x1 && Math.abs(p.x - geo.x1) < 26 && p.y > geo.cy - 40 ? "ew-resize" : "default"; return; }
+      if (tp === "down" && geo.x1 && Math.abs(p.x - geo.x1) < 26 && p.y > geo.cy - 40) drag = true;
+      if ((tp === "down" || tp === "drag") && drag){
+        var u = Math.max(0.74, Math.min(1, (p.x - geo.x0) / geo.av)), Lm = 0.5 + (u - 0.74) / 0.26 * 1.5;
+        L.set(Math.max(0.5, Math.min(2, Math.round(Lm / 0.05) * 0.05))); k.redraw();
+      }
+      if (tp === "up") drag = false;
+    });
+    function shade(ctx, x, y, w, h, c0, c1){ var g = ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, c0); g.addColorStop(1, c1); ctx.fillStyle = g; ctx.fillRect(x, y, w, h); }
     k.draw(function(){
-      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, cy = H / 2, x0 = 30, x1 = W - 30, a = 52, w = 2 * Math.PI * 0.7 * t;
-      function Y(x){ return 2 * Math.sin(n.value * Math.PI * x) * Math.cos(w); }
-      if (comp.value){ [1, -1].forEach(function(s){ ctx.beginPath(); ctx.strokeStyle = s > 0 ? "rgba(46,107,85,.45)" : "rgba(180,35,24,.4)"; ctx.lineWidth = 2; for (var i = 0; i <= 300; i++){ var x = i / 300, y = Math.sin(n.value * Math.PI * x - s * w) ; var X = x0 + x * (x1 - x0); if (i) ctx.lineTo(X, cy - a * y); else ctx.moveTo(X, cy - a * y); } ctx.stroke(); }); }
-      ctx.beginPath(); ctx.strokeStyle = P.acc; ctx.lineWidth = 3.4;
-      for (var i = 0; i <= 300; i++){ var x = i / 300, X = x0 + x * (x1 - x0), y = cy - a * Y(x); if (i) ctx.lineTo(X, y); else ctx.moveTo(X, y); } ctx.stroke();
-      /* enveloppe */
-      ctx.beginPath(); ctx.strokeStyle = "rgba(30,63,143,.25)"; ctx.lineWidth = 1.5; ctx.setLineDash([4, 4]);
-      [1, -1].forEach(function(s){ ctx.beginPath(); for (var i2 = 0; i2 <= 300; i2++){ var x2 = i2 / 300, y2 = cy - s * 2 * a * Math.abs(Math.sin(n.value * Math.PI * x2)); if (i2) ctx.lineTo(x0 + x2 * (x1 - x0), y2); else ctx.moveTo(x0, y2); } ctx.stroke(); }); ctx.setLineDash([]);
-      for (var q = 0; q <= n.value; q++) S.draw.dot(c, x0 + q / n.value * (x1 - x0), cy, 6, P.red);
-      for (q = 0; q < n.value; q++){ var xv = x0 + (q + 0.5) / n.value * (x1 - x0); S.draw.dot(c, xv, cy - 2 * a * Math.sin((q + 0.5) * Math.PI) * Math.cos(w), 5, P.green); }
-      ctx.fillStyle = "#6b7686"; ctx.fillRect(x0 - 8, cy - 22, 8, 44); ctx.fillRect(x1, cy - 22, 8, 44);
-      S.draw.text(c, "points rouges : nœuds   points verts : ventres", W / 2, H - 14, {size: 12, color: P.grey});
-      S.draw.text(c, "λ/2", x0 + (x1 - x0) / (2 * n.value), cy + a + 18, {size: 13, color: P.amber, math: true});
-      S.draw.line(c, x0, cy + a + 8, x0 + (x1 - x0) / n.value, cy + a + 8, P.amber, 2);
-      var fn = n.value * v.value / (2 * L.value);
-      ro.set(0, S.fmt(fn, 1) + " Hz"); ro.set(1, S.fmt(2 * L.value / n.value, 3) + " m"); ro.set(2, String(n.value + 1)); ro.set(3, S.fmt(v.value / (2 * L.value), 1) + " Hz");
+      c.clear(); var ctx = c.ctx, W = c.W, H = c.H, ph = W < 460, w = 2 * Math.PI * 0.7 * t, nn = n.value;
+      var yB = Math.round(H * 0.74), cy = Math.round(H * 0.42), x0 = ph ? 58 : 82, xP = W - 30, av = xP - 44 - x0, x1 = x0 + av * (0.74 + 0.26 * (L.value - 0.5) / 1.5), a = Math.min(H * 0.105, 44);
+      geo.x0 = x0; geo.av = av; geo.x1 = x1; geo.cy = cy;
+      function Y(x){ return 2 * Math.sin(nn * Math.PI * x) * Math.cos(w); }
+      function X(x){ return x0 + x * (x1 - x0); }
+      /* labo : mur carrelé, prise, paillasse */
+      shade(ctx, 0, 0, W, H, "#f3f6fa", "#dfe5ed");
+      ctx.strokeStyle = "rgba(140,155,175,.18)"; ctx.lineWidth = 1;
+      for (var gy = 22; gy < yB; gy += 22){ ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
+      for (var gx = 0; gx < W; gx += 44){ for (gy = 0; gy < yB; gy += 44){ ctx.beginPath(); ctx.moveTo(gx + (gy / 22 % 2 ? 22 : 0), gy); ctx.lineTo(gx + (gy / 22 % 2 ? 22 : 0), gy + 22); ctx.stroke(); } }
+      var bE = xP - 6;
+      ctx.fillStyle = "rgba(15,27,45,.12)"; ctx.fillRect(bE, yB + 6, 8, H - yB);
+      shade(ctx, 0, yB, bE, 14, "#a8794e", "#7f5634"); shade(ctx, 0, yB + 14, bE, H - yB - 14, "#5d6b7d", "#3e4a59");
+      ctx.fillStyle = "rgba(255,255,255,.25)"; ctx.fillRect(0, yB, bE, 2);
+      /* règle graduée sur la paillasse (de la fixation au chevalet) */
+      var rY = yB - 10; ctx.fillStyle = "#f2dca0"; ctx.fillRect(x0, rY, x1 - x0, 9); ctx.strokeStyle = "#a88a3a"; ctx.lineWidth = 1; ctx.strokeRect(x0, rY, x1 - x0, 9);
+      for (var m = 0; m <= L.value + 1e-6; m += 0.05){ var xm = X(m / L.value), big = Math.abs(m * 10 - Math.round(m * 10)) < 1e-6; ctx.beginPath(); ctx.moveTo(xm, rY); ctx.lineTo(xm, rY + (big ? 6 : 3.5)); ctx.strokeStyle = "#6b5520"; ctx.stroke(); }
+      S.draw.label(c, "L = " + S.fmt(L.value, 2) + " m", x0 + (x1 - x0) * 0.78, rY - 12, {size: 11, color: "#6b5520", fill: "rgba(255,246,220,.95)"});
+      /* fuseaux (ce que l'œil voit) : enveloppe remplie */
+      ctx.beginPath();
+      for (var i = 0; i <= 240; i++){ var xx = i / 240; ctx.lineTo(X(xx), cy - 2 * a * Math.abs(Math.sin(nn * Math.PI * xx))); }
+      for (i = 240; i >= 0; i--){ xx = i / 240; ctx.lineTo(X(xx), cy + 2 * a * Math.abs(Math.sin(nn * Math.PI * xx))); }
+      ctx.closePath(); ctx.fillStyle = "rgba(47,127,209,.10)"; ctx.fill(); ctx.strokeStyle = "rgba(30,63,143,.28)"; ctx.setLineDash([4, 4]); ctx.lineWidth = 1.3; ctx.stroke(); ctx.setLineDash([]);
+      /* ondes progressives (aller et retour) */
+      if (comp.value){ [1, -1].forEach(function(s){ ctx.beginPath(); ctx.strokeStyle = s > 0 ? "rgba(46,107,85,.5)" : "rgba(180,35,24,.45)"; ctx.lineWidth = 2; for (var j = 0; j <= 240; j++){ var x = j / 240, y = Math.sin(nn * Math.PI * x - s * w); if (j) ctx.lineTo(X(x), cy - a * y); else ctx.moveTo(X(x), cy - a * y); } ctx.stroke(); });
+        S.draw.arrow(c, X(0.06), cy - 2 * a - 10, X(0.16), cy - 2 * a - 10, "rgba(46,107,85,.8)", 2); S.draw.arrow(c, X(0.94), cy - 2 * a - 10, X(0.84), cy - 2 * a - 10, "rgba(180,35,24,.75)", 2); }
+      /* corde : quelques instantanés pâles (stroboscope) puis la corde actuelle */
+      [0.6, 1.2, 1.8].forEach(function(d){ ctx.beginPath(); for (var j = 0; j <= 160; j++){ var x = j / 160, y = cy - a * 2 * Math.sin(nn * Math.PI * x) * Math.cos(w - d); j ? ctx.lineTo(X(x), y) : ctx.moveTo(X(x), y); } ctx.strokeStyle = "rgba(194,106,12," + (0.22 - d * 0.08) + ")"; ctx.lineWidth = 2; ctx.stroke(); });
+      ctx.beginPath(); for (i = 0; i <= 300; i++){ var x3 = i / 300, y3 = cy - a * Y(x3); i ? ctx.lineTo(X(x3), y3) : ctx.moveTo(X(x3), y3); }
+      ctx.strokeStyle = "#7a3f08"; ctx.lineWidth = 4.2; ctx.lineCap = "round"; ctx.stroke(); ctx.strokeStyle = "#e08a2c"; ctx.lineWidth = 2.4; ctx.stroke();
+      /* fil du chevalet à la poulie (ne vibre pas) et masse suspendue */
+      var pr = 13, pcx = xP, pcy = cy + pr;
+      S.draw.line(c, x1, cy, pcx, cy, "#b8752a", 2.2);
+      var mh = 18 + 16 * (v.value - 50) / 250, my = Math.min(H - mh - 8, yB + 30 + 0 * mh);
+      S.draw.line(c, pcx + pr, pcy, pcx + pr, my, "#b8752a", 2);
+      /* poulie fixée au bord de la paillasse */
+      ctx.fillStyle = "#5f6b7a"; ctx.fillRect(pcx - 4, pcy, 8, yB - pcy + 10); shade(ctx, pcx - 18, yB - 4, 22, 22, "#8a95a3", "#4b5563");
+      var gp = ctx.createRadialGradient(pcx - 4, pcy - 4, 2, pcx, pcy, pr); gp.addColorStop(0, "#e6ebf2"); gp.addColorStop(1, "#7b8798");
+      ctx.fillStyle = gp; ctx.beginPath(); ctx.arc(pcx, pcy, pr, 0, 7); ctx.fill(); ctx.strokeStyle = "#3d4553"; ctx.lineWidth = 1.4; ctx.stroke();
+      ctx.save(); ctx.translate(pcx, pcy); ctx.rotate(t * 0.3); ctx.strokeStyle = "#3d4553"; ctx.beginPath(); ctx.moveTo(-pr * 0.7, 0); ctx.lineTo(pr * 0.7, 0); ctx.moveTo(0, -pr * 0.7); ctx.lineTo(0, pr * 0.7); ctx.stroke(); ctx.restore();
+      var mw = mh * 1.1, gm = ctx.createLinearGradient(pcx + pr - mw / 2, 0, pcx + pr + mw / 2, 0); gm.addColorStop(0, "#c9ced6"); gm.addColorStop(0.4, "#8f99a8"); gm.addColorStop(1, "#4f5967");
+      ctx.fillStyle = gm; S.draw.rrect(c, Math.min(W - mw - 2, pcx + pr - mw / 2), my, mw, mh, 4); ctx.fill(); ctx.strokeStyle = "#2d3744"; ctx.lineWidth = 1; ctx.stroke();
+      if (!ph) S.draw.text(c, "masse (tension)", pcx - 12, Math.min(H - 8, my + mh + 10), {size: 10, color: "#dfe5ee", align: "right", weight: 700});
+      /* chevalet mobile (fixation de droite) */
+      ctx.fillStyle = "#6b4a2b"; ctx.beginPath(); ctx.moveTo(x1, cy); ctx.lineTo(x1 - 13, yB - 10); ctx.lineTo(x1 + 13, yB - 10); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,.2)"; ctx.beginPath(); ctx.moveTo(x1, cy + 4); ctx.lineTo(x1 - 9, yB - 12); ctx.lineTo(x1 - 3, yB - 12); ctx.closePath(); ctx.fill();
+      S.draw.dot(c, x1, cy, 4, "#3d2a16");
+      S.draw.label(c, "⇔ chevalet (glisse-le)", Math.min(x1, W - 90), yB + 30, {size: 10.5, color: "#f2dca0", fill: "rgba(19,35,58,.55)"});
+      /* vibreur (électroaimant + lame) */
+      var vx = x0 - (ph ? 46 : 58), vw = ph ? 40 : 50, vib = Math.sin(t * 40) * 1.2;
+      shade(ctx, vx, cy + 24, vw, yB - cy - 24, "#4a5a70", "#24303f"); ctx.strokeStyle = "#13233a"; ctx.lineWidth = 1; ctx.strokeRect(vx, cy + 24, vw, yB - cy - 24);
+      ctx.fillStyle = "#c26a0c"; for (var r = 0; r < 5; r++) ctx.fillRect(vx + 8, cy + 34 + r * 6, vw - 16, 3.5);
+      ctx.fillStyle = "#c9d3df"; ctx.fillRect(x0 - 3, cy + vib, 4, 26 - vib); ctx.fillStyle = "#13233a"; ctx.fillRect(x0 - 12, cy + 18, 16, 8);
+      S.draw.dot(c, x0, cy, 4.5, "#13233a");
+      S.draw.text(c, "vibreur", vx + vw / 2, yB - 12, {size: 10.5, color: "#e9eef5", weight: 800});
+      /* générateur basse fréquence */
+      var fn = nn * v.value / (2 * L.value);
+      S.draw.display(c, S.fmt(fn, 1) + " Hz", ph ? 62 : 86, ph ? 26 : 30, {w: ph ? 110 : 130, h: ph ? 40 : 46, caption: "GÉNÉRATEUR · f_" + nn, size: ph ? 14 : 17});
+      ctx.strokeStyle = "#13233a"; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(ph ? 30 : 40, ph ? 46 : 53); ctx.bezierCurveTo(10, cy, vx - 10, cy + 60, vx, cy + 60); ctx.stroke();
+      /* nœuds et ventres */
+      for (var q = 0; q <= nn; q++){ var xn = X(q / nn); S.draw.dot(c, xn, cy, 6, P.red); if (nn <= 5 || q % 2 === 0) S.draw.text(c, "N", xn, cy + 2 * a * 0 + 16, {size: 10, color: P.red, weight: 800}); }
+      for (q = 0; q < nn; q++){ var xv = X((q + 0.5) / nn), yv = cy - 2 * a * Math.sin((q + 0.5) * Math.PI) * Math.cos(w); S.draw.dot(c, xv, yv, 5, P.green); if (nn <= 4 && xv > (ph ? 124 : 158)) S.draw.text(c, "V", xv, cy - 2 * a - (comp.value ? 24 : 10), {size: 10, color: P.green, weight: 800}); }
+      /* λ/2 */
+      var lx0 = X(0), lx1 = X(1 / nn), ly = cy + 2 * a + 10;
+      S.draw.line(c, lx0, ly, lx1, ly, P.amber, 2); S.draw.line(c, lx0, ly - 4, lx0, ly + 4, P.amber, 2); S.draw.line(c, lx1, ly - 4, lx1, ly + 4, P.amber, 2);
+      S.draw.text(c, "λ/2", (lx0 + lx1) / 2, ly + 12, {size: 13, color: P.amber, math: true});
+      S.draw.text(c, "points rouges : nœuds   points verts : ventres", W / 2, H - 12, {size: 11.5, color: "#e9eef5"});
+      ro.set(0, S.fmt(fn, 1) + " Hz"); ro.set(1, S.fmt(2 * L.value / nn, 3) + " m"); ro.set(2, String(nn + 1)); ro.set(3, S.fmt(v.value / (2 * L.value), 1) + " Hz");
     });
   }
 });

@@ -172,8 +172,18 @@ new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classLis
 </div>
 <div class="row">
   <span class="pill" id="szLab" style="color:#185fa5;border-color:#b5d4f4;">largeur a / λ</span>
-  <input type="range" id="sz" min="0.3" max="8" value="1" step="0.05" style="accent-color:#378ADD;max-width:260px;">
-  <span class="val" id="szv" style="color:#185fa5;border-color:#b5d4f4;">1.00</span>
+  <input type="range" id="sz" min="0" max="1000" value="194" step="1" style="accent-color:#378ADD;max-width:320px;">
+  <span class="val" id="szv" style="color:#185fa5;border-color:#b5d4f4;">1,00</span>
+</div>
+<div class="row">
+  <span class="pill">Aller à</span>
+  <button class="btn" onclick="setRatio(0.5)">0,5 λ</button>
+  <button class="btn" onclick="setRatio(1)">1 λ</button>
+  <button class="btn" onclick="setRatio(3)">3 λ</button>
+  <button class="btn" onclick="setRatio(10)">10 λ</button>
+  <button class="btn" onclick="setRatio(30)">30 λ</button>
+  <button class="btn" onclick="setRatio(100)">100 λ</button>
+  <button class="btn" onclick="setRatio(150)">150 λ</button>
 </div>
 <div class="info" id="info"></div>
 
@@ -201,7 +211,13 @@ function setMode(m){mode=m;document.getElementById('mF').className='btn mode'+(m
   document.getElementById('mO').className='btn mode'+(m==='obstacle'?' on':'');
   document.getElementById('szLab').textContent=(m==='fente'?'largeur a / λ':'taille d / λ');
   buildBarrier();resetField();}
-document.getElementById('sz').addEventListener('input',e=>{ratio=+e.target.value;document.getElementById('szv').textContent=ratio.toFixed(2);buildBarrier();});
+// curseur logarithmique : de 0,3 λ à 150 λ
+const RMIN=0.3,RMAX=150,RSW=8;   // au-delà de RSW λ, la grille ne peut plus représenter λ : calcul de Huygens-Fresnel
+const s2r=v=>RMIN*Math.pow(RMAX/RMIN,v/1000),r2s=r=>Math.round(1000*Math.log(r/RMIN)/Math.log(RMAX/RMIN));
+const fmtR=r=>(r<10?r.toFixed(2):r<100?r.toFixed(1):r.toFixed(0)).replace('.',',');
+function setRatio(r){const was=ratio>RSW;ratio=r;document.getElementById('sz').value=r2s(r);document.getElementById('szv').textContent=fmtR(r);
+  if(ratio<=RSW){buildBarrier();if(was)resetField();}}
+document.getElementById('sz').addEventListener('input',e=>setRatio(s2r(+e.target.value)));
 
 function syncSize(){const r=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;
   const nW=Math.round(r.width)||700,nH=Math.round(r.height)||340;
@@ -245,19 +261,51 @@ function rrect(x,y,w,h,r){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y
 let vx0=0,sxp=1,syp=1;const CX=i=>(i-vx0)*sxp;
 function frameView(){syp=H/NY;sxp=W/NX;if(syp/sxp>1.3){sxp=syp/1.3;const vis=W/sxp;vx0=Math.max(0,Math.min(NX-vis,XB-0.42*vis));}else vx0=0;}
 
-function regimeText(){const R=ratio;
+function regimeText(){const R=ratio,th=R>1?(Math.asin(1/R)*180/Math.PI):90,thT=th<1?th.toFixed(2).replace('.',','):th.toFixed(1).replace('.',',');
   if(mode==='fente'){
     if(R<0.6)return['λ ≫ a','L\'onde ne traverse quasiment pas la fente (elle est presque bloquée).'];
     if(R<1.6)return['λ ≈ a','Diffraction maximale : l\'onde envahit tout l\'espace au-delà de l\'écran (fronts quasi circulaires, comme une source ponctuelle).'];
-    if(R<6)return['λ ≤ a ≤ 10λ','La propagation se fait dans un cône, d\'autant plus évasé que la fente est étroite.'];
-    return['a ≫ λ','Diffraction faible : propagation quasi rectiligne, le faisceau garde à peu près la largeur de la fente (a>100λ ⇒ rayon quasi parfait).'];
+    if(R<10)return['λ ≤ a ≤ 10λ','La propagation se fait dans un cône, d\'autant plus évasé que la fente est étroite (premier minimum à θ = '+thT+'°, sin θ = λ/a).'];
+    if(R<100)return['a ≫ λ','Diffraction faible : le faisceau s\'ouvre à peine (premier minimum à θ = '+thT+'°) et garde presque la largeur de la fente.'];
+    return['a > 100 λ','Propagation rectiligne : un vrai rayon, de la largeur de la fente (θ = '+thT+'°). Il ne reste que de fines franges au bord de l\'ombre.'];
   } else {
     if(R<0.7)return['d < λ','L\'onde contourne l\'obstacle : presque pas d\'ombre derrière lui.'];
     if(R<1.6)return['d ≈ λ','Derrière l\'obstacle : succession de bandes d\'intensité variable (figure de diffraction).'];
-    return['d > λ','Propagation rectiligne : zone d\'ombre nette derrière l\'obstacle.'];
+    if(R<30)return['d > λ','Propagation rectiligne : zone d\'ombre derrière l\'obstacle, que l\'onde remplit peu à peu en s\'éloignant.'];
+    return['d ≫ λ','Ombre géométrique nette derrière l\'obstacle, bordée de fines franges : l\'onde se comporte comme un rayon.'];
   }}
 
-function draw(){syncSize();frameView();if(!paused){stepSim();stepSim();}render();
+// ---------- grands rapports a/λ : Huygens-Fresnel (approximation paraxiale), calculé une fois puis animé ----------
+function fres(z){const sg=z<0?-1:1;z=Math.abs(z);const f=(1+0.926*z)/(2+1.792*z+3.104*z*z),g=1/(2+4.142*z+3.492*z*z+6.67*z*z*z),a=Math.PI*z*z/2,c=Math.cos(a),s=Math.sin(a);
+  return[sg*(0.5+f*s-g*c),sg*(0.5-f*c-g*s)];}
+const AN={key:'',re:null,im:null,gw:0,gh:0,cell:2,xb:0,ppl:1,ph:0,off:document.createElement('canvas')};
+function anCompute(){const cell=AN.cell,xb=Math.round(W*0.34),apx=0.5*H,ppl=apx/ratio,gw=Math.ceil(W/cell),gh=Math.ceil(H/cell),key=[W,H,ratio,mode].join('|');
+  if(key===AN.key)return;AN.key=key;AN.xb=xb;AN.ppl=ppl;AN.gw=gw;AN.gh=gh;AN.re=new Float32Array(gw*gh);AN.im=new Float32Array(gw*gh);
+  AN.off.width=gw;AN.off.height=gh;AN.img=AN.off.getContext('2d').createImageData(gw,gh);
+  for(let i=0;i<gw;i++){const X=(i+0.5)*cell-xb;
+    for(let j=0;j<gh;j++){const k=i+j*gw;let re,im;
+      if(X<=0){re=1;im=0;}
+      else{const x=Math.max(0.3,X/ppl),y=((j+0.5)*cell-H/2)/ppl,sq=Math.sqrt(2/x);
+        const [C1,S1]=fres((-ratio/2-y)*sq),[C2,S2]=fres((ratio/2-y)*sq),dc=C2-C1,ds=S2-S1;
+        re=(dc+ds)/2;im=(ds-dc)/2;if(mode!=='fente'){re=1-re;im=-im;}}   // obstacle : principe de Babinet
+      AN.re[k]=re;AN.im[k]=im;}}}
+function anRender(){anCompute();const {gw,gh,re,im,img,cell,xb,ppl}=AN,d=img.data,field=!showI&&ppl>=5;
+  if(!paused)AN.ph+=2*Math.PI/12;
+  for(let i=0;i<gw;i++){const X=(i+0.5)*cell-xb,kx=2*Math.PI*X/ppl-AN.ph,c=Math.cos(kx),s=Math.sin(kx);
+    for(let j=0;j<gh;j++){const k=i+j*gw;let r,g,b;
+      if(field){let v=(re[k]*c-im[k]*s)*0.95;if(v>1)v=1;if(v<-1)v=-1;
+        if(v>=0){r=255-29*v;g=255-180*v;b=255-181*v;}else{const a=-v;r=255-200*a;g=255-117*a;b=255-34*a;}}
+      else{const v=Math.min(1,Math.sqrt((re[k]*re[k]+im[k]*im[k])/1.9));
+        if(v<0.55){const a=v/0.55;r=255-11*a;g=255-59*a;b=255-145*a;}else{const a=(v-0.55)/0.45;r=244-58*a;g=196-79*a;b=110-87*a;}}
+      const p=k*4;d[p]=r;d[p+1]=g;d[p+2]=b;d[p+3]=255;}}
+  AN.off.getContext('2d').putImageData(img,0,0);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);ctx.imageSmoothingEnabled=true;ctx.drawImage(AN.off,0,0,gw*cell,gh*cell);
+  // écran ou obstacle
+  const bw=8,bx=xb-bw/2,a2=0.25*H,segs=mode==='fente'?[[-6,H/2-a2],[H/2+a2,H+6]]:[[H/2-a2,H/2+a2]];
+  segs.forEach(([y0,y1])=>{ctx.save();ctx.shadowColor='rgba(19,35,58,0.25)';ctx.shadowBlur=6;ctx.shadowOffsetX=1.5;const g=ctx.createLinearGradient(bx,0,bx+bw,0);g.addColorStop(0,'#3a4a60');g.addColorStop(0.45,'#13233a');g.addColorStop(1,'#0b1626');ctx.fillStyle=g;rrect(bx,y0,bw,y1-y0,3);ctx.fill();ctx.restore();});
+  return field;}
+
+function draw(){syncSize();frameView();const big=ratio>RSW;let fieldOK=true;
+  if(big)fieldOK=anRender();else{if(!paused){stepSim();stepSim();}render();}
   // repères
   // étiquettes sur fond blanc semi-opaque (lisibles par-dessus le champ coloré)
   // panneaux : fond blanc, bord #e3e7ed, coins 8 px
@@ -266,21 +314,24 @@ function draw(){syncSize();frameView();if(!paused){stepSim();stepSim();}render()
     ctx.save();ctx.shadowColor='rgba(19,35,58,0.10)';ctx.shadowBlur=6;ctx.shadowOffsetY=1;ctx.fillStyle='rgba(255,255,255,0.96)';rrect(x0,y,w,h,8);ctx.fill();ctx.restore();
     ctx.strokeStyle='#e3e7ed';ctx.lineWidth=1;rrect(x0,y,w,h,8);ctx.stroke();
     ctx.fillStyle=col||'#13233a';ctx.textAlign='left';ctx.fillText(t,x0+9,y+16.5);return x0+w;};
-  const xb=CX(XB);
+  const xb=big?AN.xb:CX(XB);
   tag('onde plane →',10,10,'left','#13233a');
   if(mode==='fente')tag(W<520?'écran':'écran + fente',xb+12,10,'left');else tag('obstacle',xb,10,'center');
   // échelle λ (dans un panneau)
-  {const lpx=lambda*sxp;ctx.font='800 13px Mulish,system-ui,sans-serif';const w=lpx+40,h=26,x0=10,y0=H-36;
+  {let lpx=big?AN.ppl:lambda*sxp,lt='λ';if(lpx<6){const m=lpx*10<6?100:10;lpx*=m;lt=m+' λ';}ctx.font='800 13px Mulish,system-ui,sans-serif';const w=lpx+40,h=26,x0=10,y0=H-36;
    ctx.save();ctx.shadowColor='rgba(19,35,58,0.10)';ctx.shadowBlur=6;ctx.shadowOffsetY=1;ctx.fillStyle='rgba(255,255,255,0.96)';rrect(x0,y0,w,h,8);ctx.fill();ctx.restore();
    ctx.strokeStyle='#e3e7ed';ctx.lineWidth=1;rrect(x0,y0,w,h,8);ctx.stroke();
    const ly=y0+h/2;ctx.strokeStyle='#13233a';ctx.lineWidth=2;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x0+10,ly);ctx.lineTo(x0+10+lpx,ly);ctx.moveTo(x0+10,ly-5);ctx.lineTo(x0+10,ly+5);ctx.moveTo(x0+10+lpx,ly-5);ctx.lineTo(x0+10+lpx,ly+5);ctx.stroke();
-   ctx.fillStyle='#13233a';ctx.textAlign='left';ctx.fillText('λ',x0+lpx+17,ly+5);}
+   ctx.fillStyle='#13233a';ctx.textAlign='left';ctx.fillText(lt,x0+lpx+17,ly+5);}
   if(showI)tag('intensité moyenne',W-10,H-36,'right','#BA7517');
+  else if(big&&!fieldOK)tag('λ trop petite pour dessiner les crêtes : intensité affichée',W-10,H-36,'right','#BA7517');
+  if(big)tag((mode==='fente'?'a = ':'d = ')+fmtR(ratio)+' λ',xb+12,H/2-0.25*H-34,'left','#185fa5');
   const reg=regimeText();
   document.getElementById('fml').innerHTML='<b>Diffraction</b> — l\'étalement de l\'onde dépend du rapport <b style="color:#185fa5">'+(mode==='fente'?'a/λ':'d/λ')+'</b> (a = ouverture, d = obstacle, λ = longueur d\'onde)';
-  document.getElementById('info').innerHTML=(mode==='fente'?'a/λ = ':'d/λ = ')+ratio.toFixed(2)+' → <b style="color:#0F6E56">'+reg[0]+'</b> : '+reg[1]+
+  document.getElementById('info').innerHTML=(mode==='fente'?'a/λ = ':'d/λ = ')+fmtR(ratio)+' → <b style="color:#0F6E56">'+reg[0]+'</b> : '+reg[1]+
     (mode==='fente'?' &nbsp;·&nbsp; (un trou circulaire donne le même effet, mais l\'étalement se fait en cône dans les 3 dimensions.)':'')+
-    ' &nbsp;·&nbsp; Bascule « Champ / Intensité » pour voir la figure moyenne.';
+    ' &nbsp;·&nbsp; Bascule « Champ / Intensité » pour voir la figure moyenne.'+
+    (big?' &nbsp;·&nbsp; Au-delà de '+RSW+' λ, la figure est calculée par le principe de Huygens-Fresnel (somme des ondelettes issues de l\'ouverture), car λ devient trop petite pour la grille de simulation.':'');
   requestAnimationFrame(draw);}
 draw();
 </script>

@@ -21,6 +21,10 @@ Le plus récent est en haut de chaque section.
 
 ## 2. À faire
 
+0. **Les 204 simulations manquantes par rapport aux canevas SFA et au cours de physique quantique** (analyse du 25/11) :
+   liste détaillée dans `a-faire/canevas/`, méthode dans `a-faire/CONSIGNE-NUIT.md`. Ordre : P1, P2, P3, puis la quantique.
+   La loi d'Ampère (point 1 ci-dessous) en fait partie (`ph-loi-ampere`, P1).
+
 1. **Loi d'Ampère** (physique BA1, chapitre Magnétisme, section `PH11`).
    Un contour fermé qu'on dessine autour d'un ou plusieurs fils (courants entrants et sortants). On voit B·dl s'additionner
    le long du contour jusqu'à μ₀·I_enc, quelle que soit la forme du contour. Puis les applications : fil (B = μ₀I/(2πr)),

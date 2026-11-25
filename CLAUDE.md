@@ -25,7 +25,11 @@ La liste du travail en cours est dans `A-FAIRE-SIMULATIONS.md`. Lis-la au début
    La 3D est faite à la main sur un canevas 2D (projection, voir `universite/physique/fils-paralleles-3d/`).
 9. **Secrets.** Ne mets jamais une clé, un jeton ou un mot de passe dans un fichier du dépôt, un commit ou une capture.
    La clé API vient seulement de la variable `ANTHROPIC_API_KEY` du terminal.
-10. **Français de Belgique**, virgule décimale, unités SI ; on tutoie l’élève, comme partout sur le site.
+10. **Langue et niveaux.** Virgule décimale, unités SI ; on tutoie l’élève, comme partout sur le site.
+    - **Lycée (décision d’Enzo du 25/11/2026)** : les cours `secondaire/` suivent le programme français (Éducation nationale)
+      et son vocabulaire. Correspondance affichée : `3e` → 3e (fin de collège), `4e` → Seconde, `5e` → Première, `6e` → Terminale.
+      Les dossiers `secondaire/3e…6e`, les `id` et les URL **ne changent pas** (règle 4) ; seuls les noms affichés et le contenu changent.
+    - **Université** : inchangée (BA1, français de Belgique).
 
 ## 2. Le niveau de qualité attendu
 

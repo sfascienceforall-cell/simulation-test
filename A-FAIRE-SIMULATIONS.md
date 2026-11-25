@@ -24,7 +24,16 @@ Le plus récent est en haut de chaque section.
 0. **Les 204 simulations manquantes par rapport aux canevas SFA et au cours de physique quantique** (analyse du 25/11) :
    liste détaillée dans `a-faire/canevas/`, méthode dans `a-faire/CONSIGNE-NUIT.md`. Ordre : P1, P2, P3, puis la quantique.
    La loi d'Ampère (point 1 ci-dessous) en fait partie (`ph-loi-ampere`, P1).
-
+0. **Session du 25/11 : priorité 1 du rapport « matière du site et écarts avec les canevas »** (26 simulations).
+   Lots en cours : `p1-magn` (Ampère, barre sur rails), `p1-rot` (ΣM = I·α, patineuse, avant-bras),
+   `p1-flu-opt` (perfusion, Reynolds, miroirs), `p1-thermo` (transferts, dilatation, moteur-frigo-PAC, détente),
+   `p1-chimie` (orbitales, de Broglie, piston, bombe, entropie + retrait des défis de uc-c01-bohr, uc-c04-types-solides,
+   uc-c09-entraineur-additions), `p1-orga1` (halogénation, tension de cycle, polarimètre, sites Nu/E, triple liaison),
+   `p1-orga2` (SEAr, aldolisation, amine et membrane, glucose).
+   Ensuite : priorité 2 (88), priorité 3 (45), puis le cours de physique quantique (45 visuels).
+0. **Passage au lycée (décision d'Enzo du 25/11)** : noms affichés 3e / Seconde / Première / Terminale et contenu
+   aligné sur le programme français. Dossiers et URL inchangés. Lot `lycee` : renommage + plan d'écart au programme
+   dans `audit/lycee-programme.md`, puis mise en conformité par lots.
 1. **Loi d'Ampère** (physique BA1, chapitre Magnétisme, section `PH11`).
    Un contour fermé qu'on dessine autour d'un ou plusieurs fils (courants entrants et sortants). On voit B·dl s'additionner
    le long du contour jusqu'à μ₀·I_enc, quelle que soit la forme du contour. Puis les applications : fil (B = μ₀I/(2πr)),

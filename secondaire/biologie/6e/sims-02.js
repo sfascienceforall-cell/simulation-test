@@ -204,7 +204,7 @@ SFA.sim({
       var top = Math.max(60, 30 + rows * (sz * 1.5 + 8) + 14);
       var ax = S.draw.axes(c, {x0: 0, x1: 24, y0: 0, y1: 14, stepX: 2, stepY: 2, xl: "n (gènes)", yl: "puissance de 10", l: 44, t: top, b: 34});
       var f2 = function(x){ return x * Math.LOG10E * Math.LN2; }, f3 = function(x){ return x * Math.log10(3); }, f4 = function(x){ return x * Math.log10(4); };
-      [[7.07, "Belgique : 10⁷ habitants"], [10.9, "Terre : 8·10⁹ humains"]].forEach(function(rf){ S.draw.line(c, ax.L, ax.Y(rf[0]), ax.R, ax.Y(rf[0]), "#9aa6b5", 1.2, [3, 4]); S.draw.text(c, rf[1], ax.L + 8, ax.Y(rf[0]) - 8, {align: "left", size: 10.5, color: P.grey}); });
+      [[7.83, "France : 7·10⁷ habitants"], [10.9, "Terre : 8·10⁹ humains"]].forEach(function(rf){ S.draw.line(c, ax.L, ax.Y(rf[0]), ax.R, ax.Y(rf[0]), "#9aa6b5", 1.2, [3, 4]); S.draw.text(c, rf[1], ax.L + 8, ax.Y(rf[0]) - 8, {align: "left", size: 10.5, color: P.grey}); });
       S.draw.fn(c, ax, f4, P.red, 2.4); S.draw.fn(c, ax, f3, P.amber, 2.4); S.draw.fn(c, ax, f2, P.acc, 2.4);
       S.draw.label(c, "4ⁿ", ax.X(Math.min(21.5, 12.2 / Math.log10(4))), ax.Y(f4(Math.min(21.5, 12.2 / Math.log10(4)))) - 4, {color: P.red, size: 12, math: true});
       S.draw.label(c, "3ⁿ", ax.X(23), ax.Y(f3(23)) - 8, {color: P.amber, size: 12, math: true});

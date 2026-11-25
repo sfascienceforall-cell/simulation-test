@@ -1,8 +1,8 @@
 SFA.page({
   matiere: "chimie",
-  titre: "Chimie · 6e secondaire (sciences générales)",
-  kicker: "Secondaire · FWB · Sciences générales",
-  intro: "Fonctions oxygénées, esters, polymères, acides et bases, titrages et tampons, précipitation, oxydoréduction, piles, électrolyse et chimie du quotidien : des simulations à manipuler et des exercices corrigés pas à pas, du ★ au ★★★★★. Valeurs de référence arrondies au niveau secondaire (M(H) = 1, M(C) = 12, M(O) = 16 g/mol ; F = 96 500 C/mol ; K<sub>e</sub> = 1,0·10<sup>−14</sup> à 25 °C) ; les modèles simplifiés sont annoncés comme tels.",
+  titre: "Terminale · Physique-chimie · chimie (spécialité)",
+  kicker: "Lycée · Terminale · programme de l'Éducation nationale",
+  intro: "Fonctions oxygénées, esters, polymères, acides et bases, titrages et tampons, précipitation, oxydoréduction, piles, électrolyse et chimie du quotidien : des simulations à manipuler et des exercices corrigés pas à pas, du ★ au ★★★★★. Valeurs de référence arrondies au niveau du lycée (M(H) = 1, M(C) = 12, M(O) = 16 g/mol ; F = 96 500 C/mol ; K<sub>e</sub> = 1,0·10<sup>−14</sup> à 25 °C) ; les modèles simplifiés sont annoncés comme tels.",
   base: "../../",
   chapitres: [
     {id:"c01", num:1, titre:"Alcools, aldéhydes, cétones et acides carboxyliques",

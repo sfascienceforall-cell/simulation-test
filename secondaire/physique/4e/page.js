@@ -1,7 +1,7 @@
 SFA.page({
   matiere: "physique",
-  titre: "Physique · 4e secondaire",
-  kicker: "Secondaire · FWB",
+  titre: "Seconde · Physique-chimie · physique",
+  kicker: "Lycée · Seconde · programme de l'Éducation nationale",
   intro: "Du mouvement à l'énergie, puis de la lumière aux lentilles : 10 chapitres, des simulations à manipuler et des exercices du ★ au ★★★★★ corrigés pas à pas. Sauf mention contraire, g = 9,8 m/s².",
   base: "../../",
   chapitres: [

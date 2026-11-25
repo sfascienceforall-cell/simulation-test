@@ -1,1 +1,1 @@
-(function(M){var X={"court": "Physique · 6e", "nav": [["../../../secondaire/", "Secondaire", true], ["../../../universite/", "Université"]], "crumbs": [["../../", "Secondaire"]], "featured": "p6-c01-aimant-boussoles"};for(var k in X)M[k]=X[k];})(SFA.meta);
+(function(M){var X={"court": "Terminale · Physique-chimie · physique", "nav": [["../../../secondaire/", "Lycée", true], ["../../../universite/", "Université"]], "crumbs": [["../../", "Lycée"]], "featured": "p6-c01-aimant-boussoles"};for(var k in X)M[k]=X[k];})(SFA.meta);

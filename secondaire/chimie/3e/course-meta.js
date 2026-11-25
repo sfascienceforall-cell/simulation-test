@@ -1,1 +1,1 @@
-(function(M){var X={"court": "Chimie · 3e", "nav": [["../../../secondaire/", "Secondaire", true], ["../../../universite/", "Université"]], "crumbs": [["../../", "Secondaire"]], "featured": "c3-c10-chou"};for(var k in X)M[k]=X[k];})(SFA.meta);
+(function(M){var X={"court": "3e · Physique-chimie · chimie", "nav": [["../../../secondaire/", "Lycée", true], ["../../../universite/", "Université"]], "crumbs": [["../../", "Lycée"]], "featured": "c3-c10-chou"};for(var k in X)M[k]=X[k];})(SFA.meta);

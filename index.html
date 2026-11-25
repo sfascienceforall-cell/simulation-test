@@ -1,5 +1,5 @@
 <!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Simulations interactives · SFA</title>
-<meta name="description" content="Près de 1 000 simulations interactives, la théorie animée et plus de 3 300 exercices corrigés, du secondaire (3e → 6e, FWB) à la première année d'université. Gratuit, sans compte.">
+<meta name="description" content="Près de 1 000 simulations interactives, la théorie animée et plus de 3 300 exercices corrigés, de la 3e à la Terminale (programme de l'Éducation nationale) à la première année d'université. Gratuit, sans compte.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800;900&display=swap"><style>
 :root{--bg:#f6f7f9;--paper:#fff;--ink:#0f1b2d;--ink2:#2c3a4e;--ink3:#3b4a5e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
  --navy:#13233a;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#0f6e56;
@@ -78,7 +78,7 @@ footer a{color:var(--chip-ink)}
  <div class="hero-l">
   <span class="free">Gratuit · sans compte</span>
   <h1>Les sciences se comprennent en les manipulant.</h1>
-  <p class="lead">Science For All rassemble près de <b>1 000 simulations interactives</b>, la <b>théorie animée</b> et plus de <b>3 300 exercices corrigés</b>, du secondaire (3e → 6e, programme FWB) à la première année d'université (médecine, pharmacie, sciences). Chaque chapitre suit le même chemin : tu manipules, tu comprends, tu t'entraînes. Ta progression reste enregistrée dans ton navigateur.</p>
+  <p class="lead">Science For All rassemble près de <b>1 000 simulations interactives</b>, la <b>théorie animée</b> et plus de <b>3 300 exercices corrigés</b>, de la 3e à la Terminale (programme de l'Éducation nationale) à la première année d'université (médecine, pharmacie, sciences). Chaque chapitre suit le même chemin : tu manipules, tu comprends, tu t'entraînes. Ta progression reste enregistrée dans ton navigateur.</p>
   <div class="ctas"><a class="btn pri" href="#niveau">Choisir mon cours →</a><button type="button" class="btn sec" data-resume>Reprendre où j'en étais</button></div>
   <div class="stats"><div><b>997</b>simulations</div><div><b>3 316</b>exercices et QCM</div><div><b>21</b>cours, 5 matières</div></div>
  </div>
@@ -107,7 +107,7 @@ footer a{color:var(--chip-ink)}
  <a class="opt go" href="https://sciencesforall.be/concours"><b>Prépa concours médecine</b><span>Le cours complet, les exercices type examen corrigés et le suivi.</span></a>
 </section>
 
-<footer><div class="wrap"><span>Science For All · simulations, théorie et exercices · <a href="https://sciencesforall.be">sciencesforall.be</a></span><span>Secondaire FWB · Université BA1</span></div></footer>
+<footer><div class="wrap"><span>Science For All · simulations, théorie et exercices · <a href="https://sciencesforall.be">sciencesforall.be</a></span><span>Collège et lycée (3e → Terminale) · Université BA1</span></div></footer>
 <script>
 (function(){
 "use strict";
@@ -124,20 +124,23 @@ var BA1=[["physique","universite/physique/","universite/physique/thumbs/Bernouil
  ["biologie","universite/biologie/","universite/biologie/thumbs/ub-c04-potentiel-action.jpg","Cellule, métabolisme, génétique, physiologie.",10,58],
  ["stat","universite/statistique/","universite/statistique/thumbs/us-c04-log-qq.jpg","Statistique descriptive, probabilités, tests, régression.",10,48]];
 var LV=["3e","4e","5e","6e","BA1"];
-function card(k,href,img,lev,desc,cnt){return '<a class="card" style="--c:'+COL[k]+'" href="'+href+'"><img loading="lazy" src="'+img+'" alt=""><i></i><div><small>'+lev+'</small><b>'+NOM[k]+'</b><span>'+desc+'</span><em>'+cnt+'</em></div></a>';}
+/* niveaux affichés (programme français, décision du 25/11/2026) ; les dossiers 3e…6e ne changent pas */
+var NIV={"3e":"3e","4e":"Seconde","5e":"Première","6e":"Terminale"};
+var NOMSEC={maths:"Mathématiques",physique:"Physique-chimie · physique",chimie:"Physique-chimie · chimie",biologie:"SVT"};
+function card(k,href,img,lev,desc,cnt,nom){return '<a class="card" style="--c:'+COL[k]+'" href="'+href+'"><img loading="lazy" src="'+img+'" alt=""><i></i><div><small>'+lev+'</small><b>'+(nom||NOM[k])+'</b><span>'+desc+'</span><em>'+cnt+'</em></div></a>';}
 function pick(lv,save){
  document.querySelectorAll("#seg button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.lv===lv?"true":"false");});
  var h;
  if(lv==="BA1"){h=BA1.map(function(c){return card(c[0],c[1],c[2],"Université · BA1",c[3],c[4]+" chapitres · "+c[5]+" simulations");}).join("");
   document.getElementById("all").innerHTML='Médecine, pharmacie, sciences biomédicales et sciences · <a href="universite/">voir toute l\'université →</a>';}
- else{h=["maths","physique","chimie","biologie"].map(function(k){return card(k,"secondaire/"+k+"/"+lv+"/","secondaire/"+k+"/"+lv+"/thumbs/"+THUMB[k][lv]+".jpg","Secondaire · "+lv,DESC[k],"10 chapitres · "+SEC[lv][k]+" simulations");}).join("");
-  document.getElementById("all").innerHTML='Programme de la Fédération Wallonie-Bruxelles · <a href="secondaire/">voir tout le secondaire →</a>';}
+ else{h=["maths","physique","chimie","biologie"].map(function(k){return card(k,"secondaire/"+k+"/"+lv+"/","secondaire/"+k+"/"+lv+"/thumbs/"+THUMB[k][lv]+".jpg",(lv==="3e"?"Collège · 3e":"Lycée · "+NIV[lv]),DESC[k],"10 chapitres · "+SEC[lv][k]+" simulations",NOMSEC[k]);}).join("");
+  document.getElementById("all").innerHTML='Programme de l\'Éducation nationale · <a href="secondaire/">voir tout le lycée →</a>';}
  document.getElementById("cards").innerHTML=h;
  var on=document.querySelector('#seg button[aria-pressed="true"]');if(on){var sg=document.getElementById("seg");sg.scrollLeft=on.offsetLeft-sg.offsetLeft-8;}
  if(save)try{localStorage.setItem("sfa_home_lv",lv);}catch(e){}
 }
 var seg=document.getElementById("seg");
-seg.innerHTML=LV.map(function(k){return '<button type="button" data-lv="'+k+'" aria-pressed="false">'+(k==="BA1"?"Université BA1":"Secondaire "+k)+'</button>';}).join("");
+seg.innerHTML=LV.map(function(k){return '<button type="button" data-lv="'+k+'" aria-pressed="false">'+(k==="BA1"?"Université BA1":NIV[k])+'</button>';}).join("");
 seg.addEventListener("click",function(e){var b=e.target.closest("button");if(b)pick(b.dataset.lv,true);});
 var start="BA1";try{var s=localStorage.getItem("sfa_home_lv");if(LV.indexOf(s)>=0)start=s;}catch(e){}
 pick(start,false);

@@ -9,7 +9,7 @@ SFA.sim({
   titre: "La frise du développement : de la nidation à la naissance",
   resume: "Semaine de grossesse → stade, taille, masse et événements marquants.",
   but: "Fais glisser le repère sur la frise (ou le curseur) de 4 à 41 semaines d'aménorrhée (SA). Repère le passage d'embryon à fœtus, la croissance en masse (plus de 3 000 fois en 30 semaines) et les grandes étapes. Convertis les SA en semaines de développement.",
-  aRetenir: "En Belgique on compte la grossesse en semaines d'aménorrhée (SA), à partir du début des dernières règles : la fécondation a lieu vers 2 SA. L'embryon devient un fœtus à 10 SA, quand l'organogenèse est terminée : après cela, les organes grandissent et mûrissent. La croissance en masse est surtout tardive : environ la moitié du poids de naissance (1 700 g sur 3 400 g) se gagne après 32 SA.",
+  aRetenir: "En France, on compte la grossesse en semaines d'aménorrhée (SA), à partir du début des dernières règles : la fécondation a lieu vers 2 SA. L'embryon devient un fœtus à 10 SA, quand l'organogenèse est terminée : après cela, les organes grandissent et mûrissent. La croissance en masse est surtout tardive : environ la moitié du poids de naissance (1 700 g sur 3 400 g) se gagne après 32 SA.",
   piege: "Un embryon n'est pas un « petit adulte » : à 8 SA il mesure 1,6 cm (de la tête au bassin) et pèse environ 1 g. Il ne respire pas par les poumons : le placenta assure les échanges. Valeurs moyennes arrondies ; la taille est mesurée tête–bassin avant 20 SA, tête–talon ensuite.",
   build: function(k, S){
     var c = k.canvas(520), pal = S.draw.palette, D = S.draw;

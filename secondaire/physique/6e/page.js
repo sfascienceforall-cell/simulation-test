@@ -1,7 +1,7 @@
 SFA.page({
   matiere: "physique",
-  titre: "Physique · 6e secondaire (sciences générales)",
-  kicker: "Secondaire · FWB · Sciences générales",
+  titre: "Terminale · Physique-chimie · physique (spécialité)",
+  kicker: "Lycée · Terminale · programme de l'Éducation nationale",
   intro: "Magnétisme, induction, courant alternatif, oscillations, ondes, son, lumière, atome et noyau, santé et climat : des simulations à manipuler et des exercices corrigés pas à pas, du ★ au ★★★★★. Les modèles simplifiés sont annoncés comme tels.",
   base: "../../",
   chapitres: [

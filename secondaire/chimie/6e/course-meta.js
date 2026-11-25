@@ -1,1 +1,1 @@
-(function(M){var X={"court": "Chimie · 6e", "nav": [["../../../secondaire/", "Secondaire", true], ["../../../universite/", "Université"]], "crumbs": [["../../", "Secondaire"]], "featured": "c6-c01-reconnaitre"};for(var k in X)M[k]=X[k];})(SFA.meta);
+(function(M){var X={"court": "Terminale · Physique-chimie · chimie", "nav": [["../../../secondaire/", "Lycée", true], ["../../../universite/", "Université"]], "crumbs": [["../../", "Lycée"]], "featured": "c6-c01-reconnaitre"};for(var k in X)M[k]=X[k];})(SFA.meta);

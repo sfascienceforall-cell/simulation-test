@@ -1,1 +1,1 @@
-(function(M){var X={"court": "Physique · 5e", "nav": [["../../../secondaire/", "Secondaire", true], ["../../../universite/", "Université"]], "crumbs": [["../../", "Secondaire"]], "featured": "p5-c07-newton"};for(var k in X)M[k]=X[k];})(SFA.meta);
+(function(M){var X={"court": "Première · Physique-chimie · physique", "nav": [["../../../secondaire/", "Lycée", true], ["../../../universite/", "Université"]], "crumbs": [["../../", "Lycée"]], "featured": "p5-c07-newton"};for(var k in X)M[k]=X[k];})(SFA.meta);

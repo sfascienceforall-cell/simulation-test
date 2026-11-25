@@ -1,4 +1,4 @@
-/* Biologie · 5e secondaire (sciences générales) : aides communes puis description de la page */
+/* Première · SVT (spécialité) : aides communes puis description de la page */
 window.B5 = (function(){
   var B = {};
   B.cl = function(x, a, b){ return Math.max(a, Math.min(b, x)); };
@@ -76,8 +76,8 @@ window.B5 = (function(){
 
 SFA.page({
   matiere: "biologie",
-  titre: "Biologie · 5e secondaire (sciences générales)",
-  kicker: "Secondaire · FWB · sciences générales",
+  titre: "Première · SVT (spécialité)",
+  kicker: "Lycée · Première · programme de l'Éducation nationale",
   intro: "Dix chapitres sur la régulation, les défenses, l'excrétion et la reproduction : 40 simulations quantitatives à piloter (courbes, modèles, animations, défis) et des exercices corrigés pas à pas, du ★ au ★★★★★. Les modèles sont volontairement simplifiés et annoncés comme tels.",
   base: "../../",
   chapitres: [

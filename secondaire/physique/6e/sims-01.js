@@ -317,7 +317,7 @@ SFA.sim({
     var c = k.canvas(520), P = S.draw.palette, Pm = window.PH6;
     var lat = k.slider("Latitude magnétique φ", -90, 90, 1, 50, "°");
     var side = 1, goal = null, tried = false;
-    k.button("Équateur", function(){ lat.set(0); }); k.button("Bruxelles (≈ 50°)", function(){ lat.set(50); }); k.button("Pôle Nord", function(){ lat.set(90); });
+    k.button("Équateur", function(){ lat.set(0); }); k.button("Lille (≈ 50°)", function(){ lat.set(50); }); k.button("Pôle Nord", function(){ lat.set(90); });
     k.button("Défi : trouve l'inclinaison…", function(){ var c0 = [20, 35, 45, 60, 72, -40, -65]; goal = c0[Math.floor(Math.random() * c0.length)]; tried = false; }, true);
     var ro = k.readouts(["Inclinaison I", "Champ total", "Composante horizontale", "Composante verticale"]);
     var nt = k.note("Valeurs avec B<sub>équateur</sub> ≈ 31 µT (ordre de grandeur réel). Inclinaison positive = l'aiguille plonge vers le sol.");

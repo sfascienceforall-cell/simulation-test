@@ -1,8 +1,8 @@
 SFA.page({
   matiere: "maths",
-  titre: "Mathématiques · 4e secondaire",
-  kicker: "Secondaire · FWB · 2e degré",
-  intro: "Dix chapitres pour la 4e : fonctions, polynômes, second degré, signe, trigonométrie, vecteurs, lieux géométriques et statistique. Pour chaque chapitre, quatre simulations à manipuler et des exercices et QCM étagés de ★ à ★★★★★, tous corrigés pas à pas.",
+  titre: "Seconde · Mathématiques",
+  kicker: "Lycée · Seconde · programme de l'Éducation nationale",
+  intro: "Dix chapitres pour la Seconde : fonctions, polynômes, second degré, signe, trigonométrie, vecteurs, lieux géométriques et statistique. Pour chaque chapitre, quatre simulations à manipuler et des exercices et QCM étagés de ★ à ★★★★★, tous corrigés pas à pas.",
   base: "../../",
   chapitres: [
     {id:"c01", num:1, titre:"Fonctions de référence et transformations",

@@ -19,7 +19,7 @@ SFA.page({
   ],
   [
    "../../secondaire/",
-   "Secondaire"
+   "Lycée"
   ],
   [
    "../",

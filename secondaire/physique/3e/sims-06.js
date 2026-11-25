@@ -75,7 +75,7 @@ META["p3-c06-terre"]={
   resume:"Un fil de phase touche le boîtier métallique d'un appareil : que se passe-t-il selon la protection ?",
   but:"Un défaut met le boîtier sous tension. Active ou non le fil de terre, le disjoncteur différentiel 30 mA, et fais toucher (ou non) le boîtier. Regarde la tension, le courant dans le corps, le déclenchement.",
   aRetenir:"Le fil de terre relie le boîtier au sol : en cas de défaut, un courant de fuite s'écoule par la terre et le disjoncteur différentiel (30 mA) le détecte et coupe en moins de 0,3 s. Avec une prise de terre ordinaire (quelques dizaines d'ohms), ni fusible ni disjoncteur classique ne déclenchent : seul le différentiel protège. Plus de 30 mA dans le corps humain est dangereux.",
-  piege:"Le fil de terre seul ne coupe pas l'alimentation : le boîtier peut rester dangereusement sous tension. Un fusible ou disjoncteur classique (16 A) ne protège pas des personnes : une fuite de 0,1 A ne le fait pas déclencher. (Modèle simplifié d'une installation belge ; valeurs d'ordre de grandeur.)"};
+  piege:"Le fil de terre seul ne coupe pas l'alimentation : le boîtier peut rester dangereusement sous tension. Un fusible ou disjoncteur classique (16 A) ne protège pas des personnes : une fuite de 0,1 A ne le fait pas déclencher. (Modèle simplifié d'une installation domestique ; valeurs d'ordre de grandeur.)"};
 /* ---------- 1 · Compteur et facture : on tire sur les barres ---------- */
 var APP=[["Ampoule LED",9,5,"#f4c542"],["Ampoule à incandescence",60,0,"#e8a33a"],["Télévision",100,3,"#6a7a95"],["Ordinateur portable",50,4,"#5b8dd6"],["Bouilloire",2000,0.3,"#c0321d"],["Sèche-cheveux",1800,0.1,"#c43a7a"]];
 SIM("p3-c06-facture", function(k,S){

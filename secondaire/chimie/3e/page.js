@@ -1,7 +1,7 @@
 SFA.page({
   matiere: "chimie",
-  titre: "Chimie · 3e secondaire",
-  kicker: "Secondaire · FWB · 2e degré",
+  titre: "3e · Physique-chimie · chimie",
+  kicker: "Collège · 3e · programme de l'Éducation nationale",
   intro: "Dix chapitres pour comprendre de quoi la matière est faite et comment elle se transforme : séparer des mélanges, imaginer l'atome, lire le tableau périodique, former des ions, préparer une solution, équilibrer une équation, nommer des composés, expliquer la conductibilité et maîtriser l'acidité. Chaque chapitre propose quatre simulations à manipuler et dix exercices ou QCM corrigés pas à pas, du ★ au ★★★★★.",
   base: "../../",
   chapitres: [

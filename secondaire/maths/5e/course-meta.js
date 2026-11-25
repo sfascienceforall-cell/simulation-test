@@ -1,1 +1,1 @@
-(function(M){var X={"court": "Mathématiques · 5e", "nav": [["../../../secondaire/", "Secondaire", true], ["../../../universite/", "Université"]], "crumbs": [["../../", "Secondaire"]], "featured": "m5-c06-tangente-tourne"};for(var k in X)M[k]=X[k];})(SFA.meta);
+(function(M){var X={"court": "Première · Mathématiques", "nav": [["../../../secondaire/", "Lycée", true], ["../../../universite/", "Université"]], "crumbs": [["../../", "Lycée"]], "featured": "m5-c06-tangente-tourne"};for(var k in X)M[k]=X[k];})(SFA.meta);

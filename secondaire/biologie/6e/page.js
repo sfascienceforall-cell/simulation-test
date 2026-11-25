@@ -1,8 +1,8 @@
-/* SFA · Biologie 6e secondaire (sciences générales) : page et petite boîte à outils partagée (B6) */
+/* SFA · Terminale · SVT (spécialité) : page et petite boîte à outils partagée (B6) */
 SFA.page({
   matiere: "biologie",
-  titre: "Biologie · 6e secondaire (sciences générales)",
-  kicker: "Secondaire · FWB · Sciences générales",
+  titre: "Terminale · SVT (spécialité)",
+  kicker: "Lycée · Terminale · programme de l'Éducation nationale",
   intro: "Hérédité, génétique humaine, biotechnologies, évolution, écologie et grands enjeux de l'environnement : des modèles quantitatifs que tu pilotes (croisements, PCR, sélection, populations, climat…) et des exercices corrigés pas à pas, du ★ au ★★★★★. Les modèles simplifiés sont annoncés comme tels.",
   base: "../../",
   chapitres: [

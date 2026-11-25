@@ -189,7 +189,7 @@ SFA.sim({
   resume:"Les larves d'insectes et autres invertébrés d'un ruisseau disent si l'eau est polluée : sensibles ou tolérants.",
   but:"Fais varier la pollution organique et vois quels invertébrés subsistent. Puis relève un échantillon mystère et estime sa pollution.",
   aRetenir:"Certains invertébrés (larves de perles, d'éphémères, de trichoptères) exigent une eau propre et bien oxygénée : leur présence indique une bonne qualité. D'autres (aselles, vers de vase rouges, tubifex) supportent une eau très polluée. L'indice biotique combine la sensibilité du taxon le plus exigeant et la diversité.",
-  piege:"L'absence d'un taxon sensible ne prouve pas à elle seule une pollution (courant, substrat, saison jouent aussi). Et ces indicateurs réagissent surtout aux pollutions organiques (manque d'oxygène). Ils ne remplacent pas des analyses chimiques. (Indice SFA simplifié, inspiré de l'indice biotique belge ; seuils indicatifs.)",
+  piege:"L'absence d'un taxon sensible ne prouve pas à elle seule une pollution (courant, substrat, saison jouent aussi). Et ces indicateurs réagissent surtout aux pollutions organiques (manque d'oxygène). Ils ne remplacent pas des analyses chimiques. (Indice SFA simplifié, inspiré des indices biotiques utilisés en Europe, comme l'IBGN en France ; seuils indicatifs.)",
   build:function(k,S){
     var c = k.canvas(330);
     var mod = k.seg("Mode", [["e","Exploration"],["m","Relevé mystère"]], "e");

@@ -93,7 +93,7 @@ SFA.sim({
     var A = k.slider("Aire d'une spire", 50, 200, 10, 100, "cm²");
     var f = k.slider("Fréquence de rotation f", 1, 60, 1, 50, "Hz");
     var ro = k.readouts(["e max = N·B·A·ω", "e efficace", "Période T"]);
-    var nt = k.note("Défi : réseau belge, tension efficace 230 V (maximum 325 V) à 50 Hz. Quels réglages de N, B et A donnent e max ≈ 325 V ? Glisse sur la bobine pour la tourner à la main ; glisse ailleurs pour tourner la vue.", "ok");
+    var nt = k.note("Défi : réseau électrique du secteur, tension efficace 230 V (maximum 325 V) à 50 Hz. Quels réglages de N, B et A donnent e max ≈ 325 V ? Glisse sur la bobine pour la tourner à la main ; glisse ailleurs pour tourner la vue.", "ok");
     var ang = 0, hold = false, orb = false, last = null, cam = {a: -0.55, b: 0.38}, cur = 0, flow = 0, geo = {};
     var lp = k.loop(function(dt){
       if (!hold) ang += dt * Math.PI;   /* 0,5 tour par seconde */

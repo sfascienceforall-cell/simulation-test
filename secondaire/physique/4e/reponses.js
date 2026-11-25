@@ -89,7 +89,7 @@ window.SFA_NUM = Object.assign(window.SFA_NUM || {}, {
    "tol": 0.02
   },
   {
-   "q": "Distance de Bruxelles",
+   "q": "Distance de Lyon",
    "v": 66.7,
    "u": "km",
    "tol": 0.01

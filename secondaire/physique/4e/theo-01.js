@@ -131,7 +131,7 @@ SFA.figs("c01", [
  /* 10. rencontre de deux trains */
  function(p){
   var g=q_gr(W*.14,H*.86,W*.78,H*.70,1.25,100,'t (h)','x (km)',[0.25,0.5,0.75,1,1.25],[25,50,75,100],true);
-  TB('Liège',g.X(0)-6,g.Y(100)-2,DRED,13,'right');TB('Bxl',g.X(0)-6,g.Y(0)+4,BLUE_D,13,'right');
+  TB('Grenoble',g.X(0)-6,g.Y(100)-2,DRED,13,'right');TB('Lyon',g.X(0)-6,g.Y(0)+4,BLUE_D,13,'right');
   q_seg(g,0,0,1,100,BLUE,3);q_seg(g,.25,100,1.25,20,ORA2,3);
   TB('A : 100 km/h',g.X(.3),g.Y(42),BLUE_D,13);TB('B : 80 km/h',g.X(1.0),g.Y(52),DRED,13);TB('t = 0 : 8 h 00',g.X(0)+8,g.Y(0)-30,GREY,12,'left');
   var a=q_r(p,0,.7);if(a>0){ctx.globalAlpha=a;q_dash(g,2/3,66.7,DGREEN);DOT(g.X(2/3),g.Y(66.7),8,GREEN);q_pill('8 h 40 · 66,7 km',g.X(2/3)-20,g.Y(66.7)+30,DGREEN,14,'#e8f7f1');ctx.globalAlpha=1;}

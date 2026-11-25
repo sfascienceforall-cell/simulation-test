@@ -151,7 +151,7 @@ SFA.sim({
   resume:"Combine nucléaire, éolien, solaire et gaz pour suivre la demande, sans déficit et avec peu de CO₂.",
   but:"Règle les puissances installées et la saison. L'objectif : que la production couvre la demande (ligne noire) à chaque heure, avec le moins de CO₂.",
   aRetenir:"L'électricité doit être produite au moment où elle est consommée. Le solaire et l'éolien dépendent du temps qu'il fait (intermittence) ; le nucléaire est stable ; le gaz est modulable mais émet du CO₂. Renouvelable ne veut pas dire disponible à toute heure.",
-  piege:"Une « puissance installée » n'est pas une production : un panneau solaire de 1 GW donne bien moins de 1 GW en moyenne (nuit, nuages, saison). Valeurs chiffrées : modèle pédagogique très simplifié, pas la Belgique réelle.",
+  piege:"Une « puissance installée » n'est pas une production : un panneau solaire de 1 GW donne bien moins de 1 GW en moyenne (nuit, nuages, saison). Valeurs chiffrées : modèle pédagogique très simplifié, pas un pays réel.",
   build:function(k,S){
     var c = k.canvas(300);
     var sea = k.seg("Saison", [[0,"Été"],[1,"Hiver"]], 0);

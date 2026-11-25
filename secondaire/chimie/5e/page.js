@@ -1,4 +1,4 @@
-/* Chimie · 5e secondaire (sciences générales) : page SFA + aides communes */
+/* Première · Physique-chimie · chimie (spécialité) : page SFA + aides communes */
 window.C5 = {
   R: 8.31,           /* J/(mol·K), arrondi */
   cEau: 4.18,        /* J/(g·K), arrondi */
@@ -29,9 +29,9 @@ window.C5 = {
 
 SFA.page({
   matiere: "chimie",
-  titre: "Chimie · 5e secondaire (sciences générales)",
-  kicker: "Secondaire · FWB",
-  intro: "Dix chapitres pour comprendre comment les atomes se lient, comment l'énergie circule dans une réaction, à quelle vitesse tout cela se passe et pourquoi certaines réactions s'arrêtent à mi-chemin. Chaque chapitre propose quatre simulations à manipuler et une dizaine d'exercices corrigés du ★ au ★★★★★. Les valeurs de référence (masses molaires, constantes) sont arrondies au niveau du secondaire ; les arrondis sont annoncés.",
+  titre: "Première · Physique-chimie · chimie (spécialité)",
+  kicker: "Lycée · Première · programme de l'Éducation nationale",
+  intro: "Dix chapitres pour comprendre comment les atomes se lient, comment l'énergie circule dans une réaction, à quelle vitesse tout cela se passe et pourquoi certaines réactions s'arrêtent à mi-chemin. Chaque chapitre propose quatre simulations à manipuler et une dizaine d'exercices corrigés du ★ au ★★★★★. Les valeurs de référence (masses molaires, constantes) sont arrondies au niveau du lycée ; les arrondis sont annoncés.",
   base: "../../",
   chapitres: [
     {id:"c01", num:1, titre:"Structure électronique et schéma de Lewis",

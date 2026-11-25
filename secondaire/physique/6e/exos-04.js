@@ -1,5 +1,5 @@
 SFA.exos("c04", [
- {t:"Les 230 V de la prise", s:1, enonce:"Une prise de courant belge est annoncée à 230 V. Cette valeur est la valeur efficace de la tension sinusoïdale. Quelle est sa valeur maximale ? (U<sub>max</sub> = U<sub>eff</sub>·√2)",
+ {t:"Les 230 V de la prise", s:1, enonce:"Une prise de courant est annoncée à 230 V. Cette valeur est la valeur efficace de la tension sinusoïdale. Quelle est sa valeur maximale ? (U<sub>max</sub> = U<sub>eff</sub>·√2)",
   choix:["230 V","325 V","163 V","460 V"], bonne:1,
   pourquoi:{0:"230 V est la valeur efficace : la valeur maximale est plus grande.",2:"163 V = 230 / √2 : tu as divisé au lieu de multiplier.",3:"460 V = 230 × 2 : le facteur est √2 ≈ 1,41, pas 2."},
   corrige:"U<sub>max</sub> = U<sub>eff</sub> × √2 = 230 × 1,414 = 325 V. La tension de la prise oscille entre −325 V et +325 V ; le voltmètre affiche la valeur efficace, qui produit le même effet de chauffage qu'une tension continue de 230 V."},

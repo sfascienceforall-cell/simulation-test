@@ -501,7 +501,7 @@ S.render = function(){
     ["https://sciencesforall.be", "Site SFA"],
     [base + "../", "Simulations de physique"],
     [base + "../chimie/", "Chimie"],
-    [base, "Secondaire", true],
+    [base, "Lycée", true],
     [base + "../universite/", "Université"],
     [base + "../prepa/", "Prépa concours médecine"]
   ]).map(function(n){ return '<a href="' + n[0] + '"' + (n[2] ? ' class="on"' : "") + ">" + n[1] + "</a>"; }).join("");

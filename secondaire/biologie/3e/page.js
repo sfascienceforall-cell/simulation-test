@@ -1,7 +1,7 @@
 SFA.page({
   matiere: "biologie",
-  titre: "Biologie · 3e secondaire",
-  kicker: "Secondaire · FWB · 3e année",
+  titre: "3e · SVT",
+  kicker: "Collège · 3e · programme de l'Éducation nationale",
   intro: "Nutrition et énergie chez les êtres vivants, puis végétaux verts et équilibre des écosystèmes : 40 simulations à piloter (modèles chiffrés, graphes, schémas animés) et une centaine d'exercices et de QCM corrigés pas à pas, du ★ au ★★★★★.",
   base: "../../",
   chapitres: [

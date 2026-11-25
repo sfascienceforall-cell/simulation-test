@@ -2,7 +2,7 @@
 """ATTENTION (13/11/2026) : ce générateur est en retard sur les pages d'accueil actuelles (menu « Cours » refait à la main,
 physique déplacée dans universite/physique, dossier thumbs/ disparu). Ne pas le relancer tel quel : il écraserait le menu.
 Les balises sfa-nav.css / sfa-progress.js / sfa-nav.js sont désormais dans le gabarit.
-Pages d'accueil « Secondaire » et « Université » (style des pages de chimie). python3 kit/build_hubs.py"""
+Pages d'accueil « Lycée » (dossier secondaire/) et « Université » (style des pages de chimie). python3 kit/build_hubs.py"""
 import os, re, glob, json, subprocess, html
 R=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # chimie/index.html est devenu une redirection : on reprend le style de la page d'accueil déjà générée (identique)
@@ -39,16 +39,18 @@ def page(title,kicker,h1,lead,secs,nav,stats):
 <footer>Science For All · simulations, théorie et exercices</footer>
 <script>const q=document.getElementById('q');q.addEventListener('input',()=>{{const v=q.value.trim().toLowerCase();let n=0;document.querySelectorAll('section').forEach(s=>{{let k=0;s.querySelectorAll('.card').forEach(c=>{{const ok=!v||c.dataset.q.includes(v);c.style.display=ok?'':'none';if(ok)k++;}});s.style.display=k?'':'none';n+=k;}});document.getElementById('empty').style.display=n?'none':'block';}});</script><script src="../kit/sfa-progress.js"></script><script src="../kit/sfa-nav.js"></script></body></html>'''
 # ---- secondaire
-MN=[("maths","Mathématiques"),("physique","Physique"),("chimie","Chimie"),("biologie","Biologie")]
+MN=[("maths","Mathématiques"),("physique","Physique-chimie · physique"),("chimie","Physique-chimie · chimie"),("biologie","SVT")]
+# niveaux affichés (programme français, décision du 25/11/2026) ; les dossiers 3e…6e ne changent pas
+NIV={"3e":"3e","4e":"Seconde","5e":"Première","6e":"Terminale"}
 secs=[];TS=TE=0
 for m,n in MN:
     cards=[]
     for a in ["3e","4e","5e","6e"]:
         d=f"{R}/secondaire/{m}/{a}"; i=info(d); TS+=i.get('sims',0); TE+=i.get('ex',0)
-        cards.append({"href":f"{m}/{a}/","img":f"{m}/{a}/thumbs/{i.get('featured')}.jpg","k":f"{n} · {a} secondaire","t":f"{n} · {a}","d":f"{i.get('sims',0)} simulations · {i.get('ex',0)} exercices — "+" · ".join(i.get('chap',[])[:4])+"…"})
+        cards.append({"href":f"{m}/{a}/","img":f"{m}/{a}/thumbs/{i.get('featured')}.jpg","k":("Collège · 3e" if a=="3e" else "Lycée · "+NIV[a]),"t":f"{NIV[a]} · {n}","d":f"{i.get('sims',0)} simulations · {i.get('ex',0)} exercices — "+" · ".join(i.get('chap',[])[:4])+"…"})
     secs.append((m,n,"",cards))
-nav=[("../","Physique (unif)",False),("./","Secondaire",True),("../universite/","Université",False)]
-open(R+'/secondaire/index.html','w').write(page("Secondaire","","Le secondaire en simulations interactives.","Maths, physique, chimie et biologie, de la 3e à la 6e secondaire (FWB) : pour chaque année, 10 chapitres avec leurs simulations, un rappel théorique animé et des exercices corrigés du ★ au ★★★★★.",secs,nav,[("simulations",TS),("exercices et QCM",TE),("années × matières",16)]))
+nav=[("../","Physique (unif)",False),("./","Lycée",True),("../universite/","Université",False)]
+open(R+'/secondaire/index.html','w').write(page("Lycée","","De la 3e à la Terminale en simulations interactives.","Mathématiques, physique-chimie et SVT, de la 3e à la Terminale (programme de l'Éducation nationale) : pour chaque niveau, 10 chapitres avec leurs simulations, un rappel théorique animé et des exercices corrigés du ★ au ★★★★★.",secs,nav,[("simulations",TS),("exercices et QCM",TE),("niveaux × matières",16)]))
 # ---- université
 cards=[{"href":"../","img":"../thumbs/"+next((f for f in sorted(os.listdir(R+'/thumbs')) if 'ourniquet' in f or 'rojectile' in f),sorted(os.listdir(R+'/thumbs'))[0]),"k":"Université · BA1","t":"Physique","d":"61 simulations : mécanique, ondes, optique, électricité ; exercices et QCM par chapitre."}]
 UN=[("chimie","Chimie"),("maths","Mathématiques"),("biologie","Biologie"),("statistique","Biostatistique")]
@@ -64,6 +66,6 @@ for m,n in UN:
 # physique en 2e position après chimie ? on garde l'ordre : chimie, physique, maths, bio, stat
 allc=[U[0],cards[0]]+U[1:]
 secs=[("bachelier","Première année d'université (BA1)","Médecine, dentisterie, pharmacie, sciences biomédicales, sciences, polytechnique.",allc)]
-nav=[("../","Physique",False),("../secondaire/","Secondaire",False),("./","Université",True)]
+nav=[("../","Physique",False),("../secondaire/","Lycée",False),("./","Université",True)]
 open(R+'/universite/index.html','w').write(page("Université","","L'université en simulations interactives.","Chimie, physique, mathématiques, biologie et biostatistique de première année : chaque chapitre a ses simulations, son rappel théorique animé et ses exercices corrigés du ★ au ★★★★★.",secs,nav,[("simulations",US),("exercices et QCM",UE),("matières",len(allc))]))
 print("ok",TS,TE,US,UE)

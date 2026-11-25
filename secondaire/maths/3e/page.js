@@ -1,7 +1,7 @@
 SFA.page({
   matiere: "maths",
-  titre: "Mathématiques · 3e secondaire",
-  kicker: "Secondaire · FWB",
+  titre: "3e · Mathématiques",
+  kicker: "Collège · 3e · programme de l'Éducation nationale",
   intro: "Dix chapitres pour ne plus apprendre les règles par cœur : tu manipules, tu vois ce qui change, puis tu t'entraînes avec des exercices et des QCM corrigés pas à pas, du ★ au ★★★★★.",
   base: "../../",
   chapitres: [

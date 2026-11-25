@@ -1,8 +1,8 @@
 SFA.page({
   matiere: "chimie",
-  titre: "Chimie · 4e secondaire",
-  kicker: "Secondaire · FWB",
-  intro: "Compter les particules, peser, mesurer des gaz et des solutions : 10 chapitres, des simulations à manipuler et des exercices du ★ au ★★★★★ corrigés pas à pas. Valeurs de référence (arrondies, niveau secondaire) : M(H) = 1, M(C) = 12, M(N) = 14, M(O) = 16, M(Na) = 23, M(Mg) = 24, M(Al) = 27, M(S) = 32, M(Cl) = 35,5, M(K) = 39, M(Ca) = 40, M(Fe) = 56, M(Cu) = 63,5, M(Zn) = 65, M(Ag) = 108 g/mol ; N<sub>A</sub> = 6,02·10<sup>23</sup> mol<sup>−1</sup> ; V<sub>m</sub> = 24 L/mol (20 °C, 1 atm) ; R = 8,31 J/(mol·K) ; K<sub>w</sub> = 10<sup>−14</sup> à 25 °C.",
+  titre: "Seconde · Physique-chimie · chimie",
+  kicker: "Lycée · Seconde · programme de l'Éducation nationale",
+  intro: "Compter les particules, peser, mesurer des gaz et des solutions : 10 chapitres, des simulations à manipuler et des exercices du ★ au ★★★★★ corrigés pas à pas. Valeurs de référence (arrondies, niveau lycée) : M(H) = 1, M(C) = 12, M(N) = 14, M(O) = 16, M(Na) = 23, M(Mg) = 24, M(Al) = 27, M(S) = 32, M(Cl) = 35,5, M(K) = 39, M(Ca) = 40, M(Fe) = 56, M(Cu) = 63,5, M(Zn) = 65, M(Ag) = 108 g/mol ; N<sub>A</sub> = 6,02·10<sup>23</sup> mol<sup>−1</sup> ; V<sub>m</sub> = 24 L/mol (20 °C, 1 atm) ; R = 8,31 J/(mol·K) ; K<sub>w</sub> = 10<sup>−14</sup> à 25 °C.",
   base: "../../",
   chapitres: [
     {id:"c01", num:1, titre:"Nomenclature des substances inorganiques", resume:"Un nom de substance se déduit des ions qui la composent, et sa formule se déduit de la neutralité électrique : la somme des charges vaut zéro.", attendus:"nommer et écrire la formule d'oxydes, d'hydroxydes, d'acides, de sels ; connaître les ions polyatomiques usuels (SO<sub>4</sub><sup>2−</sup>, NO<sub>3</sub><sup>−</sup>, CO<sub>3</sub><sup>2−</sup>, PO<sub>4</sub><sup>3−</sup>) ; prévoir une formule à partir des charges."},

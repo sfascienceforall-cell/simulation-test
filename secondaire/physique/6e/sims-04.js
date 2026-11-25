@@ -3,8 +3,8 @@ SFA.sim({
   id: "p6-c04-oscilloscope", ch: "c04", tag: "Classique",
   titre: "L'oscilloscope : lire une tension alternative",
   resume: "Règle l'écran (ms/div, V/div) et lis l'amplitude, la période, la fréquence et la valeur efficace.",
-  but: "Un signal sinusoïdal u(t) = U_max·sin(2π·f·t) s'affiche sur un écran de 10 × 8 divisions. Change le signal et les réglages de l'oscilloscope ; vérifie tes lectures avec les valeurs affichées. Le bouton « Prise belge » charge le réseau.",
-  aRetenir: "On lit la période T sur l'axe horizontal (nombre de divisions × base de temps), puis f = 1/T ; on lit l'amplitude U_max sur l'axe vertical (divisions × sensibilité). La valeur efficace est U_eff = U_max/√2 : c'est la tension continue qui chaufferait autant. La prise belge : U_eff = 230 V, U_max ≈ 325 V, f = 50 Hz, T = 20 ms.",
+  but: "Un signal sinusoïdal u(t) = U_max·sin(2π·f·t) s'affiche sur un écran de 10 × 8 divisions. Change le signal et les réglages de l'oscilloscope ; vérifie tes lectures avec les valeurs affichées. Le bouton « Prise du secteur » charge le réseau.",
+  aRetenir: "On lit la période T sur l'axe horizontal (nombre de divisions × base de temps), puis f = 1/T ; on lit l'amplitude U_max sur l'axe vertical (divisions × sensibilité). La valeur efficace est U_eff = U_max/√2 : c'est la tension continue qui chaufferait autant. La prise du secteur : U_eff = 230 V, U_max ≈ 325 V, f = 50 Hz, T = 20 ms.",
   piege: "Les 230 V d'une prise sont une valeur efficace, pas la valeur maximale (325 V). Le voltmètre indique U_eff, l'oscilloscope montre U_max. Si la sensibilité est trop grande ou la base de temps mal choisie, le signal paraît écrasé ou trop serré : adapte les réglages.",
   build: function(k, S){
     var c = k.canvas(330), P = S.draw.palette;
@@ -13,7 +13,7 @@ SFA.sim({
     var tb = k.select("Base de temps", [["0.1", "0,1 ms/div"], ["0.2", "0,2 ms/div"], ["0.5", "0,5 ms/div"], ["1", "1 ms/div"], ["2", "2 ms/div"], ["5", "5 ms/div"], ["10", "10 ms/div"], ["20", "20 ms/div"]], "2");
     var sv = k.select("Sensibilité verticale", [["0.5", "0,5 V/div"], ["1", "1 V/div"], ["2", "2 V/div"], ["5", "5 V/div"], ["10", "10 V/div"], ["50", "50 V/div"], ["100", "100 V/div"]], "2");
     var eff = k.toggle("Montrer ±U_eff (pointillés)", false);
-    k.button("Prise belge : 230 V, 50 Hz", function(){ U.set(325); f.set(50); tb.set("5"); sv.set("100"); });
+    k.button("Prise du secteur : 230 V, 50 Hz", function(){ U.set(325); f.set(50); tb.set("5"); sv.set("100"); });
     k.button("Signal de départ", function(){ U.set(5); f.set(100); tb.set("2"); sv.set("2"); });
     var ro = k.readouts(["Période T", "Fréquence f", "U_max", "U_eff = U_max/√2", "U crête à crête"]);
     var nt = k.note("", "ok");

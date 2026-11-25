@@ -191,7 +191,7 @@ SFA.sim({
 SFA.sim({
   id:"m4-c09-ellipse", ch:"c09", tag:"Prolongement",
   titre:"Le jardinier et sa ficelle : l'ellipse",
-  resume:"Deux piquets (foyers), une ficelle de longueur fixe : le point M trace une ellipse. Prolongement : les coniques sont étudiées en 6e (6 h).",
+  resume:"Deux piquets (foyers), une ficelle de longueur fixe : le point M trace une ellipse. Prolongement : les coniques ne sont pas au programme du lycée ; on les retrouve dans le supérieur.",
   but:"Règle la longueur de la ficelle et la distance entre les piquets F₁ et F₂. Déplace M : la somme MF₁ + MF₂ reste égale à la longueur de la ficelle. Que devient l'ellipse quand les foyers se rapprochent ?",
   aRetenir:"L'ellipse est le lieu des points M tels que MF₁ + MF₂ = L (constante). Avec foyers (±c ; 0) et L = 2a : b² = a² − c², équation x²/a² + y²/b² = 1. Si c = 0, c'est un cercle de rayon a.",
   piege:"Il faut L > F₁F₂ pour que la ficelle puisse être tendue. Si L = F₁F₂, le lieu est le segment [F₁F₂] ; si L est plus petit, il n'y a aucun point.",

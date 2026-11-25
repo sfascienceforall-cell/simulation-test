@@ -1,7 +1,7 @@
 SFA.page({
   matiere: "biologie",
-  titre: "Biologie · 4e secondaire",
-  kicker: "Secondaire · FWB",
+  titre: "Seconde · SVT",
+  kicker: "Lycée · Seconde · programme de l'Éducation nationale",
   intro: "De la cellule à la protéine : 10 chapitres, des modèles et des graphiques que tu pilotes toi-même, et des exercices du ★ au ★★★★★ corrigés pas à pas. Les modèles quantitatifs sont volontairement simplifiés : la simulation le précise chaque fois.",
   base: "../../",
   chapitres: [

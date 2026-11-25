@@ -1,8 +1,8 @@
 SFA.page({
   matiere: "maths",
-  titre: "Mathématiques · 6e secondaire (maths 4 h, extensions 6 h signalées)",
-  kicker: "Secondaire · FWB",
-  intro: "40 simulations à manipuler et une centaine d'exercices et de QCM corrigés pas à pas, du ★ au ★★★★★ : exponentielles et logarithmes, primitives et intégrales, géométrie de l'espace, statistique, dénombrement et probabilités. Les extensions réservées à l'option 6 h sont signalées « 6 h ».",
+  titre: "Terminale · Mathématiques (spécialité)",
+  kicker: "Lycée · Terminale · programme de l'Éducation nationale",
+  intro: "40 simulations à manipuler et une centaine d'exercices et de QCM corrigés pas à pas, du ★ au ★★★★★ : exponentielles et logarithmes, primitives et intégrales, géométrie de l'espace, statistique, dénombrement et probabilités. Les approfondissements, au-delà du tronc de la spécialité, sont signalés « 6 h ».",
   base: "../../",
   chapitres: [
     {id:"c01", num:1, titre:"Exponentielles et logarithmes", resume:"Les fonctions a<sup>x</sup> et log<sub>a</sub>, leur lien de réciprocité, les règles de calcul, les équations et les modèles de croissance (population, radioactivité, refroidissement).", attendus:"fonctions exponentielles de base a et e ; logarithmes de base a et népérien ; propriétés des puissances et des logarithmes ; changement de base ; équations et inéquations ; modèles de croissance et de décroissance."},

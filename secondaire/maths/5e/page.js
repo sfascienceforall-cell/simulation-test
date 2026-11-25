@@ -1,8 +1,8 @@
 SFA.page({
   matiere: "maths",
-  titre: "Mathématiques · 5e secondaire (maths 4 h)",
-  kicker: "Secondaire · FWB · extensions 6 h signalées",
-  intro: "Dix chapitres pour voir les limites, les dérivées et la trigonométrie plutôt que les apprendre par cœur : 40 simulations à manipuler et des exercices corrigés pas à pas, du ★ au ★★★★★. Les passages marqués « 6 h » concernent l'option à six périodes.",
+  titre: "Première · Mathématiques (spécialité)",
+  kicker: "Lycée · Première · programme de l'Éducation nationale",
+  intro: "Dix chapitres pour voir les limites, les dérivées et la trigonométrie plutôt que les apprendre par cœur : 40 simulations à manipuler et des exercices corrigés pas à pas, du ★ au ★★★★★. Les passages marqués « 6 h » sont des approfondissements, au-delà du tronc de la spécialité.",
   base: "../../",
   chapitres: [
     {id:"c01", num:1, titre:"Fonctions : opérations, composition, réciproque",

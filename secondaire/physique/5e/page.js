@@ -1,4 +1,4 @@
-/* Physique · 5e secondaire (sciences générales) : page SFA + petites aides communes */
+/* Première · Physique-chimie · physique (spécialité) : page SFA + petites aides communes */
 window.P5 = {
   g: 9.81,
   /* flèche avec étiquette au bout */
@@ -40,8 +40,8 @@ window.P5 = {
 };
 SFA.page({
   matiere: "physique",
-  titre: "Physique · 5e secondaire (sciences générales)",
-  kicker: "Secondaire · FWB · 5e année",
+  titre: "Première · Physique-chimie · physique (spécialité)",
+  kicker: "Lycée · Première · programme de l'Éducation nationale",
   intro: "40 simulations à manipuler et plus de 100 exercices et QCM corrigés pas à pas, du ★ au ★★★★★ : forces et vecteurs, lois de Newton, mouvements, gravitation, champ électrique, condensateur et circuits. Valeurs utilisées : g = 9,81 m/s², G = 6,67·10⁻¹¹ N·m²/kg², k = 9,0·10⁹ N·m²/C², e = 1,6·10⁻¹⁹ C.",
   base: "../../",
   chapitres: [

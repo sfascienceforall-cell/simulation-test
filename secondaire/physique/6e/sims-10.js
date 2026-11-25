@@ -239,7 +239,7 @@ SFA.sim({
       {id: "tho", n: "Radios du thorax", d: 0.02, max: 10, col: "#1e3f8f"},
       {id: "mam", n: "Mammographies", d: 0.4, max: 2, col: "#6236c4"},
       {id: "sca", n: "Scanners du thorax", d: 7, max: 3, col: "#b42318"},
-      {id: "vol", n: "Vols Bruxelles–New York (aller)", d: 0.04, max: 20, col: "#B45309"}
+      {id: "vol", n: "Vols Paris–New York (aller)", d: 0.04, max: 20, col: "#B45309"}
     ];
     var sl = {}; items.forEach(function(it){ sl[it.id] = k.slider(it.n + " (" + S.fmt(it.d, 3) + " mSv chacun)", 0, it.max, 1, it.id === "tho" ? 1 : it.id === "vol" ? 2 : 0, ""); });
     var nat = k.toggle("Ajouter le rayonnement naturel moyen (2,4 mSv/an)", true);

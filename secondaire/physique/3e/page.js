@@ -1,7 +1,7 @@
 SFA.page({
   matiere: "physique",
-  titre: "Physique · 3e secondaire",
-  kicker: "Secondaire · FWB · 3e année",
+  titre: "3e · Physique-chimie · physique",
+  kicker: "Collège · 3e · programme de l'Éducation nationale",
   intro: "Électricité (charges, circuits, loi d'Ohm, énergie) puis forces et fluides (poids, résultante, pression, poussée d'Archimède) : 40 simulations à manipuler et une centaine d'exercices et de QCM corrigés pas à pas, du ★ au ★★★★★.",
   base: "../../",
   chapitres: [

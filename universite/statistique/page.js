@@ -4,7 +4,7 @@ SFA.page({
   kicker:"Université · BA1 médecine, biomédicales, psychologie",
   intro:"Simulations et exercices de statistique du niveau BA1 : comprendre ce que veulent dire une p-valeur, un intervalle de confiance, un test diagnostique.",
   base:"../../secondaire/",
-  nav:[["https://sciencesforall.be","Site SFA"],["../../","Simulations de physique"],["../../chimie/","Chimie BA1"],["../../secondaire/","Secondaire"],["../","Université",true],["../../prepa/","Prépa concours médecine"]],
+  nav:[["https://sciencesforall.be","Site SFA"],["../../","Simulations de physique"],["../../chimie/","Chimie BA1"],["../../secondaire/","Lycée"],["../","Université",true],["../../prepa/","Prépa concours médecine"]],
   chapitres:[
     {id:"c01", num:1, titre:"Statistique descriptive", resume:"Décrire une série de mesures sans la déformer : choisir le bon résumé, lire un histogramme et une boîte à moustaches, ne pas confondre dispersion des individus et précision d'une moyenne.", attendus:"types de variables et échelles ; effectifs, fréquences, histogramme (classes inégales) ; moyenne, médiane, mode ; variance et écart-type (n − 1) ; quartiles, écart interquartile, valeurs atypiques ; asymétrie ; écart-type contre erreur standard."},
     {id:"c02", num:2, titre:"Probabilités", resume:"Passer de la fréquence observée à la probabilité, combiner des événements, raisonner sur un arbre et distinguer indépendance, incompatibilité et dépendance dans un tableau de contingence.", attendus:"fréquence et probabilité, loi des grands nombres ; événement contraire, union, intersection ; probabilité conditionnelle ; indépendance contre incompatibilité ; arbres, probabilités totales ; dénombrement (arrangements, combinaisons) ; espérance et variance d'une variable discrète."},

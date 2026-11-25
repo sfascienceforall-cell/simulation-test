@@ -1,1 +1,1 @@
-(function(M){var X={"court": "Biologie · 6e", "nav": [["../../../secondaire/", "Secondaire", true], ["../../../universite/", "Université"]], "crumbs": [["../../", "Secondaire"]], "featured": "b6-c06-derive"};for(var k in X)M[k]=X[k];})(SFA.meta);
+(function(M){var X={"court": "Terminale · SVT", "nav": [["../../../secondaire/", "Lycée", true], ["../../../universite/", "Université"]], "crumbs": [["../../", "Lycée"]], "featured": "b6-c06-derive"};for(var k in X)M[k]=X[k];})(SFA.meta);

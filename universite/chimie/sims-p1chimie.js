@@ -909,7 +909,7 @@ SFA.sim({
       var topH = phone ? 92 : 74;
       ctx.save(); ctx.shadowColor = "rgba(15,27,45,.25)"; ctx.shadowBlur = 10; ctx.shadowOffsetY = 2;
       var cg = ctx.createLinearGradient(0, 8, 0, topH); cg.addColorStop(0, "#1b2638"); cg.addColorStop(1, "#0d1522"); ctx.fillStyle = cg; p1rr(ctx, 10, 8, W - 20, topH - 12, 10); ctx.fill(); ctx.restore();
-      var wStr = lnW < Math.log(1e15) ? p1int(p1C(N, nL)) : p1sci(Wv, 3);
+      var wStr = lnW < Math.log(1e6) ? p1int(p1C(N, nL)) : p1sci(Wv, 3);
       var big = phone ? 22 : 27;
       p1txt(S, c, "W =", 24, phone ? 32 : 40, {size:big * 0.75, color:"#9fb3c8", align:"left"});
       p1txt(S, c, wStr, 24 + big * 2.1, phone ? 32 : 40, {size:big, color:"#ffd34d", align:"left", weight:800});

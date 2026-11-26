@@ -238,7 +238,7 @@ function room(){const {px,py,s,sw,sh,oy}=L;
   // fenêtre (étroit seulement : sur grand écran, le panneau est à sa place)
   if(L.narrow){const wx=px(1.75),wy=py(2.25),ww=1.05*s,wh=0.75*s;g=ctx.createLinearGradient(0,wy,0,wy+wh);g.addColorStop(0,'#bfe0f5');g.addColorStop(1,'#eaf6fd');
   ctx.fillStyle='#c9d3d8';rr(wx-6,wy-6,ww+12,wh+12,4);ctx.fill();ctx.fillStyle=g;ctx.fillRect(wx,wy,ww,wh);
-  ctx.fillStyle='rgba(255,255,255,.7)';ctx.beginPath();ctx.ellipse(wx+ww*0.3,wy+wh*0.35,ww*0.12,wh*0.07,0,0,7);ctx.ellipse(wx+ww*0.38,wy+wh*0.32,ww*0.1,wh*0.08,0,0,7);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.7)';ctx.beginPath();ctx.ellipse(wx+ww*0.3,wy+wh*0.35,Math.abs(ww*0.12),Math.abs(wh*0.07),0,0,7);ctx.ellipse(wx+ww*0.38,wy+wh*0.32,Math.abs(ww*0.1),Math.abs(wh*0.08),0,0,7);ctx.fill();
   ctx.fillStyle='#9fb3a0';ctx.beginPath();ctx.moveTo(wx,wy+wh);for(let i=0;i<=10;i++)ctx.lineTo(wx+ww*i/10,wy+wh*(0.78+0.08*Math.sin(i*1.7)));ctx.lineTo(wx+ww,wy+wh);ctx.fill();
   ctx.strokeStyle='#c9d3d8';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(wx+ww/2,wy);ctx.lineTo(wx+ww/2,wy+wh);ctx.stroke();}
 
@@ -423,7 +423,7 @@ function frame(ts){if(last===null)last=ts;const dt=Math.min(0.05,(ts-last)/1000)
   if(P.Q>0){dropPh+=dt*P.gpm/60;if(dropPh>=1){dropPh-=1;drops.push({y:0,v:0,r:0});}refl=Math.max(0,refl-dt*0.6);flowPh+=dt*Math.min(60,10+P.mlmin*4);}
   else{dropPh=Math.max(0,dropPh-dt*0.2);if(P.d<0)refl=Math.min(1,refl+dt*Math.min(0.5,0.05-P.d/8000));}
   drops.forEach(d=>{if(d.y<1){d.v+=dt*9;d.y=Math.min(1,d.y+d.v*dt);}else d.r+=dt*2.5;});drops=drops.filter(d=>d.r<1);
-  draw();requestAnimationFrame(frame);}
+  requestAnimationFrame(frame);draw();}
 window.__perf={set:o=>{if(o.post)setPost(o.post);if(o.zL!=null){zL=o.zL;$('sZ').value=zL;}if(o.pvc!=null)pvc=o.pvc;if(o.pac!=null)pac=o.pac;if(o.ouv!=null)ouv=o.ouv;upd();},get:()=>Object.assign({post,zL,pvc,pac,ouv},phys())};
 upd();requestAnimationFrame(frame);
 })();

@@ -588,7 +588,7 @@ SFA.sim({
       var ctx = g.ctx, W = g.W, H = g.H; g.clear(); ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
       var L = W < 480 ? 44 : 52, R = 12, T = 36, B = H - 26, y0 = 650, y1 = 705;
       function Y(v){ return B - (v - y0) / (y1 - y0) * (B - T); }
-      S.draw.text(g, W < 480 ? "−ΔcH° par CH₂ (kJ/mol), axe dès 650" : "Chaleur de combustion par CH₂, −ΔcH° (kJ/mol, gaz) · axe à partir de 650 · clique sur une barre", 10, 13, {size:12, color:"#2c3a4e", align:"left"});
+      S.draw.text(g, W < 760 ? "−ΔcH° par CH₂ (kJ/mol), axe dès 650" : "Chaleur de combustion par CH₂, −ΔcH° (kJ/mol, gaz) · axe à partir de 650 · clique sur une barre", 10, 13, {size:12, color:"#2c3a4e", align:"left"});
       ctx.save(); ctx.font = "600 10.5px " + FONT; ctx.fillStyle = "#8a95a3"; ctx.textAlign = "right"; ctx.textBaseline = "middle";
       for (var v = y0; v <= y1; v += 10){ ctx.strokeStyle = "#edf0f4"; ctx.beginPath(); ctx.moveTo(L, Y(v)); ctx.lineTo(W - R, Y(v)); ctx.stroke(); ctx.fillText(String(v), L - 5, Y(v)); }
       ctx.restore();
@@ -763,7 +763,7 @@ SFA.sim({
       axisLine(ctx, C, 2.7, 0.95, (th + 90) * DEG, "#c0392b", 3.2);
       var pt = C.P(add([2.7, 0, 0], mul(polE(th * DEG), 1.22)));
       ball(ctx, pt.x, pt.y, 6, "#e0574a");
-      var axl = C.P(add([2.7, 0, 0], mul(polE((th + 90) * DEG), 1.05))); S.draw.label(c, "axe de l'analyseur", clamp(axl.x + (ph ? 0 : 30), 70, W - 70), axl.y + (ph ? 26 : 30), {color:"#c0392b", size:ph ? 10.5 : 11});
+      var axl = C.P(add([2.7, 0, 0], mul(polE((th + 90) * DEG), 1.05))); 
       var ac = C.P([2.7, 0, 0]), ar = Math.abs(C.P([2.7, 1.1, 0]).y - ac.y);
       anaHit = {x:ac.x, y:ac.y, r:ar};
       /* oculaire */
@@ -771,6 +771,7 @@ SFA.sim({
       var oc = circ(C, 4.3, 0.3, 24); ctx.fillStyle = "#111827"; poly(ctx, oc); ctx.fill();
       /* œil de l'observateur */
       var ep = C.P([4.9, 0.05, 0]); drawEye(ctx, ep.x, ep.y, Math.max(10, C.sc * 0.38));
+      S.draw.label(c, "axe de l'analyseur", clamp(axl.x + (ph ? 0 : -40), 70, W - 70), axl.y + (ph ? 26 : 30), {color:"#c0392b", size:ph ? 10.5 : 11});
       /* étiquettes */
       var labs = [["lampe Na (589 nm)", [-5.35, -1.75, 1.7]], ["polariseur", [-3.7, 1.25, 0]], ["tube : l = " + l + " dm", [(t0 + t1) / 2, 0.95, 0]], ["analyseur", [2.7, 1.45, 0]]];
       labs.forEach(function(L){ var q = C.P(L[1]); S.draw.label(c, L[0], clamp(q.x, ph ? 52 : 60, W - (ph ? 52 : 60)), q.y, {color:"#2c3a4e", size:ph ? 10.5 : 11.5}); });

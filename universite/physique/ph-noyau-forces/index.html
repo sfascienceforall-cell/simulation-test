@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Construire un noyau : force forte contre répulsion électrique · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#NU">Nucléaire</a>›<b>Construire un noyau : force forte contre répulsion électrique</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Nucléaire</span><span class="sfa-chip free">Gratuit</span></div><h1>Construire un noyau : force forte contre répulsion électrique</h1><p>Un noyau en 3D, protons en rouge et neutrons en gris. Ajoute ou retire des nucléons : la force forte n’attire chaque nucléon que vers ses voisins, alors que chaque proton repousse tous les autres. Les barres comparent les deux par nucléon, la carte des noyaux montre si ton noyau est stable ou émetteur β⁻, β⁺ ou α, et un bouton le laisse se transformer jusqu’à un noyau stable.</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:clamp(560px,min(86vh,210vw),820px);cursor:grab;touch-action:none" aria-label="Noyau atomique en 3D fait de protons rouges et de neutrons gris ; on ajoute ou retire des nucléons ; des barres comparent la cohésion forte et la répulsion électrique ; le noyau se place sur la carte des noyaux N-Z et on voit s'il est stable ou émetteur bêta moins, bêta plus ou alpha"></canvas>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill" style="color:#b3261e">Protons</span>
+  <button class="btn" id="pm">− 1 proton</button>
+  <button class="btn" id="pp">+ 1 proton</button>
+  <span class="pill" style="color:#4b5663">Neutrons</span>
+  <button class="btn" id="nm">− 1 neutron</button>
+  <button class="btn" id="np">+ 1 neutron</button>
+</div>
+<div class="row">
+  <span class="pill">Aller à</span>
+  <select id="pre" class="btn" style="max-width:100%">
+    <option value="1,1">hydrogène 2 (deutérium)</option>
+    <option value="2,2">hélium 4</option>
+    <option value="6,6">carbone 12</option>
+    <option value="6,8" selected>carbone 14</option>
+    <option value="8,7">oxygène 15</option>
+    <option value="26,30">fer 56</option>
+    <option value="27,33">cobalt 60</option>
+    <option value="53,78">iode 131</option>
+    <option value="82,126">plomb 208</option>
+    <option value="88,138">radium 226</option>
+    <option value="92,146">uranium 238</option>
+  </select>
+</div>
+<div class="row">
+  <span class="pill">Désintégration</span>
+  <button class="btn" id="dec">▶ Laisser le noyau se transformer</button>
+  <button class="btn" id="auto">Jusqu’à un noyau stable</button>
+  <button class="btn" id="lab">Masquer les écritures</button>
+</div>
+<div class="row"><span class="hint">Astuce : glisse pour faire tourner le noyau, molette pour zoomer. Passe la souris sur un nucléon pour voir avec qui il interagit. Clique une case de la carte pour y aller.</span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const cv=$('cv'),ctx=cv.getContext('2d');
+const INK='#1f2933',GREY='#6b7680',RED='#d93f36',RED_D='#a32d2d',GRN='#1e8a52',NAVY='#1f3b63',ORA='#c07000';
+const fr=(v,d)=>{const s=(Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d).replace('.',',');return s.replace(/^-/,'−');};
+const SUPD={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+const sup=n=>String(n).split('').map(c=>SUPD[c]||c).join('');
+let W=0,H=0,dpr=1,MOB=false,noLab=false;
+function size(){const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.max(260,Math.round(b.width)||800),h=Math.max(460,Math.min(1200,Math.round(b.height)||620));
+  if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);MOB=W<640;}
+let FS,FB,FT,FXS;function fonts(){FXS=(MOB?'600 10px':'600 11px')+' Mulish,system-ui,sans-serif';FS=(MOB?'600 11px':'600 12px')+' Mulish,system-ui,sans-serif';FB=(MOB?'800 12px':'800 13.5px')+' Mulish,system-ui,sans-serif';FT=(MOB?'800 15px':'800 19px')+' Mulish,system-ui,sans-serif';}
+
+// ---------- étiquettes : jamais deux qui se chevauchent, jamais hors du cadre ----------
+let LQ=[],RES=[];
+const pxOf=f=>{const m=/(\d+(?:\.\d+)?)px/.exec(f);return m?+m[1]:12;};
+const ov=(a,b)=>a[0]<b[2]&&b[0]<a[2]&&a[1]<b[3]&&b[1]<a[3];
+function reserve(x0,y0,x1,y1,zone){RES.push([x0,y0,x1,y1,zone]);}
+function tag(t,x,y,col,font,al,o){o=o||{};if(noLab&&!o.keep)return;LQ.push({t,x,y,col:col||INK,font:font||FS,al:al||'center',pri:o.pri||0,zone:o.zone||'scene',halo:o.halo===undefined?'rgba(255,255,255,.92)':o.halo,fixed:o.fixed});}
+function lines(t,font,maxW){ctx.font=font;const w=t.split(' '),L=[];let c='';w.forEach(x=>{const n=c?c+' '+x:x;if(ctx.measureText(n).width>maxW&&c){L.push(c);c=x;}else c=n;});if(c)L.push(c);return L;}
+function tagW(t,x,y,maxW,col,font,al,o){const L=lines(t,font,maxW),lh=pxOf(font)+5;L.forEach((l,i)=>tag(l,x,y+i*lh,col,font,al,o));return L.length*lh;}
+function flushTags(){const placed=[],drop=[];LQ.sort((a,b)=>b.pri-a.pri);
+  for(const L of LQ){ctx.font=L.font;const w=ctx.measureText(L.t).width,h=pxOf(L.font)+3;if(w>W-8){drop.push(L.t);continue;}
+    let x0=L.al==='left'?L.x:L.al==='right'?L.x-w:L.x-w/2;x0=Math.max(4,Math.min(W-4-w,x0));let ok=null;
+    for(const k of (L.fixed?[0]:[0,-1,1,-2,2,-3,3])){const yc=Math.max(h/2+2,Math.min(H-h/2-2,L.y+k*h)),bx=[x0-2,yc-h/2,x0+w+2,yc+h/2];
+      if(placed.some(b=>ov(b,bx))||RES.some(r=>r[4]!==L.zone&&ov(r,bx)))continue;ok=[bx,yc];break;}
+    if(!ok){drop.push(L.t);continue;}const [bx,yc]=ok;placed.push([bx[0],bx[1],bx[2],bx[3],L.t]);
+    ctx.textAlign='left';ctx.textBaseline='middle';if(L.halo){ctx.lineWidth=3.5;ctx.strokeStyle=L.halo;ctx.lineJoin='round';ctx.strokeText(L.t,x0,yc);}
+    ctx.fillStyle=L.col;ctx.fillText(L.t,x0,yc);}
+  window.__lab={boxes:placed,W,H,drop};LQ=[];RES=[];}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function panel(x,y,w,h){ctx.save();ctx.shadowColor='rgba(20,30,50,.18)';ctx.shadowBlur=14;ctx.shadowOffsetY=3;rr(x,y,w,h,12);ctx.fillStyle='#fdfdfe';ctx.fill();ctx.restore();rr(x,y,w,h,12);ctx.strokeStyle='#dfe4ea';ctx.lineWidth=1;ctx.stroke();}
+function ball(x,y,r,c,al){if(r<0.4)return;const g=ctx.createRadialGradient(x-r*0.35,y-r*0.4,r*0.08,x,y,r);g.addColorStop(0,c[0]);g.addColorStop(0.55,c[1]);g.addColorStop(1,c[2]);ctx.globalAlpha=al==null?1:al;ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.globalAlpha=1;}
+const sm=u=>{u=Math.max(0,Math.min(1,u));return u*u*(3-2*u);};
+const CP=['#ffc9bf','#e0473f','#7d1714'],CN=['#f3f6f9','#9aa7b4','#3e4a56'];
+
+// ---------- éléments ----------
+const EL='H Hydrogène|He Hélium|Li Lithium|Be Béryllium|B Bore|C Carbone|N Azote|O Oxygène|F Fluor|Ne Néon|Na Sodium|Mg Magnésium|Al Aluminium|Si Silicium|P Phosphore|S Soufre|Cl Chlore|Ar Argon|K Potassium|Ca Calcium|Sc Scandium|Ti Titane|V Vanadium|Cr Chrome|Mn Manganèse|Fe Fer|Co Cobalt|Ni Nickel|Cu Cuivre|Zn Zinc|Ga Gallium|Ge Germanium|As Arsenic|Se Sélénium|Br Brome|Kr Krypton|Rb Rubidium|Sr Strontium|Y Yttrium|Zr Zirconium|Nb Niobium|Mo Molybdène|Tc Technétium|Ru Ruthénium|Rh Rhodium|Pd Palladium|Ag Argent|Cd Cadmium|In Indium|Sn Étain|Sb Antimoine|Te Tellure|I Iode|Xe Xénon|Cs Césium|Ba Baryum|La Lanthane|Ce Cérium|Pr Praséodyme|Nd Néodyme|Pm Prométhium|Sm Samarium|Eu Europium|Gd Gadolinium|Tb Terbium|Dy Dysprosium|Ho Holmium|Er Erbium|Tm Thulium|Yb Ytterbium|Lu Lutécium|Hf Hafnium|Ta Tantale|W Tungstène|Re Rhénium|Os Osmium|Ir Iridium|Pt Platine|Au Or|Hg Mercure|Tl Thallium|Pb Plomb|Bi Bismuth|Po Polonium|At Astate|Rn Radon|Fr Francium|Ra Radium|Ac Actinium|Th Thorium|Pa Protactinium|U Uranium|Np Neptunium|Pu Plutonium|Am Américium|Cm Curium|Bk Berkélium|Cf Californium|Es Einsteinium|Fm Fermium'.split('|').map(s=>{const i=s.indexOf(' ');return[s.slice(0,i),s.slice(i+1)];});
+const ZMAX=100,NMAX=160;
+const elName=Z=>EL[Z-1][1],elSym=Z=>EL[Z-1][0];
+
+// ---------- modèle de la goutte liquide (formule de Weizsäcker), en MeV ----------
+const aV=15.8,aS=18.3,aC=0.714,aA=23.2,aP=12.0,DMN=0.782,BHE=28.296;
+function parts(Z,N){const A=Z+N;if(A<=0||Z<0||N<0)return null;const c=Math.cbrt(A);
+  const pair=Z%2===0&&N%2===0?aP/Math.sqrt(A):Z%2===1&&N%2===1?-aP/Math.sqrt(A):0;
+  return{vol:aV*A,surf:aS*c*c,coul:aC*Z*(Z-1)/c,asym:aA*(N-Z)*(N-Z)/A,pair};}
+function Bn(Z,N){const p=parts(Z,N);return p?p.vol-p.surf-p.coul-p.asym+p.pair:0;}
+// noyaux stables réels (Z : nombres de masse), décroissances connues, et cas légers particuliers
+// note : le bismuth 209 est en réalité un émetteur α de demi-vie ≈ 2·10¹⁹ ans ; on le classe stable, comme en pratique
+const STAB={};'1:1,2|2:3,4|3:6,7|4:9|5:10,11|6:12,13|7:14,15|8:16,17,18|9:19|10:20,21,22|11:23|12:24,25,26|13:27|14:28,29,30|15:31|16:32,33,34,36|17:35,37|18:36,38,40|19:39,41|20:40,42,43,44,46,48|21:45|22:46,47,48,49,50|23:51|24:50,52,53,54|25:55|26:54,56,57,58|27:59|28:58,60,61,62,64|29:63,65|30:64,66,67,68,70|31:69,71|32:70,72,73,74,76|33:75|34:74,76,77,78,80,82|35:79,81|36:78,80,82,83,84,86|37:85|38:84,86,87,88|39:89|40:90,91,92,94,96|41:93|42:92,94,95,96,97,98,100|44:96,98,99,100,101,102,104|45:103|46:102,104,105,106,108,110|47:107,109|48:106,108,110,111,112,114,116|49:113|50:112,114,115,116,117,118,119,120,122,124|51:121,123|52:120,122,123,124,125,126,128,130|53:127|54:124,126,128,129,130,131,132,134,136|55:133|56:130,132,134,135,136,137,138|57:139|58:136,138,140,142|59:141|60:142,143,145,146,148,150|62:144,149,150,152,154|63:151,153|64:154,155,156,157,158,160|65:159|66:156,158,160,161,162,163,164|67:165|68:162,164,166,167,168,170|69:169|70:168,170,171,172,173,174,176|71:175|72:176,177,178,179,180|73:181|74:182,183,184,186|75:185|76:184,187,188,189,190,192|77:191,193|78:192,194,195,196,198|79:197|80:196,198,199,200,201,202,204|81:203,205|82:204,206,207,208|83:209'
+  .split('|').forEach(s=>{const [z,a]=s.split(':');STAB[+z]=a.split(',').map(x=>+x-+z);});
+const KNOWN={};('U238a Th234b Pa234b U234a Th230a Ra226a Rn222a Po218a Pb214b Bi214b Po214a Pb210b Bi210b Po210a Th232a Ra228b Ac228b Th228a Ra224a Rn220a Po216a Pb212b Bi212b Po212a Tl208b U235a Th231b Pa231a Ac227b Th227a Ra223a Rn219a Po215a Pb211b Bi211a Tl207b Pu239a Pu241b Am241a U239b Np239b Np237a Cf252a Fr223b Ra225b Ac225a Bi213b Po213a Th233b Pa233b U233a Pu238a Pu240a Cm244a U236a U237b K40b Rb87b C14b H3b Co60b Cs137b I131b Sr90b Tc99b F18p Na22p Co57e Ga68p Rb82p C11p O15p N13p Be8a Be7e Pm145e Kr92b Ba141b Xe140b Sr94b I129b Am243a Cm242a Pu242a'+
+  ' He6b He8b Li8b Li9b Li11b Be10b Be11b Be12b Be14b B8p B12b B13b B14b B15b B17b B19b C9p C10p C15b C16b C17b C18b C19b C20b C22b N12p N16b N17b N18b N19b N20b N21b N22b N23b O13p O14p O19b O20b O21b O22b O23b O24b F24b F26b Ne27b')
+  .split(' ').forEach(w=>{const m=/^([A-Z][a-z]?)(\d+)([abpe])$/.exec(w),Z=EL.findIndex(e=>e[0]===m[1])+1;KNOWN[Z+','+(+m[2]-Z)]={a:'a',b:'b-',p:'b+',e:'ec'}[m[3]];});
+const SPEC={'4,2':'p','8,18':'n','2,3':'n','3,2':'p','4,4':'a','5,4':'p','2,0':'p','1,3':'n','1,4':'n','2,5':'n','3,1':'p'};
+function mode(Z,N){const key=Z+','+N;if(SPEC[key])return[SPEC[key],1];if(STAB[Z]&&STAB[Z].includes(N))return['S',1];if(KNOWN[key])return[KNOWN[key],1];
+  if(N>0&&Bn(Z,N)-Bn(Z,N-1)<0)return['n',0];if(Z>1&&Bn(Z,N)-Bn(Z-1,N)<0)return['p',0];
+  const qbm=N>0?DMN+Bn(Z+1,N-1)-Bn(Z,N):-99,qec=Z>1?-DMN+Bn(Z-1,N+1)-Bn(Z,N):-99,qa=Z>2&&N>2?Bn(Z-2,N-2)+BHE-Bn(Z,N):-99;
+  if(STAB[Z]){const mx=Math.max(...STAB[Z]),mn=Math.min(...STAB[Z]);if(N>mx)return['b-',0];if(N<mn)return[Z>=62&&qa>qec+4?'a':'b+',0];return[qbm>qec?'b-':'b+',0];}
+  if(Z>=84){if(qbm>1&&qbm>qec)return['b-',0];if(qec>qa+2)return['b+',0];return['a',0];}
+  return[qbm>qec?'b-':'b+',0];}
+const MODE_COL={S:'#1d2733','b-':'#4a8fd9','b+':'#e46a5e',ec:'#e46a5e',a:'#f0c43a',n:'#eef1f4',p:'#eef1f4'};
+// carte N-Z calculée une fois
+const MAP=new Uint8Array((ZMAX+1)*(NMAX+1)),MK=['S','b-','b+','a','n','p','ec'];
+for(let z=1;z<=ZMAX;z++)for(let n=0;n<=NMAX;n++)MAP[z*(NMAX+1)+n]=MK.indexOf(mode(z,n)[0]);
+const mapAt=(z,n)=>z>=1&&z<=ZMAX&&n>=0&&n<=NMAX?MK[MAP[z*(NMAX+1)+n]]:null;
+
+// ---------- places des nucléons (empilement compact, de l'intérieur vers l'extérieur) ----------
+const SLOT=(()=>{const P=[];const R=6;for(let i=-R;i<=R;i++)for(let j=-R;j<=R;j++)for(let k=-R;k<=R;k++)if(((i+j+k)%2+2)%2===0){P.push([i/Math.SQRT2+0.011*j,j/Math.SQRT2+0.013*k,k/Math.SQRT2+0.009*i]);}
+  P.sort((a,b)=>(a[0]*a[0]+a[1]*a[1]+a[2]*a[2])-(b[0]*b[0]+b[1]*b[1]+b[2]*b[2]));return P.slice(0,NMAX+ZMAX+4);})();
+let Z=6,N=8,nl=[],fly=[],T=0;
+function centroid(n){const c=[0,0,0];for(let i=0;i<n;i++){c[0]+=SLOT[i][0]/n;c[1]+=SLOT[i][1]/n;c[2]+=SLOT[i][2]/n;}return c;}
+function target(i,n){const c=centroid(n);return[SLOT[i][0]-c[0],SLOT[i][1]-c[1],SLOT[i][2]-c[2]];}
+function build(z,n){const A=z+n,old=nl;nl=[];for(let i=0;i<A;i++){const pr_=Math.floor((i+1)*z/A)>Math.floor(i*z/A);const t=target(i,A),o=old[i];nl.push({p:pr_,pos:o?o.pos.slice():[t[0]*1.6,t[1]*1.6,t[2]*1.6],fl:0});}Z=z;N=n;settle();}
+function settle(){const A=nl.length;nl.forEach((q,i)=>q.tg=target(i,A));}
+function add(isP){if(isP?Z>=ZMAX:N>=NMAX)return;const A=nl.length,t=target(A,A+1),d=Math.hypot(...t)||1,u=[t[0]/d,t[1]/d,t[2]/d];
+  nl.push({p:isP,pos:[t[0]+u[0]*9,t[1]+u[1]*9,t[2]+u[2]*9],fl:0});if(isP)Z++;else N++;settle();upd();}
+function removeOne(isP,dir){let i=-1;for(let k=nl.length-1;k>=0;k--)if(nl[k].p===isP){i=k;break;}if(i<0||nl.length<=1)return null;
+  const q=nl.splice(i,1)[0];if(isP)Z--;else N--;settle();return q;}
+function rem(isP){if(isP?Z<=1:N<=0)return;const q=removeOne(isP);if(q){const d=Math.hypot(...q.pos)||1;fly.push({p:isP,a:q.pos.slice(),u:[q.pos[0]/d,q.pos[1]/d,q.pos[2]/d],t0:T,kind:isP?'p':'n'});}upd();}
+
+// ---------- désintégrations ----------
+let decayMsg='',decayT=-9,autoRun=false,nextAuto=0;
+function outer(isP){for(let k=nl.length-1;k>=0;k--)if(nl[k].p===isP)return k;return-1;}
+function decay(){const [m]=mode(Z,N);if(m==='S'){decayMsg='Ce noyau est stable : il ne se transforme pas.';decayT=T;autoRun=false;$('auto').classList.remove('on');upd();return false;}
+  const before=elName(Z)+' '+(Z+N),A0=Z+N;
+  if(m==='b-'){const i=outer(false);if(i<0)return false;nl[i].p=true;nl[i].fl=T;Z++;N--;const q=nl[i].pos,d=Math.hypot(...q)||1;fly.push({kind:'e-',a:q.slice(),u:[q[0]/d,q[1]/d,q[2]/d],t0:T});fly.push({kind:'nub',a:q.slice(),u:[-q[1]/d,q[0]/d,0.6],t0:T});}
+  else if(m==='b+'){const i=outer(true);if(i<0)return false;nl[i].p=false;nl[i].fl=T;Z--;N++;const q=nl[i].pos,d=Math.hypot(...q)||1;fly.push({kind:'e+',a:q.slice(),u:[q[0]/d,q[1]/d,q[2]/d],t0:T});fly.push({kind:'nu',a:q.slice(),u:[-q[1]/d,q[0]/d,0.6],t0:T});}
+  else if(m==='ec'){const i=outer(true);if(i<0)return false;nl[i].p=false;nl[i].fl=T+0.8;nl[i].pend=T+0.8;Z--;N++;const q=nl[i].pos,d=Math.hypot(...q)||1;fly.push({kind:'ein',a:q.slice(),u:[q[0]/d,q[1]/d,q[2]/d],t0:T});fly.push({kind:'nu',a:q.slice(),u:[-q[1]/d,q[0]/d,0.6],t0:T+0.8});}
+  else if(m==='a'){const out=[];[true,true,false,false].forEach(isP=>{const q=removeOne(isP);if(q)out.push(q);});const c=[0,0,0];out.forEach(q=>{c[0]+=q.pos[0]/4;c[1]+=q.pos[1]/4;c[2]+=q.pos[2]/4;});const d=Math.hypot(...c)||1;
+    fly.push({kind:'a',a:c,u:[c[0]/d,c[1]/d,c[2]/d],t0:T,parts:out.map(q=>[q.pos[0]-c[0],q.pos[1]-c[1],q.pos[2]-c[2],q.p])});}
+  else if(m==='n')rem(false);else if(m==='p')rem(true);
+  decayMsg=before+' → '+elName(Z)+' '+(Z+N)+' : '+{'b-':'un neutron est devenu proton, un électron (β⁻) s’en va','b+':'un proton est devenu neutron, un positon (β⁺) s’en va',ec:'un proton a capturé un électron du cortège et est devenu neutron ; un neutrino s’en va',a:A0<20?'il s’est cassé en deux noyaux d’hélium 4':'il a éjecté un noyau d’hélium 4 (particule α)',n:'un neutron s’est échappé',p:'un proton s’est échappé'}[m];
+  decayT=T;settle();sel=-1;upd();return true;}
+
+// ---------- caméra ----------
+let yaw=-0.5,pitch=0.32,zoom=1,C={},fCur=0,sel=-1,hover=-1,mouse=null;
+function cam(cx,cy,f,Dc){C={cx,cy,f,Dc,cyw:Math.cos(yaw),syw:Math.sin(yaw),cp:Math.cos(pitch),sp:Math.sin(pitch)};}
+function pr(x,y,z){const xr=x*C.cyw-y*C.syw,yr=x*C.syw+y*C.cyw,dep=C.Dc+yr*C.cp-z*C.sp,k=C.f/Math.max(0.5,dep);return[C.cx+xr*k,C.cy-(z*C.cp+yr*C.sp)*k,dep,k];}
+let LAY={};
+function layout(){if(MOB){const nh=H*0.49;LAY={nx:0,ny:0,nw:W,nh,bx:8,by:nh+6,bw:W-16,bh:H*0.18,mx:8,my:nh+H*0.18+14,mw:W-16,mh:H-nh-H*0.18-22};}
+  else{const lw=W*0.56;LAY={nx:0,ny:0,nw:lw,nh:H,bx:lw+8,by:12,bw:W-lw-20,bh:H*0.36,mx:lw+8,my:H*0.36+22,mw:W-lw-20,mh:H*0.64-34};}}
+
+function drawNucleus(){const L=LAY,A=nl.length,R=0.62*Math.cbrt(Math.max(A,1))+0.5;
+  // fond : salle sombre et lueur douce, pour la profondeur
+  let g=ctx.createRadialGradient(L.nx+L.nw*0.5,L.ny+L.nh*0.5,10,L.nx+L.nw*0.5,L.ny+L.nh*0.5,Math.max(L.nw,L.nh)*0.75);g.addColorStop(0,'#2a3b55');g.addColorStop(1,'#0b1220');ctx.fillStyle=g;ctx.fillRect(L.nx,L.ny,L.nw,L.nh);
+  const want=Math.min(L.nw,L.nh*(MOB?0.8:1))*(MOB?0.4:0.48)*(0.72+0.28*Math.min(1,R/4.4))/R*14;fCur=fCur?fCur+(want-fCur)*0.08:want;
+  cam(L.nx+L.nw*0.5,L.ny+L.nh*(MOB?0.52:0.5),fCur*zoom,14);
+  // ombre portée et halo
+  const c0=pr(0,0,0),rs=R*c0[3];const hg=ctx.createRadialGradient(c0[0],c0[1],rs*0.5,c0[0],c0[1],rs*1.9);hg.addColorStop(0,'rgba(120,170,255,.18)');hg.addColorStop(1,'rgba(120,170,255,0)');ctx.fillStyle=hg;ctx.beginPath();ctx.arc(c0[0],c0[1],rs*1.9,0,7);ctx.fill();
+  const items=[];nl.forEach((q,i)=>{for(let k=0;k<3;k++)q.pos[k]+=(q.tg[k]-q.pos[k])*0.12;const j=0.03*Math.sin(T*7+i*2.1);const P=pr(q.pos[0]+j,q.pos[1]-j,q.pos[2]+j*0.5);items.push([P[2],P,q,i]);});
+  // nucléon montré : celui sous la souris, sinon un proton de la surface
+  hover=-1;if(mouse&&mouse[0]<L.nx+L.nw&&mouse[1]<L.ny+L.nh){let bd=1e9;items.forEach(([d,P,q,i])=>{const dd=Math.hypot(P[0]-mouse[0],P[1]-mouse[1]);if(dd<0.6*P[3]&&d<bd){bd=d;hover=i;}});}
+  if(sel<0||sel>=nl.length||!nl[sel].p){sel=outer(true);}
+  const S=hover>=0?hover:sel;
+  items.sort((a,b)=>b[0]-a[0]);
+  const front=[];items.forEach(it=>{const [d,P,q,i]=it;const r=0.56*P[3],fl=T>=q.fl&&T-q.fl<1?1-(T-q.fl):0;
+    ball(P[0],P[1],r,q.p||q.pend>T?CP:CN);if(fl>0){ctx.strokeStyle=`rgba(255,240,140,${fl})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(P[0],P[1],r*(1.1+0.6*(1-fl)),0,7);ctx.stroke();}
+    if(i===S){ctx.strokeStyle='#fff';ctx.lineWidth=2.4;ctx.beginPath();ctx.arc(P[0],P[1],r+2,0,7);ctx.stroke();}});
+  // interactions du nucléon choisi : force forte avec ses seuls voisins, répulsion électrique avec tous les autres protons
+  let nbN=0,nbP=0;if(S>=0&&S<nl.length&&!noLab){const s=nl[S],Ps=pr(...s.pos);
+    nl.forEach((q,i)=>{if(i===S)return;const d=Math.hypot(q.pos[0]-s.pos[0],q.pos[1]-s.pos[1],q.pos[2]-s.pos[2]),P=pr(...q.pos);
+      if(d<1.12){nbN++;ctx.strokeStyle='rgba(80,230,140,.95)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(Ps[0],Ps[1]);ctx.lineTo(P[0],P[1]);ctx.stroke();}
+      else if(s.p&&q.p){nbP++;ctx.strokeStyle='rgba(255,110,95,.45)';ctx.lineWidth=1.2;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(Ps[0],Ps[1]);ctx.lineTo(P[0],P[1]);ctx.stroke();ctx.setLineDash([]);}});
+    if(s.p)nl.forEach((q,i)=>{if(i!==S&&q.p&&Math.hypot(q.pos[0]-s.pos[0],q.pos[1]-s.pos[1],q.pos[2]-s.pos[2])<1.12)nbP++;});}
+  // particules qui partent
+  fly=fly.filter(f=>T-f.t0<2.2&&!(f.kind==='ein'&&T-f.t0>0.8));fly.forEach(f=>{const u=T-f.t0;if(u<0)return;const s=f.kind==='ein'?(0.8-u)*9:f.kind==='nu'||f.kind==='nub'?u*6.5:f.kind==='e-'||f.kind==='e+'?u*4.5:u*5,pos=[f.a[0]+f.u[0]*s,f.a[1]+f.u[1]*s,f.a[2]+f.u[2]*s],P=pr(...pos);
+    if(f.kind==='a'){f.parts.forEach(q=>{const Q=pr(pos[0]+q[0],pos[1]+q[1],pos[2]+q[2]);ball(Q[0],Q[1],0.56*Q[3],q[3]?CP:CN);});if(u<1.6&&P[1]>L.ny+70&&P[1]<L.ny+L.nh-60&&P[0]>L.nx&&P[0]<L.nx+L.nw)tag('α = noyau d’hélium 4',P[0],P[1]-0.9*P[3]-10,'#ffe08a',FB,'center',{halo:'rgba(11,18,32,.9)',pri:7});}
+    else if(f.kind==='p'||f.kind==='n')ball(P[0],P[1],0.56*P[3],f.kind==='p'?CP:CN,Math.max(0,1-u/2.2));
+    else{const col=f.kind==='e-'||f.kind==='ein'?'#6fb8ff':f.kind==='e+'?'#ff9a7a':'rgba(220,220,255,.8)';ctx.fillStyle=col;ctx.beginPath();ctx.arc(P[0],P[1],f.kind.startsWith('nu')?2.5:4.5,0,7);ctx.fill();
+      const ins=P[0]>L.nx+10&&P[0]<L.nx+L.nw-10&&P[1]>L.ny+60&&P[1]<L.ny+L.nh-60;if(u<1.8&&ins)tag({'e-':'électron e⁻ (β⁻)','e+':'positon e⁺ (β⁺)',ein:'électron du cortège capturé',nu:'neutrino ν',nub:'antineutrino ν̄'}[f.kind],P[0]+8,P[1]-12,f.kind==='e-'||f.kind==='ein'?'#9fd0ff':f.kind==='e+'?'#ffb8a0':'#d8d8f0',FS,'left',{halo:'rgba(11,18,32,.9)',pri:6});}});
+  // écritures
+  const HD='rgba(11,18,32,.9)',[m,known]=mode(Z,N),A_=Z+N;
+  tag(elName(Z)+' '+A_+'  ('+sup(A_)+elSym(Z)+')',L.nx+L.nw/2,L.ny+(MOB?16:24),'#ffffff',FT,'center',{halo:HD,pri:10,fixed:true,keep:true});
+  tag(Z+' proton'+(Z>1?'s':'')+' + '+N+' neutron'+(N>1?'s':'')+' = '+A_+' nucléon'+(A_>1?'s':''),L.nx+L.nw/2,L.ny+(MOB?36:48),'#dce6f2',FB,'center',{halo:HD,pri:10,fixed:true,keep:true});
+  const vc={S:'#7ee2a8','b-':'#8fc2ff','b+':'#ffab9e',ec:'#ffab9e',a:'#ffd968',n:'#d0d6de',p:'#d0d6de'}[m];
+  const vt=Z===83&&N===126?'Stable en pratique : émetteur α si lent (demi-vie ≈ 2·10¹⁹ ans) qu’on le classe stable':{S:A_===1?'Stable : un proton seul, c’est le noyau d’hydrogène':'Stable : la cohésion forte l’emporte',
+    'b-':'Trop de neutrons : émetteur β⁻ (un neutron devient proton)','b+':'Trop de protons : émetteur β⁺ (un proton devient neutron)',ec:'Trop de protons : capture électronique (un proton capture un électron du cortège et devient neutron)',
+    a:A_<20?'Instable : il se casse en deux noyaux d’hélium 4':'Trop gros : émetteur α (il éjecte un noyau d’hélium 4)',n:'Trop de neutrons : le dernier neutron n’est pas retenu',p:'Trop de protons : le dernier proton n’est pas retenu'}[m]+(known?'':' (prévision du modèle)');
+  const by=L.ny+L.nh-(MOB?56:52);tagW(vt,L.nx+L.nw/2,by,L.nw-24,vc,MOB?FS:FB,'center',{halo:HD,pri:9,fixed:true});
+  if(T-decayT<4&&decayMsg)tagW(decayMsg,L.nx+L.nw/2,L.ny+(MOB?58:74),L.nw-24,'#ffe9a8',FS,'center',{halo:HD,pri:9});
+  if(S>=0&&!noLab&&S<nl.length){const P=pr(...nl[S].pos),s=nl[S];
+    const t1=A_===1?'un proton seul : rien ne l’attire, rien ne le repousse':s.p?'ce proton : attiré par '+nbN+' voisin'+(nbN>1?'s':'')+', repoussé par '+(Z-1)+' autre'+(Z>2?'s':'')+' proton'+(Z>2?'s':''):'ce neutron : attiré par ses '+nbN+' voisin'+(nbN>1?'s':'')+', aucune répulsion';
+    tagW(t1,L.nx+L.nw/2,L.ny+L.nh-(MOB?90:96),L.nw-24,'#ffffff',FS,'center',{halo:HD,pri:8});}
+  // légende
+  const ly=L.ny+L.nh-(MOB?14:18),lx=L.nx+L.nw/2;
+  if(!noLab){ball(lx-(MOB?150:200),ly,5,CP);ball(lx-(MOB?95:128),ly,5,CN);
+  ctx.strokeStyle='rgba(80,230,140,.95)';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(lx-(MOB?36:46),ly);ctx.lineTo(lx-(MOB?22:30),ly);ctx.stroke();
+  ctx.strokeStyle='rgba(255,110,95,.8)';ctx.lineWidth=1.4;ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(lx+(MOB?54:76),ly);ctx.lineTo(lx+(MOB?70:94),ly);ctx.stroke();ctx.setLineDash([]);}
+  tag('proton',lx-(MOB?142:191),ly,'#ffd0c8',FXS,'left',{halo:HD,fixed:true,pri:7});tag('neutron',lx-(MOB?87:119),ly,'#e3e8ee',FXS,'left',{halo:HD,fixed:true,pri:7});
+  tag('force forte',lx-(MOB?17:24),ly,'#9ff0bf',FXS,'left',{halo:HD,fixed:true,pri:7});tag('électrique',lx+(MOB?75:100),ly,'#ffb3a8',FXS,'left',{halo:HD,fixed:true,pri:7});}
+
+function drawBars(){const L=LAY,p=parts(Z,N),A=Z+N;panel(L.bx,L.by,L.bw,L.bh);reserve(L.bx,L.by,L.bx+L.bw,L.by+L.bh,'bars');
+  const o={zone:'bars',halo:null,fixed:true,pri:9};tag('Énergie par nucléon (modèle de la goutte liquide)',L.bx+12,L.by+(MOB?13:16),INK,MOB?FS:FB,'left',o);
+  const rows=[['cohésion forte',(p.vol-p.surf)/A,GRN,'+'],['répulsion électrique',p.coul/A,RED,'−'],['écart N ≠ Z',p.asym/A,ORA,'−'],['appariement ±',p.pair/A,'#7a4fb5',p.pair>0?'+':p.pair<0?'−':'±'],['liaison B/A',Bn(Z,N)/A,NAVY,'=']];
+  const top=L.by+(MOB?28:36),rh=(L.bh-(MOB?34:44))/5,lw=MOB?118:142,x0=L.bx+12+lw,bw=L.bw-24-lw-(MOB?58:66),sc=bw/16;
+  ctx.strokeStyle='#e7ebf0';ctx.lineWidth=1;for(let v=0;v<=16;v+=4){const x=x0+v*sc;ctx.beginPath();ctx.moveTo(x,top);ctx.lineTo(x,top+rh*5-4);ctx.stroke();}
+  if(A<5){tagW(A===1?'Un nucléon seul : il n’y a rien à lier.':'Noyau trop petit : le modèle de la goutte liquide ne s’applique pas (énergie de liaison réelle : '+({'1,1':'2,22 MeV','1,2':'8,48 MeV','2,1':'7,72 MeV','2,2':'28,3 MeV'}[Z+','+N]||'non liée')+').',L.bx+12,L.by+L.bh*0.45,L.bw-24,INK,FS,'left',o);return;}
+  rows.forEach(([nm,v,c,sg],i)=>{const y=top+i*rh,hh=Math.max(6,rh*0.56),w=Math.max(0,Math.min(16,i===3?Math.abs(v):v))*sc;if(i===4)sg=v<0?'= −':'=';
+    const g=ctx.createLinearGradient(0,y+rh/2-hh/2,0,y+rh/2+hh/2);g.addColorStop(0,c);g.addColorStop(1,shade(c,0.7));rr(x0,y+rh/2-hh/2,Math.max(2,w),hh,3);ctx.fillStyle=g;ctx.fill();
+    tag(nm,L.bx+12,y+rh/2,i===4?NAVY:INK,FS,'left',o);const vt=sg+' '+fr(Math.abs(v),2)+' MeV';if(w>bw*0.62)tag(vt,x0+w-6,y+rh/2,'#ffffff',FB,'right',{zone:'bars',halo:'rgba(0,0,0,.25)',fixed:true,pri:9});else tag(vt,x0+w+6,y+rh/2,c,FB,'left',o);});}
+function shade(hex,k){const n=parseInt(hex.slice(1),16),f=v=>Math.round(Math.max(0,Math.min(255,v*k)));return`rgb(${f(n>>16)},${f((n>>8)&255)},${f(n&255)})`;}
+
+let CELLS=null;
+function drawMap(){const L=LAY;panel(L.mx,L.my,L.mw,L.mh);reserve(L.mx,L.my,L.mx+L.mw,L.my+L.mh,'map');
+  const o={zone:'map',halo:null,fixed:true,pri:9};tag('Carte des noyaux (N, Z)',L.mx+12,L.my+(MOB?13:16),INK,MOB?FS:FB,'left',o);
+  const lgY=L.my+L.mh-(MOB?11:14),ix=L.mx+(MOB?30:36),iy=L.my+(MOB?26:32),iw=L.mw-(MOB?40:50),ih=L.mh-(MOB?80:84);
+  const cs=Math.max(MOB?13:16,Math.min(26,Math.min(iw/15,ih/11))),nc=Math.floor(iw/cs),nr=Math.floor(ih/cs);
+  const n0=Math.max(0,Math.min(NMAX-nc+1,N-Math.floor(nc/2))),z0=Math.max(1,Math.min(ZMAX-nr+1,Z-Math.floor(nr/2)));
+  const ox=ix+(iw-nc*cs)/2,oy=iy+(ih-nr*cs)/2;CELLS={ox,oy,cs,nc,nr,n0,z0};
+  for(let r=0;r<nr;r++)for(let c=0;c<nc;c++){const z=z0+(nr-1-r),n=n0+c,m=mapAt(z,n);if(!m)continue;const x=ox+c*cs,y=oy+r*cs;
+    ctx.fillStyle=MODE_COL[m];ctx.fillRect(x+0.5,y+0.5,cs-1,cs-1);
+    if(m==='S'&&cs>=18&&!MOB){ctx.fillStyle='rgba(255,255,255,.7)';ctx.font='700 9px Mulish,system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(elSym(z),x+cs/2,y+cs/2);}}
+  // droite N = Z
+  ctx.save();ctx.beginPath();ctx.rect(ox,oy,nc*cs,nr*cs);ctx.clip();ctx.setLineDash([5,4]);ctx.strokeStyle='rgba(90,100,115,.8)';ctx.lineWidth=1.4;ctx.beginPath();
+  const zx=z=>ox+(z-n0+0.5)*cs,zy=z=>oy+(nr-1-(z-z0)+0.5)*cs;ctx.moveTo(zx(z0-2),zy(z0-2));ctx.lineTo(zx(z0+nr+2),zy(z0+nr+2));ctx.stroke();ctx.restore();
+  // le noyau actuel
+  const cx=ox+(N-n0)*cs,cy=oy+(nr-1-(Z-z0))*cs,pulse=1.5+1.2*Math.sin(T*5);ctx.strokeStyle='#ffffff';ctx.lineWidth=5;ctx.strokeRect(cx-pulse,cy-pulse,cs+2*pulse,cs+2*pulse);ctx.strokeStyle='#d6336c';ctx.lineWidth=2.6;ctx.strokeRect(cx-pulse,cy-pulse,cs+2*pulse,cs+2*pulse);
+  // axes
+  for(let c=0;c<nc;c++){const n=n0+c;if(n%(MOB?4:5)===0)tag(String(n),ox+(c+0.5)*cs,oy+nr*cs+9,GREY,FXS,'center',o);}
+  for(let r=0;r<nr;r++){const z=z0+(nr-1-r);if(z%(MOB?4:5)===0)tag(String(z),ox-5,oy+(r+0.5)*cs,GREY,FXS,'right',o);}
+  tag('N (neutrons) →',ox+nc*cs,oy+nr*cs+(MOB?22:23),GREY,FXS,'right',o);tag('↑ Z (protons)',L.mx+L.mw-12,L.my+(MOB?13:16),GREY,FXS,'right',o);
+  // légende
+  const lg=[['S','stable'],['b-','β⁻'],['b+','β⁺ / capture e⁻'],['a','α'],['n','pas lié'],['z','N = Z']];let x=L.mx+12;ctx.font=FXS;
+  lg.forEach(([k,t])=>{if(k==='z'){ctx.setLineDash([5,4]);ctx.strokeStyle='rgba(90,100,115,.8)';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(x,lgY+4);ctx.lineTo(x+12,lgY-4);ctx.stroke();ctx.setLineDash([]);tag(t,x+16,lgY,INK,FXS,'left',o);return;}ctx.fillStyle=MODE_COL[k];ctx.fillRect(x,lgY-5,10,10);ctx.strokeStyle='#c9d0d8';ctx.lineWidth=1;ctx.strokeRect(x,lgY-5,10,10);tag(t,x+14,lgY,INK,FXS,'left',o);x+=24+ctx.measureText(t).width+(MOB?4:8);});}
+
+// ---------- texte ----------
+function upd(){const p=parts(Z,N),A=Z+N,B=Bn(Z,N),[m,known]=mode(Z,N);
+  $('fml').innerHTML='Dans le noyau, deux forces s’opposent. La <b style="color:#1e8a52">force forte</b> attire chaque nucléon vers ses <b>seuls voisins</b> (portée ≈ 1 fm) : elle croît comme le nombre A de nucléons. La <b style="color:#a32d2d">répulsion électrique</b> agit entre <b>tous</b> les protons, même éloignés : elle croît comme Z(Z − 1)/2 paires. Les gros noyaux ont donc besoin de plus de neutrons que de protons. Trop de neutrons : <b>β⁻</b> ; trop de protons : <b>β⁺</b> (ou capture d’un électron du cortège) ; trop gros : <b>α</b>.';
+  $('info').innerHTML=`${elName(Z)} ${A} : Z = ${Z}, N = ${N}, A = ${A}. Paires de protons qui se repoussent : Z(Z − 1)/2 = <b>${Math.round(Z*(Z-1)/2)}</b>. ${A<5?'Pour moins de 5 nucléons, le modèle de la goutte liquide n’a pas de sens : on n’affiche pas ses valeurs. ':''}<span style="${A<5?'display:none':''}">Modèle de la goutte liquide (MeV) : volume a<sub>V</sub>A = ${fr(p.vol,1)} ; surface −a<sub>S</sub>A<sup>2/3</sup> = −${fr(p.surf,1)} ; électrique −a<sub>C</sub>Z(Z − 1)/A<sup>1/3</sup> = −${fr(p.coul,1)} ; écart N ≠ Z −a<sub>A</sub>(N − Z)²/A = −${fr(p.asym,1)} ; appariement ${p.pair>=0?'+':'−'}${fr(Math.abs(p.pair),1)}. Énergie de liaison B = <b>${fr(B,1)} MeV</b>, soit <b>B/A = ${fr(B/A,2)} MeV</b> par nucléon (coefficients 15,8 ; 18,3 ; 0,714 ; 23,2 ; 12).</span> ${Z===83&&N===126?'Le bismuth 209 est en fait un émetteur α de demi-vie ≈ 2·10¹⁹ ans : on le considère stable en pratique. ':''}${known?'Stabilité et type de désintégration : noyaux réels.':'Stabilité : prévision du modèle (ce noyau n’est pas dans la table des noyaux connus de la simulation).'} Le modèle est approché : pour les noyaux très légers, il se trompe de quelques MeV.`;
+  $('dec').disabled=false;const pre=$('pre'),v=Z+','+N;pre.value=[...pre.options].some(o=>o.value===v)?v:'';}
+$('pp').onclick=()=>add(true);$('np').onclick=()=>add(false);$('pm').onclick=()=>rem(true);$('nm').onclick=()=>rem(false);
+$('pre').onchange=e=>{if(!e.target.value)return;const [z,n]=e.target.value.split(',').map(Number);build(z,n);sel=-1;decayMsg='';upd();};
+$('dec').onclick=()=>decay();
+$('auto').onclick=()=>{autoRun=!autoRun;$('auto').classList.toggle('on',autoRun);if(autoRun){if(!decay()){autoRun=false;$('auto').classList.remove('on');}nextAuto=T+2.4;}};
+$('lab').onclick=()=>{noLab=!noLab;$('lab').classList.toggle('on',noLab);$('lab').textContent=noLab?'Afficher les écritures':'Masquer les écritures';};
+let drag=null;function pos(e){const b=cv.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top];}
+function cellAt(x,y){if(!CELLS)return null;const c=Math.floor((x-CELLS.ox)/CELLS.cs),r=Math.floor((y-CELLS.oy)/CELLS.cs);if(c<0||r<0||c>=CELLS.nc||r>=CELLS.nr)return null;return[CELLS.z0+(CELLS.nr-1-r),CELLS.n0+c];}
+cv.addEventListener('pointerdown',e=>{const [x,y]=pos(e);const c=cellAt(x,y);if(c){if(c[0]>=1&&c[1]>=0){build(c[0],c[1]);sel=-1;decayMsg='';upd();}return;}
+  if(hover>=0){sel=hover;}drag=[x,y];cv.setPointerCapture(e.pointerId);cv.style.cursor='grabbing';});
+cv.addEventListener('pointermove',e=>{const [x,y]=pos(e);mouse=[x,y];if(drag){yaw+=(x-drag[0])*0.008;pitch=Math.max(-1.2,Math.min(1.2,pitch+(y-drag[1])*0.008));drag=[x,y];}
+  else cv.style.cursor=cellAt(x,y)?'pointer':'grab';});
+cv.addEventListener('pointerup',()=>{drag=null;cv.style.cursor='grab';});cv.addEventListener('pointerleave',()=>{mouse=null;});
+cv.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(0.6,Math.min(2.2,zoom*Math.exp(-e.deltaY*0.001)));},{passive:false});
+let last=null;
+function frame(ts){if(last===null)last=ts;const dt=Math.min(0.05,(ts-last)/1000);last=ts;T+=dt;if(!drag)yaw+=dt*0.25;
+  if(autoRun&&T>nextAuto){if(!decay()){autoRun=false;$('auto').classList.remove('on');}nextAuto=T+2.4;}
+  size();fonts();layout();ctx.clearRect(0,0,W,H);ctx.fillStyle='#eef2f6';ctx.fillRect(0,0,W,H);drawNucleus();drawBars();drawMap();flushTags();requestAnimationFrame(frame);}
+window.__noyau={set:(z,n)=>{build(z,n);sel=-1;decayMsg='';upd();},get:()=>({Z,N,mode:mode(Z,N),B:Bn(Z,N),parts:parts(Z,N)}),decay,mode,Bn,parts};
+size();fonts();build(6,8);nl.forEach(q=>{q.pos=q.tg.map(v=>v*3);});upd();
+requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Physique nucléaire et rayonnements<span>4 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/radioactivite/"><i>01</i>Radioactivité et rayons X</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-radioprotection/"><i>02</i>Temps, distance, écran : se protéger</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-fission-chaine/"><i>03</i>Fission et réaction en chaîne</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-noyau-forces/"><i>04</i>Construire un noyau : force forte contre répulsion électrique</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

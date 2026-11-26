@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fission et réaction en chaîne · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#NU">Nucléaire</a>›<b>Fission et réaction en chaîne</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Nucléaire</span><span class="sfa-chip free">Gratuit</span></div><h1>Fission et réaction en chaîne</h1><p>Dans un cœur de réacteur en 3D plongé dans sa piscine, chaque neutron qui frappe un noyau d’uranium 235 le coupe en deux et en libère 2 ou 3 autres. Enfonce ou sors les barres de contrôle : elles absorbent une part p des neutrons, et le facteur k = 2,5 × (1 − p) décide si la réaction s’éteint, reste stable ou s’emballe. Le gros plan montre une fission nucléon par nucléon, avec son défaut de masse et son énergie libérée, environ 170 à 185 MeV selon les fragments.</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:clamp(520px,min(76vh,160vw),760px);cursor:grab;touch-action:none" aria-label="Cœur de réacteur en 3D dans une piscine : des noyaux d'uranium 235 se coupent en deux quand un neutron les frappe et libèrent 2 ou 3 neutrons ; des barres de contrôle absorbent une partie des neutrons ; un graphique suit le nombre de neutrons à chaque génération"></canvas>
+
+<div class="fc-read" id="read"></div>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill">Vue</span>
+  <button class="btn on" id="mC">Réaction en chaîne</button>
+  <button class="btn" id="mF">Une fission vue de près</button>
+</div>
+<div class="row" id="rowP">
+  <span class="pill" style="min-width:190px;color:#3d4652">p &nbsp;neutrons absorbés (barres de contrôle)</span>
+  <input type="range" id="sp" min="0" max="80" step="1" value="60" style="accent-color:#4a5562;">
+  <span class="val" id="vp"></span>
+</div>
+<div class="row" id="rowC">
+  <span class="pill">Départ</span>
+  <button class="btn on" id="n1000">Relancer avec 1 000 neutrons</button>
+  <button class="btn" id="n1">Relancer avec 1 neutron</button>
+  <button class="btn" id="fast">Accéléré ×3</button>
+</div>
+<div class="row" id="rowF" style="display:none">
+  <span class="pill">Le noyau se coupe en</span>
+  <button class="btn on" id="pBa">baryum 141 + krypton 92 + 3 n</button>
+  <button class="btn" id="pXe">xénon 140 + strontium 94 + 2 n</button>
+  <button class="btn" id="replay">↺ Rejouer</button>
+</div>
+<div class="row">
+  <button class="btn" id="lab">Masquer les écritures</button>
+</div>
+<div class="row"><span class="hint" id="hint"></span></div>
+
+<div class="info" id="info"></div>
+
+<style>
+.fc-read{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:12px}
+.fc-read div{background:#fff;border:1px solid var(--line,#dfe3e8);border-radius:10px;padding:8px 12px;font:600 .78rem/1.35 Mulish,system-ui,sans-serif;color:#5b6570}
+.fc-read b{display:block;font:800 1.12rem/1.3 Mulish,system-ui,sans-serif;color:#1d2733;font-variant-numeric:tabular-nums}
+</style>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const cv=$('cv'),ctx=cv.getContext('2d');
+const INK='#1f2933',GREY='#6b7680';
+const fr=(v,d)=>{const s=(Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d).replace('.',',');return s.replace(/^-/,'−');};
+const SUPD={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','-':'⁻'};
+const sup=n=>String(n).split('').map(c=>SUPD[c]||c).join('');
+function sci(v,d){if(v===0)return'0';let e=Math.floor(Math.log10(Math.abs(v))),m=v/Math.pow(10,e);if(Math.abs(+m.toFixed(d))>=10){m/=10;e++;}return e===0?fr(m,d):fr(m,d)+'·10'+sup(e);}
+const grp=n=>String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+let W=0,H=0,dpr=1,MOB=false,noLab=false;
+function size(){const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.max(260,Math.round(b.width)||800),h=Math.max(420,Math.min(1200,Math.round(b.height)||600));
+  if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);MOB=W<640;}
+let FS,FB,FT;function fonts(){FS=(MOB?'600 11px':'600 12px')+' Mulish,system-ui,sans-serif';FB=(MOB?'800 12px':'800 13.5px')+' Mulish,system-ui,sans-serif';FT=(MOB?'800 13px':'800 15px')+' Mulish,system-ui,sans-serif';}
+
+// ---------- étiquettes : jamais deux qui se chevauchent, jamais hors du cadre ----------
+let LQ=[],RES=[];
+const pxOf=f=>{const m=/(\d+(?:\.\d+)?)px/.exec(f);return m?+m[1]:12;};
+const ov=(a,b)=>a[0]<b[2]&&b[0]<a[2]&&a[1]<b[3]&&b[1]<a[3];
+function reserve(x0,y0,x1,y1,zone){RES.push([x0,y0,x1,y1,zone]);}
+function tag(t,x,y,col,font,al,o){o=o||{};if(noLab&&!o.keep)return;LQ.push({t,x,y,col:col||INK,font:font||FS,al:al||'center',pri:o.pri||0,zone:o.zone||'scene',halo:o.halo==null?'rgba(255,255,255,.92)':o.halo,fixed:o.fixed});}
+function flushTags(){const placed=[],drop=[];LQ.sort((a,b)=>b.pri-a.pri);
+  for(const L of LQ){ctx.font=L.font;const w=ctx.measureText(L.t).width,h=pxOf(L.font)+3;if(w>W-8){drop.push(L.t);continue;}
+    let x0=L.al==='left'?L.x:L.al==='right'?L.x-w:L.x-w/2;x0=Math.max(4,Math.min(W-4-w,x0));let ok=null;
+    for(const k of (L.fixed?[0]:[0,-1,1,-2,2,-3,3])){const yc=Math.max(h/2+2,Math.min(H-h/2-2,L.y+k*h)),bx=[x0-2,yc-h/2,x0+w+2,yc+h/2];
+      if(placed.some(b=>ov(b,bx))||RES.some(r=>r[4]!==L.zone&&ov(r,bx)))continue;ok=[bx,yc];break;}
+    if(!ok){drop.push(L.t);continue;}const [bx,yc]=ok;placed.push([bx[0],bx[1],bx[2],bx[3],L.t]);
+    ctx.textAlign='left';ctx.textBaseline='middle';if(L.halo){ctx.lineWidth=3.5;ctx.strokeStyle=L.halo;ctx.lineJoin='round';ctx.strokeText(L.t,x0,yc);}
+    ctx.fillStyle=L.col;ctx.fillText(L.t,x0,yc);}
+  window.__lab={boxes:placed,W,H,drop};LQ=[];RES=[];}
+function lines(t,font,maxW){ctx.font=font;const w=t.split(' '),L=[];let c='';w.forEach(x=>{const n=c?c+' '+x:x;if(ctx.measureText(n).width>maxW&&c){L.push(c);c=x;}else c=n;});if(c)L.push(c);return L;}
+function tagW(t,x,y,maxW,col,font,al,o,up){const L=lines(t,font,maxW),lh=pxOf(font)+5,y0=up?y-(L.length-1)*lh:y;L.forEach((l,i)=>tag(l,x,y0+i*lh,col,font,al,o));return L.length;}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function ball(x,y,r,c,al){if(r<0.4)return;const g=ctx.createRadialGradient(x-r*0.35,y-r*0.4,r*0.08,x,y,r);g.addColorStop(0,c[0]);g.addColorStop(0.55,c[1]);g.addColorStop(1,c[2]);
+  ctx.globalAlpha=al==null?1:al;ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.globalAlpha=1;}
+function glow(x,y,r,col,al){const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,col.replace('A',al));g.addColorStop(1,col.replace('A',0));ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();}
+const sm=u=>{u=Math.max(0,Math.min(1,u));return u*u*(3-2*u);};
+let seed=7;const rnd=()=>{seed=(seed*16807)%2147483647;return(seed-1)/2147483646;};
+const gauss=()=>{let u=0,v=0;while(u===0)u=rnd();v=rnd();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);};
+function binom(n,q){if(n<=0||q<=0)return 0;if(q>=1)return n;if(n<60){let k=0;for(let i=0;i<n;i++)if(rnd()<q)k++;return k;}
+  return Math.max(0,Math.min(n,Math.round(n*q+Math.sqrt(n*q*(1-q))*gauss())));}
+
+// ---------- caméra en perspective (3D faite main) ----------
+let yaw=-0.55,pitch=0.5,zoom=1,C={};
+function cam(cx,cy,f,Dc){C={cx,cy,f,Dc,cyw:Math.cos(yaw),syw:Math.sin(yaw),cp:Math.cos(pitch),sp:Math.sin(pitch)};}
+function pr(x,y,z){const xr=x*C.cyw-y*C.syw,yr=x*C.syw+y*C.cyw,dep=C.Dc+yr*C.cp-z*C.sp,k=C.f/Math.max(0.5,dep);return[C.cx+xr*k,C.cy-(z*C.cp+yr*C.sp)*k,dep,k];}
+function poly(P,fill,stroke,lw){ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();}}
+const area=P=>{let a=0;for(let i=0;i<P.length;i++){const p=P[i],n=P[(i+1)%P.length];a+=p[0]*n[1]-n[0]*p[1];}return a;};
+
+// ---------- physique ----------
+const NU=2.5,EF_MEV=200,MEV_J=1.602176634e-13,GMAX=30,NMAX=1e6,U_MEV=931.494;
+const PAIRS={Ba:{A1:141,Z1:56,n1:'baryum',s1:'Ba',A2:92,Z2:36,n2:'krypton',s2:'Kr',nu:3,m1:140.914411,m2:91.926156},
+             Xe:{A1:140,Z1:54,n1:'xénon',s1:'Xe',A2:94,Z2:38,n2:'strontium',s2:'Sr',nu:2,m1:139.921640,m2:93.915361}};
+const M_U235=235.043930,M_N=1.008665;
+const qOf=P=>{const dm=M_U235+M_N-(P.m1+P.m2+P.nu*M_N);return{dm,E:dm*U_MEV};};
+let p=0.60,N0=1000,fast=false,mode='C',pair='Ba';
+const kOf=()=>NU*(1-p);
+
+// ---------- les noyaux du cœur (taille très exagérée) ----------
+const NX=6,NZ=4,HX=3.2,ZB=-2.3,ZS=2.6;
+const nuc=[];for(let i=0;i<NX;i++)for(let j=0;j<NX;j++)for(let l=0;l<NZ;l++)nuc.push({x:i-2.5+(rnd()-0.5)*0.22,y:j-2.5+(rnd()-0.5)*0.22,z:l-1.5+(rnd()-0.5)*0.22,st:0,t0:-9,ax:[1,0,0],busy:false,heavy:0});
+const RODS=[[-1,-1],[1,-1],[-1,1],[1,1]],RR=0.2;
+let ins=p/0.8;   // enfoncement des barres (0 = sorties, 1 = enfoncées)
+const rodBot=()=>2.1-ins*4.1,rodTop=()=>rodBot()+4.75;
+
+// ---------- la suite des générations ----------
+let T=0,seq=null,neutrons=[],flashes=[];
+const Tg=()=>fast?0.45:1.35;
+function pickTargets(n){const free=nuc.map((u,i)=>i).filter(i=>!nuc[i].busy&&nuc[i].st===0);const out=[];while(out.length<n&&free.length){out.push(free.splice(Math.floor(rnd()*free.length),1)[0]);}out.forEach(i=>nuc[i].busy=true);return out;}
+function lossPoint(from){if(ins>0.04&&rnd()<0.85){const r=RODS[Math.floor(rnd()*4)],zb=Math.max(rodBot(),-1.9),z=zb+rnd()*(1.9-zb);const a=rnd()*6.283;return{pt:[r[0]+Math.cos(a)*RR,r[1]+Math.sin(a)*RR,Math.min(1.9,z)],rod:true};}
+  const a=rnd()*6.283,b=(rnd()-0.5)*1.2;return{pt:[from[0]+Math.cos(a)*7,from[1]+Math.sin(a)*7,from[2]+b*3],rod:false};}
+function emit(from,te,ta,targets,count){for(let c=0;c<count;c++){if(targets.length){const i=targets.shift();neutrons.push({a:from,b:[nuc[i].x,nuc[i].y,nuc[i].z],te,ta,hit:i});}
+    else{const L=lossPoint(from);neutrons.push({a:from,b:L.pt,te,ta:te+(ta-te)*(0.55+0.4*rnd()),hit:-1,rod:L.rod});}}}
+function restart(n0){if(n0)N0=n0;neutrons=[];flashes=[];nuc.forEach(u=>{u.busy=false;if(u.st===1)u.st=2;});
+  const F0=binom(N0,1-p);seq={g:0,Nh:[N0],Fh:[F0],totF:0,next:T+Tg(),sched:[],end:null,endT:0,disp:0};
+  const tg=pickTargets(Math.min(F0,8)),nIn=Math.min(N0,Math.max(tg.length+3,10));
+  const ta=seq.next;for(let c=0;c<nIn;c++){const a=rnd()*1.2-0.6,src=[-HX-2.2,a*3,(rnd()-0.5)*2.5];
+    if(c<tg.length){const i=tg[c],t=ta+rnd()*0.15*Tg();neutrons.push({a:src,b:[nuc[i].x,nuc[i].y,nuc[i].z],te:T+0.05,ta:t,hit:i});seq.sched.push({i,t});}
+    else{const L=lossPoint(src);neutrons.push({a:src,b:L.pt,te:T+0.05,ta:T+0.05+(ta-T)*(0.6+0.35*rnd()),hit:-1,rod:L.rod});}}
+  updRead();}
+function genStep(){const s=seq,g=s.g,F=s.Fh[g];s.totF+=F;
+  const n3=binom(F,0.5),Nn=2*F+n3,Fn=binom(Nn,1-p);
+  // ce qu'on dessine : au plus 8 fissions par génération (toutes si elles sont moins de 8)
+  const vis=s.sched,ex=F<=8,tNext=s.next+Tg(),tg=pickTargets(Math.min(Fn,8)),nsched=[];let k3=n3;
+  vis.forEach((f,idx)=>{const u=nuc[f.i],nu=ex?(k3-->0?3:2):(rnd()<0.5?3:2);const from=[u.x,u.y,u.z];
+    const mine=[];const share=Math.ceil(tg.length/(vis.length-idx));for(let c=0;c<share&&tg.length&&mine.length<nu;c++)mine.push(tg.shift());
+    mine.forEach(i=>nsched.push({i,t:tNext+rnd()*0.15*Tg()}));
+    const tgt=mine.slice();for(let c=0;c<nu;c++){if(tgt.length){const i=tgt.shift(),t=nsched.find(q=>q.i===i).t;neutrons.push({a:from,b:[nuc[i].x,nuc[i].y,nuc[i].z],te:f.t+0.06,ta:t,hit:i});}
+      else{const L=lossPoint(from),te=f.t+0.06;neutrons.push({a:from,b:L.pt,te,ta:te+(tNext-te)*(0.5+0.45*rnd()),hit:-1,rod:L.rod});}}});
+  tg.forEach(i=>nuc[i].busy=false);
+  s.Nh.push(Nn);s.Fh.push(Fn);s.g=g+1;s.sched=nsched;s.next=tNext;
+  if(Nn===0){s.end='eteinte';}else if(Nn>=NMAX){s.end='emballe';}else if(s.g>=GMAX){s.end='fin';}
+  if(s.end){s.endT=tNext;}
+  updRead();}
+function fission(i,t){const u=nuc[i];u.st=1;u.t0=t;u.busy=false;u.heavy=rnd()<0.5?0:1;const a=rnd()*6.283,b=(rnd()-0.5)*1.4;u.ax=[Math.cos(a)*Math.cos(b),Math.sin(a)*Math.cos(b),Math.sin(b)];flashes.push({x:u.x,y:u.y,z:u.z,t});}
+
+// ---------- gros plan : un noyau de 236 nucléons ----------
+function fcc(n){const P=[];const R=8;for(let i=-R;i<=R;i++)for(let j=-R;j<=R;j++)for(let k=-R;k<=R;k++)if((i+j+k)%2===0){const x=i/Math.SQRT2,y=j/Math.SQRT2,z=k/Math.SQRT2;P.push([x+0.013*j,y+0.011*k,z+0.017*i]);}
+  P.sort((a,b)=>(a[0]*a[0]+a[1]*a[1]+a[2]*a[2])-(b[0]*b[0]+b[1]*b[1]+b[2]*b[2]));const Q=P.slice(0,n),c=[0,0,0];Q.forEach(q=>{c[0]+=q[0]/n;c[1]+=q[1]/n;c[2]+=q[2]/n;});return Q.map(q=>[q[0]-c[0],q[1]-c[1],q[2]-c[2]]);}
+let CL=null;
+function buildClose(){const P=PAIRS[pair],base=fcc(236),idx=base.map((q,i)=>i).sort((a,b)=>base[a][0]-base[b][0]);
+  const f1=fcc(P.A1),f2=fcc(P.A2),R1=Math.cbrt(P.A1)*0.62,R2=Math.cbrt(P.A2)*0.62;
+  const nl=[];let s2=97;const h=()=>{s2=(s2*48271)%2147483647;return s2/2147483647;};
+  const g1=idx.slice(0,P.A1),gm=idx.slice(P.A1,P.A1+P.nu),g2=idx.slice(P.A1+P.nu);
+  const prot=new Set();const pickP=(arr,Z,skip)=>{const a=arr.filter(i=>i!==skip).map(i=>[h(),i]).sort((x,y)=>x[0]-y[0]);for(let c=0;c<Z;c++)prot.add(a[c][1]);};
+  pickP(g1,P.Z1,idx[0]);pickP(g2,P.Z2,-1);
+  // fragment 1 (lourd) à gauche, fragment 2 à droite : chaque nucléon a sa place d'arrivée
+  const o1=g1.slice().sort((a,b)=>base[a][0]-base[b][0]),o2=g2.slice().sort((a,b)=>base[b][0]-base[a][0]);
+  const s1=f1.map((q,i)=>i).sort((a,b)=>f1[a][0]-f1[b][0]),s2b=f2.map((q,i)=>i).sort((a,b)=>f2[b][0]-f2[a][0]);
+  base.forEach((q,i)=>nl.push({p0:q,pr:prot.has(i),frag:0,tg:[0,0,0],dir:[0,0,0]}));
+  o1.forEach((i,c)=>{nl[i].frag=1;nl[i].tg=f1[s1[c]];});o2.forEach((i,c)=>{nl[i].frag=2;nl[i].tg=f2[s2b[c]];});
+  gm.forEach((i,c)=>{nl[i].frag=3;nl[i].pr=false;const a=(c/P.nu)*6.283+0.7;nl[i].dir=[0.25*(c-1),Math.cos(a),Math.sin(a)];});
+  nl[idx[0]].pr=false;nl[idx[0]].inc=true;
+  CL={nl,R1,R2,P,t0:T,D0:R1+R2+0.4};}
+const CYC=10;
+
+// ---------- dessin : réaction en chaîne ----------
+function regionC(){return MOB?{x:0,y:0,w:W,h:H*0.6}:{x:0,y:0,w:W*0.63,h:H};}
+function drawChain(){const R=regionC(),f=Math.min(R.w*(MOB?1.62:1.62),R.h*(MOB?1.45:1.5))*zoom;cam(R.x+R.w*0.5,R.y+R.h*(MOB?0.6:0.58),f,21);
+  // la piscine : eau profonde, carrelage au fond, lueur bleue (effet Tcherenkov) qui suit le nombre de fissions
+  let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0f3a5f');g.addColorStop(1,'#071a2e');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  const E=9,zf=ZB-0.25;ctx.strokeStyle='rgba(140,200,235,.16)';ctx.lineWidth=1;
+  for(let k=-E;k<=E;k++){let a=pr(-E,k,zf),b=pr(E,k,zf);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();a=pr(k,-E,zf);b=pr(k,E,zf);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
+  [[[-E,-E],[E,-E]],[[E,-E],[E,E]],[[E,E],[-E,E]],[[-E,E],[-E,-E]]].forEach(([a,b])=>{const q=[pr(a[0],a[1],zf),pr(b[0],b[1],zf),pr(b[0],b[1],zf+8),pr(a[0],a[1],zf+8)];if(area(q)<=0)return;
+    poly(q,'rgba(20,70,110,.55)');ctx.strokeStyle='rgba(150,210,240,.13)';for(let i=1;i<18;i++){const u=i/18,p0=pr(a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u,zf),p1=pr(a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u,zf+8);ctx.beginPath();ctx.moveTo(p0[0],p0[1]);ctx.lineTo(p1[0],p1[1]);ctx.stroke();}
+    for(let j=1;j<8;j++){const p0=pr(a[0],a[1],zf+j),p1=pr(b[0],b[1],zf+j);ctx.beginPath();ctx.moveTo(p0[0],p0[1]);ctx.lineTo(p1[0],p1[1]);ctx.stroke();}});
+  const act=nuc.reduce((s,u)=>s+(u.st===1&&T-u.t0<1.2?1:0),0),c0=pr(0,0,0);
+  glow(c0[0],c0[1],c0[3]*6.5,'rgba(70,170,255,A)',Math.min(0.55,0.12+act*0.05));
+  // la cuve : faces arrière
+  const B=[[-HX,-HX,ZB],[HX,-HX,ZB],[HX,HX,ZB],[-HX,HX,ZB],[-HX,-HX,ZS],[HX,-HX,ZS],[HX,HX,ZS],[-HX,HX,ZS]].map(q=>pr(...q));
+  const FA=[[0,1,5,4],[1,2,6,5],[2,3,7,6],[3,0,4,7],[3,2,1,0]];
+  FA.forEach(ix=>{const q=ix.map(i=>B[i]);if(area(q)>0)poly(q,'rgba(60,140,190,.22)','rgba(150,210,240,.35)',1);});
+  // ce qu'il faut trier en profondeur : noyaux, fragments, neutrons, morceaux de barres
+  const Q=[],push=(d,fn)=>Q.push([d,fn]);
+  nuc.forEach((u,i)=>{const P=pr(u.x,u.y,u.z),r=0.27*P[3];
+    if(u.st===0)push(P[2],()=>{ball(P[0],P[1],r,['#ffe2b8','#e8862e','#7a360a']);});
+    else if(u.st===1){const dt=T-u.t0;
+      if(dt<0.32){const e=sm(dt/0.32)*0.2,a=pr(u.x-u.ax[0]*e,u.y-u.ax[1]*e,u.z-u.ax[2]*e),b=pr(u.x+u.ax[0]*e,u.y+u.ax[1]*e,u.z+u.ax[2]*e);
+        push(P[2],()=>{ball(a[0],a[1],r*(1-0.12*e/0.2),['#ffe9c8','#ef9440','#7a360a']);ball(b[0],b[1],r*(1-0.2*e/0.2),['#ffe9c8','#ef9440','#7a360a']);});}
+      else{const s=0.2+Math.min(1.5,(dt-0.32)*1.6),al=Math.max(0,1-(dt-0.32)/1.3);if(al>0){
+        const a=pr(u.x-u.ax[0]*s,u.y-u.ax[1]*s,u.z-u.ax[2]*s),b=pr(u.x+u.ax[0]*s*1.3,u.y+u.ax[1]*s*1.3,u.z+u.ax[2]*s*1.3);
+        push(a[2],()=>ball(a[0],a[1],0.25*a[3],['#e3d7ff','#8f6ad8','#3a2380'],al));push(b[2],()=>ball(b[0],b[1],0.21*b[3],['#d3fff2','#3bb59a','#125e4c'],al));}
+        if(dt>2.6){u.st=2;u.t0=T;}}}
+    else{const al=Math.min(1,(T-u.t0)/0.6);push(P[2],()=>ball(P[0],P[1],r*(0.6+0.4*al),['#ffe2b8','#e8862e','#7a360a'],al));if(al>=1)u.st=0;}});
+  neutrons.forEach(n=>{if(T<n.te||T>n.ta+0.25)return;const u=Math.min(1,(T-n.te)/(n.ta-n.te)),x=n.a[0]+(n.b[0]-n.a[0])*u,y=n.a[1]+(n.b[1]-n.a[1])*u,z=n.a[2]+(n.b[2]-n.a[2])*u,P=pr(x,y,z);
+    const u2=Math.max(0,u-0.12),Pt=pr(n.a[0]+(n.b[0]-n.a[0])*u2,n.a[1]+(n.b[1]-n.a[1])*u2,n.a[2]+(n.b[2]-n.a[2])*u2);
+    push(P[2]-0.01,()=>{if(u>=1){if(n.hit<0&&n.rod){const k=(T-n.ta)/0.25;ctx.fillStyle=`rgba(20,25,30,${0.7*(1-k)})`;ctx.beginPath();ctx.arc(P[0],P[1],4+6*k,0,7);ctx.fill();}return;}
+      const gr=ctx.createLinearGradient(Pt[0],Pt[1],P[0],P[1]);gr.addColorStop(0,'rgba(170,230,255,0)');gr.addColorStop(1,'rgba(200,240,255,.85)');ctx.strokeStyle=gr;ctx.lineWidth=3;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(Pt[0],Pt[1]);ctx.lineTo(P[0],P[1]);ctx.stroke();
+      glow(P[0],P[1],15,'rgba(160,230,255,A)',0.85);ctx.fillStyle='#f4fbff';ctx.beginPath();ctx.arc(P[0],P[1],Math.max(3,0.11*P[3]),0,7);ctx.fill();});});
+  flashes.forEach(fl=>{const dt=T-fl.t;if(dt<0||dt>0.6)return;const P=pr(fl.x,fl.y,fl.z);push(P[2]-0.05,()=>glow(P[0],P[1],P[3]*(0.5+2.2*dt),'rgba(255,240,170,A)',1-dt/0.6));});
+  const zb=rodBot(),zt=rodTop();
+  RODS.forEach(r=>{for(let s=0;s<12;s++){const z0=zb+(zt-zb)*s/12-(s?0.03:0),z1=zb+(zt-zb)*(s+1)/12;if(z1>ZS+0.01&&z0<ZS)continue;const a=pr(r[0],r[1],z0),b=pr(r[0],r[1],z1);
+    push(Math.min(a[2],b[2])+(z0>=ZS?-100:0),()=>{const wa=RR*a[3],wb=RR*b[3],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L,ex=dx/L*0.6,ey=dy/L*0.6;
+      const g=ctx.createLinearGradient(a[0]-nx*wa,a[1]-ny*wa,a[0]+nx*wa,a[1]+ny*wa);g.addColorStop(0,'#1c2228');g.addColorStop(0.3,'#6d7a88');g.addColorStop(0.45,'#c3ccd5');g.addColorStop(0.7,'#4b5663');g.addColorStop(1,'#1c2228');
+      poly([[a[0]-nx*wa-ex,a[1]-ny*wa-ey],[a[0]+nx*wa-ex,a[1]+ny*wa-ey],[b[0]+nx*wb+ex,b[1]+ny*wb+ey],[b[0]-nx*wb+ex,b[1]-ny*wb+ey]],g);
+      if(s===0){ctx.fillStyle='#2a3139';ctx.beginPath();ctx.ellipse(a[0],a[1],wa,wa*Math.max(0.15,C.sp),0,0,7);ctx.fill();}});}});
+  Q.sort((a,b)=>b[0]-a[0]);const under=Q.filter(q=>q[0]>-50),over=Q.filter(q=>q[0]<=-50);under.forEach(q=>q[1]());
+  // surface de l'eau, faces avant de la cuve
+  poly([4,5,6,7].map(i=>B[i]),'rgba(120,200,240,.13)','rgba(190,235,255,.55)',1.3);
+  FA.forEach(ix=>{const q=ix.map(i=>B[i]);if(area(q)<=0)poly(q,'rgba(90,170,220,.07)','rgba(170,225,250,.3)',1);});
+  over.forEach(q=>q[1]());
+  // traverse jaune qui tient les barres (on l'attrape pour les monter ou les descendre)
+  const t1=pr(-1,-1,zt),t2=pr(1,-1,zt),t3=pr(1,1,zt),t4=pr(-1,1,zt),tc=pr(0,0,zt),tu=pr(0,0,zt+1.1);
+  ctx.lineCap='round';[[t1,t3],[t2,t4]].forEach(([a,b])=>{ctx.strokeStyle='#7a5b00';ctx.lineWidth=0.34*tc[3];ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();ctx.strokeStyle='#f2c230';ctx.lineWidth=0.22*tc[3];ctx.stroke();ctx.strokeStyle='#ffe58a';ctx.lineWidth=0.07*tc[3];ctx.stroke();});
+  ctx.strokeStyle='#8c96a1';ctx.lineWidth=0.16*tc[3];ctx.beginPath();ctx.moveTo(tc[0],tc[1]);ctx.lineTo(tu[0],tu[1]);ctx.stroke();
+  HANDLE=[tc[0],tc[1],0.9*tc[3]];
+  // source de neutrons au départ
+  if(seq&&seq.g===0){const sp=pr(-HX-2.2,0,0);ball(sp[0],sp[1],0.45*sp[3],['#f4f6f8','#9aa4ae','#3c444c']);tag('source de neutrons',sp[0],sp[1]+0.45*sp[3]+12,'#dff2ff',FS,'center',{halo:'rgba(7,26,46,.9)',pri:2});}
+  // écritures de la scène
+  const lt=pr(0,-HX,ZS+0.2);{const lab='barres de contrôle : '+fr(p*100,0)+' % des neutrons absorbés',xm=Math.min(t1[0],t2[0],t3[0],t4[0]);if(MOB)tag(lab,W/2,13,'#ffe58a',FB,'center',{halo:'rgba(7,26,46,.9)',pri:6,fixed:true});else tag(lab,14,20,'#ffe58a',FB,'left',{halo:'rgba(7,26,46,.9)',pri:6,fixed:true});}
+  const lb=pr(HX,-HX,ZB);tag('noyaux d’uranium 235 (taille très exagérée)',lb[0],lb[1]+16,'#cfe9ff',FS,'center',{halo:'rgba(7,26,46,.9)',pri:3});
+  {const cs=[[-HX,-HX],[HX,-HX],[HX,HX],[-HX,HX]].map(c=>pr(c[0],c[1],ZB));const lc=cs.reduce((a,b)=>b[0]<a[0]?b:a);tag('eau de la piscine',lc[0]-10,lc[1]+4,'#a9d8f5',FS,'right',{halo:'rgba(7,26,46,.9)',pri:1});}
+  drawGraph();}
+
+let HANDLE=null;
+function drawGraph(){const s=seq;if(!s)return;let gx,gy,gw,gh;if(MOB){gx=8;gy=H*0.6+4;gw=W-16;gh=H*0.4-12;}else{gx=W*0.645;gy=14;gw=W-gx-14;gh=Math.min(H-28,H*0.66);}
+  reserve(gx,gy,gx+gw,gy+gh,'graph');
+  ctx.save();ctx.shadowColor='rgba(0,0,0,.35)';ctx.shadowBlur=14;ctx.shadowOffsetY=4;rr(gx,gy,gw,gh,12);ctx.fillStyle='#fbfcfd';ctx.fill();ctx.restore();
+  const k=kOf(),reg=k<0.995?0:k>1.005?2:1,RC=['#1e7a4a','#185fa5','#b3261e'][reg];
+  const top=MOB?50:64,px=gx+(MOB?40:50),pw=gw-(MOB?52:66),py=gy+top,ph=gh-top-(MOB?34:40);
+  tag('Neutrons à chaque génération',gx+12,gy+15,INK,FB,'left',{zone:'graph',halo:null,fixed:true,pri:9});
+  const rt=['k = '+fr(k,2)+' < 1 : la réaction s’éteint','k = 1 : la réaction reste stable','k = '+fr(k,2)+' > 1 : la réaction s’emballe'][reg];
+  tag(rt,gx+12,gy+(MOB?33:38),RC,FT,'left',{zone:'graph',halo:null,fixed:true,pri:9});
+  // axes : échelle logarithmique de 1 à 10⁶
+  ctx.strokeStyle='#e3e7ec';ctx.lineWidth=1;const Y=v=>py+ph-(Math.log10(Math.max(1,v))/6)*ph,X=g=>px+g/GMAX*pw;
+  for(let e=0;e<=6;e++){const y=Y(Math.pow(10,e));ctx.beginPath();ctx.moveTo(px,y);ctx.lineTo(px+pw,y);ctx.stroke();if(!MOB||e%2===0)tag(e===0?'1':e===1?'10':'10'+sup(e),px-6,y,GREY,FS,'right',{zone:'graph',halo:null,fixed:true,pri:8});}
+  for(let g=0;g<=GMAX;g+=5){const x=X(g);ctx.beginPath();ctx.moveTo(x,py);ctx.lineTo(x,py+ph);ctx.stroke();if(g)tag(String(g),x,py+ph+11,GREY,FS,'center',{zone:'graph',halo:null,fixed:true,pri:8});}
+  tag('génération n',px+pw,py+ph+(MOB?25:28),GREY,FS,'right',{zone:'graph',halo:null,fixed:true,pri:8});
+  ctx.strokeStyle='#9aa5b0';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py+ph);ctx.lineTo(px+pw,py+ph);ctx.stroke();
+  // courbe attendue N₀·kⁿ
+  ctx.save();ctx.beginPath();ctx.rect(px,py-2,pw,ph+4);ctx.clip();ctx.setLineDash([6,5]);ctx.strokeStyle='#8a939c';ctx.lineWidth=1.8;ctx.beginPath();
+  for(let g=0;g<=GMAX;g+=0.5){const v=s.Nh[0]*Math.pow(k,g),y=py+ph-(Math.log10(Math.max(1e-3,v))/6)*ph;g?ctx.lineTo(X(g),y):ctx.moveTo(X(g),y);}ctx.stroke();ctx.setLineDash([]);
+  // la simulation (avec le hasard)
+  const n=s.g;ctx.strokeStyle=RC;ctx.lineWidth=2.6;ctx.beginPath();for(let g=0;g<=n;g++){const v=s.Nh[g];const y=v>0?Y(v):py+ph+3;g?ctx.lineTo(X(g),y):ctx.moveTo(X(g),y);}ctx.stroke();
+  for(let g=0;g<=n;g++){const v=s.Nh[g];if(v<=0)continue;ctx.fillStyle=RC;ctx.beginPath();ctx.arc(X(g),Y(v),g===n?4.5:2.6,0,7);ctx.fill();}ctx.restore();
+  const lgy=py+8;ctx.setLineDash([6,5]);ctx.strokeStyle='#8a939c';ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(px+pw-118,lgy+17);ctx.lineTo(px+pw-96,lgy+17);ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle=RC;ctx.lineWidth=2.6;ctx.beginPath();ctx.moveTo(px+pw-118,lgy);ctx.lineTo(px+pw-96,lgy);ctx.stroke();
+  tag('tirage au hasard',px+pw-90,lgy,RC,FS,'left',{zone:'graph',halo:'rgba(251,252,253,.95)',fixed:true,pri:7});tag('attendu : N₀·kⁿ',px+pw-90,lgy+17,GREY,FS,'left',{zone:'graph',halo:'rgba(251,252,253,.95)',fixed:true,pri:7});
+  if(s.end&&T>=s.endT){const r=s.Nh[s.g]/s.Nh[0],m={eteinte:'Plus aucun neutron : réaction éteinte',emballe:'10⁶ neutrons : la puissance s’emballe !',fin:k>1.005?'En 30 générations, N a été multiplié par '+(r>=100?grp(r):fr(r,1)):k<0.995?'Après 30 générations, presque plus rien':'30 générations : la réaction tient'}[s.end];
+    tag(m,px+pw/2,py+ph*0.55,s.end==='emballe'?'#b3261e':INK,MOB?FS:FB,'center',{zone:'graph',halo:'rgba(251,252,253,.95)',pri:9});}}
+
+// ---------- dessin : une fission vue de près ----------
+function drawClose(){if(!CL)buildClose();const P=CL.P,t=((T-CL.t0)%CYC+CYC)%CYC;
+  let g=ctx.createRadialGradient(W*0.5,H*0.45,10,W*0.5,H*0.5,Math.max(W,H)*0.75);g.addColorStop(0,'#1b2c44');g.addColorStop(1,'#070d18');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // petites étoiles de fond (pour la profondeur)
+  ctx.fillStyle='rgba(200,220,255,.35)';for(let i=0;i<70;i++){const x=(Math.sin(i*91.7)*0.5+0.5)*W,y=(Math.sin(i*47.3+1)*0.5+0.5)*H;ctx.fillRect(x,y,1.2,1.2);}
+  const tSep=3.6,sepU=Math.max(0,t-tSep),D=t<tSep?0:CL.D0+Math.min(11,5.5*sepU*sepU+1.2*sepU);
+  const zw=t<2.6?1:1-0.42*sm((t-2.6)/3);   // la caméra recule quand les fragments s'écartent
+  const f0=Math.min(W*(MOB?2.2:1.9),H*2.2),zfin=Math.min(1,(W/2-(MOB?40:80))*26/12.5/f0),f=f0*zoom*(1-(1-zfin)*(1-zw)/0.42);cam(W*0.5,H*(MOB?0.56:0.54),f,26);
+  const items=[],osc=t>1.4&&t<2.6?0.13*Math.sin((t-1.4)*2*Math.PI*2.2)*sm((t-1.4)/0.4):0,el=t<2.6?0:sm((t-2.6)/1.0);
+  const rot=T*0.25,cr=Math.cos(rot),sr=Math.sin(rot);
+  CL.nl.forEach((q,i)=>{let x,y,z;const j=0.04*Math.sin(T*9+i*1.7);
+    if(q.inc&&t<1.4){const u=sm(t/1.4);x=-16+(q.p0[0]+16)*u;y=q.p0[1]*u+(1-u)*1.5;z=q.p0[2]*u;}
+    else{const b=q.p0;let bx=b[0]*(1+osc),by=b[1]*(1-osc/2),bz=b[2]*(1-osc/2);
+      if(q.frag===3){const c=[0,b[1]*(1-el)*0.5,b[2]*(1-el)*0.5];x=bx*(1-el);y=c[1];z=c[2];if(D>0){const s=sepU*9;x+=q.dir[0]*s;y+=q.dir[1]*s;z+=q.dir[2]*s;}}
+      else{const sg=q.frag===1?-1:1,R=q.frag===1?CL.R1:CL.R2,w=q.frag===1?CL.P.A2:CL.P.A1,cx=sg*(CL.D0*w/(CL.P.A1+CL.P.A2))*1.0,tx=cx+q.tg[0],ty=q.tg[1],tz=q.tg[2];
+        x=bx+(tx-bx)*el;y=by+(ty-by)*el;z=bz+(tz-bz)*el;if(D>0){const sh=(D-CL.D0)*w/(CL.P.A1+CL.P.A2);x+=sg*sh;}}
+      // le noyau tourne lentement sur lui-même avant de se couper
+      if(t<2.6){const yy=y*cr-z*sr,zz=y*sr+z*cr;y=yy;z=zz;}}
+    const Pp=pr(x+j,y,z);items.push([Pp[2],Pp,q]);});
+  items.sort((a,b)=>b[0]-a[0]);
+  if(t>=tSep&&t<tSep+0.7){const c=pr(0,0,0);glow(c[0],c[1],c[3]*(3+16*(t-tSep)),'rgba(255,236,170,A)',0.85*(1-(t-tSep)/0.7));}
+  items.forEach(([d,Pp,q])=>{const r=0.56*Pp[3];if(q.frag===3&&D>0){glow(Pp[0],Pp[1],r*2.6,'rgba(150,225,255,A)',0.55);}
+    ball(Pp[0],Pp[1],r,q.pr?['#ffc2b8','#e0473f','#7d1714']:(q.inc&&t<1.4)||(q.frag===3&&D>0)?['#ffffff','#bfe8ff','#3d7fa8']:['#f1f4f7','#9aa7b4','#3e4a56']);});
+  // écritures
+  const FWH='rgba(7,13,24,.92)',CW='#e8f1fb';
+  const eq='²³⁵U + n  →  '+sup(P.A1)+P.s1+' + '+sup(P.A2)+P.s2+' + '+P.nu+' n',q=qOf(P);
+  tag(eq,W/2,MOB?16:20,'#ffffff',FT,'center',{halo:FWH,pri:10,fixed:true});
+  tag('Δm = '+fr(q.dm,3)+' u   →   E = Δm·c² = '+fr(q.E,0)+' MeV',W/2,MOB?36:42,'#ffd36b',FB,'center',{halo:FWH,pri:10,fixed:true});
+  const ph=t<1.4?'Un neutron lent arrive sur un noyau d’uranium 235 (92 protons, 143 neutrons)':t<2.6?'Il est absorbé : l’uranium 236 formé vibre, trop agité':t<tSep?'Il s’allonge : la répulsion électrique des protons gagne sur la cohésion':t<6?'Il se coupe en deux fragments qui s’éloignent très vite':'L’énergie libérée est emportée surtout par les deux fragments';
+  tagW(ph,W/2,H-(MOB?36:40),W-24,CW,MOB?FS:FB,'center',{halo:FWH,pri:9,fixed:true},true);
+  // légende
+  const ly=H-(MOB?14:16);ball(W/2-(MOB?66:80),ly,5,['#ffc2b8','#e0473f','#7d1714']);ball(W/2+(MOB?6:10),ly,5,['#f1f4f7','#9aa7b4','#3e4a56']);
+  tag('proton',W/2-(MOB?57:70),ly,CW,FS,'left',{halo:FWH,pri:8,fixed:true});tag('neutron',W/2+(MOB?15:20),ly,CW,FS,'left',{halo:FWH,pri:8,fixed:true});
+  if(t>tSep+0.4){const c1=pr(-(CL.D0*P.A2/(P.A1+P.A2))-(D-CL.D0)*P.A2/(P.A1+P.A2),0,0),c2=pr(CL.D0*P.A1/(P.A1+P.A2)+(D-CL.D0)*P.A1/(P.A1+P.A2),0,0);
+    tag(P.n1+' '+P.A1+' ('+P.Z1+' protons)',c1[0],c1[1]+CL.R1*c1[3]+16,'#e6dcff',FB,'center',{halo:FWH,pri:6});
+    tag(P.n2+' '+P.A2+' ('+P.Z2+' protons)',c2[0],c2[1]+CL.R2*c2[3]+16,'#cdf7ea',FB,'center',{halo:FWH,pri:6});
+    let best=null,bd=0;CL.nl.forEach(q=>{if(q.frag!==3)return;const s=sepU*9,pp=pr(q.dir[0]*s,q.dir[1]*s,q.dir[2]*s),d=Math.min(Math.hypot(pp[0]-c1[0],pp[1]-c1[1])-CL.R1*c1[3],Math.hypot(pp[0]-c2[0],pp[1]-c2[1])-CL.R2*c2[3]);if(d>bd&&pp[0]>20&&pp[0]<W-20&&pp[1]>70&&pp[1]<H-70){bd=d;best=pp;}});const nn=best&&bd>40;if(nn){const pp=best;tag(P.nu+' neutrons rapides',pp[0],pp[1]-16,'#bfe8ff',FS,'center',{halo:FWH,pri:5});}}
+  else if(t<1.4){const pp=pr(-16+(16-3.4)*sm(t/1.4),1.5*(1-sm(t/1.4)),0);tag('neutron lent',Math.max(50,pp[0]),pp[1]-18,'#bfe8ff',FS,'center',{halo:FWH,pri:5});}
+  else if(t<tSep){const c=pr(0,0,4.2);tag(t<2.6?'uranium 236 excité':'il s’étire',c[0],c[1]-14,'#ffd9a8',FS,'center',{halo:FWH,pri:5});}}
+
+// ---------- texte et commandes ----------
+function updRead(){const s=seq;if(!s)return;const k=kOf(),g=s.g,N=s.Nh[g],F=s.Fh[g],E=s.totF*EF_MEV;
+  $('read').innerHTML=mode==='F'?(()=>{const P=PAIRS[pair],q=qOf(P);return`<div>Masse avant (²³⁵U + n)<b>${fr(M_U235+M_N,3)} u</b></div><div>Masse après<b>${fr(P.m1+P.m2+P.nu*M_N,3)} u</b></div><div>Défaut de masse Δm<b>${fr(q.dm,4)} u</b></div><div>Énergie libérée<b>${fr(q.E,0)} MeV = ${sci(q.E*MEV_J,2)} J</b></div>`;})():
+   `<div>Génération n<b>${g} / ${GMAX}</b></div><div>Neutrons dans la génération<b>${grp(N)}</b></div><div>Fissions qu’ils provoquent<b>${grp(F)}</b></div><div>Facteur de multiplication k<b>${fr(k,3)}</b></div><div>Énergie libérée depuis le départ<b>${s.totF?sci(E*MEV_J,2)+' J':'0 J'}</b></div>`;
+  $('vp').textContent=fr(p*100,0)+' %';
+  $('fml').innerHTML=mode==='F'?'Un neutron lent est absorbé par un noyau d’<b>uranium 235</b>. L’uranium 236 formé vibre, s’allonge et se coupe en <b>deux noyaux moyens</b> en libérant <b>2 ou 3 neutrons</b>. La masse après est plus petite que la masse avant : le défaut de masse Δm devient de l’énergie, <b style="color:#9a5f0f">E = Δm·c²</b> (1 u ↔ 931,5 MeV). Au total, en comptant les désintégrations des fragments, une fission libère environ <b>200 MeV</b>.':
+   'Chaque fission libère en moyenne <b>2,5 neutrons</b> (2 ou 3). Une part <b>p</b> est absorbée par les barres de contrôle ou s’échappe ; chacun des autres provoque une nouvelle fission. L’<b>eau</b> de la piscine sert de <b>modérateur</b> : elle ralentit les neutrons rapides émis par chaque fission, pour qu’ils provoquent à leur tour de nouvelles fissions. Un neutron d’une génération en donne donc en moyenne <b style="color:#185fa5">k = 2,5 × (1 − p)</b> à la suivante, et après n générations il y en a <b>N₀·kⁿ</b>. <b>k &lt; 1</b> : la réaction s’éteint ; <b>k = 1</b> : elle reste stable (réacteur) ; <b>k &gt; 1</b> : elle s’emballe. Chaque fission libère environ <b>200 MeV</b>.';
+  $('info').innerHTML=mode==='F'?(()=>{const P=PAIRS[pair],q=qOf(P);return`Masses (en u) : ²³⁵U = 235,043930 ; n = 1,008665 ; ${sup(P.A1)}${P.s1} = ${fr(P.m1,6)} ; ${sup(P.A2)}${P.s2} = ${fr(P.m2,6)}. Avant : ${fr(M_U235+M_N,6)} u ; après : ${fr(P.m1+P.m2+P.nu*M_N,6)} u. Δm = ${fr(q.dm,6)} u, soit <b>${fr(q.E,1)} MeV</b> (≈ ${fr(q.dm/(M_U235+M_N)*100,2)} % de la masse). Les deux fragments sont chargés positivement (${P.Z1} et ${P.Z2} protons) : leur répulsion électrique les lance à grande vitesse. Les fragments ont trop de neutrons : ils sont radioactifs (β⁻), ce qui ajoute encore une vingtaine de MeV. Le partage du noyau varie d’une fission à l’autre : on en montre deux.`;})():
+   `Valeur moyenne choisie pour l’exemple : 2,5 neutrons par fission (en réalité ≈ 2,4 pour l’uranium 235). p = ${fr(p*100,0)} % donne k = 2,5 × ${fr(1-p,2)} = <b>${fr(k,3)}</b> ; après 10 générations, N₀·k¹⁰ = ${grp(N0)} × ${sci(Math.pow(k,10),3)} ≈ <b>${N0*Math.pow(k,10)<1?fr(N0*Math.pow(k,10),3):grp(N0*Math.pow(k,10))}</b> neutrons. 1 fission ≈ 200 MeV = ${sci(EF_MEV*MEV_J,2)} J ; 1 g d’uranium 235 contient ${sci(6.02214076e23/235.04,2)} noyaux, de quoi libérer ${sci(6.02214076e23/235.04*EF_MEV*MEV_J,1)} J, autant que 2 tonnes de pétrole. Avec 1 neutron au départ, le hasard décide souvent seul : même avec k &gt; 1, la chaîne peut s’arrêter dès les premières générations. Les noyaux sont dessinés énormes et les neutrons très lents : au plus 8 fissions par génération sont montrées.`;
+  $('hint').textContent=mode==='F'?'Astuce : glisse pour tourner autour du noyau, molette pour zoomer. Chaque proton est en rouge, chaque neutron en gris.':'Astuce : attrape la traverse jaune et glisse vers le haut ou le bas pour sortir ou enfoncer les barres de contrôle. Glisse ailleurs pour tourner autour du cœur, molette pour zoomer.';}
+function setMode(m){mode=m;$('mC').classList.toggle('on',m==='C');$('mF').classList.toggle('on',m==='F');['rowP','rowC'].forEach(id=>$(id).style.display=m==='C'?'':'none');$('rowF').style.display=m==='F'?'':'none';
+  if(m==='F'){buildClose();yaw=-0.25;pitch=0.25;}else{yaw=-0.55;pitch=0.5;}zoom=1;updRead();}
+function setP(v){p=Math.max(0,Math.min(0.8,v));$('sp').value=Math.round(p*100);ins=p/0.8;restart();}
+$('mC').onclick=()=>setMode('C');$('mF').onclick=()=>setMode('F');
+$('sp').oninput=e=>setP(+e.target.value/100);
+$('n1000').onclick=()=>{$('n1000').classList.add('on');$('n1').classList.remove('on');restart(1000);};
+$('n1').onclick=()=>{$('n1').classList.add('on');$('n1000').classList.remove('on');restart(1);};
+$('fast').onclick=()=>{fast=!fast;$('fast').classList.toggle('on',fast);restart();};
+$('pBa').onclick=()=>{pair='Ba';$('pBa').classList.add('on');$('pXe').classList.remove('on');buildClose();updRead();};
+$('pXe').onclick=()=>{pair='Xe';$('pXe').classList.add('on');$('pBa').classList.remove('on');buildClose();updRead();};
+$('replay').onclick=()=>{if(CL)CL.t0=T;};
+$('lab').onclick=()=>{noLab=!noLab;$('lab').classList.toggle('on',noLab);$('lab').textContent=noLab?'Afficher les écritures':'Masquer les écritures';};
+let drag=null;function pos(e){const b=cv.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top];}
+cv.addEventListener('pointerdown',e=>{const [x,y]=pos(e);cv.setPointerCapture(e.pointerId);
+  if(mode==='C'&&HANDLE&&Math.hypot(x-HANDLE[0],y-HANDLE[1])<Math.max(26,HANDLE[2])){drag={rod:true,y,p0:p};cv.style.cursor='ns-resize';}else{drag={x,y};cv.style.cursor='grabbing';}});
+cv.addEventListener('pointermove',e=>{const [x,y]=pos(e);if(!drag){cv.style.cursor=mode==='C'&&HANDLE&&Math.hypot(x-HANDLE[0],y-HANDLE[1])<Math.max(26,HANDLE[2])?'ns-resize':'grab';return;}
+  if(drag.rod){const pxu=Math.max(40,HANDLE[2]/0.9*4.5*Math.cos(pitch));ins=Math.max(0,Math.min(1,drag.p0/0.8+(y-drag.y)/pxu));p=ins*0.8;$('sp').value=Math.round(p*100);$('vp').textContent=fr(Math.round(p*100),0)+' %';}
+  else{yaw+=(x-drag.x)*0.008;pitch=Math.max(0.12,Math.min(1.35,pitch+(y-drag.y)*0.006));drag.x=x;drag.y=y;}});
+cv.addEventListener('pointerup',()=>{if(drag&&drag.rod){setP(Math.round(p*100)/100);}drag=null;cv.style.cursor='grab';});
+cv.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(0.6,Math.min(2.2,zoom*Math.exp(-e.deltaY*0.001)));},{passive:false});
+let last=null;
+function frame(ts){if(last===null)last=ts;const dt=Math.min(0.05,(ts-last)/1000);last=ts;T+=dt;
+  if(mode==='C'&&seq){if(!drag||!drag.rod){
+      if(!seq.end){seq.sched.forEach(f=>{if(!f.done&&T>=f.t){f.done=true;fission(f.i,f.t);}});if(T>=seq.next)genStep();}
+      else{seq.sched.forEach(f=>{if(!f.done&&T>=f.t){f.done=true;fission(f.i,f.t);}});if(T>seq.endT+3.2)restart();}}
+    neutrons=neutrons.filter(n=>T<n.ta+0.3);flashes=flashes.filter(f=>T-f.t<0.7);}
+  size();fonts();ctx.clearRect(0,0,W,H);if(mode==='C')drawChain();else drawClose();flushTags();requestAnimationFrame(frame);}
+window.__fission={get:()=>({p,k:kOf(),seq,N0,mode}),setP,restart,setMode,pair:v=>$(v==='Xe'?'pXe':'pBa').click(),time:v=>{if(CL)CL.t0=T-v;}};
+size();fonts();restart();setMode('C');
+requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Physique nucléaire et rayonnements<span>4 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/radioactivite/"><i>01</i>Radioactivité et rayons X</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-radioprotection/"><i>02</i>Temps, distance, écran : se protéger</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-fission-chaine/"><i>03</i>Fission et réaction en chaîne</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-noyau-forces/"><i>04</i>Construire un noyau : force forte contre répulsion électrique</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

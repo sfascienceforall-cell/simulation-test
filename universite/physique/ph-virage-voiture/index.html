@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le virage : frottement ou route relevée · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH2">Dynamique</a>›<b>Le virage : frottement ou route relevée</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Dynamique</span><span class="sfa-chip free">Gratuit</span></div><h1>Le virage : frottement ou route relevée</h1><p>Une voiture et son conducteur abordent un virage sur une piste d’essai, vus en 3D. Règle la vitesse, le rayon, l’adhérence (sec, mouillé, verglas) et l’inclinaison de la route : le poids, la réaction de la route, le frottement et la force résultante vers le centre se dessinent, en 3D et dans une vue de l’arrière. Au-delà de la vitesse limite, le frottement (au plus μN) ne suffit plus à tenir le rayon R : la voiture élargit sa trajectoire vers l’extérieur (rayon ≈ v²/(μg)) et finit dans le bac à graviers. Si les roues sont bloquées, elle part tout droit selon la tangente.</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:clamp(620px,min(80vh,190vw),820px);cursor:grab;touch-action:none" aria-label="Une voiture rouge avec son conducteur aborde un virage sur une piste d’essai, vue en 3D depuis l’arrière ; le poids, la réaction de la route, le frottement et la force résultante vers le centre sont dessinés ; on règle la vitesse, le rayon, l’adhérence et l’inclinaison de la route ; au-delà de la vitesse limite, le frottement ne suffit plus à tenir le rayon : la voiture élargit sa trajectoire vers l’extérieur et finit dans le bac à graviers"></canvas>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill">Route</span>
+  <button class="btn on" id="aS">Sèche (μ = 0,8)</button>
+  <button class="btn" id="aM">Mouillée (μ = 0,5)</button>
+  <button class="btn" id="aV">Verglas (μ = 0,1)</button>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#a32d2d">v &nbsp;vitesse</span>
+  <input type="range" id="sV" min="20" max="150" step="1" value="75" style="accent-color:#E24B4A;">
+  <span class="val" id="vV" style="color:#a32d2d"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#1f5fbf">R &nbsp;rayon du virage</span>
+  <input type="range" id="sR" min="20" max="200" step="5" value="70" style="accent-color:#2f6fd6;">
+  <span class="val" id="vR" style="color:#1f5fbf"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#0F6E56">α &nbsp;inclinaison de la route</span>
+  <input type="range" id="sA" min="0" max="35" step="1" value="0" style="accent-color:#1D9E75;">
+  <span class="val" id="vA" style="color:#0F6E56"></span>
+</div>
+<div class="row">
+  <span class="pill">Vue</span>
+  <button class="btn" id="w0">Vue de départ</button>
+  <button class="btn" id="wB">De derrière</button>
+  <button class="btn" id="wT">De haut</button>
+  <button class="btn" id="bP">Pause</button>
+</div>
+<div class="row"><span class="hint">La voiture fait le tour en boucle. Glisse pour tourner autour d’elle, molette pour zoomer. Le petit dessin « vue de l’arrière » montre les forces dans le plan du virage, avec le frottement utilisé par rapport au frottement maximal μN. Voiture de 1 200 kg ; R est le rayon de sa trajectoire.</span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id),cv=$('cv'),ctx=cv.getContext('2d');
+const INK='#20262e',GREY='#6f7a86',RED_D='#a32d2d',PUR='#534AB7',GRN='#0F7a52',BLU='#1f5fbf',OR='#c06a08';
+const CP='#b3261e',CN='#1f5fbf',CF='#d9800f',CS='#534AB7';
+const G=9.81,MASS=1200,WR=3.6,PHI=80*Math.PI/180,SIN=35,SOUT=30,GRAV=70,DGR=8;
+const fr=(v,d)=>(Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d).replace('.',',').replace(/^-/,'−');
+let W=0,H=0,dpr=1,MOB=false;
+function size(){const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.max(280,Math.round(b.width)||800),h=Math.max(560,Math.min(900,Math.round(b.height)||660));
+  if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);MOB=W<640;}
+let FS,FB,FT,FXS;function fonts(){FXS=(MOB?'600 10px':'600 11px')+' Mulish,system-ui,sans-serif';FS=(MOB?'700 11px':'700 12px')+' Mulish,system-ui,sans-serif';FB=(MOB?'800 12px':'800 13px')+' Mulish,system-ui,sans-serif';FT=(MOB?'800 13px':'800 14px')+' Mulish,system-ui,sans-serif';}
+
+// ---------- étiquettes ----------
+let LQ=[],RES=[];
+const pxOf=f=>{const m=/(\d+(?:\.\d+)?)px/.exec(f);return m?+m[1]:12;};
+const ov=(a,b)=>a[0]<b[2]&&b[0]<a[2]&&a[1]<b[3]&&b[1]<a[3];
+function reserve(x0,y0,x1,y1,zone){RES.push([x0,y0,x1,y1,zone]);}
+function tag(t,x,y,col,font,al,o){o=o||{};LQ.push({t,x,y,col:col||INK,font:font||FS,al:al||'center',pri:o.pri||0,zone:o.zone||'scene',halo:o.halo===undefined?'rgba(255,255,255,.92)':o.halo,fixed:o.fixed,clip:o.clip,box:o.box});}
+function flushTags(){const placed=[],drop=[];LQ.sort((a,b)=>b.pri-a.pri);
+  for(const L of LQ){ctx.font=L.font;const w=ctx.measureText(L.t).width,h=pxOf(L.font)+3,cl=L.clip||[0,0,W,H];if(w>cl[2]-cl[0]-6){drop.push(L.t);continue;}
+    let x0=L.al==='left'?L.x:L.al==='right'?L.x-w:L.x-w/2;x0=Math.max(cl[0]+3,Math.min(cl[2]-3-w,x0));let ok=null;
+    for(const k of (L.fixed?[0]:[0,-1,1,-2,2,-3,3])){const yc=Math.max(cl[1]+h/2+2,Math.min(cl[3]-h/2-2,L.y+k*h)),bx=[x0-2,yc-h/2,x0+w+2,yc+h/2];
+      if(placed.some(b=>ov(b,bx))||RES.some(r=>r[4]!==L.zone&&ov(r,bx)))continue;ok=[bx,yc];break;}
+    if(!ok){drop.push(L.t);continue;}const [bx,yc]=ok;placed.push([bx[0],bx[1],bx[2],bx[3],L.t]);
+    if(L.box){rr(bx[0]-3,bx[1]-1,bx[2]-bx[0]+6,bx[3]-bx[1]+2,6);ctx.fillStyle='rgba(255,255,255,.9)';ctx.fill();}
+    ctx.textAlign='left';ctx.textBaseline='middle';if(L.halo&&!L.box){ctx.lineWidth=3.5;ctx.strokeStyle=L.halo;ctx.lineJoin='round';ctx.strokeText(L.t,x0,yc);}
+    ctx.fillStyle=L.col;ctx.fillText(L.t,x0,yc);}
+  window.__lab={boxes:placed,W,H,drop};LQ=[];RES=[];}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function poly(P,fill,stroke,lw){if(P.length<3)return;ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();}}
+function rgb(c,k,al){const f=v=>Math.max(0,Math.min(255,Math.round(v)));return`rgba(${f(c[0]*k)},${f(c[1]*k)},${f(c[2]*k)},${al==null?1:al})`;}
+function arrow(x1,y1,x2,y2,col,w,head,dash){const L=Math.hypot(x2-x1,y2-y1);if(L<1)return;ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w||2;ctx.lineCap='round';const a=Math.atan2(y2-y1,x2-x1),h=Math.min(head||(7+(w||2)*1.6),L*0.55);
+  if(dash)ctx.setLineDash(dash);ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-Math.cos(a)*h*0.6,y2-Math.sin(a)*h*0.6);ctx.stroke();ctx.setLineDash([]);
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-h*Math.cos(a-0.42),y2-h*Math.sin(a-0.42));ctx.lineTo(x2-h*Math.cos(a+0.42),y2-h*Math.sin(a+0.42));ctx.closePath();ctx.fill();}
+function fitText(t,font,maxW){ctx.font=font;let f=pxOf(font);const base=font.replace(/\d+(\.\d+)?px/,'');let ff=font;while(ctx.measureText(t).width>maxW&&f>8){f-=0.5;ff=base.replace(/^(\S+)\s*/,'$1 '+f+'px ');ctx.font=ff;}return ff;}
+function panel(x,y,w,h,al){ctx.save();ctx.shadowColor='rgba(20,30,50,.18)';ctx.shadowBlur=12;ctx.shadowOffsetY=2;rr(x,y,w,h,10);ctx.fillStyle=al?'rgba(253,253,254,'+al+')':'#fdfdfe';ctx.fill();ctx.restore();rr(x,y,w,h,10);ctx.strokeStyle='#dfe4ea';ctx.lineWidth=1;ctx.stroke();}
+
+// ---------- physique ----------
+const ADH={S:{mu:0.8,n:'route sèche'},M:{mu:0.5,n:'route mouillée'},V:{mu:0.1,n:'verglas'}};
+let adh='S',vk=75,R=70,alD=0,paused=false;
+const mu=()=>ADH[adh].mu,al=()=>alD*Math.PI/180,v=()=>vk/3.6;
+function phys(){const a=al(),s=Math.sin(a),c=Math.cos(a),ac=v()*v()/R,N=MASS*(G*c+ac*s),f=MASS*(ac*c-G*s),m=mu();
+  const vmax=c-m*s>1e-9?Math.sqrt(G*R*(s+m*c)/(c-m*s)):Infinity,vmin=s>m*c?Math.sqrt(G*R*(s-m*c)/(c+m*s)):0,v0=Math.sqrt(G*R*Math.tan(a));
+  const aS=vmax===Infinity?Infinity:vmax*vmax/R,R2=v()*v()/aS,NS=c-m*s>1e-9?MASS*G/(c-m*s):Infinity;
+  return{ac,N,f,fmax:m*N,use:Math.abs(f)/(m*N),vmax,vmin,v0,out:f>m*N+1e-9,inn:-f>m*N+1e-9,aS,R2,NS,reach:(R2-R)*(1-Math.cos(PHI))>WR+1.2};}
+
+// forces là où se trouve la voiture (ligne droite : pas d'accélération vers le centre)
+function physAt(s){const a=bank(s),k=s>=0&&s<=R*PHI?1/R:0,ac=v()*v()*k,N=MASS*(G*Math.cos(a)+ac*Math.sin(a)),f=MASS*(ac*Math.cos(a)-G*Math.sin(a));return{ac,N,f,fmax:mu()*N,use:Math.abs(f)/(mu()*N),a,curve:k>0};}
+// ---------- la piste : axe C(s), normale extérieure n(s), dévers ----------
+function bank(s){const e=Math.max(0,Math.min(1,(s+15)/15)),x=Math.max(0,Math.min(1,(R*PHI+15-s)/15));return al()*Math.min(e,x);}
+function cen(s){if(s<0)return[R,s,0,1,1,0];if(s<=R*PHI){const p=s/R;return[R*Math.cos(p),R*Math.sin(p),-Math.sin(p),Math.cos(p),Math.cos(p),Math.sin(p)];}
+  const p=PHI,d=s-R*PHI;return[R*Math.cos(p)-d*Math.sin(p),R*Math.sin(p)+d*Math.cos(p),-Math.sin(p),Math.cos(p),Math.cos(p),Math.sin(p)];}
+function zAt(s,u){const tb=Math.tan(bank(s));return u<-WR?0:u>WR?2*WR*tb:(u+WR)*tb;}
+function P3(s,u,dz){const c=cen(s);return[c[0]+u*c[4],c[1]+u*c[5],zAt(s,u)+(dz||0)];}
+// (x, y) monde -> (s, u) sur la piste (approché)
+function toSU(x,y){if(y<0&&x>R*0.3)return[y,x-R];const p=Math.atan2(y,x);if(p>=0&&p<=PHI)return[p*R,Math.hypot(x,y)-R];const c=cen(R*PHI);return[R*PHI+(x-c[0])*c[2]+(y-c[1])*c[3],(x-c[0])*c[4]+(y-c[1])*c[5]];}
+
+// ---------- état de la voiture ----------
+let sC=-SIN,uC=0,vC=0,mode='run',tStop=0,yawR=-0.62,pitch=0.26,zoom=1,viewT=null,wheelA=0,tLap=0,marks=[],skid=null,t=0,uV=0;
+function restart(){sC=-SIN;uC=0;uV=0;vC=v();mode='run';marks=[];skid=null;tStop=0;}
+// position, cap, roulis de la voiture
+function carPose(){if(skid){const x=skid.x,y=skid.y,su=toSU(x,y),onRoad=Math.abs(su[1])<=WR;return{x,y,z:zAt(su[0],su[1]),psi:skid.psi,roll:onRoad?bank(su[0]):0,su};}
+  const c=cen(sC),u=uC,z=zAt(sC,u);return{x:c[0]+u*c[4],y:c[1]+u*c[5],z,psi:Math.atan2(c[3],c[2]),roll:Math.abs(u)<=WR?bank(sC):0,su:[sC,u]};}
+
+// ---------- caméra (elle suit la voiture) ----------
+let C={},T=[0,0,0];
+function cam(pose){const k=Math.min(W*(MOB?0.66:0.44)/4.4,H*0.56/4.4)*zoom,Dc=17;const yaw=Math.PI/2-pose.psi+yawR;
+  T=[pose.x,pose.y,pose.z+0.9];C={Dc,f:k*Dc,cx:W*(MOB?0.5:0.44),cy:(MOB?H*0.6*0.55:H*0.5),cyw:Math.cos(yaw),syw:Math.sin(yaw),cp:Math.cos(pitch),sp:Math.sin(pitch)};
+  C.cam=[T[0]-Dc*C.cp*C.syw,T[1]-Dc*C.cp*C.cyw,T[2]+Dc*C.sp];}
+function cc(x,y,z){x-=T[0];y-=T[1];z-=T[2];const xr=x*C.cyw-y*C.syw,yr=x*C.syw+y*C.cyw;return[xr,z*C.cp+yr*C.sp,C.Dc+yr*C.cp-z*C.sp];}
+function prj(c){const k=C.f/c[2];return[C.cx+c[0]*k,C.cy-c[1]*k,c[2],k];}
+function pr(x,y,z){const c=cc(x,y,z);return c[2]>0.3?prj(c):null;}
+const NEAR=0.6;
+function clipPoly(P){const out=[];for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length],ia=a[2]>=NEAR,ib=b[2]>=NEAR;if(ia)out.push(a);if(ia!==ib){const u=(NEAR-a[2])/(b[2]-a[2]);out.push([a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u,NEAR]);}}return out;}
+function quad(pts){const c=clipPoly(pts.map(p=>cc(p[0],p[1],p[2])));if(c.length<3)return null;let d=0;pts.forEach(p=>d+=cc(p[0],p[1],p[2])[2]);return{P:c.map(prj),d:d/pts.length};}
+const LIGHT=(()=>{const v=[-0.35,-0.5,0.8],n=Math.hypot(...v);return v.map(x=>x/n);})();
+const litf=n=>Math.max(0,n[0]*LIGHT[0]+n[1]*LIGHT[1]+n[2]*LIGHT[2]);
+
+// ---------- décor ----------
+function sky(){const hz=C.cy-C.f*Math.tan(pitch)/1;let g=ctx.createLinearGradient(0,0,0,Math.max(10,hz));g.addColorStop(0,'#8fc0ea');g.addColorStop(1,'#e2eef7');ctx.fillStyle=g;ctx.fillRect(0,0,W,Math.max(0,hz)+1);
+  // collines lointaines
+  if(hz>0){ctx.fillStyle='#9fbf8a';ctx.beginPath();ctx.moveTo(0,hz);for(let x=0;x<=W;x+=W/24){const a=(x/W)*6.28+C.syw*2+C.cyw;ctx.lineTo(x,hz-12-10*Math.sin(a*1.7)-6*Math.sin(a*3.1+1));}ctx.lineTo(W,hz);ctx.closePath();ctx.fill();}
+  g=ctx.createLinearGradient(0,Math.max(0,hz),0,H);g.addColorStop(0,'#9cc47a');g.addColorStop(1,'#5f9a43');ctx.fillStyle=g;ctx.fillRect(0,Math.max(0,hz),W,H);}
+const TREES=[];(function(){for(let i=0;i<14;i++)TREES.push({a:(i+0.5)/14,d:10+((i*37)%5)*6,s:0.8+((i*13)%5)*0.12});})();
+function terrain(pose){const s0=pose.su[0],items=[],ds=2.5,sa=s0-70,sb=s0+120;
+  const bands=[[-WR-60,-WR-0.9,'g'],[-WR-0.9,-WR,'c'],[-WR,WR,'r'],[WR,WR+0.9,'c'],[WR+0.9,WR+GRAV,'k'],[WR+GRAV,WR+GRAV+50,'h']];
+  for(let s=Math.floor(sa/ds)*ds;s<sb;s+=ds){const curve=s>=-2&&s<=R*PHI+2,grav=s>=-2&&s<=R*PHI+120,tb=Math.tan(bank(s));
+    bands.forEach(([u0,u1,ty],bi)=>{const p=[P3(s,u0),P3(s+ds,u0),P3(s+ds,u1),P3(s,u1)];const q=quad(p);if(!q)return;
+      let col;if(ty==='r'){const k=0.95+0.05*((Math.floor(s/ds))%2);col=rgb([96,100,108],k);}else if(ty==='c')col=curve?((Math.floor(s/2.5))%2?'#d8342c':'#f4f4f2'):'#a8b0a0';else if(ty==='k')col=grav?((Math.floor(s/ds))%2?'#d9c7a0':'#d3c099'):'#86b462';else col=bi===0?'#79ad57':'#83b85f';
+      items.push({d:q.d,f:()=>poly(q.P,col,col,0.8)});});
+    // talus extérieur (si la route est relevée)
+    if(tb>1e-3){const h=2*WR*tb,ue=WR+GRAV+50,ue2=ue+h/0.5,p=[P3(s,ue),P3(s+ds,ue),[cen(s+ds)[0]+ue2*cen(s+ds)[4],cen(s+ds)[1]+ue2*cen(s+ds)[5],0],[cen(s)[0]+ue2*cen(s)[4],cen(s)[1]+ue2*cen(s)[5],0]],q=quad(p);if(q)items.push({d:q.d,f:()=>poly(q.P,'#6f9f4f','#6f9f4f',0.8)});
+      // bord du talus côté route sous la bande intérieure : rien (la route descend jusqu'au sol)
+    }
+    // lignes de rive
+    [-WR+0.3,WR-0.3].forEach(u=>{const a=P3(s,u-0.08,0.01),b=P3(s+ds,u-0.08,0.01),c=P3(s+ds,u+0.08,0.01),d=P3(s,u+0.08,0.01),q=quad([a,b,c,d]);if(q)items.push({d:q.d-0.01,f:()=>poly(q.P,'#f3f3ee')});});}
+  items.sort((a,b)=>b.d-a.d);items.forEach(it=>it.f());}
+function tree(x,y,z,s){const b=pr(x,y,z),tp=pr(x,y,z+7*s);if(!b||!tp)return null;return{d:b[2],f:()=>{const h=b[1]-tp[1],w=h*0.42;if(h<3)return;ctx.fillStyle='#6b4a2b';ctx.fillRect(b[0]-w*0.07,b[1]-h*0.35,w*0.14,h*0.35);
+  const g=ctx.createRadialGradient(tp[0]-w*0.2,tp[1]+h*0.3,2,tp[0],tp[1]+h*0.42,w*0.7);g.addColorStop(0,'#7fc261');g.addColorStop(1,'#2f6b2a');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(tp[0],tp[1]+h*0.4,w*0.5,h*0.42,0,0,7);ctx.fill();}};}
+function chevron(s){const p=P3(s,WR+1.6),q=P3(s,WR+1.6,1.6),c=cen(s),pa=pr(...p),pb=pr(...q);if(!pa||!pb)return null;return{d:pa[2],f:()=>{const h=pa[1]-pb[1];if(h<4)return;const w=h*0.75;
+  ctx.fillStyle='#555';ctx.fillRect(pa[0]-1.5,pb[1],3,h);ctx.fillStyle='#d8342c';rr(pb[0]-w/2,pb[1]-h*0.5,w,h*0.5,2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=Math.max(1.5,h*0.07);ctx.beginPath();ctx.moveTo(pb[0]+w*0.18,pb[1]-h*0.43);ctx.lineTo(pb[0]-w*0.12,pb[1]-h*0.25);ctx.lineTo(pb[0]+w*0.18,pb[1]-h*0.07);ctx.stroke();}};}
+
+// ---------- la voiture (1 200 kg, 4,4 m) ----------
+function carFrame(pose){const F=[Math.cos(pose.psi),Math.sin(pose.psi),0],L0=[-Math.sin(pose.psi),Math.cos(pose.psi),0],r=pose.roll,c=Math.cos(r),s=Math.sin(r);
+  const Lf=[L0[0]*c,L0[1]*c,-s],U=[L0[0]*s,L0[1]*s,c];return{F,L:Lf,U,o:[pose.x,pose.y,pose.z]};}
+function W3(fr_,p){return[fr_.o[0]+p[0]*fr_.F[0]+p[1]*fr_.L[0]+p[2]*fr_.U[0],fr_.o[1]+p[0]*fr_.F[1]+p[1]*fr_.L[1]+p[2]*fr_.U[1],fr_.o[2]+p[0]*fr_.F[2]+p[1]*fr_.L[2]+p[2]*fr_.U[2]];}
+function Wn(fr_,n){return[n[0]*fr_.F[0]+n[1]*fr_.L[0]+n[2]*fr_.U[0],n[0]*fr_.F[1]+n[1]*fr_.L[1]+n[2]*fr_.U[1],n[0]*fr_.F[2]+n[1]*fr_.L[2]+n[2]*fr_.U[2]];}
+function boxL(x0,x1,y0,y1,z0,z1){return[[[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1],[0,0,1]],[[x0,y0,z0],[x0,y1,z0],[x1,y1,z0],[x1,y0,z0],[0,0,-1]],[[x0,y0,z0],[x1,y0,z0],[x1,y0,z1],[x0,y0,z1],[0,-1,0]],[[x0,y1,z0],[x0,y1,z1],[x1,y1,z1],[x1,y1,z0],[0,1,0]],[[x0,y0,z0],[x0,y0,z1],[x0,y1,z1],[x0,y1,z0],[-1,0,0]],[[x1,y0,z0],[x1,y1,z0],[x1,y1,z1],[x1,y0,z1],[1,0,0]]];}
+function drawCar(pose){const fr_=carFrame(pose),cam_=C.cam,faces=[],BODY=[200,36,36];
+  const add=(pts,n,col,al,extra)=>{const P=pts.map(p=>W3(fr_,p)),nw=Wn(fr_,n),c=P.reduce((a,p)=>[a[0]+p[0]/P.length,a[1]+p[1]/P.length,a[2]+p[2]/P.length],[0,0,0]);
+    if(nw[0]*(cam_[0]-c[0])+nw[1]*(cam_[1]-c[1])+nw[2]*(cam_[2]-c[2])<=0)return;const q=quad(P);if(!q)return;faces.push({d:q.d,P:q.P,col,n:nw,al,extra});};
+  // caisse
+  boxL(-2.2,2.2,-0.9,0.9,0.32,1.02).forEach(f=>add(f.slice(0,4),f[4],BODY,1));
+  // pare-chocs et calandre
+  add([[2.21,-0.75,0.4],[2.21,0.75,0.4],[2.21,0.75,0.62],[2.21,-0.75,0.62]],[1,0,0],[40,40,46],1);
+  // habitacle (vitres)
+  const bt=[[-1.35,-0.86,1.02],[0.95,-0.86,1.02],[0.95,0.86,1.02],[-1.35,0.86,1.02]],tp=[[-1.0,-0.74,1.58],[0.35,-0.74,1.58],[0.35,0.74,1.58],[-1.0,0.74,1.58]];
+  add(tp,[0,0,1],BODY,1);add([bt[1],bt[2],tp[2],tp[1]],[0.68,0,0.73],[150,190,215],0.78,'glass');add([bt[3],bt[0],tp[0],tp[3]],[-0.7,0,0.71],[150,190,215],0.78,'glass');
+  add([bt[0],bt[1],tp[1],tp[0]],[0,-0.98,0.2],[150,190,215],0.7,'glass');add([bt[2],bt[3],tp[3],tp[2]],[0,0.98,0.2],[150,190,215],0.7,'glass');
+  // phares et feux
+  [[-0.7],[0.7]].forEach(([y])=>{add([[2.205,y-0.22,0.72],[2.205,y+0.22,0.72],[2.205,y+0.22,0.9],[2.205,y-0.22,0.9]],[1,0,0],[255,246,200],1);add([[-2.205,y+0.25,0.74],[-2.205,y-0.25,0.74],[-2.205,y-0.25,0.92],[-2.205,y+0.25,0.92]],[-1,0,0],[230,40,30],1);});
+  // plaque
+  add([[-2.21,0.28,0.48],[-2.21,-0.28,0.48],[-2.21,-0.28,0.62],[-2.21,0.28,0.62]],[-1,0,0],[245,245,245],1,'plate');
+  // roues
+  const wh=[];[[1.38,0.86],[1.38,-0.86],[-1.38,0.86],[-1.38,-0.86]].forEach(([x,y])=>{const R0=0.34,n=12,y0=y>0?y-0.12:y+0.12,y1=y>0?y+0.12:y-0.12,out=y>0?1:-1;
+    for(let i=0;i<n;i++){const a0=2*Math.PI*i/n,a1=2*Math.PI*(i+1)/n,am=(a0+a1)/2;add([[x+R0*Math.cos(a0),y0,R0+R0*Math.sin(a0)],[x+R0*Math.cos(a1),y0,R0+R0*Math.sin(a1)],[x+R0*Math.cos(a1),y1,R0+R0*Math.sin(a1)],[x+R0*Math.cos(a0),y1,R0+R0*Math.sin(a0)]],[Math.cos(am),0,Math.sin(am)],[30,30,34],1);}
+    const cap=[];for(let i=0;i<n;i++){const a=2*Math.PI*i/n;cap.push([x+R0*Math.cos(a),y1,R0+R0*Math.sin(a)]);}add(out>0?cap:cap.slice().reverse(),[0,out,0],[38,38,42],1,{rim:[x,y1,R0,out]});});
+  faces.sort((a,b)=>b.d-a.d);
+  // le conducteur (vu à travers les vitres)
+  const hd=W3(fr_,[0.05,0.38,1.3]),hp=pr(...hd);
+  faces.forEach(f=>{if(f.extra==='glass'&&hp&&!f._h){faces.forEach(g=>g._h=1);const r=Math.max(2,0.17*hp[3]);let g=ctx.createRadialGradient(hp[0]-r*0.3,hp[1]-r*0.3,1,hp[0],hp[1],r);g.addColorStop(0,'#f3cfae');g.addColorStop(1,'#b07650');ctx.fillStyle=g;ctx.beginPath();ctx.arc(hp[0],hp[1],r,0,7);ctx.fill();ctx.fillStyle='#3a2a1e';ctx.beginPath();ctx.arc(hp[0],hp[1]-r*0.35,r*0.9,Math.PI,2*Math.PI);ctx.fill();
+      const bd=pr(...W3(fr_,[0.05,0.38,1.05]));if(bd){ctx.fillStyle='#2f5f9a';ctx.beginPath();ctx.ellipse(bd[0],bd[1],r*1.3,r*0.9,0,0,7);ctx.fill();}}
+    const l=0.55+0.6*litf(f.n),spec=Math.pow(litf(f.n),10)*0.6,c=f.col.map(x=>x+(255-x)*spec);poly(f.P,rgb(c,l,f.al),rgb(f.col,0.55,Math.min(1,f.al+0.2)),0.8);
+    if(f.extra==='plate'){const cx=(f.P[0][0]+f.P[2][0])/2,cy=(f.P[0][1]+f.P[2][1])/2,w=Math.abs(f.P[0][0]-f.P[1][0]);if(w>18){ctx.fillStyle='#b3261e';ctx.font='800 '+Math.max(6,Math.round(w*0.2))+'px Mulish,system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('1-SFA-001',cx,cy);}}
+    if(f.extra&&f.extra.rim){const [x,y,R0,o]=f.extra.rim;const cp=pr(...W3(fr_,[x,y+0.005*o,R0]));if(cp){const pts=[];for(let i=0;i<5;i++){const a=wheelA+i*2*Math.PI/5;const q=pr(...W3(fr_,[x+R0*0.62*Math.cos(a),y+0.005*o,R0+R0*0.62*Math.sin(a)]));if(q)pts.push(q);}
+      ctx.fillStyle='#b9bec6';ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill();ctx.strokeStyle='#6c727b';ctx.lineWidth=1.4;pts.forEach(p=>{ctx.beginPath();ctx.moveTo(cp[0],cp[1]);ctx.lineTo(p[0],p[1]);ctx.stroke();});}}});
+  return fr_;}
+function shadow(pose){const fr_=carFrame(pose),P=[[-2.4,-1.05,0.02],[2.4,-1.05,0.02],[2.4,1.05,0.02],[-2.4,1.05,0.02]].map(p=>W3(fr_,p)),q=quad(P);if(q)poly(q.P,'rgba(20,20,20,.32)');}
+
+// ---------- forces (au centre de masse) ----------
+let F3=null;
+function forces(pose,fr_){const q=physAt(sC),q0=phys(),cm=W3(fr_,[0,0,0.62]),ct=W3(fr_,[0,0,0.02]),s=1.9/(MASS*G),c0=pr(...cm),c1=pr(...ct);if(!c0||!c1)return;
+  const inw=skid?null:[-cen(pose.su[0])[4],-cen(pose.su[0])[5],0],a=pose.roll,ca=Math.cos(a),sa=Math.sin(a);
+  const out=[];const add=(vec,mag,col,name,dash,at)=>{if(Math.abs(mag)<1)return;const o=at?ct:cm,o2=at?c1:c0,e=[o[0]+vec[0]*mag*s,o[1]+vec[1]*mag*s,o[2]+vec[2]*mag*s],p=pr(...e);if(!p)return;arrow(o2[0],o2[1],p[0],p[1],col,3.4,13,dash);out.push([name,p,col,o2]);};
+  if(mode==='run'||mode==='inn'){const N=q.N,f=mode==='inn'?-q.fmax:q.f;add(fr_.U,N,CN,'N',null,1);add(fr_.L,f,CF,'f',null,1);add([0,0,-1],MASS*G,CP,'P');
+    if(mode==='run'&&inw&&q.curve)add(inw,MASS*q.ac,CS,'ΣF = m v²/R',[7,5]);}
+  else if(mode==='out'){const L0=[-Math.sin(pose.psi),Math.cos(pose.psi),0];
+    if(!skid.gr){const Ns=pose.roll>1e-4?q0.NS:MASS*G;add(fr_.U,Ns,CN,'N',null,1);add(fr_.L,mu()*Ns,CF,'f = μN',null,1);add([0,0,-1],MASS*G,CP,'P');if(skid.aL>0)add(L0,MASS*skid.aL,CS,'ΣF (rayon élargi)',[7,5]);}
+    else{add(fr_.U,MASS*G,CN,'N',null,1);add([0,0,-1],MASS*G,CP,'P');if(vC>0.05){const fx=-fr_.F[0]*DGR+L0[0]*skid.aL,fy=-fr_.F[1]*DGR+L0[1]*skid.aL,fm=Math.hypot(fx,fy)||1;add([fx/fm,fy/fm,0],MASS*fm,CF,'f (graviers)',null,1);}}}
+  else{const Nn=MASS*G*Math.cos(pose.roll);add(fr_.U,Nn,CN,'N',null,1);add([0,0,-1],MASS*G,CP,'P');if(vC>0.05)add(fr_.F.map(x=>-x),Math.abs(pose.su[1])>WR?MASS*6:mu()*Nn,CF,'f (freine)',null,1);}
+  ctx.fillStyle='#fff';ctx.strokeStyle=INK;ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(c0[0],c0[1],4,0,7);ctx.fill();ctx.stroke();ctx.fillStyle=INK;ctx.beginPath();ctx.arc(c1[0],c1[1],3,0,7);ctx.fill();F3=out;}
+
+// ---------- vue de l'arrière (coupe) ----------
+let IP={},noInset=false;
+function inset(){const q=physAt(sC),q0=phys(),slide=mode==='out'&&skid&&!skid.gr,a=mode==='run'||mode==='inn'?q.a:slide?carPose().roll:0,P=IP;panel(P.x,P.y,P.w,P.h,0.95);reserve(P.x,P.y,P.x+P.w,P.y+P.h,'ip');const cl=[P.x,P.y,P.x+P.w,P.y+P.h];
+  tag('Vue de l’arrière (plan du virage)',P.x+10,P.y+13,INK,fitText('Vue de l’arrière (plan du virage)',FT,P.w-20),'left',{fixed:true,zone:'ip',pri:30,halo:null,clip:cl});
+  const gh=30,yb=P.y+P.h-gh-6,sc=Math.min(P.w/5.6,(yb-P.y-24-20)/(0.66+2.35)),ox=P.x+P.w*0.56,oy=yb-0.66*sc-18,ca=Math.cos(a),sa=Math.sin(a);
+  const pt=(x,z)=>[ox+(x*ca-z*sa)*sc,oy-(x*sa+z*ca)*sc];
+  ctx.save();rr(P.x+4,P.y+24,P.w-8,P.h-gh-30,6);ctx.clip();
+  ctx.fillStyle='#a8cfe9';ctx.fillRect(P.x,P.y+24,P.w,P.h);
+  poly([pt(-5,0),pt(5,0),pt(5,-3),[P.x+P.w,P.y+P.h],[P.x,P.y+P.h],pt(-5,-3)],'#6b6f78');poly([pt(-4.4,0),pt(4.4,0),pt(4.4,-0.4),pt(-4.4,-0.4)],'#5a5e66');
+  // voiture de dos
+  const body=[pt(-0.9,0.32),pt(0.9,0.32),pt(0.9,1.02),pt(-0.9,1.02)],cab=[pt(-0.86,1.02),pt(0.86,1.02),pt(0.74,1.58),pt(-0.74,1.58)];
+  [[-0.86,-0.62],[0.62,0.86]].forEach(([x0,x1])=>poly([pt(x0,0),pt(x1,0),pt(x1,0.68),pt(x0,0.68)],'#222'));
+  const g=ctx.createLinearGradient(body[0][0],body[3][1],body[1][0],body[0][1]);g.addColorStop(0,'#e0483e');g.addColorStop(1,'#9c1d1d');poly(body,g,'#7a1414',1);poly(cab,'rgba(150,190,215,.9)','#7a1414',1);
+  poly([pt(-0.75,0.74),pt(-0.45,0.74),pt(-0.45,0.9),pt(-0.75,0.9)],'#e33');poly([pt(0.45,0.74),pt(0.75,0.74),pt(0.75,0.9),pt(0.45,0.9)],'#e33');
+  const hd=pt(0.38,1.3);ctx.fillStyle='#d9a37e';ctx.beginPath();ctx.arc(hd[0],hd[1],0.17*sc,0,7);ctx.fill();ctx.fillStyle='#3a2a1e';ctx.beginPath();ctx.arc(hd[0],hd[1]-0.06*sc,0.16*sc,Math.PI,2*Math.PI);ctx.fill();
+  // angle α
+  if(a>0.01){const aD=a*180/Math.PI,o=pt(-4.2,0);ctx.strokeStyle=GRN;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(o[0],o[1]);ctx.lineTo(o[0]+2.2*sc,o[1]);ctx.stroke();ctx.beginPath();ctx.arc(o[0],o[1],1.6*sc,-a,0);ctx.stroke();tag('α = '+fr(aD,0)+'°',o[0]+1.9*sc,o[1]-0.45*sc,GRN,FS,'left',{zone:'ip',pri:12,clip:[P.x,P.y+24,P.x+P.w,yb]});}
+  // forces
+  const cm=pt(0,0.62),ct=pt(0,0),s=1.25*sc/(MASS*G),lab=[];const A=(dx,dz,mag,col,name,dash,at)=>{if(Math.abs(mag)<1)return;const o=at?ct:cm,ex=o[0]+dx*mag*s,ey=o[1]-dz*mag*s;arrow(o[0],o[1],ex,ey,col,2.8,11,dash);lab.push([name,ex,ey,col,o]);};
+  if(mode==='run'||mode==='inn'){const f=mode==='inn'?-q.fmax:q.f;A(-sa,ca,q.N,CN,'N',null,1);A(-ca,-sa,f,CF,'f',null,1);A(0,-1,MASS*G,CP,'P');if(mode==='run'&&q.curve)A(-1,0,MASS*q.ac,CS,'ΣF',[6,4]);}
+  else if(slide){const Ns=a>1e-4?q0.NS:MASS*G;A(-sa,ca,Ns,CN,'N',null,1);A(-ca,-sa,mu()*Ns,CF,'f = μN',null,1);A(0,-1,MASS*G,CP,'P');if(skid.aL>0)A(-1,0,MASS*skid.aL,CS,'ΣF',[6,4]);}
+  else{A(0,1,MASS*G,CN,'N',null,1);A(0,-1,MASS*G,CP,'P');if(mode==='out'&&vC>0.05&&skid.aL>0)A(-1,0,MASS*skid.aL,CF,'f',null,1);}
+  ctx.fillStyle='#fff';ctx.strokeStyle=INK;ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(cm[0],cm[1],3.5,0,7);ctx.fill();ctx.stroke();ctx.restore();
+  lab.forEach(([n,x,y,c,o])=>{const dx=x-o[0],dy=y-o[1],L=Math.hypot(dx,dy)||1;tag(n,x+dx/L*12,y+dy/L*11,c,FB,'center',{zone:'ip',pri:14,clip:[P.x,P.y+24,P.x+P.w,P.y+P.h-gh-6]});});
+  tag('← centre du virage',P.x+10,P.y+36,GREY,FXS,'left',{fixed:true,zone:'ip',pri:13,clip:cl});
+  // jauge d'adhérence
+  const by=P.y+P.h-gh+2,bx=P.x+10,bw=P.w-20,use=mode==='run'?q.use:1;ctx.fillStyle='#eceff3';rr(bx,by+14,bw,10,5);ctx.fill();const uw=Math.min(1,use/1.5)*bw;
+  ctx.fillStyle=use<0.8?'#2e9e5b':use<=1?'#e0a21e':'#d23a32';rr(bx,by+14,Math.max(6,uw),10,5);ctx.fill();const x100=bx+bw/1.5;ctx.strokeStyle=INK;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x100,by+10);ctx.lineTo(x100,by+28);ctx.stroke();
+  const tx=mode==='run'?(q.curve?'frottement utilisé : |f| / μN = '+fr(q.use*100,0)+' %':'ligne droite : '+(q.use>0.005?'|f| / μN = '+fr(q.use*100,0)+' %':'pas besoin de frottement')):mode==='out'?(skid&&skid.gr?(vC>0.05?'dans les graviers : la voiture freine':'arrêtée dans les graviers'):'pneus en glissement : f = μN < m v²/R, le rayon s’élargit'):'les pneus glissent : |f| = μN ne suffit pas';tag(tx,bx,by+4,mode==='run'?(use<=1?INK:RED_D):RED_D,fitText(tx,FS,bw),'left',{fixed:true,zone:'ip',pri:20,halo:null,clip:cl});}
+
+// ---------- dessin ----------
+function draw(){size();fonts();const pose=carPose();
+  if(MOB){const sh=Math.round(H*0.6);IP={x:6,y:sh+6,w:W-12,h:H-sh-12};}else{const w=Math.round(Math.min(300,W*0.34)),h=Math.round(Math.min(300,H*0.48));IP={x:W-w-10,y:H-h-10,w,h};}
+  cam(pose);ctx.clearRect(0,0,W,H);const SH=MOB?Math.round(H*0.6):H;ctx.save();ctx.beginPath();ctx.rect(0,0,W,SH);ctx.clip();
+  sky();terrain(pose);
+  // traces de pneus
+  if(marks.length>1){ctx.strokeStyle='rgba(25,25,25,.55)';ctx.lineWidth=3;[-0.8,0.8].forEach(o=>{ctx.beginPath();let st=false;marks.forEach(m=>{const p=pr(m[0]+o*m[3],m[1]+o*m[4],m[2]+0.03);if(!p){st=false;return;}st?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);st=true;});ctx.stroke();});}
+  shadow(pose);
+  const objs=[];TREES.forEach(tr=>{const s=tr.a*R*PHI,c=cen(s),u=-WR-tr.d,x=c[0]+u*c[4],y=c[1]+u*c[5];const o=tree(x,y,0,tr.s);if(o)objs.push(o);});
+  [[-40,-WR-14],[-25,WR+GRAV+6],[R*PHI+20,-WR-12],[R*PHI+35,WR+GRAV+10]].forEach(([s,u])=>{const p=P3(s,u),o=tree(p[0],p[1],p[2],1.1);if(o)objs.push(o);});
+  for(let k=1;k<=4;k++){const o=chevron(R*PHI*k/5);if(o)objs.push(o);}
+  const cd=cc(pose.x,pose.y,pose.z+0.6)[2];let fr_=null;objs.push({d:cd,f:()=>{fr_=drawCar(pose);}});
+  objs.sort((a,b)=>b.d-a.d).forEach(o=>o.f());
+  if(fr_)forces(pose,fr_);
+  if(F3)F3.forEach(([n,p,c,o])=>{const dx=p[0]-o[0],dy=p[1]-o[1],L=Math.hypot(dx,dy)||1;tag(n,p[0]+dx/L*16,p[1]+dy/L*12,c,FB,'center',{pri:9,box:true});});
+  ctx.restore();
+  // panneau des valeurs
+  const q=phys(),kmh=x=>fr(x*3.6,1)+' km/h',vm=q.vmax===Infinity?'pas de limite':kmh(q.vmax);
+  const L=[['Dans le virage : v = '+fr(vk,0)+' km/h = '+fr(v(),1)+' m/s · R = '+fr(R,0)+' m · '+ADH[adh].n,INK],
+    ['a = v²/R = '+fr(q.ac,2)+' m/s², vers le centre (ΣF = '+fr(MASS*q.ac/1000,2)+' kN)',CS],
+    [(q.f>=0?'frottement nécessaire (vers le centre) : ':'frottement nécessaire (vers le haut) : ')+fr(Math.abs(q.f)/1000,2)+' kN · μN = '+fr(q.fmax/1000,2)+' kN',CF],
+    ['v max = '+vm+(alD>0?' · v sans frottement = '+kmh(q.v0):'')+(q.vmin>0?' · v min = '+kmh(q.vmin):''),GRN],
+    [q.out?'Trop vite : μN ne tient pas R, la voiture élargit (rayon ≈ '+fr(q.R2,0)+' m)'+(q.reach?' → graviers':''):q.inn?'Trop lent : la voiture glisse vers l’intérieur':'La voiture tient le virage',q.out||q.inn?RED_D:GRN]];
+  const pw=Math.min(W-16,MOB?W-16:Math.max(360,W-IP.w-40)),lh=MOB?17:19,ph=lh*L.length+10;ctx.fillStyle='rgba(255,255,255,.92)';rr(8,8,pw,ph,8);ctx.fill();ctx.strokeStyle='rgba(83,74,183,.3)';ctx.lineWidth=1.2;ctx.stroke();reserve(8,8,8+pw,8+ph,'pan');
+  L.forEach((l,i)=>tag(l[0],18,8+lh*0.5+5+i*lh,l[1],fitText(l[0],i===4?FT:FB,pw-22),'left',{fixed:true,zone:'pan',pri:30,halo:null}));
+  if(!noInset)inset();flushTags();}
+
+// ---------- mouvement ----------
+function step(dt){const q=phys(),lap=(SIN+R*PHI+SOUT)/Math.max(1,v()),ts=Math.max(1,lap/14),h=dt*ts;
+  if(mode==='run'){sC+=v()*h;wheelA+=v()*h/0.34;
+    if(sC>=0&&sC<=R*PHI&&q.out){mode='out';const p=carPose();skid={x:p.x,y:p.y,psi:p.psi,aL:q.aS,gr:false};vC=v();}
+    else if(sC>=0&&sC<=R*PHI&&q.inn){mode='inn';vC=v();uV=0;}
+    if(sC>R*PHI+SOUT)restart();}
+  else if(mode==='inn'){sC+=v()*h;wheelA+=v()*h/0.34;const a=al(),sa=Math.sin(a),ca=Math.cos(a),ac=v()*v()/R,acc=(G*sa-ac*ca)-mu()*(G*ca+ac*sa);uV-=Math.max(0,acc)*h;uC+=uV*h;
+    const p=carPose();marks.push([p.x,p.y,p.z,-Math.sin(p.psi),Math.cos(p.psi)]);
+    if(uC<-WR-1.5){mode='stop';vC=v();skid={x:p.x,y:p.y,psi:p.psi};}if(sC>R*PHI+SOUT)restart();}
+  else if(mode==='out'){
+    // pneus en glissement : sur la piste, tout le frottement (μN) est latéral, la voiture tourne avec a = v max²/R, donc sur un rayon v²/a > R ;
+    // dans les graviers, elle freine (DGR) en tournant encore un peu ; le conducteur cesse de braquer quand le cap atteint celui de la sortie
+    const p=carPose(),gr=p.su[1]>WR+0.9,psiE=PHI+Math.PI/2,aL=skid.psi>=psiE-1e-9?0:gr?0.5*Math.min(q.aS,DGR):q.aS;skid.aL=aL;skid.gr=gr;
+    if(vC>0.3&&aL>0)skid.psi=Math.min(psiE,skid.psi+aL/vC*h);vC=Math.max(0,vC-(gr?DGR:0)*h);skid.x+=Math.cos(skid.psi)*vC*h;skid.y+=Math.sin(skid.psi)*vC*h;wheelA+=vC*h/0.34;
+    if(vC>0)marks.push([p.x,p.y,p.z,-Math.sin(p.psi),Math.cos(p.psi)]);if(marks.length>600)marks.shift();
+    if(vC<=0){tStop+=dt;if(tStop>2.2)restart();}else if(p.su[0]>R*PHI+SOUT+20)restart();}
+  else if(mode==='stop'){const p=carPose(),off=Math.abs(p.su[1])>WR,dec=off?6:mu()*G;vC=Math.max(0,vC-dec*h);skid.x+=Math.cos(skid.psi)*vC*h;skid.y+=Math.sin(skid.psi)*vC*h;
+    if(vC>0)marks.push([p.x,p.y,p.z,-Math.sin(p.psi),Math.cos(p.psi)]);if(marks.length>400)marks.shift();
+    if(vC<=0){tStop+=dt;if(tStop>2.2)restart();}}}
+
+// ---------- textes ----------
+$('fml').innerHTML='Dans un virage de rayon R pris à vitesse constante, la somme des forces pointe vers le centre : <b style="color:#534AB7">ΣF = m v²/R</b>. Sur une route plate, seul le <b style="color:#d9800f">frottement f</b> peut la fournir, et il ne dépasse pas <b>μN</b> : <b>v<sub>max</sub> = √(μ g R)</b>. Sur une route relevée d’un angle α, la réaction <b style="color:#1f5fbf">N</b> aide : sans frottement, le virage passe à <b>v = √(g R tan α)</b>.';
+function info(){const q=phys(),kmh=x=>fr(x*3.6,1)+' km/h';let s='Voiture de 1 200 kg à '+fr(vk,0)+' km/h dans un virage de '+fr(R,0)+' m'+(alD>0?' relevé de '+fr(alD,0)+'°':' plat')+', '+ADH[adh].n+' (μ = '+fr(mu(),1)+'). ';
+  s+='Il faut une accélération vers le centre a = v²/R = <b>'+fr(q.ac,2)+' m/s²</b>, soit ΣF = '+fr(MASS*q.ac/1000,2)+' kN. ';
+  s+='La route pousse avec N = m(g cos α + a sin α) = '+fr(q.N/1000,2)+' kN ; le frottement nécessaire vaut f = m(a cos α − g sin α) = '+fr(q.f/1000,2)+' kN'+(q.f<0?' (négatif : il doit retenir la voiture vers le haut du dévers)':'')+', pour un maximum μN = '+fr(q.fmax/1000,2)+' kN. ';
+  s+=q.vmax===Infinity?'Ici μ > 1/tan α : aucune vitesse ne fait sortir la voiture par l’extérieur. ':'Vitesse limite : <b>v<sub>max</sub> = '+kmh(q.vmax)+'</b>'+(alD===0?' = √(μ g R)':'')+'. ';
+  if(alD>0)s+='À '+kmh(q.v0)+', la route relevée suffit seule (f = 0). ';if(q.vmin>0)s+='Sous '+kmh(q.vmin)+', la voiture glisse vers l’intérieur. ';
+  s+=q.out?'<b>Ici, trop vite :</b> au-delà de v max, le frottement (au plus μN) ne suffit plus à tenir le rayon R : la voiture élargit sa trajectoire vers l’extérieur (rayon ≈ v²/(μg)'+(alD>0?' sur route plate ; ici, avec le dévers, ≈ v²R/v<sub>max</sub>²':'')+' = '+fr(q.R2,0)+' m) '+(q.reach?'et finit dans le bac à graviers.':'; juste au-dessus de v max, elle mord seulement sur le bord de la piste.')+' Si les roues sont bloquées, elle part tout droit selon la tangente.':q.inn?'<b>Ici, trop lent :</b> le frottement maximal ne retient pas la voiture sur le dévers, elle glisse vers l’intérieur.':'La voiture passe, en utilisant '+fr(q.use*100,0)+' % de l’adhérence disponible.';
+  $('info').innerHTML=s;}
+function upd(){['S','M','V'].forEach(k=>$('a'+k).classList.toggle('on',adh===k));$('sV').value=vk;$('sR').value=R;$('sA').value=alD;
+  $('vV').textContent=fr(vk,0)+' km/h';$('vR').textContent=fr(R,0)+' m';$('vA').textContent=fr(alD,0)+'°';$('bP').classList.toggle('on',paused);$('bP').textContent=paused?'▶ Reprendre':'Pause';info();}
+['S','M','V'].forEach(k=>$('a'+k).onclick=()=>{adh=k;restart();upd();});
+$('sV').oninput=e=>{vk=+e.target.value;restart();upd();};$('sR').oninput=e=>{R=+e.target.value;restart();upd();};$('sA').oninput=e=>{alD=+e.target.value;restart();upd();};
+$('w0').onclick=()=>{viewT=[-0.62,0.26,1];};$('wB').onclick=()=>{viewT=[0,0.12,1];};$('wT').onclick=()=>{viewT=[0.3,1.2,0.7];};$('bP').onclick=()=>{paused=!paused;upd();};
+
+// ---------- souris ----------
+function pos(e){const b=cv.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top];}
+let drag=null;
+cv.addEventListener('pointerdown',e=>{const [x,y]=pos(e);if(MOB&&y>H*0.6)return;cv.setPointerCapture(e.pointerId);drag=[x,y];cv.style.cursor='grabbing';});
+cv.addEventListener('pointermove',e=>{if(!drag)return;const [x,y]=pos(e);yawR+=(x-drag[0])*0.008;pitch=Math.max(0.05,Math.min(1.3,pitch+(y-drag[1])*0.006));viewT=null;drag=[x,y];});
+cv.addEventListener('pointerup',()=>{drag=null;cv.style.cursor='grab';});
+cv.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(0.45,Math.min(2.2,zoom*Math.exp(-e.deltaY*0.001)));},{passive:false});
+
+let last=null;
+function frame(tt){if(last===null)last=tt;const dt=Math.min(0.05,(tt-last)/1000);last=tt;t+=dt;
+  if(viewT){yawR+=(viewT[0]-yawR)*0.1;pitch+=(viewT[1]-pitch)*0.1;zoom+=(viewT[2]-zoom)*0.1;if(Math.abs(viewT[0]-yawR)+Math.abs(viewT[1]-pitch)+Math.abs(viewT[2]-zoom)<1e-3)viewT=null;}
+  if(!paused)step(dt);draw();requestAnimationFrame(frame);}
+window.__vv={set:o=>{if(o.adh)adh=o.adh;if(o.v!=null)vk=o.v;if(o.R!=null)R=o.R;if(o.a!=null)alD=o.a;restart();if(o.s!=null)sC=o.s;if(o.yaw!=null){yawR=o.yaw;pitch=o.pitch;}if(o.pause!=null)paused=o.pause;if(o.zoom!=null)zoom=o.zoom;if(o.noInset!=null)noInset=o.noInset;upd();const q=phys();return q;},
+  st:()=>({mode,sC,uC,vC})};
+upd();requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Dynamique : forces et lois de Newton<span>15 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/diagramme-forces/"><i>01</i>Diagramme de forces et 2ᵉ loi</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/inertie/"><i>02</i>1re loi : le principe d'inertie</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/referentiels-inertiels/"><i>03</i>Équivalence des référentiels inertiels</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/chariot-poulie/"><i>04</i>2e loi : F = m·a</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ascenseur/"><i>05</i>Poids apparent dans un ascenseur</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/action-reaction/"><i>06</i>Action et réaction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/action-reaction-exemples/"><i>07</i>Action-réaction : la fusée et d'autres exemples</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/plan_incline/"><i>08</i>Plan incliné</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/frottement-coef/"><i>09</i>Coefficient de frottement</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/tourniquet/"><i>10</i>Forces sur un tourniquet</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/rotation-roulement/"><i>11</i>Rotation : moment d'inertie et roulement</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-rotation-sigma-m/"><i>12</i>Faire tourner : ΣM = I·α</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-patineuse/"><i>13</i>La patineuse qui rentre les bras</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-looping/"><i>14</i>Le looping : la vitesse minimale au sommet</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-virage-voiture/"><i>15</i>Le virage : frottement ou route relevée</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

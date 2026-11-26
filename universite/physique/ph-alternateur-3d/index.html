@@ -362,7 +362,7 @@ function overlay(){
     const pm=P3(add(C0,[0.05*Math.cos(tt/2),0,0.05*Math.sin(tt/2)]));tag('θ = '+Math.round(tt*180/Math.PI)+'°',pm[0],pm[1],'#5a189a',font(800,12.5));}
   if(showB){const p=P3([0,-0.075,0.035]);tag(small()?'B = '+fr(B,2)+' T':'B = '+fr(B,2)+' T, du N vers le S',p[0],p[1],BLU,font(800,12.5));}
   if(names){const sm=small(),L=[];
-    if(!sm){L.push([[-0.11,-0.075,0.215],'cadre de '+N+' spires',OR_D],[[0.075,0.14,Z0+0.05],'volant',GREY],[[0.08,0.2,Z0+0.02],'bagues et balais',GREY],[[-0.07,YK-0.02,Z0+0.02],'manivelle',RED_D],[[LX,LY,0.115],'lampe',OR_D],[[-0.2,0.02,0.12],'voltmètre',GREY]);}
+    if(!sm){L.push([[-0.11,-0.075,0.215],'cadre de '+N+' spires',OR_D],[[0,0.13,Z0+0.078],'volant',GREY],[[0.08,0.2,Z0+0.02],'bagues et balais',GREY],[[-0.07,YK-0.02,Z0+0.02],'manivelle',RED_D],[[LX,LY,0.115],'lampe',OR_D],[[-0.2,0.02,0.12],'voltmètre',GREY]);}
     L.forEach(([p,s,c])=>{const q=P3(p);tag(s,q[0],q[1],c,font(700,12));});}}
 
 // ---------- tableau de bord et graphe ----------
@@ -382,7 +382,7 @@ function hud(){const sm=small(),P0=Phi0(),ph=flux(),e=emf(),I=cur(),deg=Math.rou
   const px=GX+12,pw=gw-24,hh=(gh2-44)/2,Tw=winT(),emx=Math.max(P0*2*Math.PI*fSet*(mode==='A'?1:0),...hist.map(o=>Math.abs(o[2])),0.05);
   // repères : là où e change de signe, Φ est extrême
   ctx.setLineDash([3,4]);ctx.strokeStyle='rgba(124,135,148,.55)';ctx.lineWidth=1;for(let i=1;i<hist.length;i++){if((hist[i-1][2]<0)!==(hist[i][2]<0)&&Math.abs(hist[i][2]-hist[i-1][2])<emx){const X_=px+pw*(1-(t-hist[i][0])/Tw);if(X_>px){ctx.beginPath();ctx.moveTo(X_,GY+16);ctx.lineTo(X_,GY+gh2-16);ctx.stroke();}}}ctx.setLineDash([]);
-  [[0,'Φ (Wb), max '+fr(P0,3),BLU_L,BLU,o=>o[1],P0],[1,'e (V), max '+fr(emx,2),GRN_L,GRN,o=>o[2],emx]].forEach(([k,lab,col,cd,fn,mx])=>{
+  [[0,'Φ (Wb), max '+fr(P0,3),BLU_L,BLU,o=>o[1],Math.max(P0,...hist.map(o=>Math.abs(o[1])),1e-6)],[1,'e (V), max '+fr(emx,2),GRN_L,GRN,o=>o[2],emx]].forEach(([k,lab,col,cd,fn,mx])=>{
     const y0=GY+16+k*(hh+12),ym=v_=>y0+hh/2+4-v_/mx*hh*0.44;ctx.font=font(700,11);ctx.fillStyle=cd;ctx.textAlign='left';ctx.fillText(lab,GX+10,y0+3);
     ctx.strokeStyle='#d5dbe2';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px,ym(0));ctx.lineTo(px+pw,ym(0));ctx.stroke();
     ctx.strokeStyle=col;ctx.lineWidth=2.3;ctx.beginPath();let f=true;hist.forEach(o=>{const X_=px+pw*(1-(t-o[0])/Tw);if(X_<px)return;f?ctx.moveTo(X_,ym(fn(o))):ctx.lineTo(X_,ym(fn(o)));f=false;});ctx.stroke();
@@ -405,7 +405,7 @@ function seg(ids,o){ids.forEach(i=>$(i).classList.toggle('on',i===o));}
 function setMode(m){mode=m;seg(['mA','mM'],m==='A'?'mA':'mM');if(m==='A'){drag=false;}upd();}
 function setLoad(b){load=b;seg(['bL','bU'],b?'bL':'bU');upd();}
 $('mA').onclick=()=>setMode('A');$('mM').onclick=()=>setMode('M');$('bL').onclick=()=>setLoad(true);$('bU').onclick=()=>setLoad(false);
-$('sF').oninput=e=>{fSet=+e.target.value;if(mode!=='A')setMode('A');upd();};$('sN').oninput=e=>{N=+e.target.value;upd();};$('sB').oninput=e=>{B=+e.target.value;upd();};$('sR').oninput=e=>{R=+e.target.value;upd();};
+$('sF').oninput=e=>{fSet=+e.target.value;if(mode!=='A')setMode('A');upd();};$('sN').oninput=e=>{N=+e.target.value;hist=[];upd();};$('sB').oninput=e=>{B=+e.target.value;hist=[];upd();};$('sR').oninput=e=>{R=+e.target.value;upd();};
 const tg=(id,f)=>{$(id).onclick=()=>{const v=f();$(id).classList.toggle('on',v);};};
 tg('bB',()=>showB=!showB);tg('bN',()=>showN=!showN);tg('bS',()=>showS=!showS);tg('bT',()=>names=!names);
 let viewT=null;function view(y,p,z,id){viewT=[y,p,z];seg(['v3','vA','vT'],id);}

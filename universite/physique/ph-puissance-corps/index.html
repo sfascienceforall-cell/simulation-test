@@ -235,7 +235,7 @@ function state(){const p=T(),o=S[mode];
 // ---------- mise en page ----------
 let L={};
 function layout(){const mob=W<640;L.mob=mob;
-  if(mob){L.sc={x:0,y:0,w:W,h:Math.round(H*0.58)};L.pn={x:8,y:L.sc.h+8,w:W-16,h:H-L.sc.h-14};}
+  if(mob){L.sc={x:0,y:0,w:W,h:Math.round(H*0.52)};L.pn={x:8,y:L.sc.h+8,w:W-16,h:H-L.sc.h-14};}
   else{const sw=Math.round(W*0.6);L.sc={x:0,y:0,w:sw,h:H};L.pn={x:sw+10,y:10,w:W-sw-20,h:H-20};}}
 let cam={x:0,y:0,k:100};
 const X=x=>L.sc.x+L.sc.w*0.5+(x-cam.x)*cam.k,Y=y=>L.sc.y+L.sc.h*0.5-(y-cam.y)*cam.k;
@@ -413,7 +413,7 @@ function icon(kind,x,y,s,col){ctx.save();ctx.translate(x,y);ctx.strokeStyle=col;
 // ---------- panneau : énergie, puissance, muscles ----------
 function panel(st){const p=L.pn,mob=L.mob,o=S[mode],Wt=work(),P=pow(),Em=Wt/ETA,done=st.frac>=0.999;
   ctx.fillStyle='#f7f9fb';rr(p.x,p.y,p.w,p.h,12);ctx.fill();ctx.strokeStyle='#dde3ea';ctx.lineWidth=1;ctx.stroke();
-  const fs=mob?11.5:Math.max(11.5,Math.min(14,p.w/29)),lh=mob?fs*1.65:Math.max(fs*1.65,Math.min(fs*1.95,p.h/26)),x=p.x+12,xr=p.x+p.w-12;let y=p.y+lh*0.8;
+  const fs=mob?11.5:Math.max(11.5,Math.min(14,p.w/29)),lh=mob?Math.max(fs*1.2,Math.min(fs*1.65,(p.h-68)/(mode==='S'?15.3:14.3))):Math.max(fs*1.65,Math.min(fs*1.95,p.h/26)),x=p.x+12,xr=p.x+p.w-12;let y=p.y+lh*0.8;
   const line=(s,c,wt)=>{ctx.font=F(wt||700,fs);ctx.fillStyle=c||INK;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(s,x,y);y+=lh;};
   const head=(s,c)=>{ctx.font=F(800,fs+0.5);ctx.fillStyle=c;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(s,x,y);y+=lh*0.95;};
   // 1. énergie
@@ -426,7 +426,7 @@ function panel(st){const p=L.pn,mob=L.mob,o=S[mode],Wt=work(),P=pow(),Em=Wt/ETA,
   // 2. puissance (échelle logarithmique 10 W → 10 kW)
   head('2. Puissance moyenne pendant l’effort',OR_D);
   line('P = '+(mode==='S'?'W':'Ep')+'/Δt = '+fk(Wt,0)+' J / '+fr(o.dt,mode==='E'?1:2)+' s = '+fk(P,0)+' W',OR_D,800);
-  const gx=x+6,gw=bw-12,gy=y+(mob?14:18),lx=v=>gx+gw*clamp((Math.log10(v)-1)/3,0,1);
+  const gx=x+6,gw=bw-12,gy=y+(mob?Math.max(14,34-lh):18),lx=v=>gx+gw*clamp((Math.log10(v)-1)/3,0,1);
   let g=ctx.createLinearGradient(gx,0,gx+gw,0);g.addColorStop(0,'#fbe9c8');g.addColorStop(1,'#f1b45a');ctx.fillStyle=g;rr(gx,gy-6,gw,12,6);ctx.fill();
   ctx.font=F(700,fs-2.5);ctx.fillStyle=MUTED;ctx.textAlign='center';ctx.textBaseline='top';[10,100,1000,10000].forEach(v=>{const xx=lx(v);ctx.fillRect(xx-0.5,gy+6,1,5);ctx.fillText(v>=1000?fk(v,0).replace(' 000',' k')+'W':v+' W',xx,gy+12);});
   REF.forEach(([v,lab,ic],i)=>{const xx=lx(v),yy=gy-(mob?20:24);icon(ic,xx,yy,mob?15:19,'#5f6b7a');ctx.fillStyle='#5f6b7a';ctx.fillRect(xx-0.75,gy-8,1.5,8);});

@@ -403,7 +403,7 @@ function gauge(o,x,y,w,h){const sm=W<560;rrect(x,y,w,h,10);ctx.fillStyle='rgba(2
   const g1=ctx.createLinearGradient(x0,0,x1,0);g1.addColorStop(0,'#e8a3a1');g1.addColorStop((X(1)-x0)/(x1-x0),'#f3e3b5');g1.addColorStop(1,'#9fd3b8');rrect(x0,yb-6,x1-x0,12,6);ctx.fillStyle=g1;ctx.fill();
   ctx.font=`700 ${sm?9.5:10.5}px Mulish,system-ui,sans-serif`;ctx.textAlign='center';ctx.fillStyle='#5f6b7a';
   [0.1,0.2,0.5,1,2,5,10].forEach(v=>{const xx=X(v);ctx.fillRect(xx-0.5,yb-9,1,18);if(!(sm&&(v===0.2||v===5)))ctx.fillText(fr(v,v<1?1:0),xx,yb+16);});
-  ctx.textAlign='left';ctx.fillStyle='#a32d2d';ctx.fillText(sm?'AM < 1 : F > charge':'AM < 1 : la force dépasse la charge',x0,y+31);ctx.textAlign='right';ctx.fillStyle='#0F6E56';ctx.fillText(sm?'AM > 1 : F < charge':'AM > 1 : la force est plus petite',x1,y+31);
+  ctx.textAlign='left';ctx.fillStyle='#a32d2d';const yl=Math.min(y+31,yb-29);ctx.fillText(sm?'AM < 1 : F > charge':'AM < 1 : la force dépasse la charge',x0,yl);ctx.textAlign='right';ctx.fillStyle='#0F6E56';ctx.fillText(sm?'AM > 1 : F < charge':'AM > 1 : la force est plus petite',x1,yl);
   const xm=X(Math.max(0.05,Math.min(10,o.AM)));ctx.fillStyle='#13233a';ctx.beginPath();ctx.moveTo(xm,yb-8);ctx.lineTo(xm-7,yb-18);ctx.lineTo(xm+7,yb-18);ctx.closePath();ctx.fill();ctx.fillRect(xm-1.5,yb-8,3,16);}
 function silhouette(x,y,h){// petit personnage : où se trouve le levier dans le corps
   const k=h/1.75;ctx.save();rrect(x-6,y-6,h*0.52+12,h+12,10);ctx.fillStyle='rgba(255,255,255,.88)';ctx.fill();ctx.strokeStyle='rgba(19,35,58,.15)';ctx.lineWidth=1;ctx.stroke();
@@ -424,7 +424,7 @@ function draw(){size();const o=calc(),sm=W<560;
       :[['3e genre : l’avant-bras','#13233a',800],['charge : poids porté P = '+fr(o.Q,1)+' N',COL.c],['force du biceps F = '+fr(o.F,0)+' N',COL.m],['réaction du coude R = '+fr(o.R,0)+' N (vers le bas)',COL.R]];
     panel(10,10,lines);
     const sh=sm?92:122;silhouette(W-sh*0.52-16,16,sh);
-    const bh=124,gh=sm?64:124;
+    const bh=124,gh=sm?80:124;
     if(sm){schema(o,10,H-bh-gh-18,W-20,bh);gauge(o,10,H-gh-10,W-20,gh);}else{const w1=Math.min(470,W*0.52);schema(o,10,H-bh-10,w1,bh);gauge(o,w1+20,H-gh-10,Math.min(400,W-w1-30),gh);}}
   else{SCH=null;GAU=null;}}
 function upd(){const o=calc(),G0=GEN[G],s=S[G];

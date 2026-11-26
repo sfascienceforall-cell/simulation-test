@@ -276,11 +276,15 @@ function diagram(){const c=C(),p=L.p,mob=L.mob;
   ctx.strokeStyle=BLUE;ctx.lineWidth=3.2;ctx.beginPath();xs.forEach((xx,i)=>{const X=PX(xx),Y=PY(c.Ep(xx));i?ctx.lineTo(X,Y):ctx.moveTo(X,Y);});ctx.stroke();ctx.restore();
   // E (ligne horizontale qu'on attrape)
   const YE=PY(E);ctx.strokeStyle=GREEN_D;ctx.lineWidth=2.4;ctx.setLineDash([8,5]);ctx.beginPath();ctx.moveTo(p.x0,YE);ctx.lineTo(p.x1,YE);ctx.stroke();ctx.setLineDash([]);
-  const eTxt='E = '+fr(E,c.ed)+' '+c.un;ctx.font=F(800,mob?11.5:13);const ew=ctx.measureText(eTxt).width+18;L.eH={x:p.x1-ew,y:YE-12,w:ew,h:24};rr(p.x1-ew,YE-12,ew,24,8);ctx.fillStyle=GREEN_D;ctx.fill();ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(eTxt,p.x1-ew/2,YE+0.5);
-  ctx.fillStyle='rgba(255,255,255,.9)';ctx.fillRect(p.x1-ew-12,YE-1,6,2);
   // points de rebroussement
   const [tl,tr]=turning();L.tp=[tl,tr];[tl,tr].forEach((q,i)=>{if(q==null)return;const X=PX(q);ctx.strokeStyle=GREEN_D;ctx.lineWidth=1.5;ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(X,YE);ctx.lineTo(X,p.y0);ctx.stroke();ctx.setLineDash([]);
     ctx.fillStyle=GREEN_D;ctx.beginPath();ctx.arc(X,YE,4.5,0,7);ctx.fill();tag((i?(K==='M'?'r₂':'x₂'):(K==='M'?'r₁':'x₁'))+' = '+fr(q,c.xd),X+(i?6:-6),YE-24,GREEN_D,F(800,mob?10.5:12),i?'left':'right','rgba(255,255,255,.92)');});
+  // étiquette E dessinée après les rebroussements : aucun point ne la cache
+  // place de l'étiquette E : au milieu des rebroussements (la bille n'y est jamais à la hauteur E), sinon au bord libre
+  const eTxt='E = '+fr(E,c.ed)+' '+c.un;ctx.font=F(800,mob?11.5:13);const ew=ctx.measureText(eTxt).width+18;let ex=p.x1-ew;
+  if(tl!=null&&tr!=null){const xa=PX(tl),xb=PX(tr);if(xb-xa>ew+40)ex=clamp((xa+xb)/2-ew/2,p.x0+4,p.x1-ew);else if(xb>p.x1-ew-14&&xa>p.x0+ew+18)ex=p.x0+4;}
+  else if(tr==null&&tl!=null&&PX(tl)>p.x1-ew-14)ex=p.x0+4;
+  const pillE=()=>{L.eH={x:ex,y:YE-12,w:ew,h:24};rr(ex,YE-12,ew,24,8);ctx.fillStyle=GREEN_D;ctx.fill();ctx.font=F(800,mob?11.5:13);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(eTxt,ex+ew/2,YE+0.5);};pillE();
   // équilibres
   if(showQ)EQ.forEach(([xe,ee,ty])=>{const X=PX(xe),Y=PY(ee);if(Y<p.y1-5||Y>p.y0+5)return;ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(X,Y,7,0,7);ctx.fill();ctx.strokeStyle=ty==='stable'?GREEN_D:RED_D;ctx.lineWidth=3;ctx.stroke();
     if(ty==='stable'){ctx.fillStyle=GREEN_D;ctx.beginPath();ctx.arc(X,Y,3,0,7);ctx.fill();}
@@ -290,12 +294,19 @@ function diagram(){const c=C(),p=L.p,mob=L.mob;
     const nx=d/nl,ny=-1/nl,BX=X+nx*r,BY=Yc+ny*r;
     const base=c.y0<0?PY(0):p.y0;ctx.lineCap='butt';ctx.strokeStyle='rgba(24,95,165,.55)';ctx.lineWidth=mob?6:8;ctx.beginPath();ctx.moveTo(X,base);ctx.lineTo(X,Yc);ctx.stroke();
     ctx.strokeStyle='rgba(29,158,117,.75)';ctx.beginPath();ctx.moveTo(X,Yc);ctx.lineTo(X,YE);ctx.stroke();
-    if(!noLab){tag('Ep',X-(mob?12:16),(base+Yc)/2,BLUE,F(800,mob?11:12.5),'right');if(Math.abs(YE-Yc)>16)tag('Ec',X-(mob?12:16),(Yc+YE)/2,GREEN_D,F(800,mob?11:12.5),'right');}
+    if(!noLab){tag('Ep',X-(mob?12:16),(base+Yc)/2,BLUE,F(800,mob?11:12.5),'right');if(Math.abs(YE-Yc)>16&&!(X>L.eH.x-4&&X-30<L.eH.x+L.eH.w&&(Yc+YE)/2<YE+22))tag('Ec',X-(mob?12:16),(Yc+YE)/2,GREEN_D,F(800,mob?11:12.5),'right');}
     ctx.fillStyle='rgba(0,0,0,.2)';ctx.beginPath();ctx.ellipse(X+2,Yc+2,r*0.9,r*0.35,Math.atan(d),0,7);ctx.fill();
     ball(BX,BY,r,'#fff7e0','#e0662b','#8a2f0c');L.ball=[BX,BY,r];
     // force F = −dEp/dx
     const Fv=-c.dEp(x),Fs=(c.y1-c.y0)/(c.x1-c.x0)*1.2,len=clamp(Fv/Fs*(mob?50:70),-(mob?70:100),mob?70:100);
-    if(Math.abs(len)>6){arrow(BX,BY-r-10,BX+len,BY-r-10,OR_D,3);tag('F = −dEp/dx',BX+len+(len>0?8:-8),BY-r-24,OR_D,F(800,mob?10.5:12),len>0?'left':'right');}}
+    if(Math.abs(len)>6){
+      // près d'un rebroussement : la flèche ne traverse pas les étiquettes x₁, x₂ (centrées sur YE − 24) et l'étiquette se réduit à « F »
+      const nearTp=L.tp.some(q=>q!=null&&Math.abs(PX(q)-BX)<(mob?150:190));let ay=BY-r-10;if(nearTp&&ay>YE-40&&ay<YE-8)ay=Math.max(Yc+7,YE+21);
+      arrow(BX,ay,BX+len,ay,OR_D,3);
+      if(nearTp&&Math.abs(BY-r-24-(YE-24))<50)tag('F',BX+len+(len>0?7:-7),ay,OR_D,F(800,mob?11:12.5),len>0?'left':'right');
+      else tag('F = −dEp/dx',BX+len+(len>0?8:-8),ay-14,OR_D,F(800,mob?10.5:12),len>0?'left':'right');}
+    // la flèche F ne barre jamais l'étiquette E ; la bille reste par-dessus
+    if(BX+r>L.eH.x-4&&BX-r<L.eH.x+L.eH.w+4){pillE();ball(BX,BY,r,'#fff7e0','#e0662b','#8a2f0c');}}
   // titre
   const ttl=K==='R'?'Ressort : Ep = ½·k·x²':K==='M'?'Molécule (Morse, proche de H₂) : Ep(r)':K==='P'?'Relief : Ep = m·g·y(x), comme la piste':'Ta courbe : glisse sur le graphique pour la redessiner';
   tag(ttl,p.x0+6,18,'#fff',F(800,mob?11.5:13.5),'left','rgba(19,35,58,.82)');

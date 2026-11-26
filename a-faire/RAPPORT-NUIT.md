@@ -26,6 +26,16 @@ Les `id` de physique suivent la liste des canevas : `avant-bras-biceps` → `ph-
 - Vérification : 24 acceptées, 6 refusées puis corrigées (étiquettes qui se chevauchaient : biceps, ΣM = Iα, entropie, tension de cycle, polarimètre ; perfusion qui restait blanche si le canevas démarrait à 0 px).
 - Tests : chimie 78 pages, 0 erreur ; physique, 0 erreur sur les pages touchées.
 
+## Vague P2 (88 simulations) : en cours
+
+**Publié le 26/11 vers 04:35** (commit 960a80e) : 60 nouvelles simulations.
+- Physique BA1 (32) : el-champ-distributions, el-dipole-couple, el-gauss-flux-ferme, el-gauss-distributions, el-influence-totale, el-condensateur-dielectrique, el-polarisation-milieu, el-conduction-drude, ph-lancer-vertical, ph-aller-retour, ph-traversee-riviere, ph-looping, ph-airbag-impulsion, ph-puissance-corps, ph-bilan-travaux, ph-diagramme-energie, ph-leviers-corps, ph-poutre-deux-appuis, ph-apesanteur, ph-pression-profondeur, ph-generateur-reel, ph-spectrometre-masse, ph-lorentz-helice, ph-irm-principe, ph-alternateur-3d, ph-foucault, ph-auto-induction, ph-son-onde-pression, ph-vidange-torricelli, ph-condensateur-plan, ph-cage-faraday, ph-courant-corps.
+- Chimie (28) : ch-spectres-continu-raies, ch-ionisations-successives, ch-puits-liaison, ch-hybridation-3d, ch-sigma-pi-3d, ch-london-dipoles, ch-eau-ponts-h-3d, ch-solubilite-alcools, ch-exo-endo-mains, ch-entropie-univers, ch-minimum-g, ch-equilibre-dynamique, org-orbitales-hybrides-3d, org-rotation-liaison-pi, org-effet-inductif, org-recepteur-chiral-3d, org-echelle-pka-organique, org-intermediaires-3d, org-e2-antiperiplanaire-3d, org-diene-addition-12-14, org-ozonolyse, org-benzene-pi-3d, org-ouverture-epoxyde-3d, org-addition-nucleophile-3d, org-tautomerie-ceto-enol, org-tests-tollens-fehling, org-savon-micelle-3d, org-basicite-amines-3d.
+- Toutes relues (relecteur scientifique, une quarantaine d'erreurs de texte ou d'ordre de grandeur corrigées, dont la courbe de fibrillation de ph-courant-corps) et testées (chimie : 112 pages, 0 erreur).
+- Vérification visuelle : 32 pages vérifiées et corrigées avant publication ; pour les 28 autres, les corrections d'étiquettes qui se chevauchent sont en cours (publiées dans la mise à jour suivante). Un vrai blocage trouvé et corrigé avant publication : ph-condensateur-plan se figeait avec U₀ = 0.
+- Décision prise sans Enzo : publier par paquets les pages relues et testées, puis pousser les retouches d'affichage ensuite, pour avancer pendant la nuit.
+- Chapitre choisi pour les amines (pas de chapitre « Amines ») : L12. Titre de ch-minimum-g : « pourquoi la réaction n'est pas totale » (et non « s'arrête »).
+
 ## Décisions prises sans Enzo
 
 - `a-faire/CONSIGNE-NUIT.md` et la liste `a-faire/canevas/` sont arrivés sur main pendant la nuit (autre session). Les `id` des nouvelles simulations suivent cette liste (`ph-…`, `ch-…`, `org-…`), même si les agents de P1 avaient d'abord pris d'autres noms : rien n'était encore publié.

@@ -247,8 +247,11 @@ function stepSolver(){if(solved)return;const md=sor(small()?30:45);grads();if(md
 // =================== caméra ===================
 let yaw=0.32,pitch=0.16,zoom=1,viewT=null,GH=0,C={},placed=false;
 function cam(){if(!placed&&W>0){placed=true;if(small()){yaw=0.25;}}
-  GH=Math.round(small()?110:120);const sh=H-GH;const k=Math.min(W*0.95/(small()?2.4:2.9),sh*0.8/2.3)*zoom,Dc=6.5;
-  C={Dc,f:k*Dc,cx:W*0.5,cy:sh*(small()?0.56:0.54),xc:small()?0.0:-0.1,zc:1.08,cyw:Math.cos(yaw),syw:Math.sin(yaw),cp:Math.cos(pitch),sp:Math.sin(pitch)};}
+  GH=Math.round(small()?110:120);const sh=H-GH;
+  // petit écran : le champ s'élargit avec la distance s pour garder le Van de Graaff dans le cadre
+  const lft=-s-2*RS-0.2,rgt=CX1+0.15,spn=small()?Math.max(2.4,rgt-lft):2.9,xcS=spn>2.4?(lft+rgt)/2:0;
+  const k=Math.min(W*0.95/spn,sh*0.8/2.3)*zoom,Dc=6.5;
+  C={Dc,f:k*Dc,cx:W*0.5,cy:sh*(small()?0.56:0.54),xc:small()?Math.min(0,xcS):-0.1,zc:1.08,cyw:Math.cos(yaw),syw:Math.sin(yaw),cp:Math.cos(pitch),sp:Math.sin(pitch)};}
 function pr(x,y,z){x-=C.xc;z-=C.zc;const xr=x*C.cyw-y*C.syw,yr=x*C.syw+y*C.cyw,dep=C.Dc+yr*C.cp-z*C.sp,k=C.f/Math.max(0.05,dep);return[C.cx+xr*k,C.cy-(z*C.cp+yr*C.sp)*k,dep,k];}
 function camPos(){return[C.xc-C.Dc*C.cp*C.syw,-C.Dc*C.cp*C.cyw,C.Dc*C.sp+C.zc];}
 function unprojY0(X,Y){const u=(X-C.cx)/C.f,v=(C.cy-Y)/C.f,a11=C.cyw-u*C.syw*C.cp,a12=u*C.sp,a21=C.syw*C.sp-v*C.syw*C.cp,a22=C.cp+v*C.sp,b1=u*C.Dc,b2=v*C.Dc,det=a11*a22-a12*a21;

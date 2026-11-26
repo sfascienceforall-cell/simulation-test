@@ -957,7 +957,7 @@ SFA.sim({
       var nMean = 2 * cnt / N;
       /* étiquettes */
       cbTag(ctx, (liq ? "Eau liquide" : "Glace Ih") + " · " + cbFmt(T, 0) + " °C", 10, 18, {align:"left", bg:"rgba(255,255,255,.13)", color:"#fff", size:ph ? 11.5 : 13});
-      cbTag(ctx, "en ce moment : " + cbFmt(nMean, 2) + " ponts H / molécule", W - 10, 18, {align:"right", bg:"rgba(120,220,255,.92)", color:"#05202b", size:ph ? 11.5 : 13});
+      cbTag(ctx, "en ce moment : " + cbFmt(nMean, 2) + " ponts H / molécule", W - 10, ph ? 44 : 18, {align:"right", bg:"rgba(120,220,255,.92)", color:"#05202b", size:ph ? 11.5 : 13});
       var ly = H - 16;
       cbBall(ctx, 17, ly, 5, "#e0453a"); cbText(ctx, "O", 26, ly, {size:10.5, color:"#c9d6ea", align:"left"});
       cbBall(ctx, 44, ly, 4, "#f4f6f9"); cbText(ctx, "H", 52, ly, {size:10.5, color:"#c9d6ea", align:"left"});

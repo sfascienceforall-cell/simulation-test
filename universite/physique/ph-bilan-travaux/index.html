@@ -301,9 +301,11 @@ function scene(st){const sc=L.sc,k=cam.k,q=th*RAD;
   for(let i=Math.floor(s0/2.7);i<=Math.ceil(s1/2.7);i++){const s=i*2.7+1.3,back=i%2===0;if(Math.abs(s-st.d)<0.9)continue;const p=sp(s,0),bx=X(p[0]),by=Y(p[1])-(back?0.35:0)*k,hh=(back?1.6:1.2)*k*(0.85+((i*7)%5)*0.06);
     ctx.fillStyle='#6d4c33';ctx.fillRect(bx-0.04*k,by-0.25*k,0.08*k,0.25*k);for(let j=0;j<3;j++){const yb=by-0.2*k-j*hh*0.25,w2=(0.5-j*0.12)*k*(back?1.1:0.9);g=ctx.createLinearGradient(bx-w2,0,bx+w2,0);g.addColorStop(0,back?'#3d6b52':'#2f5d45');g.addColorStop(1,back?'#28503b':'#1f4733');
       ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(bx,yb-hh*0.42);ctx.lineTo(bx+w2,yb);ctx.lineTo(bx-w2,yb);ctx.closePath();ctx.fill();ctx.fillStyle='rgba(255,255,255,.85)';ctx.beginPath();ctx.moveTo(bx,yb-hh*0.42);ctx.lineTo(bx+w2*0.35,yb-hh*0.28);ctx.lineTo(bx-w2*0.35,yb-hh*0.28);ctx.closePath();ctx.fill();}}
+  // étiquette θ : sous la ligne horizontale, côté droit du sommet (calculée avant les repères pour ne pas les recouvrir)
+  const thX1=SP(st.d,0)[0],thDx=Math.max(1,SP(st.d+1,0)[0]-thX1),thO=SP(Math.max(st.d-1.4,st.d-(thX1-8)/thDx),0),pX=SP(st.d,0.3)[0],thR=Math.min(52,0.6*k),thL=[thO[0]+thR*0.62,thO[1]+14];
   // repères tous les mètres, ligne de départ et arrivée
   for(let m=Math.max(0,Math.floor(s0));m<=Math.min(D,s1);m++){const p=SP(m,0),pt=SP(m,m===0||m===D?0.9:0.35);ctx.strokeStyle=m===0||m===D?'#d9534f':'#8a96a5';ctx.lineWidth=m===0||m===D?3:2;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(pt[0],pt[1]);ctx.stroke();
-    if(!noLab){ctx.font=F(700,L.mob?10:11);ctx.fillStyle='#5f6b7a';ctx.textAlign='center';ctx.textBaseline='top';const lb=SP(m,-0.12);ctx.fillText(m+' m',lb[0],lb[1]);}
+    if(!noLab){ctx.font=F(700,L.mob?10:11);ctx.fillStyle='#5f6b7a';ctx.textAlign='center';ctx.textBaseline='top';const lb=SP(m,-0.12);if(!(th>0&&Math.abs(lb[0]-thL[0])<48&&Math.abs(lb[1]+6-thL[1])<18)&&!(showF&&Math.abs(lb[0]-pX)<20))ctx.fillText(m+' m',lb[0],lb[1]);}
     if(m===D){ctx.fillStyle='#d9534f';ctx.beginPath();ctx.moveTo(pt[0],pt[1]);ctx.lineTo(pt[0]+0.35*k,pt[1]+0.1*k);ctx.lineTo(pt[0],pt[1]+0.2*k);ctx.closePath();ctx.fill();}}
   // la luge, la corde, l'adulte
   const r=rope(),attach=sp(st.d+0.58,ATT),hand=sp(st.d+0.58+r.l*Math.cos(al*RAD),ATT+r.l*Math.sin(al*RAD));
@@ -317,8 +319,8 @@ function scene(st){const sc=L.sc,k=cam.k,q=th*RAD;
   if(!noLab){const A=[X(attach[0]),Y(attach[1])],R2=Math.min(46,0.45*k),a0=-q,a1=-q-al*RAD;ctx.strokeStyle=BLUE;ctx.lineWidth=1.6;ctx.setLineDash([4,3]);const e=SP(st.d+0.58+0.6,ATT);ctx.beginPath();ctx.moveTo(A[0],A[1]);ctx.lineTo(e[0],e[1]);ctx.stroke();ctx.setLineDash([]);
     ctx.beginPath();ctx.arc(A[0],A[1],R2,a1,a0);ctx.stroke();tag('α = '+al+'°',A[0]+(R2+18)*Math.cos((a0+a1)/2),A[1]+(R2+12)*Math.sin((a0+a1)/2),BLUE,F(800,L.mob?11:12.5));}
   // angle θ de la pente
-  if(!noLab&&th>0){const O=SP(st.d-1.4,0),R3=Math.min(52,0.6*k);ctx.strokeStyle=RED_D;ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(O[0],O[1]);ctx.lineTo(O[0]+R3+16,O[1]);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.arc(O[0],O[1],R3,-q,0);ctx.stroke();
-    tag('θ = '+th+'°',O[0]+R3+24,O[1]-R3*Math.sin(q/2)-4,RED_D,F(800,L.mob?11:12.5),'left');}
+  if(!noLab&&th>0){const O=thO,R3=thR;ctx.strokeStyle=RED_D;ctx.lineWidth=1.5;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(O[0],O[1]);ctx.lineTo(O[0]+R3+16,O[1]);ctx.stroke();ctx.setLineDash([]);ctx.beginPath();ctx.arc(O[0],O[1],R3,-q,0);ctx.stroke();
+    tag('θ = '+th+'°',thL[0],thL[1],RED_D,F(800,L.mob?11:12.5),'center');}
   // les forces sur la luge
   if(showF){const c=SP(st.d,0.3),sc2=Math.min(0.0042*k,(L.mob?70:105)/(M*G)),p=st.p,dq=[Math.cos(q),-Math.sin(q)],nq=[-Math.sin(q),-Math.cos(q)],ra=[Math.cos(q+al*RAD),-Math.sin(q+al*RAD)];
     const fv=(v,len,col,lbl,off)=>{const x2=c[0]+v[0]*len*sc2,y2=c[1]+v[1]*len*sc2;arrow(c[0]+(off?off[0]:0),c[1]+(off?off[1]:0),x2+(off?off[0]:0),y2+(off?off[1]:0),col,3.2);if(len*sc2>14)tag(lbl,x2+(off?off[0]:0)+v[0]*14,y2+(off?off[1]:0)+v[1]*14,col,F(800,L.mob?11.5:13));};

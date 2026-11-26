@@ -431,7 +431,7 @@ function tauGeo(kind){
     E = [CaE, Cc, C3, [0, 1.36, 0], hE[0], hE[1], K[6]].concat(H3);
     N = [CaN, Cc, C3, [0, 1.28, 0], hN[0], hN[1], K[6]].concat(H3);
     els = ["C", "C", "C", "O", "H", "H", "H", "H", "H", "H"];
-    g = {n:10, iCa:0, iCc:1, iO:3, iHa:6, dA:dz[0], dirH:[-0.9455, 0.3256, 0], dS:nrm([-0.75, 0.55, 0.55]), ctr:[-0.75, 0.3, 0], R:3.1, a0:-0.3,
+    g = {n:10, iCa:0, iCc:1, iO:3, iHa:6, dA:dz[0], dirH:[-0.9455, 0.3256, 0], dS:nrm([-0.75, 0.55, 0.55]), ctr:[-0.75, 0.3, 0], R:3.9, a0:-0.3,
       bK:[[0, 1], [1, 2], [1, 3, 2], [0, 4], [0, 5], [0, 6], [2, 7], [2, 8], [2, 9]],
       bN:[[0, 1, 1.5], [1, 2], [1, 3, 1.5], [0, 4], [0, 5], [2, 7], [2, 8], [2, 9]],
       bE:[[0, 1, 2], [1, 2], [1, 3], [0, 4], [0, 5], [2, 7], [2, 8], [2, 9]], hb:null, glowN:[3, 0]};
@@ -449,7 +449,7 @@ function tauGeo(kind){
     N = [C1, C2, [0, -0.28, 0], C4, C5, add(C2, mul(nrm(sub(O2E, C2)), 1.27)), add(C4, mul(nrm(sub(O4E, C4)), 1.27)), K[7], add([0, -0.28, 0], [0, -1.08, 0])].concat(m1, m5);
     els = ["C", "C", "C", "C", "C", "O", "O", "H", "H", "H", "H", "H", "H", "H", "H"];
     var mb = [[0, 9], [0, 10], [0, 11], [4, 12], [4, 13], [4, 14]];
-    g = {n:15, iCa:2, iCc:1, iO:5, iO4:6, iHa:7, dA:pr[0], dirH:nrm([0.98, 0.17, 0]), dS:nrm([-0.55, 0.75, 0.75]), ctr:[0, 0.05, 0], R:3.6, a0:0.35,
+    g = {n:15, iCa:2, iCc:1, iO:5, iO4:6, iHa:7, dA:pr[0], dirH:nrm([0.98, 0.17, 0]), dS:nrm([-0.55, 0.75, 0.75]), ctr:[0, 0.05, 0], R:4.3, a0:0.35,
       bK:[[0, 1], [1, 2], [2, 3], [3, 4], [1, 5, 2], [3, 6, 2], [2, 7], [2, 8]].concat(mb),
       bN:[[0, 1], [1, 2, 1.5], [2, 3, 1.5], [3, 4], [1, 5, 1.5], [3, 6, 1.5], [2, 8]].concat(mb),
       bE:[[0, 1], [1, 2, 2], [2, 3], [3, 4], [1, 5], [3, 6, 2], [2, 8]].concat(mb), hb:true, glowN:[5, 6, 2]};
@@ -468,7 +468,7 @@ function tauFrames(g, cat){
   var Oat = function(geo){ return geo[iO]; };
   if (cat === "acide"){
     /* F0 : H3O+ approche de O */
-    F = fr(g.K); water(F, W1, add(O0, mul(dS, 4.4)), mul(dS, -1), 1); F.P[Hs] = add(F.P[W1], mul(dS, -0.98));
+    F = fr(g.K); water(F, W1, add(O0, mul(dS, 3.3)), mul(dS, -1), 1); F.P[Hs] = add(F.P[W1], mul(dS, -0.98));
     water(F, W2, add(Ha0, mul(dA, 4.6)), mul(dA, -1), 0); molB(F, g.bK); F.B.push([W1, W1 + 1], [W1, W1 + 2], [W1, Hs], [W2, W2 + 1], [W2, W2 + 2]); F.bdg[W1] = "+";
     F.t = "Cétone + H₃O⁺"; F.s = "Milieu acide : un ion oxonium H₃O⁺ approche de l'oxygène du C=O"; fs.push(F);
     /* F1 : contact, flèches */
@@ -493,7 +493,7 @@ function tauFrames(g, cat){
     F.t = "Énol formé, H₃O⁺ régénéré"; F.s = "Bilan : un H est passé du carbone α à l'oxygène ; l'acide n'est pas consommé (catalyseur)"; fs.push(F);
   } else {
     /* F0 : HO− approche de Hα ; W1 (eau) loin */
-    F = fr(g.K); water(F, W2, add(Ha0, mul(dA, 4.4)), mul(dA, -1), 1); F.A[W2 + 2] = 0;
+    F = fr(g.K); water(F, W2, add(Ha0, mul(dA, 3.0)), mul(dA, -1), 1); F.A[W2 + 2] = 0;
     water(F, W1, add(O0, mul(dS, 5.4)), mul(dS, -1), 0); F.P[Hs] = add(F.P[W1], mul(dS, -0.98)); F.A[Hs] = 0;
     molB(F, g.bK); F.B.push([W2, W2 + 1], [W1, W1 + 1], [W1, Hs]); F.bdg[W2] = "−";
     F.t = "Cétone + HO⁻"; F.s = "Milieu basique : l'ion hydroxyde approche d'un H du carbone α"; fs.push(F);
@@ -1099,7 +1099,7 @@ SFA.sim({
         ball(ctx, box.x + (ph ? 112 : 104), ly, 5, "#8a63d2"); label(ctx, "Na⁺", box.x + (ph ? 120 : 112), ly, {size:10.5, weight:800, col:"#6a46b4", align:"left"});
         label(ctx, "queue C₁₂", box.x + box.w - 10, ly, {size:10.5, weight:800, col:"#4f5a69", align:"right"});
       } else {
-        var sc2 = Math.min(box.w / 17, box.h / 13), V2 = {st:st, sc:sc2, cx:box.x + box.w / 2, cy:box.y + box.h / 2 + 6};
+        var sc2 = Math.min(box.w, box.h) / 25, V2 = {st:st, sc:sc2, cx:box.x + box.w / 2, cy:box.y + box.h / 2 + 6};
         drawScene(c, V2, SDS.at, SDS.bd);
         ctx.restore();
         label(ctx, "molécule isolée de SDS", box.x + 10, box.y + 14, {size:11, weight:800, col:"#2c3a4e", align:"left", bg:"rgba(255,255,255,.85)"});
@@ -1310,7 +1310,7 @@ SFA.sim({
       var atoms = G.at.slice(), bonds = G.bd.slice();
       if (view === "prot" && hpAl > 0){
         var dirL = nrm(G.lp.p ? G.lp.dir : G.lp.dir), hp0 = add(base, mul(dirL, 1.02)), hp = add(hp0, mul(dirL, 3.2 * hpFar));
-        var hi = atoms.length; atoms.push(At("H", hp, {badge:bound ? null : "+", badgeCol:"#c0392b", ring:"rgba(42,111,219,.9)"}));
+        var hi = atoms.length; atoms.push(At("H", hp, {alpha:bound ? 1 : Math.max(0, 1 - 1.5 * hpFar), badge:bound ? null : "+", badgeCol:"#c0392b", ring:"rgba(42,111,219,.9)"}));
         if (bound){ bonds.push({a:0, b:hi}); atoms[0] = At("N", atoms[0].p, {badge:"+", badgeCol:"#c0392b"}); }
         else if (hpFar < 0.35) bonds.push({a:0, b:hi, dash:true, alpha:0.7});
       }

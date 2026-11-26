@@ -610,7 +610,7 @@ SFA.sim({
       var gc = g.ctx, GW = g.W, GH = g.H;
       gc.fillStyle = "#fbfcfe"; gc.fillRect(0, 0, GW, GH);
       var bx0 = 0, bw2 = phone ? GW : GW * 0.5, bh2 = phone ? GH * 0.52 : GH;
-      var y0b = phone ? 30 : 30, y1b = bh2 - 16, ymid = (y0b + y1b) / 2, sc = (y1b - y0b) / 2 / 28;
+      var y0b = phone ? 30 : 30, y1b = bh2 - 16, ymid = (y0b + y1b) / 2, sc = (y1b - y0b) / 2 / 34;
       var axL = bx0 + 38;
       S.draw.line(g, axL, ymid, bx0 + bw2 - 8, ymid, "#8a95a3", 1.2);
       S.draw.line(g, axL, y0b, axL, y1b, "#8a95a3", 1.2);
@@ -641,7 +641,7 @@ SFA.sim({
       /* courbe ΔS univers(T) */
       var gax = phone ? S.draw.axes(g, {x0:-30, x1:30, y0:-3.2, y1:3.2, l:44, r:12, t:bh2 + 18, b:30, yl:"ΔS univers", stepX:10, stepY:1})
                       : S.draw.axes(g, {x0:-30, x1:30, y0:-3.2, y1:3.2, l:GW * 0.5 + 44, r:12, t:16, b:30, yl:"ΔS univers", stepX:10, stepY:1});
-      ccT(S, g, "T (°C)", gax.R, gax.Y(0) + 27, {size:11, color:"#2c3a4e", align:"right", weight:700, halo:true});
+      ccT(S, g, "T (°C)", gax.R, gax.Y(0) - 9, {size:11, color:"#2c3a4e", align:"right", weight:700, halo:true});
       var fU = function(x){ return ccUniv(x, fus).dSu; };
       S.draw.area(g, gax, function(x){ return Math.max(0, fU(x)); }, -30, 30, "#24775a", 0.18);
       S.draw.area(g, gax, function(x){ return Math.min(0, fU(x)); }, -30, 30, "#c0321d", 0.14);
@@ -781,8 +781,6 @@ SFA.sim({
       ctx.restore();
       /* extrémités */
       S.draw.dot(c, X(0), Yg(0), 5, "#2f6fd1"); S.draw.dot(c, X(1), Yg(dG0), 5, "#e07a1f");
-      ccT(S, c, "A pur : G = 0", X(0) + 10, Yg(0) - 12, {size:ccFz(c, 10.5), color:"#1f4b9e", align:"left", weight:800, halo:true});
-      ccT(S, c, "B pur : G = ΔrG°", X(1) - 4, Yg(dG0) - 14, {size:ccFz(c, 10.5), color:"#a2510f", align:"right", weight:800, halo:true});
       /* minimum et K */
       var xm = X(xe), ym = Yg(Gmin);
       S.draw.line(c, xm, ym + 6, xm, gyb, "#24775a", 1.4, [4, 4]);
@@ -800,6 +798,8 @@ SFA.sim({
       var lx = Math.max(gx0 + 70, Math.min(gx0 + gw - 70, bcx)), ly = bcy - geo.br - (Math.abs(bcx - X(1)) < 150 ? 36 : 16);
       if (ly < top + 4) ly = bcy + geo.br + 18;
       ccT(S, c, dirTxt, lx, ly, {size:ccFz(c, 12), color:Math.abs(sl) < 0.05 ? "#24775a" : "#c0321d", weight:800, bg:"rgba(255,255,255,.93)"});
+      ccT(S, c, "A pur : G = 0", X(0) + 10, Yg(0) - 12, {size:ccFz(c, 10.5), color:"#1f4b9e", align:"left", weight:800, bg:"rgba(255,255,255,.85)"});
+      ccT(S, c, "B pur : G = ΔrG°", X(1) - 4, Yg(dG0) - 14, {size:ccFz(c, 10.5), color:"#a2510f", align:"right", weight:800, bg:"rgba(255,255,255,.85)"});
       if (!phone) ccT(S, c, "attrape la bille · glisse sur la boîte pour la tourner", W - 12, 12, {size:10.5, color:"#7b8694", align:"right", weight:600});
 
       /* --- boîte de molécules en 3D --- */

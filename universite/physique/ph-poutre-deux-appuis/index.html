@@ -330,7 +330,7 @@ function bars(x0,y0,w,h){const R=reac(x),sm=W<560,mx=Math.max(1,(m+M)*g*1.05);rr
     ctx.fillStyle='#13233a';ctx.textAlign='center';ctx.font=`800 ${sm?10.5:11.5}px Mulish,system-ui,sans-serif`;ctx.fillText(n,cx,yb+10);ctx.fillStyle=col;ctx.fillText(fr(tipSide?vv:Math.max(0,v),0)+' N',cx,yb-hv-9);});
   ctx.strokeStyle='#8d99a6';ctx.beginPath();ctx.moveTo(x0+8,yb);ctx.lineTo(x0+w-8,yb);ctx.stroke();}
 function graph(x0,y0,w,h){const sm=W<560;rrect(x0,y0,w,h,10);ctx.fillStyle='rgba(255,255,255,.92)';ctx.fill();ctx.strokeStyle='rgba(19,35,58,.15)';ctx.lineWidth=1;ctx.stroke();
-  const gx0=x0+40,gx1=x0+w-12,gy0=y0+24,gy1=y0+h-22,Rm=(m+M)*g*1.6,Rn=-(m+M)*g*0.55,X=s=>gx0+s/L*(gx1-gx0),Y=r=>gy1-(r-Rn)/(Rm-Rn)*(gy1-gy0);GR={x0,y0,w,h,gx0,gx1,X};
+  const gx0=x0+40,gx1=x0+w-12,gy0=y0+24,gy1=y0+h-22,Pg=(m+M)*g,ext=[0,L].reduce((e,ss)=>{const q=reac(ss);return[Math.min(e[0],q.RA,q.RB),Math.max(e[1],q.RA,q.RB)];},[0,0]),Rm=Math.max(Pg*1.6,ext[1]+Pg*0.12),Rn=Math.min(-Pg*0.55,ext[0]-Pg*0.12),X=s=>gx0+s/L*(gx1-gx0),Y=r=>gy1-(r-Rn)/(Rm-Rn)*(gy1-gy0);GR={x0,y0,w,h,gx0,gx1,X};
   ctx.font=`800 ${sm?10.5:12}px Mulish,system-ui,sans-serif`;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillStyle='#13233a';ctx.fillText('Réactions selon la position x du marcheur',x0+10,y0+12);
   // zones de basculement
   const xl=xMin(),xr=xMax();ctx.fillStyle='rgba(217,83,79,.12)';if(xl>0)ctx.fillRect(gx0,gy0,X(Math.min(L,xl))-gx0,gy1-gy0);if(xr<L)ctx.fillRect(X(Math.max(0,xr)),gy0,gx1-X(Math.max(0,xr)),gy1-gy0);
@@ -338,8 +338,12 @@ function graph(x0,y0,w,h){const sm=W<560;rrect(x0,y0,w,h,10);ctx.fillStyle='rgba
   ctx.font=`600 ${sm?9.5:10.5}px Mulish,system-ui,sans-serif`;ctx.fillStyle='#5f6b7a';ctx.textAlign='right';ctx.fillText('0 N',gx0-4,Y(0));ctx.fillText(fr((m+M)*g,0),gx0-4,Y((m+M)*g));
   ctx.textAlign='center';for(let s=0;s<=L;s++)ctx.fillText(s+' m',X(s),gy1+10);
   ctx.setLineDash([3,3]);ctx.strokeStyle='#c3cad2';ctx.beginPath();ctx.moveTo(gx0,Y((m+M)*g));ctx.lineTo(gx1,Y((m+M)*g));ctx.stroke();ctx.setLineDash([]);
+  // échelle prise sur les valeurs extrêmes de RA, RB pour x ∈ [0, L] ; tracé limité au cadre
+  ctx.save();ctx.beginPath();ctx.rect(gx0,gy0-2,gx1-gx0,gy1-gy0+4);ctx.clip();
   [['RA','#1D9E75',q=>q.RA],['RB','#7F5BD0',q=>q.RB]].forEach(([n,col,fn])=>{ctx.lineWidth=2.4;for(let i=0;i<60;i++){const s0=i/60*L,s1=(i+1)/60*L,r0=fn(reac(s0)),r1=fn(reac(s1));ctx.strokeStyle=col;ctx.setLineDash(r0<0||r1<0?[4,4]:[]);ctx.beginPath();ctx.moveTo(X(s0),Y(r0));ctx.lineTo(X(s1),Y(r1));ctx.stroke();}ctx.setLineDash([]);
-    ctx.fillStyle=col;ctx.font=`800 ${sm?10.5:11.5}px Mulish,system-ui,sans-serif`;ctx.textAlign='left';const r=fn(reac(L*0.02));ctx.fillText(n,gx0+4,Y(r)+(n==='RA'?-9:9));});
+    });
+  ctx.restore();
+  [['RA','#1D9E75',q=>q.RA],['RB','#7F5BD0',q=>q.RB]].forEach(([n,col,fn])=>{ctx.fillStyle=col;ctx.font=`800 ${sm?10.5:11.5}px Mulish,system-ui,sans-serif`;ctx.textAlign='left';const r=fn(reac(L*0.02));let yl=Y(r)+(n==='RA'?-9:9);if(yl<gy0+6)yl=Y(r)+11;if(yl>gy1-6)yl=Y(r)-11;ctx.fillText(n,gx0+(Y(r)<gy0+4||Y(r)>gy1-4?14:4),yl);});
   [[a,'A','#1D9E75'],[b,'B','#7F5BD0']].forEach(([s,n,col])=>{ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(X(s),gy1);ctx.lineTo(X(s)-5,gy1+7);ctx.lineTo(X(s)+5,gy1+7);ctx.closePath();ctx.fill();});
   const R=reac(x);ctx.strokeStyle='#185fa5';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X(x),gy0);ctx.lineTo(X(x),gy1);ctx.stroke();
   [[R.RA,'#1D9E75'],[R.RB,'#7F5BD0']].forEach(([r,c])=>{ctx.fillStyle=c;ctx.beginPath();ctx.arc(X(x),Y(r),4.5,0,7);ctx.fill();});

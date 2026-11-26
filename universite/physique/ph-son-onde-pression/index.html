@@ -236,7 +236,7 @@ const pn=x=>{const h=Lw/400;return -(xi(x+h)-xi(x-h))/(2*h)/(Avis()*2*Math.PI/la
 
 // ---------- géométrie de l'écran ----------
 let G={},parts=[],sprites={};
-function build(){const sm=small();const hudH=sm?100:104;G.SY0=hudH+16;G.SY1=Math.round(H*(sm?0.6:0.64));G.GY0=G.SY1+14;G.GY1=H-(sm?10:12);
+function build(){const sm=small();const hudH=sm?100:104;G.SY0=hudH+16;G.SY1=Math.round(H*(sm?0.6:0.64));G.GY0=G.SY1+(sm?26:28);G.GY1=H-(sm?10:12);
   G.SPK=sm?62:Math.round(W*0.12);G.X0=G.SPK+18;G.X1=W-(sm?52:100);G.dep=sm?14:26;
   const area=(G.X1-G.X0)*(G.SY1-G.SY0-G.dep);parts=[];makeParts(area);marked=-1;pickMarked();}
 function makeParts(area){const m=M(),nb=Math.round(area/(m.kind==='gaz'?150:m.kind==='liq'?95:80)),rnd=mulberry(7+mi);
@@ -272,7 +272,7 @@ function speaker(){const sm=small(),s=sig(ts),ax=Avis()/Lw*(G.X1-G.X0),dx=s*ax,y
   ctx.strokeStyle='#1b1f24';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(ex,yc-hh);ctx.quadraticCurveTo(ex+8,yc,ex,yc+hh);ctx.stroke();
   ctx.fillStyle='#b9c2cc';ctx.beginPath();ctx.ellipse(ex-2,yc,4,hh*0.16,0,0,7);ctx.fill();
   if(dragMem||hoverMem){ctx.strokeStyle='rgba(29,158,117,.7)';ctx.lineWidth=3;ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(ex,yc,14,hh+8,0,0,7);ctx.stroke();ctx.setLineDash([]);}
-  if(!clean)tag(sm?'membrane':'membrane du haut-parleur',(bx0+bx1)/2+6,G.SY1+2,INK,font(800,11.5));
+  if(!clean)tag(sm?'membrane':'membrane du haut-parleur',(bx0+bx1)/2+6,G.SY1-10,INK,font(800,11.5));
   G.memX=ex;G.memY=yc;G.memH=hh;}
 function listener(){const sm=small(),x=G.X1+(sm?6:14),yc=(G.SY0+G.dep+G.SY1)/2,s=sm?0.55:1;
   if(mi===0){ // tête de profil, oreille tournée vers la source

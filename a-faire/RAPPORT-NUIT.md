@@ -8,17 +8,28 @@ Pour le lycée, rien n'est supprimé : il n'y a que des propositions.
 
 - 26/11 : les 8 agents se sont arrêtés en cours de route (crédit API épuisé). Le travail fait est resté dans les worktrees (`git status` vérifié pour chaque lot). Après la recharge, chaque agent a repris là où il s'était arrêté, avec son contexte.
 
-## Vague P1 (26 simulations) : en cours
+## Reprise dans le cloud (26/11, 01:00)
+
+Le crédit de la clé API est de nouveau épuisé vers 00:50. Enzo a demandé que tout continue avec les agents de la session Claude (cloud).
+Le travail des 7 lots P1 a été récupéré des worktrees du Mac (68 fichiers), puis intégré sur main dans le cloud.
+Les `id` de physique suivent la liste des canevas : `avant-bras-biceps` → `ph-biceps-avant-bras`, `moment-inertie-alpha` → `ph-rotation-sigma-m`,
+`patineuse-moment-cinetique` → `ph-patineuse`, `perfusion-pression` → `ph-perfusion-posture`, `reynolds-laminaire-turbulent` → `ph-reynolds`,
+`miroirs-spheriques` → `ph-miroir-spherique`, `loi-ampere` → `ph-loi-ampere`, `barre-rails-induction` → `ph-rails-induction`,
+`transferts-thermiques` → `ph-transferts-thermiques`, `dilatation-thermique` → `ph-dilatation`, `cycles-moteur-frigo-pac` → `ph-machine-thermique`,
+`detente-irreversible` → `ph-detente-irreversible` (rien n'avait été publié sous les anciens noms).
+**Les worktrees `~/sim-p1-*` du Mac ne sont plus utiles** : ne les publie pas depuis le Mac (tout est sur main).
+
+## Vague P1 (26 simulations + 4 pages refaites)
 
 | Lot | État | Publié | Remarques |
 |---|---|---|---|
-| p1-magn | repris après l'arrêt | – | |
-| p1-rot | repris après l'arrêt | – | |
-| p1-flu-opt | repris après l'arrêt | – | |
-| p1-thermo | repris après l'arrêt | – | |
-| p1-chimie | repris après l'arrêt | – | |
-| p1-orga1 | repris après l'arrêt | – | |
-| p1-orga2 | repris après l'arrêt | – | |
+| p1-magn | rendu (Ampère, rails, refonte regle-main-droite) ; relecture + vérification en cours | – | |
+| p1-rot | rendu ; corrections du relecteur faites (patineuse : bras repliés à l'horizontale) ; attente du vérificateur | – | |
+| p1-flu-opt | rendu ; corrections du relecteur en cours (Pascal passe à des valeurs de presse) | – | |
+| p1-thermo | rendu ; corrections du relecteur en cours ; vérification en cours | – | |
+| p1-chimie | en cours (renommage ch-… ; question sur une suppression signalée) | – | |
+| p1-orga1 | rendu ; relecture + vérification en cours | – | |
+| p1-orga2 | rendu ; relecture + vérification en cours (NO₂⁺ dessiné coudé à corriger) | – | |
 | lycee | accepté (21 cours à 0 erreur, captures relues) | 26/11, commit 05584fb | noms affichés seulement + audit ; contenu encore FWB |
 
 ## Décisions prises sans Enzo
@@ -39,8 +50,15 @@ L'audit complet est dans `audit/lycee-programme.md`. Sur les 160 chapitres : 88 
 
 ## Valeurs par défaut changées et reels à refilmer
 
-(rien pour l'instant)
+Pas encore en ligne : ces changements prendront effet à la publication de chaque lot.
+- `rotation-roulement` : vue 3D, la course part toute seule et recommence en boucle (avant : il fallait cliquer). Toute vidéo est à refaire.
+- `pascal` : page entièrement nouvelle, avec le pompage automatique. Valeurs par défaut prévues : F₁ = 100 N, r₁ = 1 cm, r₂ = 15 cm (avant : 20 N, 5 cm, 15 cm). Toute vidéo est à refaire.
+- `diagramme-pv` : la transformation tourne en boucle, et le bouton « Rejouer » devient « Arrêter l'animation ». Les valeurs par défaut restent les mêmes. Toute vidéo est à refaire.
+- `regle-main-droite` : les vecteurs ne sont plus unitaires (|a| = 2, |b| = 1,5, |a × b| = 2,82 au lieu de 0,94) ; nouvelle main en 3D sans three.js. Toute vidéo est à refaire.
 
 ## Doutes à trancher par Enzo
 
-(rien pour l'instant)
+- `analyse-dimensionnelle` (physique BA1) : le test signale « pas de canevas », déjà sur main avant cette nuit. Je n'y ai pas touché.
+- Les références `ascenseur`, `tourniquet` et `moment_de_force` chargent three.js par CDN, ce qui va contre la règle 8 dans sa forme actuelle. Il faudra les réécrire un jour.
+- `kit/check-course.py` et `kit/thumbs.py` cherchent `/usr/bin/google-chrome`, qui n'existe pas sur le Mac, et PIL n'est pas installé. Les agents ont utilisé des copies hors dépôt avec le Chromium de Playwright, sans modifier `kit/`.
+- La surveillance a signalé une « suppression irréversible » par l'agent p1-chimie. Les fichiers suivis par git sont intacts dans les 7 lots. Sur le T7, le dossier « sfa videos » porte une date de modification du 25/11 à 23:22, que je ne peux pas attribuer à un lot. Vérifie-le si quelque chose y manque.

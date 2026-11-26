@@ -339,7 +339,7 @@ function upd(){const I=img(),F=f(),inf=!isFinite(I.pp)||Math.abs(I.pp)>5000;
   $('vP').textContent=fr(p,1)+' cm';$('vR').textContent=Rabs+' cm · f = '+fr(F,1)+' cm';$('vH').textContent=fr(h,1)+' cm';
   $('mC').classList.toggle('on',kind==='C');$('mV').classList.toggle('on',kind==='V');
   $('fml').innerHTML='<b>1/p + 1/p′ = 1/f</b> avec <b>f = R/2</b> · grandissement <b>γ = h′/h = −p′/p</b>. Convention : p, p′ et f sont <b>positifs devant le miroir</b> (côté réel) ; '+(kind==='C'?'concave : <b>f &gt; 0</b>.':'convexe : <b>f &lt; 0</b> (foyer virtuel, derrière le miroir).')+
-   ' Rayons particuliers : ① parallèle à l’axe → repart par F ; ② par C → revient sur lui-même ; ③ par F → repart parallèle à l’axe.';
+   (kind==='C'?' Rayons particuliers : ① parallèle à l’axe → repart par F ; ② par C → revient sur lui-même ; ③ par F → repart parallèle à l’axe.':' Rayons particuliers : ① parallèle à l’axe → repart comme s’il venait de F ; ② visant C → revient sur lui-même ; ③ visant F → repart parallèle à l’axe.');
   let txt='f = R/2 = '+fr(R(),0)+'/2 = <b>'+fr(F,1)+' cm</b> · 1/p′ = 1/f − 1/p = 1/'+(F<0?'('+fr(F,1)+')':fr(F,1))+' − 1/'+fr(p,1)+' = '+(inf?'0':fr(1/I.pp,4))+' cm⁻¹ → <b>p′ = '+(inf?'∞':fr(I.pp,1)+' cm')+'</b>';
   if(!inf)txt+=' ('+(I.pp>0?'devant le miroir : image <b>réelle</b>, on peut la recueillir sur un écran':'derrière le miroir : image <b>virtuelle</b>, on la voit dans le miroir')+') · γ = −p′/p = <b>'+fr(I.g,2)+'</b> · h′ = γ·h = '+fr(I.hp,1)+' cm';
   else txt+=' : la bougie est au foyer, les rayons ressortent parallèles.';

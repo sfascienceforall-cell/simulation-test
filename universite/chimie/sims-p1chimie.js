@@ -339,7 +339,7 @@ SFA.sim({
   resume:"Un canon à électrons tire à travers une feuille de graphite : des anneaux de diffraction apparaissent et se resserrent quand la tension monte. La balle de tennis, elle, ne diffracte jamais.",
   but:"Règle la tension d'accélération U (curseur, ou glisse sur le tube) et regarde les anneaux sur l'écran fluorescent : ils se resserrent quand U augmente, car λ diminue. En dessous, compare avec une balle de tennis servie à la vitesse que tu choisis.",
   aRetenir:"Toute particule de quantité de mouvement p a une longueur d'onde λ = h/p (de Broglie). Un électron accéléré sous U a une énergie cinétique eU, donc p = √(2meU) et λ = h/√(2meU) ≈ 1,23 nm/√(U en V). Les anneaux viennent de la réflexion de Bragg sur les plans du graphite : 2d·sin θ = λ. Pour une balle de 58 g à 50 m/s, λ ≈ 2·10⁻³⁴ m : rien d'ondulatoire n'est observable à notre échelle.",
-  piege:"La formule non relativiste suffit tant que eU ≪ mc² = 511 keV : à 10 kV l'erreur sur λ n'atteint que 0,5 %. Les anneaux sont plus petits quand U monte (λ plus courte) : ce n'est pas l'inverse. Et la longueur d'onde de la balle n'est pas « petite mais mesurable » : elle est 10³³ fois plus petite que la balle elle-même.",
+  piege:"La formule non relativiste suffit tant que eU ≪ mc² = 511 keV : à 10 kV l'erreur sur λ n'atteint que 0,5 %. Les anneaux sont plus petits quand U monte (λ plus courte) : ce n'est pas l'inverse. Et la longueur d'onde de la balle n'est pas « petite mais mesurable » : elle est environ 3·10³² fois plus petite que la balle elle-même (à 50 m/s).",
   build:function(k, S){
     var phone = (window.innerWidth || 800) < 560;
     var c = k.canvas(phone ? 430 : 330), g = k.canvas(phone ? 190 : 175);

@@ -287,7 +287,7 @@ SFA.sim({
       if (rS.value === "nitr"){
         atoms.push(At("N", PE, {lab:"N"}));
         var phN = (90 - 28 * b) * DEG;
-        [1, -1].forEach(function(sg){ atoms.push(At("O", add(PE, mul(add(mul(dE, Math.cos(phN)), mul(tg, sg * Math.sin(phN))), 1.21)), {lab:"O"})); bonds.push({a:iE, b:atoms.length - 1, o:2}); });
+        [1, -1].forEach(function(sg){ atoms.push(At("O", add(PE, mul(add(mul(dE, Math.cos(phN)), mul(tg, sg * Math.sin(phN))), 1.21)), {lab:"O"})); bonds.push({a:iE, b:atoms.length - 1, o:(sg > 0 || b < 0.5) ? 2 : 1}); if (b >= 0.5 && sg < 0){ atoms[atoms.length - 1].badge = "−"; atoms[atoms.length - 1].badgeCol = "#c0392b"; atoms[iE].badge = "+"; atoms[iE].badgeCol = "#e08a1e"; } });
       } else if (rS.value === "brom"){
         atoms.push(At("Br", PE, {lab:"Br"}));
       } else {
@@ -655,7 +655,7 @@ SFA.sim({
     c.resize = function(){ var w = c.cv.parentNode ? c.cv.parentNode.clientWidth : 600; c.ratio = w < 480 ? 1.12 : 0.64; r0(); }; c.resize();
     var g = k.canvas(160);
     var st = {t:0, parts:[], grab:null, flash:0, hover:null};
-    var drug = k.select("Médicament (exemple, pKa de l'amine protonée)", [["", "réglage libre"], ["7.9", "lidocaïne (pKa ≈ 7,9)"], ["8.0", "morphine (pKa ≈ 8,0)"], ["9.9", "amphétamine (pKa ≈ 9,9)"], ["3.4", "diazépam (pKa ≈ 3,4)"]], "", function(v){ if (v) pK.set(parseFloat(v)); });
+    var drug = k.select("Médicament (exemple, pKa de la forme protonée BH⁺)", [["", "réglage libre"], ["7.9", "lidocaïne (pKa ≈ 7,9)"], ["8.0", "morphine (pKa ≈ 8,0)"], ["9.9", "amphétamine (pKa ≈ 9,9)"], ["3.4", "diazépam (base faible, pKa ≈ 3,4)"]], "", function(v){ if (v) pK.set(parseFloat(v)); });
     var pK = k.slider("pKa (couple BH⁺/B)", 2, 11, 0.1, 9.0, "", function(){ drug.set(""); });
     var pL = k.slider("pH de l'estomac", 1, 3.5, 0.1, 1.5, "");
     var pR = k.slider("pH du sang", 7.0, 7.8, 0.05, 7.4, "");
@@ -902,7 +902,7 @@ SFA.sim({
   resume:"Le D-glucose passe de la projection de Fischer à la chaîne repliée ; l'OH de C5 attaque le C=O de C1 et le cycle se ferme en anomère α ou β. Termine en chaise 3D et suis la mutarotation jusqu'à 36 % α et 64 % β.",
   but:"L'animation part de la projection de Fischer du D-glucose (liaisons horizontales vers toi), replie la chaîne, puis l'oxygène de C5 attaque le carbone C1 du groupe aldéhyde (flèches courbes) : le cycle à six atomes (pyranose) se forme, vu en Haworth, puis il prend sa forme réelle en chaise. Choisis l'anomère (α : OH de C1 en bas ; β : en haut), ou « au hasard » pour voir les fermetures se répartir. Glisse sur la molécule pour la tourner. En dessous : la mutarotation d'une solution fraîchement préparée, lue au polarimètre.",
   aRetenir:"En solution, le D-glucose est presque entièrement cyclique : l'OH de C5 s'additionne sur le C=O de C1 et forme un hémiacétal cyclique à six atomes (pyranose). C1 devient un nouveau centre stéréogène, le carbone anomère : α si son OH est en bas en Haworth (du côté opposé au CH₂OH), β s'il est en haut (du même côté). Règle de passage : un OH à droite en Fischer est en bas en Haworth. En chaise ⁴C₁, le β-D-glucose a tous ses substituants en position équatoriale : c'est pourquoi il domine. La forme ouverte relie α et β : c'est la mutarotation, jusqu'à l'équilibre ≈ 36 % α et 64 % β ([α]D passe de +112° ou +19° à +52,7°).",
-  piege:"α et β ne sont pas des énantiomères : ils ne diffèrent que par la configuration de C1, ce sont des diastéréoisomères (des anomères). Le cycle ne se forme pas avec l'OH de C4 ou de C6 : avec C5, il est à six atomes, le moins tendu. Et la proportion d'équilibre n'est pas 50/50 : β est favorisé parce que son OH anomère est équatorial.",
+  piege:"α et β ne sont pas des énantiomères : ils ne diffèrent que par la configuration de C1, ce sont des diastéréoisomères (des anomères). Le cycle se forme très peu avec l'OH de C4 (furanose à cinq atomes, moins de 1 % pour le glucose) et pas avec celui de C6 : avec C5, il est à six atomes, le moins tendu. Et la proportion d'équilibre n'est pas 50/50 : β est favorisé parce que son OH anomère est équatorial.",
   build:function(k, S){
     var c = k.canvas(0, {ratio:0.62}), r0 = c.resize;
     c.resize = function(){ var w = c.cv.parentNode ? c.cv.parentNode.clientWidth : 600; c.ratio = w < 480 ? 1.12 : 0.74; r0(); }; c.resize();

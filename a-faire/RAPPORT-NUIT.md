@@ -147,3 +147,18 @@ Toutes les autres simulations sont nouvelles : aucune vidéo existante n'est tou
   - pKa des acides forts ;
   - quelques Ea de modèles (SNAr, catalyse) ;
   - spectres d'instruments « inventés » dans ph-timbre (annoncés comme tels).
+
+## Mise à jour du 26/11 après-midi : maths P1 en ligne
+
+Les 13 simulations de maths de priorité 1 sont en ligne (commits ea32848, 218d109, 4f3e51a). Chaque lot a été contrôlé par quatre vérificateurs (contenu, affichage, robustesse, pédagogie), puis corrigé.
+
+- **Chapitres existants** : injective/surjective et point fixe (c01, c02) ; dérivabilité au microscope, dérivée en chaîne (engrenages) et élasticité (c03) ; accroissements finis (c03) ; intégrale impropre (c04).
+- **Deux nouveaux chapitres** dans le cours Maths BA1, faits d'après tes canevas M01-M02 et M04 à M06 :
+  - c12 « Fondements : ensembles, preuves, nombres réels » : 3 simulations (quantificateurs, récurrence en dominos, supremum en plafond), une théorie en 4 onglets animés et 18 exercices.
+  - c13 « Suites et séries » : 3 simulations (bande ε, étau des gendarmes, sommes partielles avec échelle logarithmique en option), une théorie en 3 onglets animés et 18 exercices.
+  - Tous les chiffres sont recalculés en Python, et une relecture scientifique a été faite. Les tolérances des réponses chiffrées ont été ajustées (√5 ≈ 2,24 accepté, 1/3 ≈ 0,33 accepté).
+- **À valider par toi** :
+  - les noms de c12 et c13 (on peut les renommer, mais les identifiants c12/c13 restent) ;
+  - le titre de ma-integrale-impropre (proposé : « Une surface infinie peut avoir une aire finie », pas encore changé) ;
+  - en c13, j'ai ajouté en complément le critère de d'Alembert et Σ1/iᵖ, qui ne sont pas dans M04 à M06 : à retirer si tu veux coller à ton cours.
+- **Reste à faire (cette nuit)** : maths P2 et P3, soit 34 simulations, avec le même processus. Les propositions sont dans work/maths/ecarts-maths.json.

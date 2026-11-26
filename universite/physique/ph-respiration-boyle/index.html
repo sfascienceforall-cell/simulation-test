@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Respirer, c'est appliquer Boyle-Mariotte · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#TH">Gaz</a>›<b>Respirer, c'est appliquer Boyle-Mariotte</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Gaz</span><span class="sfa-chip free">Gratuit</span></div><h1>Respirer, c'est appliquer Boyle-Mariotte</h1><p>Un thorax en coupe : quand le diaphragme descend, le volume des poumons augmente. Comme p·V reste constant à l'instant où le volume change, la pression dans les poumons passe juste sous la pression atmosphérique et l'air entre par le nez. Attrape le diaphragme pour respirer à la main, bouche-toi le nez et la bouche pour voir Boyle-Mariotte à l'état pur, ou rétrécis les bronches comme lors d'une crise d'asthme.</p></div>
+<section class="sfa-sim">
+<style>
+#rbCv{width:100%;height:min(74vh,620px);min-height:520px;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+@media (max-width:640px){#rbCv{height:840px;min-height:0}}
+.rb-read{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:12px}
+.rb-read div{box-sizing:border-box;border:1px solid var(--line,#e3e7ed);border-radius:9px;padding:8px 10px;background:#fbfcfd;min-width:0}
+.rb-read small{display:block;font:700 10.5px var(--f-ui,system-ui);letter-spacing:.04em;color:var(--muted,#5f6b7a)}
+.rb-read b{font:800 17px var(--f-ui,system-ui);font-variant-numeric:tabular-nums;color:var(--ink,#0f1b2d)}
+.rb-read span{display:block;font:600 12px var(--f-ui,system-ui);color:var(--muted,#5f6b7a)}
+.rb-hint{font:500 .82rem var(--f-ui,system-ui);color:var(--muted,#5f6b7a)}
+</style>
+
+<canvas id="rbCv" aria-label="Thorax en coupe : le diaphragme descend, le volume des poumons augmente, la pression de l'air dans les poumons passe sous la pression atmosphérique et l'air entre par le nez ; à droite, le volume et la pression se tracent en fonction du temps"></canvas>
+
+<div class="rb-read">
+  <div><small>Volume des poumons V</small><b id="rbV"></b><span id="rbVs"></span></div>
+  <div><small>Pression dans les poumons p</small><b id="rbP"></b><span id="rbPs"></span></div>
+  <div><small>Débit d'air</small><b id="rbQ"></b><span id="rbQs"></span></div>
+  <div><small>Air enfermé : p·V</small><b id="rbN"></b><span id="rbNs"></span></div>
+</div>
+
+<div class="fml" id="rbFml"></div>
+
+<div class="row">
+  <span class="pill">Nez et bouche</span>
+  <button class="btn on" data-c="0">Ouverts</button><button class="btn" data-c="1">Fermés (on bloque l'air)</button>
+</div>
+<div class="row">
+  <button class="btn on" id="rbAuto">Respiration automatique</button>
+  <span class="pill">Bronches</span>
+  <button class="btn on" data-r="0">Normales</button><button class="btn" data-r="1">Rétrécies (crise d'asthme)</button>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#175cd3">V<sub>T</sub> &nbsp;volume courant</span>
+  <input type="range" id="rbVT" min="0.2" max="1.5" step="0.05" value="0.5" style="accent-color:#2e90fa;">
+  <span class="val" id="rbVTv" style="color:#175cd3"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#7a2e0e">f &nbsp;fréquence respiratoire</span>
+  <input type="range" id="rbF" min="8" max="30" step="1" value="12" style="accent-color:#b54708;">
+  <span class="val" id="rbFv" style="color:#7a2e0e"></span>
+</div>
+<div class="row"><span class="rb-hint">Attrape le diaphragme (la poignée sous les poumons) et tire-le vers le bas ou pousse-le vers le haut : tu respires à la main. Ferme le nez et la bouche, puis abaisse le diaphragme : c'est la loi de Boyle-Mariotte toute nue.</span></div>
+
+<div class="info" id="rbInfo"></div>
+
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i)};
+var cv=$("rbCv"),ctx=cv.getContext("2d");
+function fr(v,d){var s=(Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d),neg=s.charAt(0)==="-";if(neg)s=s.slice(1);return (neg?"−":"")+s.replace(".",",");}
+function fpa(x){return Math.abs(x)<1000?fr(x,0)+" Pa":fr(x/1000,1)+" kPa";}
+function sg(v,d){return (v>0.5*Math.pow(10,-d)?"+":"")+fr(v,d);}
+/* modèle : V imposé par le diaphragme ; l'air entre avec un débit Q = (pₐₜₘ − p)/R ; p = pₐₜₘ·Va/V (Boyle, T constante) */
+var PATM=101.3,VFRC=2.5,KD=0.25,RS=[0.2,1.0],TB=310.15,RG=8.314;
+var VT=0.5,F=12,closed=false,auto=true,ri=0;
+var V=VFRC,Va=VFRC,p=PATM,Q=0,ph=0,t=0,W=0,H=0,dpr=1,Vgoal=VFRC,drag=null,Vin0=VFRC,Vin=0,lastQ=0,Vc=0,Vmax=VFRC,Vmin=VFRC,cyc=null;
+var HIST=[];
+function R(){return RS[ri];}
+
+/* ---------- étiquettes sans chevauchement ---------- */
+var LB=[];
+function tag(tx,X,Y,col,font,al,opt){opt=opt||{};ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.font=font||"700 12px Mulish,system-ui,sans-serif";ctx.textBaseline="middle";
+  var w=ctx.measureText(tx).width,h=parseFloat(ctx.font.match(/(\d+(\.\d+)?)px/)[1])+3,A=al||"center",cl=opt.cl||[0,W];
+  var x0=A==="left"?X:A==="right"?X-w:X-w/2;x0=Math.max(cl[0]+3,Math.min(cl[1]-w-3,x0));Y=Math.max(h/2+2,Math.min(H-h/2-2,Y));
+  var dy=[0,-1,1,-2,2,-3,3,-4,4],y=Y;
+  if(!opt.fixed){for(var k=0;k<dy.length;k++){var yy=Y+dy[k]*(h+1)*(opt.dir||1);if(yy<h/2+2||yy>H-h/2-2)continue;var ok=true;for(var j=0;j<LB.length;j++){var b=LB[j];if(x0<b[0]+b[2]+2&&x0+w+2>b[0]&&yy-h/2<b[1]+b[3]&&yy+h/2>b[1]){ok=false;break;}}if(ok){y=yy;break;}}}
+  LB.push([x0,y-h/2,w,h,tx]);
+  ctx.textAlign="left";ctx.lineJoin="round";ctx.lineWidth=4;ctx.strokeStyle=opt.halo||"rgba(255,255,255,.93)";ctx.strokeText(tx,x0,y);ctx.fillStyle=col||"#13233a";ctx.fillText(tx,x0,y);ctx.restore();return y;}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
+/* ---------- mise en page ---------- */
+var Lg={},VW=480,VH=600;
+function size(){var b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;var w=Math.round(b.width)||800,h=Math.round(b.height)||500;if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}W=w;H=h;
+  if(W>=640){var sw=Math.round(W*0.5),gh=(H-36-20-46)/2;Lg.sc={x:0,y:0,w:sw,h:H};Lg.g1={x:sw+62,y:36,w:W-sw-84,h:gh};Lg.g2={x:sw+62,y:36+gh+46,w:W-sw-84,h:gh};}
+  else{var sh=Math.round(W*1.22),gh2=(H-sh-30-46-34)/2;Lg.sc={x:0,y:0,w:W,h:sh};Lg.g1={x:54,y:sh+30,w:W-72,h:gh2};Lg.g2={x:54,y:sh+30+gh2+46,w:W-72,h:gh2};}
+  var s=Math.min(Lg.sc.w/VW,Lg.sc.h/VH);Lg.s=s;Lg.ox=Lg.sc.x+(Lg.sc.w-VW*s)/2;Lg.oy=Lg.sc.y+(Lg.sc.h-VH*s)/2;}
+function SX(x){return Lg.ox+x*Lg.s} function SY(y){return Lg.oy+y*Lg.s}
+function VX(X){return (X-Lg.ox)/Lg.s} function VY(Y){return (Y-Lg.oy)/Lg.s}
+function scene(){ctx.setTransform(dpr*Lg.s,0,0,dpr*Lg.s,dpr*Lg.ox,dpr*Lg.oy);}
+function screen(){ctx.setTransform(dpr,0,0,dpr,0,0);}
+
+/* ---------- géométrie du thorax ---------- */
+var CXB=240,HW=138;
+function dcm(){return (V-VFRC)/KD;}                       /* descente du diaphragme (cm) */
+function dome(){return 392+12*dcm();}
+function edge(){return 470+2.5*dcm();}
+function dia(x){var u=(x-CXB)/HW;if(Math.abs(u)>1)return edge();var b=(1-u*u)*(1-0.13*Math.exp(-(u/0.22)*(u/0.22)));return edge()-(edge()-dome())*b;}
+function wid(){return 1+0.035*(V-VFRC);}
+function lungPath(side){var k=wid(),s=side,xa=CXB+s*58,xo=CXB+s*(HW-14)*k,xi=CXB+s*(s<0?12:30),top=196-2*(V-VFRC);
+  ctx.beginPath();ctx.moveTo(xa,top);
+  ctx.bezierCurveTo(CXB+s*96*k,top-4,xo,top+70,xo,top+150);
+  var yb=dia(xo)-5;ctx.lineTo(xo,yb-8);
+  for(var i=0;i<=24;i++){var x=xo+(xi-xo)*i/24;ctx.lineTo(x,dia(x)-5);}
+  if(s>0){ctx.lineTo(xi,330);ctx.quadraticCurveTo(CXB+s*58,322,CXB+s*20,290);}else{ctx.lineTo(xi,300);ctx.quadraticCurveTo(CXB+s*20,280,CXB+s*22,262);}
+  ctx.bezierCurveTo(CXB+s*22,230,CXB+s*34,top+4,xa,top);ctx.closePath();}
+/* chemin de l'air : dehors → narine → pharynx → trachée → bronche → poumon */
+var PART=[];for(var i=0;i<46;i++){var sd=i%2?1:-1;PART.push({s:Math.random(),sd:sd,o:[CXB+sd*(70+Math.random()*60),40+Math.random()*60],e:[CXB+sd*(60+Math.random()*60),230+Math.random()*150]});}
+function ppos(o,u){var e=[o.e[0]+(o.e[0]-CXB)*(wid()-1),Math.min(o.e[1],dia(o.e[0])-14)];var P=[o.o,[CXB+o.sd*4,96],[CXB,128],[CXB,160],[CXB,262],[CXB+o.sd*38,296],e];
+  var L=[],tot=0;for(var k=0;k<P.length-1;k++){var d=Math.hypot(P[k+1][0]-P[k][0],P[k+1][1]-P[k][1]);L.push(d);tot+=d;}
+  var s=u*tot,k2=0;while(k2<L.length-1&&s>L[k2]){s-=L[k2];k2++;}var f=Math.min(1,s/L[k2]);return [P[k2][0]+(P[k2+1][0]-P[k2][0])*f,P[k2][1]+(P[k2+1][1]-P[k2][1])*f,k2];}
+
+function drawScene(){scene();
+  /* cabinet médical */
+  var g=ctx.createLinearGradient(0,0,0,VH);g.addColorStop(0,"#e6eef2");g.addColorStop(1,"#d3dee5");ctx.fillStyle=g;ctx.fillRect(-300,-200,VW+600,VH+400);
+  ctx.fillStyle="#cfd9e0";ctx.fillRect(-300,420,VW+600,6);
+  /* planche anatomique et fenêtre */
+  ctx.fillStyle="#fff";rr(-150,40,120,160,6);ctx.fill();ctx.strokeStyle="#b9c6cf";ctx.lineWidth=2;ctx.stroke();ctx.strokeStyle="#d98a8a";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-90,70);ctx.lineTo(-90,120);ctx.moveTo(-90,120);ctx.lineTo(-115,160);ctx.moveTo(-90,120);ctx.lineTo(-65,160);ctx.stroke();
+  var wg=ctx.createLinearGradient(0,30,0,200);wg.addColorStop(0,"#a9d4f0");wg.addColorStop(1,"#e1f1fb");ctx.fillStyle=wg;rr(VW+30,30,140,170,6);ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=6;ctx.strokeRect(VW+30,30,140,170);ctx.beginPath();ctx.moveTo(VW+100,30);ctx.lineTo(VW+100,200);ctx.stroke();
+  /* corps */
+  var sk=ctx.createLinearGradient(60,0,420,0);sk.addColorStop(0,"#d9a27c");sk.addColorStop(0.5,"#f0c4a2");sk.addColorStop(1,"#cf9672");
+  ctx.fillStyle=sk;ctx.beginPath();ctx.moveTo(196,140);ctx.lineTo(196,170);ctx.bezierCurveTo(120,176,70,186,58,232);ctx.lineTo(44,VH+20);ctx.lineTo(VW-44,VH+20);ctx.lineTo(VW-58,232);ctx.bezierCurveTo(VW-70,186,VW-120-0,176,284,170);ctx.lineTo(284,140);ctx.closePath();ctx.fill();
+  /* blouse ouverte (vêtement) */
+  ctx.fillStyle="#3f6e8c";ctx.beginPath();ctx.moveTo(58,232);ctx.bezierCurveTo(70,186,120,178,150,176);ctx.lineTo(92,VH+20);ctx.lineTo(44,VH+20);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(VW-58,232);ctx.bezierCurveTo(VW-70,186,VW-120,178,VW-150,176);ctx.lineTo(VW-92,VH+20);ctx.lineTo(VW-44,VH+20);ctx.closePath();ctx.fill();
+  /* tête */
+  head();
+  /* trachée visible dans le cou, en coupe */
+  ctx.fillStyle="#5a2a2c";rr(CXB-11,126,22,56,6);ctx.fill();ctx.fillStyle="#e8d7cf";rr(CXB-7,126,14,56,5);ctx.fill();
+  PART.forEach(function(o){var q=ppos(o,o.s);if(q[1]<128||q[1]>180||q[2]===0)return;ctx.fillStyle=Q>=0?"rgba(46,144,250,.95)":"rgba(181,71,8,.8)";ctx.beginPath();ctx.arc(q[0],q[1],3,0,6.2832);ctx.fill();});
+  /* cavité thoracique en coupe */
+  var k=wid();ctx.save();ctx.beginPath();ctx.moveTo(CXB,176);ctx.bezierCurveTo(CXB+100*k,176,CXB+(HW+6)*k,230,CXB+(HW+4)*k,330);ctx.lineTo(CXB+(HW+2)*k,edge()+4);ctx.lineTo(CXB+(HW-10),VH+20);ctx.lineTo(CXB-(HW-10),VH+20);ctx.lineTo(CXB-(HW+2)*k,edge()+4);ctx.lineTo(CXB-(HW+4)*k,330);ctx.bezierCurveTo(CXB-(HW+6)*k,230,CXB-100*k,176,CXB,176);ctx.closePath();
+  var cg=ctx.createRadialGradient(CXB,330,30,CXB,330,240);cg.addColorStop(0,"#7a3b3b");cg.addColorStop(1,"#4a2025");ctx.fillStyle=cg;ctx.fill();ctx.clip();
+  abdomen();lungs();heart();airway();diaphragm();ribs();particles();ctx.restore();
+  ctx.strokeStyle="rgba(90,40,30,.45)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(CXB,176);ctx.bezierCurveTo(CXB+100*k,176,CXB+(HW+6)*k,230,CXB+(HW+4)*k,330);ctx.lineTo(CXB+(HW+2)*k,edge()+4);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(CXB,176);ctx.bezierCurveTo(CXB-100*k,176,CXB-(HW+6)*k,230,CXB-(HW+4)*k,330);ctx.lineTo(CXB-(HW+2)*k,edge()+4);ctx.stroke();
+  /* flux d'air devant le nez */
+  outside();
+  /* poignée du diaphragme */
+  var hy=dome()+12;ctx.fillStyle="rgba(0,0,0,.25)";rr(CXB-26,hy+2,52,20,10);ctx.fill();var hg=ctx.createLinearGradient(0,hy,0,hy+18);hg.addColorStop(0,"#fff");hg.addColorStop(1,"#cdd5df");ctx.fillStyle=hg;rr(CXB-26,hy,52,18,9);ctx.fill();
+  ctx.strokeStyle="#13233a";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(CXB-14,hy+9);ctx.lineTo(CXB+14,hy+9);ctx.moveTo(CXB-8,hy+5);ctx.lineTo(CXB,hy+1.5);ctx.lineTo(CXB+8,hy+5);ctx.moveTo(CXB-8,hy+13);ctx.lineTo(CXB,hy+16.5);ctx.lineTo(CXB+8,hy+13);ctx.stroke();}
+function head(){var hx=CXB,hy=82;
+  ctx.fillStyle="#e7b590";ctx.fillRect(hx-26,110,52,64);
+  var hg=ctx.createRadialGradient(hx-14,hy-18,8,hx,hy,62);hg.addColorStop(0,"#f6d3b6");hg.addColorStop(1,"#d79c76");ctx.fillStyle=hg;ctx.beginPath();ctx.ellipse(hx,hy,46,56,0,0,6.2832);ctx.fill();
+  ctx.fillStyle="#4a3122";ctx.beginPath();ctx.ellipse(hx,hy-30,50,34,0,Math.PI,2*Math.PI);ctx.fill();ctx.beginPath();ctx.ellipse(hx-38,hy-14,12,26,0.2,0,6.2832);ctx.fill();ctx.beginPath();ctx.ellipse(hx+38,hy-14,12,26,-0.2,0,6.2832);ctx.fill();
+  ctx.fillStyle="#2b2b2b";[-1,1].forEach(function(s){ctx.beginPath();ctx.ellipse(hx+s*17,hy-2,4,closed?1.2:4.5,0,0,6.2832);ctx.fill();});
+  ctx.strokeStyle="#b97a58";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(hx,hy+2);ctx.quadraticCurveTo(hx-6,hy+16,hx,hy+20);ctx.stroke();
+  ctx.fillStyle="#6b3b2a";[-1,1].forEach(function(s){ctx.beginPath();ctx.ellipse(hx+s*4.5,hy+19,2.6,1.8,0,0,6.2832);ctx.fill();});
+  /* bouche : fermée et joues gonflées si on bloque l'air */
+  ctx.strokeStyle="#9b4a3a";ctx.lineWidth=2.5;ctx.beginPath();if(closed){ctx.moveTo(hx-9,hy+34);ctx.lineTo(hx+9,hy+34);}else{ctx.moveTo(hx-11,hy+33);ctx.quadraticCurveTo(hx,hy+38,hx+11,hy+33);}ctx.stroke();
+  if(closed){ctx.fillStyle="#8a5a3c";rr(hx-30,hy+8,60,10,5);ctx.fill();ctx.fillStyle="#f0c4a2";[-1,1].forEach(function(s){ctx.beginPath();ctx.arc(hx+s*28,hy+13,7,0,6.2832);ctx.fill();});}}
+function lungs(){[-1,1].forEach(function(s){lungPath(s);var g=ctx.createRadialGradient(CXB+s*70,260,10,CXB+s*80,320,170);g.addColorStop(0,"#ffc2c6");g.addColorStop(0.6,"#f08a96");g.addColorStop(1,"#c2505f");ctx.fillStyle=g;ctx.fill();
+  ctx.save();ctx.clip();ctx.fillStyle="rgba(255,255,255,.16)";for(var i=0;i<90;i++){var x=CXB+s*(20+((i*37)%120)),y=190+((i*61)%300);ctx.beginPath();ctx.arc(x,y,3+((i*13)%4),0,6.2832);ctx.fill();}
+  /* arbre bronchique */
+  ctx.strokeStyle="rgba(255,240,235,.75)";ctx.lineCap="round";function br(x,y,a,l,w,n){var x2=x+Math.cos(a)*l,y2=y+Math.sin(a)*l;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.stroke();if(n>0){br(x2,y2,a-0.45,l*0.72,w*0.7,n-1);br(x2,y2,a+0.42,l*0.72,w*0.7,n-1);}}
+  var w2=wid();br(CXB+s*38,296,s>0?0.75:Math.PI-0.75,40*w2,5,4);br(CXB+s*38,296,s>0?-0.55:Math.PI+0.55,34*w2,4,3);
+  ctx.restore();ctx.strokeStyle="rgba(140,40,55,.6)";ctx.lineWidth=1.5;lungPath(s);ctx.stroke();});}
+function heart(){var b=1+0.04*Math.max(0,Math.sin(t*7.3)),hx=CXB+16,hy=368;ctx.save();ctx.translate(hx,hy);ctx.scale(b,b);ctx.rotate(-0.5);
+  var g=ctx.createRadialGradient(-10,-12,4,0,0,46);g.addColorStop(0,"#e0545a");g.addColorStop(1,"#8f1d27");ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(0,-36);ctx.bezierCurveTo(34,-40,44,0,4,40);ctx.bezierCurveTo(-34,10,-38,-30,0,-36);ctx.fill();ctx.restore();}
+function abdomen(){var e=edge();var g=ctx.createLinearGradient(0,e-40,0,VH);g.addColorStop(0,"#e2b9a0");g.addColorStop(1,"#c99478");ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(CXB-HW-20,VH+20);for(var x=CXB-HW-20;x<=CXB+HW+20;x+=6)ctx.lineTo(x,dia(x));ctx.lineTo(CXB+HW+20,VH+20);ctx.closePath();ctx.fill();
+  ctx.fillStyle="rgba(130,50,40,.6)";ctx.beginPath();ctx.ellipse(CXB-58,dia(CXB-58)+38,62,30,0.2,0,6.2832);ctx.fill();ctx.fillStyle="rgba(230,170,150,.5)";ctx.beginPath();ctx.ellipse(CXB+62,dia(CXB+62)+40,46,26,-0.3,0,6.2832);ctx.fill();}
+function diaphragm(){ctx.lineCap="butt";var g=ctx.createLinearGradient(0,dome()-10,0,edge()+10);g.addColorStop(0,"#f0574c");g.addColorStop(1,"#b42318");ctx.fillStyle=g;ctx.beginPath();
+  for(var x=CXB-HW-20;x<=CXB+HW+20;x+=4)ctx.lineTo(x,dia(x)-9);for(var x2=CXB+HW+20;x2>=CXB-HW-20;x2-=4)ctx.lineTo(x2,dia(x2)+9);ctx.closePath();ctx.fill();
+  ctx.strokeStyle="rgba(255,225,215,.85)";ctx.lineWidth=2;ctx.beginPath();for(var x4=CXB-HW-20;x4<=CXB+HW+20;x4+=4)ctx.lineTo(x4,dia(x4)-8);ctx.stroke();
+  ctx.strokeStyle="rgba(255,200,190,.5)";ctx.lineWidth=1;for(var k=-6;k<=6;k++){var x3=CXB+k*20;ctx.beginPath();ctx.moveTo(x3,dia(x3)-6);ctx.lineTo(x3+4,dia(x3)+6);ctx.stroke();}}
+function ribs(){var k=wid(),lift=-4*(V-VFRC);ctx.lineCap="round";
+  for(var i=0;i<8;i++){var y=200+i*33,ye=y+46+lift*(1+i*0.1);[-1,1].forEach(function(s){var g=ctx.createLinearGradient(0,y-6,0,ye+6);g.addColorStop(0,"rgba(255,248,235,.55)");g.addColorStop(1,"rgba(220,205,180,.5)");ctx.strokeStyle=g;ctx.lineWidth=9-i*0.4;
+    ctx.beginPath();ctx.moveTo(CXB+s*10,y+8);ctx.bezierCurveTo(CXB+s*80*k,y-6+lift*0.3,CXB+s*(HW+2)*k,y+10,CXB+s*(HW+4)*k,ye);ctx.stroke();});}
+  var sg2=ctx.createLinearGradient(CXB-10,0,CXB+10,0);sg2.addColorStop(0,"rgba(235,225,205,.75)");sg2.addColorStop(1,"rgba(200,185,160,.75)");ctx.globalAlpha=0.45;ctx.fillStyle=sg2;rr(CXB-9,190,18,170,8);ctx.fill();ctx.globalAlpha=1;}
+function airway(){ctx.lineCap="round";ctx.strokeStyle="#e8d7cf";ctx.lineWidth=15;ctx.beginPath();ctx.moveTo(CXB,170);ctx.lineTo(CXB,262);ctx.lineTo(CXB-38,296);ctx.moveTo(CXB,262);ctx.lineTo(CXB+38,296);ctx.stroke();
+  ctx.strokeStyle="rgba(150,110,100,.6)";ctx.lineWidth=1.5;for(var y=176;y<258;y+=8){ctx.beginPath();ctx.moveTo(CXB-7,y);ctx.lineTo(CXB+7,y);ctx.stroke();}
+  if(closed){ctx.fillStyle="#7a2e2a";rr(CXB-9,168,18,6,3);ctx.fill();}}
+function particles(){PART.forEach(function(o){var q=ppos(o,o.s);if(q[2]===0)return;ctx.fillStyle=Q>=0?"rgba(83,177,253,.95)":"rgba(255,220,180,.95)";ctx.beginPath();ctx.arc(q[0],q[1],3.4,0,6.2832);ctx.fill();});}
+function outside(){PART.forEach(function(o){var q=ppos(o,o.s);if(q[2]!==0||q[1]>130)return;ctx.fillStyle=Q>=0?"rgba(46,144,250,.85)":"rgba(181,71,8,.6)";ctx.beginPath();ctx.arc(q[0],q[1],3.2,0,6.2832);ctx.fill();});
+  if(Math.abs(Q)>0.03&&!closed){[-1,1].forEach(function(s){var x0=CXB+s*92,y0=62,x1=CXB+s*30,y1=90,a=Q>0?[x0,y0,x1,y1]:[x1,y1,x0,y0];ctx.strokeStyle=Q>0?"#2e90fa":"#b54708";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(a[2],a[3]);ctx.stroke();var an=Math.atan2(a[3]-a[1],a[2]-a[0]);ctx.fillStyle=ctx.strokeStyle;ctx.beginPath();ctx.moveTo(a[2]+Math.cos(an)*4,a[3]+Math.sin(an)*4);ctx.lineTo(a[2]-Math.cos(an-0.5)*12,a[3]-Math.sin(an-0.5)*12);ctx.lineTo(a[2]-Math.cos(an+0.5)*12,a[3]-Math.sin(an+0.5)*12);ctx.closePath();ctx.fill();});}}
+
+/* ---------- graphiques V(t) et p(t) ---------- */
+var WIN=15;
+function niceR(a){var c=[60,100,200,500,1000,2000,5000,10000,20000,50000];for(var i=0;i<c.length;i++)if(a<=c[i]*0.95)return c[i];return 100000;}
+function chart(g,kind){screen();var tn=t,X=function(tt){return g.x+g.w*(1-(tn-tt)/WIN)};
+  ctx.fillStyle="#fff";rr(g.x-56,g.y-28,g.w+70,g.h+52,10);ctx.fill();ctx.strokeStyle="#e3e7ed";ctx.lineWidth=1;ctx.stroke();
+  var lo,hi,Y,f10="600 10.5px Mulish,system-ui,sans-serif",col,ticks=[],unit;
+  if(kind==="V"){var vmx=VFRC,vmn=VFRC;HIST.forEach(function(h){vmx=Math.max(vmx,h[1]);vmn=Math.min(vmn,h[1]);});lo=Math.floor((vmn-0.25)*2)/2;hi=Math.ceil((vmx+0.25)*2)/2;if(hi-lo<1)hi=lo+1;col="#175cd3";var st=(hi-lo)>2?1:0.5;for(var v=lo;v<=hi+1e-9;v+=st)ticks.push([v,fr(v,1)]);unit="V (L)";}
+  else{var am=0;HIST.forEach(function(h){am=Math.max(am,Math.abs(h[2]));});var r=niceR(am*1000);lo=-r;hi=r;col="#b42318";var kp=r>=1000;[-r,-r/2,0,r/2,r].forEach(function(v){ticks.push([v/1000,kp?fr(v/1000,v%1000?1:0):fr(v,0)]);});lo=-r/1000;hi=r/1000;unit=kp?"p − pₐₜₘ (kPa)":"p − pₐₜₘ (Pa)";}
+  Y=function(v){return g.y+g.h*(1-(v-lo)/(hi-lo))};
+  ctx.strokeStyle="#eef1f5";ticks.forEach(function(tk){ctx.beginPath();ctx.moveTo(g.x,Y(tk[0]));ctx.lineTo(g.x+g.w,Y(tk[0]));ctx.stroke();});
+  for(var s=Math.ceil(tn-WIN);s<=tn;s++){if((s%5+5)%5)continue;ctx.beginPath();ctx.moveTo(X(s),g.y);ctx.lineTo(X(s),g.y+g.h);ctx.stroke();}
+  ctx.strokeStyle="#5f6b7a";ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(g.x,g.y-4);ctx.lineTo(g.x,g.y+g.h);ctx.lineTo(g.x+g.w,g.y+g.h);ctx.stroke();
+  tag(unit,g.x-50,g.y-17,col,"800 11px Mulish,system-ui,sans-serif","left",{fixed:1});
+  ticks.forEach(function(tk){tag(tk[1],g.x-6,Y(tk[0]),"#5f6b7a",f10,"right",{fixed:1});});
+  if(kind==="p"){ctx.strokeStyle="#13233a";ctx.setLineDash([4,4]);ctx.beginPath();ctx.moveTo(g.x,Y(0));ctx.lineTo(g.x+g.w,Y(0));ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="rgba(46,144,250,.07)";ctx.fillRect(g.x,Y(0),g.w,g.y+g.h-Y(0));}
+  tag("il y a 15 s",g.x,g.y+g.h+11,"#5f6b7a",f10,"left",{fixed:1});tag("maintenant",g.x+g.w,g.y+g.h+11,"#5f6b7a",f10,"right",{fixed:1});
+  ctx.save();ctx.beginPath();ctx.rect(g.x,g.y-2,g.w+2,g.h+4);ctx.clip();ctx.strokeStyle=col;ctx.lineWidth=2.4;ctx.lineJoin="round";ctx.beginPath();var first=true;
+  HIST.forEach(function(h){var x=X(h[0]),y=Y(kind==="V"?h[1]:h[2]);if(first){ctx.moveTo(x,y);first=false;}else ctx.lineTo(x,y);});ctx.stroke();ctx.restore();
+  var cur=kind==="V"?V:p-PATM;ctx.fillStyle=col;ctx.beginPath();ctx.arc(g.x+g.w,Y(Math.max(lo,Math.min(hi,cur))),4.5,0,6.2832);ctx.fill();
+  if(kind==="p"){tag(closed?"p < pₐₜₘ":"l'air entre",g.x+8,g.y+g.h-9,"#175cd3","700 11px Mulish,system-ui,sans-serif","left",{fixed:1});tag(closed?"p > pₐₜₘ":"l'air sort",g.x+8,g.y+9,"#b54708","700 11px Mulish,system-ui,sans-serif","left",{fixed:1});}}
+
+/* ---------- textes ---------- */
+var last="";
+function read(){var dp=(p-PATM)*1000,n=p*V/(RG*TB)*1000;
+  $("rbV").textContent=fr(V,2)+" L";$("rbVs").textContent="diaphragme "+(dcm()>=0?"abaissé de ":"remonté de ")+fr(Math.abs(dcm()),1)+" cm";
+  $("rbP").textContent=fr(p,Math.abs(dp)<1000?2:1)+" kPa";$("rbPs").textContent=Math.abs(dp)<1000?sg(dp,0)+" Pa par rapport à pₐₜₘ":sg(dp/1000,1)+" kPa par rapport à pₐₜₘ";
+  $("rbQ").textContent=closed?"0 L/s":fr(Math.abs(Q),2)+" L/s";$("rbQs").textContent=closed?"nez et bouche fermés":Q>0.01?"l'air entre (inspiration)":Q<-0.01?"l'air sort (expiration)":"presque à l'arrêt";
+  $("rbN").textContent=fr(p*V,1)+" kPa·L";$("rbNs").textContent="n = p·V/(R·T) = "+fr(n,1)+" mmol à 37 °C";
+  var fml="La quantité d'air dans les poumons ne change pas instantanément. Si le volume augmente, <b style='color:#b42318'>p·V = constante</b> (loi de Boyle-Mariotte, à température constante) impose une pression plus basse : <b>p &lt; p<sub>atm</sub></b> et l'air du dehors est poussé vers l'intérieur. À l'expiration, c'est l'inverse.";
+  var inf;
+  if(closed){var V0=Va;inf="<b>Nez et bouche fermés</b> : aucune molécule ne peut entrer, p·V reste égal à "+fr(PATM*V0,1)+" kPa·L. Pour V = "+fr(V,2)+" L : p = "+fr(PATM,1)+" × "+fr(V0,2)+" / "+fr(V,2)+" = <b>"+fr(PATM*V0/V,2)+" kPa</b>, soit "+sg(PATM*V0/V-PATM,1)+" kPa. "+(V>V0+1e-3?"C'est l'effort que tu sens quand tu essaies d'inspirer en te bouchant le nez et la bouche.":V<V0-1e-3?"C'est ce qui se passe quand tu souffles fort, nez et bouche fermés.":"")+" (En réalité, les muscles ne créent pas plus d'une dizaine de kPa d'écart : le volume change alors beaucoup moins que dans ce modèle.)";}
+  else{var dV=PATM*Va/p-Va;inf="<b>Voies ouvertes</b> : il suffit d'un tout petit écart pour faire entrer l'air. Débit Q = (p<sub>atm</sub> − p)/R avec R = "+fr(R(),1)+" kPa·s/L"+(ri?" (bronches rétrécies)":" (voies aériennes normales)")+" : ici "+fpa(Math.abs((PATM-p)*1000))+" → Q = "+fr(Math.abs(Q),2)+" L/s. "+
+    "Pic de débit attendu : π·f·V<sub>T</sub> = π × "+fr(F/60,3)+" × "+fr(VT,2)+" = "+fr(Math.PI*F/60*VT,2)+" L/s, d'où un écart de pression maximal R·Q ≈ "+fpa(R()*Math.PI*F/60*VT*1000)+". "+
+    (Math.abs(PATM-p)/PATM<0.001?"Un écart de "+fpa(Math.abs(PATM-p)*1000)+", c'est "+fr(Math.abs(PATM-p)/PATM*100,3)+" % de la pression atmosphérique : la respiration calme se joue à moins d'un millième près ! ":"L'écart atteint ici "+fr(Math.abs(PATM-p)/PATM*100,1)+" % de la pression atmosphérique : avec des bronches rétrécies ou une respiration rapide et profonde, il faut forcer bien plus. ")+(cyc?"Volume courant mesuré sur le dernier cycle : <b>"+fr(cyc[1]-cyc[0],2)+" L</b>.":"");}
+  if(fml+inf!==last){last=fml+inf;$("rbFml").innerHTML=fml;$("rbInfo").innerHTML=inf;}}
+
+/* ---------- simulation ---------- */
+function step(dt){if(auto&&!drag){ph+=dt*F/60;Vgoal=VFRC+VT*(1-Math.cos(2*Math.PI*ph))/2;}
+  var V0=V,n=Math.max(1,Math.ceil(dt/0.0005)),h=dt/n,Vg=Math.max(1.6,Math.min(5.2,Vgoal));
+  for(var i=1;i<=n;i++){V=V0+(Vg-V0)*i/n;if(!closed){Q=(PATM-p)/R();Va+=Q*h;}else Q=0;p=PATM*Va/V;}
+  /* volume entré pendant l'inspiration en cours */
+  if(Q>0.005&&lastQ<=0.005){Vin0=Va;}if(Q>0.005)Vin=Va-Vin0;lastQ=Q;
+  Vmax=Math.max(Vmax,Va);Vmin=Math.min(Vmin,Va);if(auto&&ph%1<(ph-dt*F/60)%1+1e-9&&ph>1){cyc=[Vmin,Vmax];Vmax=Va;Vmin=Va;}
+  PART.forEach(function(o){o.s+=Q*dt*0.55;if(o.s>1)o.s-=1;if(o.s<0)o.s+=1;});
+  HIST.push([t,V,p-PATM,Q]);while(HIST.length&&HIST[0][0]<t-WIN-0.2)HIST.shift();}
+
+/* ---------- commandes ---------- */
+function lab(){$("rbVTv").textContent=fr(VT,2)+" L";$("rbFv").textContent=F+" /min";}
+function setClosed(c){closed=c;document.querySelectorAll("[data-c]").forEach(function(b){b.classList.toggle("on",+b.dataset.c===(c?1:0))});}
+function setAuto(a){auto=a;$("rbAuto").classList.toggle("on",a);if(a){/* reprendre à la phase qui correspond au volume actuel */var u=Math.max(-1,Math.min(1,1-2*(V-VFRC)/VT));ph=Math.acos(u)/(2*Math.PI);}}
+document.querySelectorAll("[data-c]").forEach(function(b){b.onclick=function(){setClosed(+b.dataset.c===1);};});
+document.querySelectorAll("[data-r]").forEach(function(b){b.onclick=function(){ri=+b.dataset.r;document.querySelectorAll("[data-r]").forEach(function(c){c.classList.toggle("on",c===b)});};});
+$("rbAuto").onclick=function(){setAuto(!auto);};
+$("rbVT").oninput=function(){VT=+this.value;lab();};$("rbF").oninput=function(){F=+this.value;lab();};
+function pos(ev){var b=cv.getBoundingClientRect();return [ev.clientX-b.left,ev.clientY-b.top];}
+function nearDia(p){var x=VX(p[0]),y=VY(p[1]);return Math.abs(x-CXB)<HW&&y>dia(x)-26&&y<Math.max(dia(x),dome()+34)+12;}
+cv.addEventListener("pointerdown",function(ev){var p=pos(ev);if(!nearDia(p))return;drag={y:VY(p[1]),V:V};setAuto(false);cv.setPointerCapture(ev.pointerId);ev.preventDefault();});
+cv.addEventListener("pointermove",function(ev){var p=pos(ev);if(drag){Vgoal=Math.max(1.75,Math.min(5,drag.V+(VY(p[1])-drag.y)/12*KD));}cv.style.cursor=drag?"grabbing":nearDia(p)?"ns-resize":"default";});
+cv.addEventListener("pointerup",function(){drag=null;});
+var lt=null;
+function frame(ts){if(lt===null)lt=ts;var dt=Math.min(0.05,(ts-lt)/1000);lt=ts;t+=dt;size();step(dt);
+  LB=[];screen();ctx.clearRect(0,0,W,H);ctx.fillStyle="#f7f9fb";ctx.fillRect(0,0,W,H);
+  ctx.save();ctx.beginPath();ctx.rect(Lg.sc.x,Lg.sc.y,Lg.sc.w,Lg.sc.h);ctx.clip();drawScene();screen();var cl=[Lg.sc.x,Lg.sc.x+Lg.sc.w],dp=(p-PATM)*1000;
+  tag("pₐₜₘ = "+fr(PATM,1)+" kPa",SX(CXB-150),SY(38),"#344054","800 12px Mulish,system-ui,sans-serif","center",{cl:cl});
+  tag(closed?"air bloqué":Q>0.01?"l'air entre":Q<-0.01?"l'air sort":"pause",SX(CXB+150),SY(38),closed?"#b42318":Q>=0?"#175cd3":"#b54708","800 12.5px Mulish,system-ui,sans-serif","center",{cl:cl});
+  tag("V = "+fr(V,2)+" L",SX(CXB-82),SY(250),"#13233a","800 13px Mulish,system-ui,sans-serif","center",{cl:cl});
+  tag("p = "+(Math.abs(dp)<1000?fr(p,2):fr(p,1))+" kPa",SX(CXB+86),SY(250),dp<-0.5?"#175cd3":dp>0.5?"#b54708":"#13233a","800 13px Mulish,system-ui,sans-serif","center",{cl:cl});
+  tag(Math.abs(dp)<1000?sg(dp,0)+" Pa":sg(dp/1000,1)+" kPa",SX(CXB+86),SY(270),dp<-0.5?"#175cd3":dp>0.5?"#b54708":"#475467","700 11.5px Mulish,system-ui,sans-serif","center",{cl:cl});
+  tag("diaphragme",SX(CXB-HW+6),SY(edge()+22),"#7a271a","800 12px Mulish,system-ui,sans-serif","left",{cl:cl});
+  ctx.restore();chart(Lg.g1,"V");chart(Lg.g2,"p");read();requestAnimationFrame(frame);}
+lab();
+window.__rb={set:function(o){if("reset" in o){V=VFRC;Va=VFRC;p=PATM;Vgoal=VFRC;}if("auto" in o)setAuto(o.auto);if("closed" in o)setClosed(o.closed);if("ri" in o){ri=o.ri;document.querySelectorAll("[data-r]").forEach(function(c){c.classList.toggle("on",+c.dataset.r===ri)});}if("VT" in o){VT=o.VT;$("rbVT").value=VT;}if("F" in o){F=o.F;$("rbF").value=F;}lab();
+    if("V" in o){Vgoal=o.V;}return {V:V,Va:Va,p:p,Q:Q,dp:(p-PATM)*1000,cyc:cyc};},labels:function(){return LB.map(function(b){return b.slice()});}};
+requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Gaz et thermodynamique<span>9 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/gaz-piston/"><i>01</i>Gaz chauffé : le piston monte</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/diagramme-pv/"><i>02</i>Diagramme PV et premier principe</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-transferts-thermiques/"><i>03</i>Conduction, convection, rayonnement</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-dilatation/"><i>04</i>La dilatation</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-machine-thermique/"><i>05</i>Moteur, frigo, pompe à chaleur</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-detente-irreversible/"><i>06</i>Une détente qui ne revient jamais</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-glace-vapeur/"><i>07</i>Chauffer 1 kg de glace de −20 à 120 °C</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-zero-absolu/"><i>08</i>Trouver le zéro absolu avec un ballon de gaz</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-respiration-boyle/"><i>09</i>Respirer, c'est appliquer Boyle-Mariotte</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doppler sanguin : mesurer la vitesse du sang · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH5">Ondes</a>›<b>Doppler sanguin : mesurer la vitesse du sang</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Ondes</span><span class="sfa-chip free">Gratuit</span></div><h1>Doppler sanguin : mesurer la vitesse du sang</h1><p>Incline la sonde et regarde le spectre Doppler battre au rythme du cœur : le décalage Δf = 2·f·v·cos θ / c dépend de l’angle entre le faisceau et le sang. À 90°, plus rien. Déplace la sonde vers la plaque qui rétrécit l’artère : le sang y accélère (même débit, section plus petite) et Δf monte. Juste après, le jet devient turbulent. Active le son pour entendre ce que l’échographiste entend.</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:70vh;min-height:580px;cursor:grab;touch-action:none" aria-label="Doppler sanguin en 3D : une sonde inclinée posée sur la peau vise une artère où défilent des globules rouges ; une plaque rétrécit l'artère ; en bas, le spectre Doppler défile au rythme du cœur et affiche le décalage de fréquence"></canvas>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill" style="min-width:160px">θ &nbsp;angle faisceau / sang</span>
+  <input type="range" id="sA" min="20" max="160" step="1" value="60" style="accent-color:#185fa5;">
+  <span class="val" id="vA" style="color:#185fa5"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:160px;color:#a32d2d">v &nbsp;vitesse du sang (pic)</span>
+  <input type="range" id="sV" min="0.1" max="1.5" step="0.05" value="0.5" style="accent-color:#E24B4A;">
+  <span class="val" id="vV" style="color:#a32d2d"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:160px;color:#9a5f0f">Sténose (diamètre)</span>
+  <input type="range" id="sS" min="0" max="70" step="1" value="50" style="accent-color:#BA7517;">
+  <span class="val" id="vS" style="color:#9a5f0f"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:160px">f &nbsp;fréquence émise</span>
+  <input type="range" id="sF" min="2" max="10" step="0.5" value="5" style="accent-color:#5b6b7d;">
+  <span class="val" id="vF"></span>
+</div>
+<div class="row">
+  <span class="pill">Mesurer</span>
+  <button class="btn on" id="m0">Avant la plaque</button>
+  <button class="btn" id="m1">Dans le rétrécissement</button>
+  <button class="btn" id="m2">Juste après</button>
+</div>
+<div class="row">
+  <button class="btn" id="snd" style="font-weight:800">🔊 Écouter le Doppler</button>
+  <button class="btn" id="pp">⏸ Pause</button>
+  <button class="btn" id="v3">Vue de face</button>
+  <button class="btn" id="lab">Masquer les écritures</button>
+</div>
+<div class="row"><span class="hint">Astuce : fais glisser la sonde le long de la peau, ou attrape sa poignée pour l’incliner. Glisse ailleurs pour tourner autour du montage.</span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const INK='#1f2731',GREEN='#1D9E75',GREEN_D='#0F6E56',RED='#E24B4A',RED_D='#a32d2d',BLUE_D='#185fa5',OR='#BA7517',OR_D='#9a5f0f',GREY='#8a939c';
+const FS='600 12px Mulish,system-ui,sans-serif',FB='800 13px Mulish,system-ui,sans-serif',FT='700 11px Mulish,system-ui,sans-serif',FBIG='800 15px Mulish,system-ui,sans-serif';
+const $=id=>document.getElementById(id);
+const fr=(v,d)=>{const s=(Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d).replace('.',',');return s.replace(/^-/,'−');};
+const fi=v=>(v<0?'−':'')+Math.round(Math.abs(v)).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+let W=0,H=0,dpr=1,noLab=false,mob=false;
+function size(){const b0=cv.getBoundingClientRect();
+  if(b0.width<700){const want=Math.round(b0.width*1.2+330);if(Math.abs(b0.height-want)>2){cv.style.height=want+'px';cv.style.minHeight='0';}}
+  else if(cv.style.minHeight==='0px'||cv.style.minHeight==='0'){cv.style.height='70vh';cv.style.minHeight='580px';}
+  const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.round(b.width)||800,h=Math.round(b.height)||580;
+  if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);mob=W<700;}
+function tag(t,x,y,col,font,al,bg){if(noLab)return;ctx.font=font||FS;ctx.textAlign=al||'center';ctx.textBaseline='middle';const w=ctx.measureText(t).width,A=al||'center';
+  const lo=A==='left'?4:A==='right'?w+4:w/2+4,hi=A==='left'?W-w-4:A==='right'?W-4:W-w/2-4;x=Math.max(lo,Math.min(hi,x));y=Math.max(9,Math.min(H-9,y));
+  ctx.lineWidth=3.5;ctx.strokeStyle=bg||'rgba(255,255,255,.92)';ctx.lineJoin='round';ctx.strokeText(t,x,y);ctx.fillStyle=col||INK;ctx.fillText(t,x,y);}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
+function arrow(x1,y1,x2,y2,col,w){ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w||2;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();const a=Math.atan2(y2-y1,x2-x1),h=7+(w||2)*1.5;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-h*Math.cos(a-0.42),y2-h*Math.sin(a-0.42));ctx.lineTo(x2-h*Math.cos(a+0.42),y2-h*Math.sin(a+0.42));ctx.closePath();ctx.fill();}
+
+// ---------- physique ----------
+const C_SON=1540;                 // célérité des ultrasons dans les tissus (m/s)
+let th=60,v0=0.5,sten=0.5,f=5;    // angle (°), vitesse au pic hors sténose (m/s), réduction du diamètre, fréquence (MHz)
+const R0=0.75,RW=0.9,ZA=-2.2,DEP=2.2,LS=0.9;   // rayon de la lumière, rayon de la paroi, profondeur de l'axe (cm), largeur de la plaque
+const rL=x=>R0*(1-sten*Math.exp(-(x/LS)*(x/LS)));   // rayon de la lumière en x
+const vLoc=x=>v0*Math.pow(R0/rL(x),2);              // conservation du débit : v·S = constante
+const HR=72,TB=60/HR;            // rythme cardiaque (battements/min), période (s)
+function puls(ph){ph=((ph%1)+1)%1;return 0.25+0.75*Math.exp(-Math.pow((ph-0.12)/0.07,2))+0.15*Math.exp(-Math.pow((ph-0.33)/0.05,2));}
+let xs=-3;                        // abscisse du point de mesure sur l'axe de l'artère (cm)
+const xp=()=>xs+DEP/Math.tan(th*Math.PI/180);      // abscisse de la sonde sur la peau
+const cosT=()=>Math.cos(th*Math.PI/180);
+const dfPic=()=>2*f*1e6*vLoc(xs)*cosT()/C_SON;     // décalage au pic systolique (Hz)
+const zone=()=>sten<0.05?'artère saine':Math.abs(xs)<0.6*LS?'dans le rétrécissement':xs>0&&xs<4?'juste après la plaque'+(turb()>0.15?' (jet turbulent)':''):xs<0?'avant la plaque':'loin après la plaque';
+const turb=()=>sten>0.3&&xs>0.55&&xs<3.8?Math.min(1,(sten-0.3)/0.3)*Math.exp(-Math.pow((xs-1.6)/1.6,2)):0;
+
+// ---------- caméra 3D faite main (z vers le haut) ----------
+let yaw=-0.55,pitch=0.42,C={},A3={};
+function cam(){const w=A3.w,h=A3.h,fo=mob?Math.min(w*3.2,h*4.4):Math.min(w*2.55,h*4.1);C={Dc:32,f:fo,cx:A3.x+w*0.5,cy:A3.y+h*0.5+h*0.09,cyw:Math.cos(yaw),syw:Math.sin(yaw),cp:Math.cos(pitch),sp:Math.sin(pitch)};}
+function pr(x,y,z){z+=2;const xr=x*C.cyw-y*C.syw,yr=x*C.syw+y*C.cyw,dep=C.Dc+yr*C.cp-z*C.sp,k=C.f/Math.max(0.5,dep);return[C.cx+xr*k,C.cy-(z*C.cp+yr*C.sp)*k,dep,k];}
+function poly(P,fill,stroke,lw){ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();}}
+function area(q){let a=0;for(let i=0;i<q.length;i++){const p=q[i],n=q[(i+1)%q.length];a+=p[0]*n[1]-n[0]*p[1];}return a;}
+const BX=[-6.5,6.5],BY=[-2.4,2.4],BZ=[-4.6,0];
+function blockFaces(){const [x0,x1]=BX,[y0,y1]=BY,[z0,z1]=BZ;const V=[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]].map(p=>pr(...p));
+  return [{i:[4,5,6,7],n:'top'},{i:[0,1,5,4],n:'front'},{i:[1,2,6,5],n:'right'},{i:[2,3,7,6],n:'back'},{i:[3,0,4,7],n:'left'},{i:[3,2,1,0],n:'bottom'}].map(F=>({...F,q:F.i.map(k=>V[k])}));}
+
+// ---------- globules rouges ----------
+let cells=[],rs=11;function rnd(){rs=(rs*16807)%2147483647;return rs/2147483647;}
+function newCell(x){const r=Math.sqrt(rnd())*0.85,a=rnd()*2*Math.PI;return{x,r,a,tilt:rnd()*Math.PI,spin:(rnd()-0.5)*3,sw:rnd()*6.3};}
+for(let i=0;i<150;i++)cells.push(newCell(-6.5+13*rnd()));
+const SLOW=10;   // les globules sont montrés 10 fois plus lents que dans la réalité
+let tt=0,run=true;
+function stepCells(dt){const p=puls(tt/TB),tb=turb();
+  cells.forEach(c=>{const prof=1.5*(1-c.r*c.r)+0.1;let vx=vLoc(c.x)*p*prof*100/SLOW;   // cm/s à l'écran
+    const tz=sten>0.3&&c.x>0.5&&c.x<4?Math.min(1,(sten-0.3)/0.3)*Math.exp(-Math.pow((c.x-1.6)/1.6,2)):0;
+    if(tz>0){c.a+=dt*(c.spin*6*tz);c.r=Math.min(0.92,Math.max(0.05,c.r+(rnd()-0.5)*dt*3*tz));vx*=1-0.35*tz*Math.sin(c.sw+tt*7);}
+    c.x+=vx*dt;c.tilt+=dt*c.spin*(0.3+2*tz);
+    if(c.x>6.5){Object.assign(c,newCell(-6.5+c.x-6.5));}});}
+
+// ---------- spectre Doppler ----------
+const NCOL=360,SPW=3.2;let spec=[],acc=0;
+function pushCol(){const p=puls(tt/TB),dm=dfPic()*p,tb=turb();spec.push({dm,tb,n:rnd()});if(spec.length>NCOL)spec.shift();}
+
+// ---------- son (Web Audio, synthétisé ici) ----------
+let AC=null,osc=null,gn=null,nsrc=null,bp=null,ng=null,sndOn=false;
+function startSound(){if(!AC){const AA=window.AudioContext||window.webkitAudioContext;if(!AA)return false;AC=new AA();
+    osc=AC.createOscillator();osc.type='triangle';gn=AC.createGain();gn.gain.value=0;osc.connect(gn).connect(AC.destination);osc.start();
+    const buf=AC.createBuffer(1,AC.sampleRate*2,AC.sampleRate),d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+    nsrc=AC.createBufferSource();nsrc.buffer=buf;nsrc.loop=true;bp=AC.createBiquadFilter();bp.type='bandpass';bp.Q.value=2.5;ng=AC.createGain();ng.gain.value=0;nsrc.connect(bp).connect(ng).connect(AC.destination);nsrc.start();}
+  if(AC.state==='suspended')AC.resume();return true;}
+function soundTick(){if(!AC)return;const p=puls(tt/TB),df=Math.abs(dfPic()*p),T=AC.currentTime,on=sndOn&&run;
+  const fq=Math.max(60,Math.min(15000,df));osc.frequency.setTargetAtTime(fq,T,0.015);bp.frequency.setTargetAtTime(fq,T,0.015);
+  const a=on?(0.04+0.10*(p-0.25)/0.75):0,tb=turb();gn.gain.setTargetAtTime(a*(1-0.6*tb),T,0.02);ng.gain.setTargetAtTime(on?a*(0.9+2.5*tb):0,T,0.02);}
+
+// ---------- mise en page ----------
+let G={};
+function geo(){if(!mob){const ph=Math.max(170,H*0.30);A3={x:0,y:0,w:W,h:H-ph-8};G={sx:12,sy:H-ph,sw:W*0.6-18,sh:ph-10,rx:W*0.6+4,ry:H-ph,rw:W*0.4-16,rh:ph-10};}
+  else{const ph=300;A3={x:0,y:0,w:W,h:H-ph-6};G={sx:8,sy:H-ph,sw:W-16,sh:150,rx:8,ry:H-ph+158,rw:W-16,rh:ph-164};}}
+
+// ---------- la scène ----------
+function room(){let g=ctx.createLinearGradient(0,0,0,A3.h);g.addColorStop(0,'#eef3f8');g.addColorStop(1,'#d5dee7');ctx.fillStyle=g;ctx.fillRect(0,0,W,A3.h+A3.y);}
+function vignette(){if(noLab)return;const w=mob?118:150,h=mob?84:104,x=8,y=8;ctx.save();rr(x,y,w,h,9);ctx.fillStyle='rgba(255,255,255,.88)';ctx.fill();ctx.strokeStyle='#c9d2dc';ctx.stroke();ctx.clip();
+  ctx.translate(x,y);ctx.scale(w/150,h/104);
+  // tête et cou de profil, la sonde sur le cou
+  ctx.fillStyle='#ecc09c';ctx.beginPath();ctx.moveTo(40,104);ctx.lineTo(48,70);ctx.bezierCurveTo(30,64,26,40,40,24);ctx.bezierCurveTo(56,6,92,8,100,30);ctx.lineTo(108,44);ctx.lineTo(100,48);ctx.lineTo(102,58);ctx.bezierCurveTo(96,64,88,66,84,66);ctx.lineTo(88,104);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#5b3a24';ctx.beginPath();ctx.moveTo(38,26);ctx.bezierCurveTo(50,4,92,2,102,28);ctx.bezierCurveTo(84,18,58,20,44,40);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#c0392b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(66,104);ctx.bezierCurveTo(70,88,74,78,76,66);ctx.stroke();
+  ctx.save();ctx.translate(86,84);ctx.rotate(-0.9);ctx.fillStyle='#4a5560';ctx.fillRect(-4,-26,9,26);ctx.restore();
+  ctx.setLineDash([3,3]);ctx.strokeStyle=RED_D;ctx.lineWidth=1.3;ctx.strokeRect(60,74,30,22);ctx.setLineDash([]);
+  ctx.fillStyle=INK;ctx.font='700 11px Mulish,system-ui,sans-serif';ctx.textAlign='left';ctx.fillText('artère carotide',4,98);ctx.restore();}
+function hull(xa,xb,ra,rb){const A=[],B=[];for(let i=0;i<28;i++){const a=i/28*2*Math.PI;A.push(pr(xa,ra*Math.cos(a),ZA+ra*Math.sin(a)));B.push(pr(xb,rb*Math.cos(a),ZA+rb*Math.sin(a)));}
+  const a0=pr(xa,0,ZA),b0=pr(xb,0,ZA),dx=b0[0]-a0[0],dy=b0[1]-a0[1],L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L;
+  const ext=P=>{let mn=1e9,mx=-1e9,pm=null,pM=null;P.forEach(p=>{const d=(p[0]-a0[0])*nx+(p[1]-a0[1])*ny;if(d<mn){mn=d;pm=p;}if(d>mx){mx=d;pM=p;}});return[pm,pM];};
+  const [a1,a2]=ext(A),[b1,b2]=ext(B);return [a1,b1,b2,a2];}
+function artery(back){const N=56;
+  for(let i=0;i<N;i++){const xa=-6.5+13*i/N,xb=-6.5+13*(i+1)/N,q=hull(xa,xb,RW,RW);
+    if(back){poly(q,'rgba(150,40,45,.55)');const qi=hull(xa,xb,rL(xa),rL(xb));poly(qi,'rgba(120,10,20,.55)');
+      const pl=1-rL((xa+xb)/2)/R0;if(pl>0.04){poly(q,'rgba(236,196,92,'+Math.min(0.95,pl*2.2)+')');poly(qi,'rgba(140,20,28,.9)');}}
+    else{poly(q,'rgba(255,190,190,.12)');}}
+  if(!back){// reflets le long de la paroi
+    [[0.85,'rgba(255,255,255,.22)',5]].forEach(([a,col,w])=>{ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();for(let i=0;i<=60;i++){const x=-6.5+13*i/60,p=pr(x,RW*Math.cos(Math.PI/2+a)*0.2-RW*0.35,ZA+RW*0.92);ctx[i?'lineTo':'moveTo'](p[0],p[1]);}ctx.stroke();});
+    // la plaque, vue par-dessus
+    if(sten>0.04){const p=pr(0,0,ZA+RW+0.02);const g=ctx.createRadialGradient(p[0]-4,p[1]-3,2,p[0],p[1],LS*p[3]*1.3);g.addColorStop(0,'rgba(255,236,170,.85)');g.addColorStop(1,'rgba(236,196,92,0)');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(p[0],p[1],LS*p[3]*1.5,0.5*p[3]*(0.4+0.6*Math.abs(C.sp)),0,0,7);ctx.fill();}}}
+function drawCells(){const L=cells.filter(c=>Math.abs(c.x)<6.45).map(c=>{const rl=rL(c.x)*c.r,y=rl*Math.cos(c.a),z=ZA+rl*Math.sin(c.a),p=pr(c.x,y,z);return{c,p};}).sort((a,b)=>b.p[2]-a.p[2]);
+  L.forEach(({c,p})=>{const s=0.16*p[3],e=Math.abs(Math.cos(c.tilt));ctx.save();ctx.translate(p[0],p[1]);ctx.rotate(c.tilt*0.7);
+    const g=ctx.createRadialGradient(-s*0.3,-s*0.3*e,s*0.1,0,0,s);g.addColorStop(0,'#f05a52');g.addColorStop(1,'#9e1b1f');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(0,0,s,Math.max(1.2,s*(0.3+0.7*e)),0,0,7);ctx.fill();
+    if(e>0.45){ctx.fillStyle='rgba(110,10,15,.55)';ctx.beginPath();ctx.ellipse(0,0,s*0.45,s*0.45*e,0,0,7);ctx.fill();}ctx.restore();});}
+function beam(){const t=th*Math.PI/180,d=[-Math.cos(t),0,-Math.sin(t)],n=[Math.sin(t),0,-Math.cos(t)],P=[xp(),0,0],L=DEP/Math.sin(t)+1.4,w=0.42;
+  const at=(u,o)=>pr(P[0]+d[0]*u+n[0]*o,0,P[2]+d[2]*u+n[2]*o);
+  poly([at(0,-w),at(0,w),at(L,w*1.3),at(L,-w*1.3)],'rgba(120,190,255,.2)','rgba(120,190,255,.45)',1);
+  // ondes émises (noir) et ondes renvoyées par les globules (vert pointillé), dans le plan du faisceau
+  const Ls=DEP/Math.sin(t),lam=0.42,ph=(tt*1.6)%1;
+  const front=(u,col,dash)=>{const pts=[];for(let i=-6;i<=6;i++){const o=w*0.95*i/6;pts.push(at(u+(dash?0:0.12*(1-(i/6)*(i/6))),o*(dash?0.8:1)));}
+    ctx.lineCap='round';ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=5;ctx.stroke();
+    if(dash)ctx.setLineDash([5,4]);ctx.strokeStyle=col;ctx.lineWidth=2.4;ctx.stroke();ctx.setLineDash([]);ctx.lineCap='butt';};
+  for(let k=-1;k<Ls/lam;k++){const u=(k+ph)*lam;if(u>0.15&&u<Ls)front(u,INK,false);}
+  for(let k=-1;k<Ls/lam;k++){const u=Ls-(k+ph+0.5)*lam;if(u>0.15&&u<Ls-0.1)front(u,GREEN,true);}
+  // volume de mesure
+  const S=[xs,0,ZA],sa=pr(S[0]-0.32*d[0],-0.45,S[2]-0.32*d[2]),sb=pr(S[0]-0.32*d[0],0.45,S[2]-0.32*d[2]),sc=pr(S[0]+0.32*d[0],-0.45,S[2]+0.32*d[2]),sd=pr(S[0]+0.32*d[0],0.45,S[2]+0.32*d[2]);
+  ctx.strokeStyle='#ffd23f';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(sa[0],sa[1]);ctx.lineTo(sb[0],sb[1]);ctx.moveTo(sc[0],sc[1]);ctx.lineTo(sd[0],sd[1]);ctx.stroke();
+  return {P,d,S};}
+function angleMark(B){const t=th*Math.PI/180,S=B.S,r=1.25,pts=[];for(let i=0;i<=24;i++){const a=t*i/24;pts.push(pr(S[0]+r*Math.cos(a),0,S[2]+r*Math.sin(a)));}
+  ctx.strokeStyle=BLUE_D;ctx.lineWidth=2.2;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();
+  // flèche de la vitesse du sang et direction vers la sonde
+  const a=pr(S[0],0,S[2]),b=pr(S[0]+1.9,0,S[2]),c=pr(S[0]+1.9*Math.cos(t),0,S[2]+1.9*Math.sin(t));
+  arrow(a[0],a[1],b[0],b[1],RED_D,3);ctx.setLineDash([5,4]);ctx.strokeStyle=BLUE_D;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(c[0],c[1]);ctx.stroke();ctx.setLineDash([]);
+  const m=pts[12];tag('θ = '+fr(th,0)+'°',m[0]+(Math.cos(t/2)>0?18:-18),m[1]-10,BLUE_D,FB);
+  tag('v sang',b[0]+8,b[1]+12,RED_D,FB,'left');}
+function probe(){const t=th*Math.PI/180,d=[-Math.cos(t),0,-Math.sin(t)],P=[xp(),0,0],up=[-d[0],0,-d[2]];
+  const base=pr(P[0],0,P[2]),top=pr(P[0]+up[0]*2.3,0,P[2]+up[2]*2.3),mid=pr(P[0]+up[0]*1.0,0,P[2]+up[2]*1.0);
+  // ombre et gel
+  const sh=pr(P[0],0,0.01);ctx.fillStyle='rgba(150,210,240,.7)';ctx.beginPath();ctx.ellipse(sh[0],sh[1],0.75*sh[3],0.32*sh[3]*Math.abs(C.sp)+2,0,0,7);ctx.fill();
+  const w0=0.55*base[3],w1=0.4*top[3];
+  [[1,'#4d5864'],[0.62,'#9aa6b2'],[0.25,'#e8eef4']].forEach(([k,col],i)=>{ctx.strokeStyle=col;ctx.lineCap='round';ctx.lineWidth=(i?w1:w0)*k*1.4;ctx.beginPath();ctx.moveTo(mid[0]-(1-k)*3,mid[1]-(1-k)*3);ctx.lineTo(top[0]-(1-k)*3,top[1]-(1-k)*3);ctx.stroke();});
+  ctx.strokeStyle='#3b4450';ctx.lineWidth=w0*1.25;ctx.lineCap='butt';ctx.beginPath();ctx.moveTo(base[0],base[1]);ctx.lineTo(mid[0],mid[1]);ctx.stroke();
+  ctx.fillStyle='#2b6cb0';ctx.beginPath();ctx.arc(base[0],base[1],w0*0.5,0,7);ctx.fill();
+  const tp=pr(P[0]+up[0]*2.7,0,P[2]+up[2]*2.7);ctx.strokeStyle='#3b4450';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(top[0],top[1]);ctx.quadraticCurveTo(tp[0],tp[1]-30,tp[0]+40,tp[1]-50);ctx.stroke();
+  ctx.fillStyle='rgba(255,210,63,.9)';ctx.beginPath();ctx.arc(top[0],top[1],6,0,7);ctx.fill();ctx.strokeStyle='#9a7a10';ctx.lineWidth=1.2;ctx.stroke();
+  G.pBase=base;G.pTop=top;tag('sonde',top[0]+12,top[1]+4,INK,FB,'left');}
+function scene(){room();cam();const F=blockFaces();
+  F.filter(F=>area(F.q)>0).forEach(F=>{const col=F.n==='bottom'?'#7a3530':F.n==='top'?'#c98276':'#9c4a40';poly(F.q,col,'rgba(60,20,20,.35)',1);
+    if(F.n!=='bottom'&&F.n!=='top'){ctx.save();poly(F.q);ctx.clip();ctx.strokeStyle='rgba(255,200,190,.12)';ctx.lineWidth=2;for(let i=0;i<13;i++){const a=pr(-6.5+i,F.n==='back'?2.4:-2.4,-4.6),b=pr(-6.5+i+0.6,F.n==='back'?2.4:-2.4,0);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}ctx.restore();}});
+  artery(true);drawCells();artery(false);const B=beam();
+  F.filter(F=>area(F.q)<=0).forEach(F=>{if(F.n==='top'){poly(F.q,'rgba(240,196,170,.38)','rgba(160,90,70,.6)',1.4);
+      const g=ctx.createLinearGradient(F.q[0][0],F.q[0][1],F.q[2][0],F.q[2][1]);g.addColorStop(0,'rgba(255,255,255,.18)');g.addColorStop(1,'rgba(255,255,255,0)');poly(F.q,g);}
+    else poly(F.q,null,'rgba(120,60,50,.45)',1.2);});
+  angleMark(B);probe();
+  // étiquettes
+  const pa=pr(-5.6,0,ZA+RW+0.3),pk=pr(4.6,1.6,0),pl=pr(0.8,0,ZA+RW+0.5);
+  tag('artère',pa[0],pa[1]-10,RED_D,FB);if(!G.pTop||Math.hypot(pk[0]-G.pTop[0],pk[1]-G.pTop[1])>70)tag('peau',pk[0],pk[1],'#7a3d2b',FB);
+  if(sten>0.04)tag((mob?'plaque −':'plaque : diamètre −')+fr(sten*100,0)+' %',pl[0],pl[1]-12,OR_D,FB,'left');
+  const ps=pr(xs,0,ZA-RW-0.4);tag('mesure ici',ps[0],ps[1]+12,'#8a6a00',FT);
+  tag('globules montrés 10 fois plus lents',A3.w-8,A3.h-10,GREY,FT,'right');}
+
+// ---------- panneau du spectre et des valeurs ----------
+function panel(){const {sx,sy,sw,sh}=G;let g=ctx.createLinearGradient(0,sy,0,sy+sh);g.addColorStop(0,'#141b22');g.addColorStop(1,'#0b0f14');rr(sx,sy,sw,sh,10);ctx.fillStyle=g;ctx.fill();
+  const px=sx+46,pw=sw-56,py=sy+22,ph=sh-34,mid=py+ph/2;
+  let M=Math.max(1000,Math.abs(dfPic())*1.15);const step=M>8000?4000:M>4000?2000:M>2000?1000:500;M=Math.ceil(M/step)*step;
+  const Y=v=>mid-v/M*(ph/2);
+  ctx.font=FT;ctx.textAlign='right';ctx.textBaseline='middle';
+  for(let v=-M;v<=M+1;v+=step){const y=Y(v);ctx.strokeStyle=v===0?'rgba(255,255,255,.55)':'rgba(140,170,200,.15)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px,y);ctx.lineTo(px+pw,y);ctx.stroke();ctx.fillStyle='#9fb3c6';if(!noLab)ctx.fillText(fr(v/1000,1).replace(',0',''),px-6,y);}
+  if(!noLab){ctx.textAlign='left';ctx.fillStyle='#cfe0f0';ctx.fillText(mob?'Spectre Doppler : Δf (kHz) · '+HR+' battements/min':'Spectre Doppler : Δf (kHz) au cours du temps · '+HR+' battements/min',px-30,sy+11);}
+  const cw=pw/NCOL;
+  spec.forEach((c,i)=>{const x=px+i*cw,top=Y(c.dm),bot=Y(c.dm*(c.tb>0?-0.25*c.tb:0.55)),y0=Y(0);
+    const gg=ctx.createLinearGradient(0,y0,0,top);gg.addColorStop(0,'rgba(120,200,255,'+(0.15+0.6*c.tb)+')');gg.addColorStop(0.75,'rgba(190,230,255,'+(0.55+0.2*c.tb)+')');gg.addColorStop(1,'rgba(255,255,255,.95)');
+    ctx.fillStyle=gg;const a=Math.min(top,y0),b=Math.max(top,y0);ctx.fillRect(x,a,cw+0.6,b-a);
+    if(c.tb<0.1){ctx.fillStyle='rgba(11,15,20,.8)';const w0=Math.min(Y(0),Y(c.dm*0.55)),w1=Math.max(Y(0),Y(c.dm*0.55));ctx.fillRect(x,w0+1,cw+0.6,Math.max(0,w1-w0-2));}   // « fenêtre » : flux laminaire, vitesses groupées
+    else{ctx.fillStyle='rgba(255,255,255,'+(0.25*c.tb*c.n)+')';ctx.fillRect(x,Math.min(Y(0),bot),cw+0.6,Math.abs(bot-Y(0)));}});
+  const last=spec[spec.length-1];if(last){const x=px+(spec.length-1)*cw;ctx.fillStyle='#ffd23f';ctx.beginPath();ctx.arc(x,Y(last.dm),3.5,0,7);ctx.fill();}
+  // valeurs
+  const {rx,ry,rw,rh}=G;rr(rx,ry,rw,rh,10);ctx.fillStyle='#f6f8fb';ctx.fill();ctx.strokeStyle='#d5dde6';ctx.stroke();
+  const vs=vLoc(xs),df=dfPic(),p=puls(tt/TB),L=[['Δf = 2·f·v·cos θ / c',INK,FBIG],
+    ['f = '+fr(f,1)+' MHz · c = '+C_SON+' m/s',INK,FS],
+    ['v = '+fr(vs,2)+' m/s ('+zone()+')',RED_D,FS],
+    ['cos θ = cos '+fr(th,0)+'° = '+fr(cosT(),3),BLUE_D,FS],
+    ['Δf au pic = '+fi(df)+' Hz',df>=0?GREEN_D:RED_D,FBIG],
+    ['maintenant : '+fi(df*p)+' Hz',GREY,FS]];
+  const lh=Math.min(24,(rh-12)/L.length);ctx.textAlign='left';ctx.textBaseline='middle';
+  L.forEach(([t,c,fn],i)=>{ctx.font=fn;ctx.fillStyle=c;let s=t;while(ctx.measureText(s).width>rw-20&&s.length>8)s=s.slice(0,-2);if(s!==t)s=s.slice(0,-1)+'…';ctx.fillText(s,rx+12,ry+10+lh*(i+0.5));});}
+
+// ---------- texte ----------
+function upd(){$('vA').textContent=fr(th,0)+'° · cos θ = '+fr(cosT(),3);$('vV').textContent=fr(v0,2)+' m/s';$('vS').textContent=sten<0.005?'aucune':'−'+fr(sten*100,0)+' % · v × '+fr(Math.pow(1/(1-sten),2),2);$('vF').textContent=fr(f,1)+' MHz';
+  ['m0','m1','m2'].forEach((id,i)=>$(id).classList.toggle('on',Math.abs(xs-[-3,0,1.6][i])<0.05));
+  $('fml').innerHTML='La sonde émet à la fréquence <b>f</b>. Les globules rouges qui bougent renvoient l’onde avec une fréquence un peu décalée : <b>Δf = 2·f·v·cos θ / c</b> (valable car v ≪ c). Le facteur 2 vient du double effet Doppler (le globule reçoit, puis réémet en bougeant). Seule la composante de la vitesse <b>le long du faisceau</b> compte : à θ = 90°, Δf = 0 même si le sang file.';
+  const vs=vLoc(xs),df=dfPic(),Q=v0*Math.PI*R0*R0;
+  $('info').innerHTML='<b>Mesure '+zone()+'</b> : rayon de l’artère '+fr(rL(xs)/R0*100,0)+' % du rayon sain → v = v₀·(R₀/r)² = '+fr(v0,2)+' × '+fr(Math.pow(R0/rL(xs),2),2)+' = <b>'+fr(vs,2)+' m/s</b> (même débit partout : v·S = constante)<br>'+
+    'Δf = 2 × '+fr(f,1)+'·10⁶ Hz × '+fr(vs,2)+' m/s × '+fr(cosT(),3)+' / '+C_SON+' m/s = <b>'+fi(df)+' Hz</b>'+(Math.abs(df)>=20&&Math.abs(df)<=20000?' : un son audible':'')+' · Δf/f = '+fi(Math.abs(df)/(f*1e6)*1e6)+' millionièmes<br>'+
+    (Math.abs(th-90)<0.5?'<b>θ = 90°</b> : le sang se déplace perpendiculairement au faisceau, Δf = 0 : la mesure est impossible.':th>90?'θ > 90° : le sang <b>s’éloigne</b> de la sonde, Δf est <b>négatif</b> (fréquence reçue plus basse).':'θ < 90° : le sang <b>s’approche</b> de la sonde, Δf est <b>positif</b> (fréquence reçue plus haute).')+
+    (turb()>0.15?'<br>Juste après la plaque, le jet devient <b>turbulent</b> : les globules ont des vitesses dans tous les sens, le spectre se remplit et le son devient un souffle.':'');}
+function draw(){size();geo();ctx.clearRect(0,0,W,H);scene();vignette();panel();}
+
+// ---------- commandes ----------
+$('sA').oninput=e=>{th=+e.target.value;upd();};$('sV').oninput=e=>{v0=+e.target.value;upd();};$('sS').oninput=e=>{sten=+e.target.value/100;upd();};$('sF').oninput=e=>{f=+e.target.value;upd();};
+[[ 'm0',-3],['m1',0],['m2',1.6]].forEach(([id,x])=>$(id).onclick=()=>{xs=x;upd();});
+$('pp').onclick=()=>{run=!run;$('pp').textContent=run?'⏸ Pause':'▶ Reprendre';soundTick();};
+$('snd').onclick=()=>{if(!sndOn){if(!startSound())return;sndOn=true;}else sndOn=false;$('snd').classList.toggle('on',sndOn);$('snd').textContent=sndOn?'🔇 Couper le son':'🔊 Écouter le Doppler';soundTick();};
+let front=false;$('v3').onclick=()=>{front=!front;$('v3').classList.toggle('on',front);if(front){yaw=0;pitch=0.02;}else{yaw=-0.55;pitch=0.42;}};
+$('lab').onclick=()=>{noLab=!noLab;$('lab').classList.toggle('on',noLab);};
+// souris : glisser la sonde, incliner par la poignée, tourner la vue
+let drag=null;
+function pos(e){const b=cv.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top];}
+function near(p,x,y,r){return p&&Math.hypot(p[0]-x,p[1]-y)<r;}
+function skinX(x,y){// point de la peau (z = 0, y = 0) le plus proche du pointeur à l'écran
+  let best=0,bd=1e9;for(let i=0;i<=260;i++){const X=-6.5+13*i/260,p=pr(X,0,0),d=Math.hypot(p[0]-x,p[1]-y);if(d<bd){bd=d;best=X;}}return best;}
+cv.addEventListener('pointerdown',e=>{const [x,y]=pos(e);if(y>A3.h)return;cv.setPointerCapture(e.pointerId);
+  if(near(G.pTop,x,y,22))drag={k:'tilt'};else if(near(G.pBase,x,y,26)||(G.pBase&&Math.hypot((G.pBase[0]+G.pTop[0])/2-x,(G.pBase[1]+G.pTop[1])/2-y)<22))drag={k:'move',off:xp()-skinX(x,y)};
+  else drag={k:'rot',x,y,yw:yaw,pt:pitch};cv.style.cursor='grabbing';});
+cv.addEventListener('pointermove',e=>{const [x,y]=pos(e);
+  if(!drag){cv.style.cursor=y>A3.h?'default':(near(G.pTop,x,y,22)||near(G.pBase,x,y,26))?'pointer':'grab';return;}
+  if(drag.k==='rot'){yaw=drag.yw+(x-drag.x)*0.008;pitch=Math.max(-0.1,Math.min(1.25,drag.pt+(y-drag.y)*0.006));front=false;$('v3').classList.remove('on');}
+  else if(drag.k==='move'){const X=Math.max(-6.3,Math.min(6.3,skinX(x,y)+drag.off));xs=Math.round((X-DEP/Math.tan(th*Math.PI/180))*10)/10;xs=Math.max(-6,Math.min(6,xs));upd();}
+  else{// incliner : on garde le point de mesure, la sonde tourne autour
+    let best=th,bd=1e9;for(let a=20;a<=160;a++){const t=a*Math.PI/180,Xp=xs+DEP/Math.tan(t),Q=pr(Xp+2.3*Math.cos(t),0,2.3*Math.sin(t)),d=Math.hypot(Q[0]-x,Q[1]-y);if(d<bd){bd=d;best=a;}}th=best;$('sA').value=th;upd();}});
+cv.addEventListener('pointerup',()=>{drag=null;cv.style.cursor='grab';});
+let last=null;
+function frame(ts){if(last===null)last=ts;const dt=Math.min(0.05,(ts-last)/1000);last=ts;
+  if(run){tt+=dt;stepCells(dt);acc+=dt;const ds=SPW/NCOL;while(acc>=ds){acc-=ds;pushCol();}}
+  soundTick();draw();requestAnimationFrame(frame);}
+window.__dop={set:o=>{if(o.th!=null){th=o.th;$('sA').value=th;}if(o.v!=null){v0=o.v;$('sV').value=v0;}if(o.s!=null){sten=o.s;$('sS').value=sten*100;}if(o.f!=null){f=o.f;$('sF').value=f;}if(o.xs!=null)xs=o.xs;if(o.run!=null)run=o.run;upd();},
+  get:()=>({th,v0,sten,f,xs,xp:xp(),vs:vLoc(xs),r:rL(xs),df:dfPic(),info:$('info').innerText,vals:[$('vA').textContent,$('vV').textContent,$('vS').textContent]})};
+for(let i=0;i<NCOL;i++){tt=i*SPW/NCOL-SPW;pushCol();}tt=0;
+upd();requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Ondes, interférences et diffraction<span>18 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Onde-progressive/"><i>01</i>Onde progressive</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Fonction-d-onde-f-x-vt-/"><i>02</i>Fonction d'onde f(x − vt)</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Relation-v-f/"><i>03</i>Relation v = λf</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Onde-progressive-et-Onde-stationnaire/"><i>04</i>Onde progressive et stationnaire</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/diffraction/"><i>05</i>Diffraction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/yung/"><i>06</i>Fentes de Young</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/effet-de-battement/"><i>07</i>Battements</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Doppler/"><i>08</i>Effet Doppler</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/son-decibels/"><i>09</i>Son : intensité et décibels</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/longueur-onde-periode/"><i>10</i>Longueur d’onde ou période ?</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/interferences-deux-sources/"><i>11</i>Interférences de deux sources</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/chaine-oscillateurs/"><i>12</i>Chaîne d’oscillateurs couplés</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/reflexion-obstacle/"><i>13</i>Réflexion sur un obstacle libre ou fixe</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/onde-stationnaire-somme/"><i>14</i>Deux ondes opposées : y = 2A sin(kx) cos(ωt)</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/harmoniques-tuyaux/"><i>15</i>Harmoniques : deux extrémités ou une seule ouverte</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-son-onde-pression/"><i>16</i>Le son : un haut-parleur pousse l’air</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-echographie/"><i>17</i>Échographie : le trajet d’une impulsion</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-doppler-sanguin/"><i>18</i>Doppler sanguin : mesurer la vitesse du sang</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

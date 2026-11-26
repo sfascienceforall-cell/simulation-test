@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Échographie : le trajet d’une impulsion · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH5">Ondes</a>›<b>Échographie : le trajet d’une impulsion</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Ondes</span><span class="sfa-chip free">Gratuit</span></div><h1>Échographie : le trajet d’une impulsion</h1><p>Pose la sonde sur le ventre et suis l’impulsion au ralenti : elle traverse la peau, la graisse, le muscle, le foie et le rein. À chaque interface, une partie revient (R dépend des impédances Z = ρ·v). L’écran trace les échos en fonction du temps (mode A) et construit l’image (mode B). Monte la fréquence : l’image devient plus fine, mais on voit moins profond. Retire le gel ou ajoute un calcul rénal pour voir ce qui change.</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:68vh;min-height:560px;cursor:default;touch-action:none" aria-label="Échographie du ventre : à gauche, une coupe agrandie sous la sonde (peau, graisse, muscle, foie, rein) où une impulsion d'ultrasons descend et des échos remontent à chaque interface ; à droite, l'écran de l'échographe avec l'image en niveaux de gris et la courbe des échos en fonction du temps"></canvas>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill" style="min-width:150px">f &nbsp;fréquence de la sonde</span>
+  <input type="range" id="sF" min="1" max="15" step="0.5" value="3.5" style="accent-color:#185fa5;">
+  <span class="val" id="vF" style="color:#185fa5"></span>
+</div>
+<div class="row">
+  <span class="pill">Contact</span>
+  <button class="btn on" id="gOn">Avec gel</button>
+  <button class="btn" id="gOff">Sans gel : un peu d’air sous la sonde</button>
+</div>
+<div class="row">
+  <span class="pill">Rein</span>
+  <button class="btn on" id="kN">Rein sain</button>
+  <button class="btn" id="kS">Avec un calcul (pierre)</button>
+</div>
+<div class="row">
+  <button class="btn on" id="bAuto">Balayage automatique</button>
+  <button class="btn" id="pp">⏸ Pause</button>
+  <button class="btn" id="bSlow">Encore plus lent</button>
+  <button class="btn" id="lab">Masquer les écritures</button>
+</div>
+<div class="row"><span class="hint">Astuce : attrape la sonde et fais-la glisser sur le ventre, ou touche l’image de l’écran pour la déplacer. Passe la souris sur la coupe pour lire ρ, v et Z de chaque tissu.</span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const INK='#1f2731',GREEN='#1D9E75',GREEN_D='#0F6E56',GREEN_L='#5fe0a8',BLUE_D='#185fa5',OR_D='#9a5f0f',RED_D='#a32d2d',GREY='#8a939c';
+const FS='600 12px Mulish,system-ui,sans-serif',FB='800 13px Mulish,system-ui,sans-serif',FT='700 11px Mulish,system-ui,sans-serif';
+const $=id=>document.getElementById(id);
+const fr=(v,d)=>{const s=(Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d).replace('.',',');return s.replace(/^-/,'−');};
+let W=0,H=0,dpr=1,noLab=false,mob=false;
+function size(){const b0=cv.getBoundingClientRect();
+  if(b0.width<700){const want=Math.round(b0.width*1.9+96);if(Math.abs(b0.height-want)>2){cv.style.height=want+'px';cv.style.minHeight='0';}}
+  else if(cv.style.minHeight==='0px'||cv.style.minHeight==='0'){cv.style.height='68vh';cv.style.minHeight='560px';}
+  const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.round(b.width)||800,h=Math.round(b.height)||560;
+  if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);imgDirty=true;}
+  ctx.setTransform(dpr,0,0,dpr,0,0);mob=W<700;}
+function tag(t,x,y,col,font,al,bg){if(noLab)return;ctx.font=font||FS;ctx.textAlign=al||'center';ctx.textBaseline='middle';const w=ctx.measureText(t).width,A=al||'center';
+  const lo=A==='left'?4:A==='right'?w+4:w/2+4,hi=A==='left'?W-w-4:A==='right'?W-4:W-w/2-4;x=Math.max(lo,Math.min(hi,x));y=Math.max(9,Math.min(H-9,y));
+  ctx.lineWidth=3.5;ctx.strokeStyle=bg||'rgba(255,255,255,.92)';ctx.lineJoin='round';ctx.strokeText(t,x,y);ctx.fillStyle=col||INK;ctx.fillText(t,x,y);}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
+
+// ---------- tissus : masse volumique (kg/m³), célérité (m/s), atténuation (dB/(cm·MHz)), rétrodiffusion (dB) ----------
+const TIS={
+  sonde:{n:'sonde',rho:1020,c:1520,a:0.5,bs:-200,col:['#ccc','#999']},
+  gel:{n:'gel',rho:1020,c:1520,a:0.5,bs:-200,col:['#d7eef8','#b9dcef']},
+  air:{n:'air',rho:1.2,c:343,a:0.5,bs:-200,col:['#f4f6f8','#e8ecf0']},
+  peau:{n:'peau',rho:1090,c:1600,a:0.5,bs:-40,col:['#f2c4ad','#dc9a80']},
+  graisse:{n:'graisse',rho:950,c:1450,a:0.5,bs:-60,col:['#f8e3a0','#e8c66a']},
+  muscle:{n:'muscle',rho:1070,c:1580,a:0.5,bs:-53,col:['#c9524a','#9c3530']},
+  foie:{n:'foie',rho:1060,c:1550,a:0.5,bs:-49,col:['#9c3f36','#6f2620']},
+  gpr:{n:'graisse autour du rein',rho:950,c:1450,a:0.5,bs:-45,col:['#f6dc8c','#e2bd5c']},
+  rein:{n:'rein',rho:1040,c:1560,a:0.5,bs:-57,col:['#b85a5a','#8a3a3d']},
+  sinus:{n:'sinus du rein',rho:980,c:1480,a:0.5,bs:-43,col:['#f0d49a','#d7ae66']},
+  pierre:{n:'calcul',rho:1950,c:4100,a:15,bs:-35,col:['#fbf7ea','#cfc6a8']}};
+Object.values(TIS).forEach(T=>T.Z=T.rho*T.c/1e6);   // impédance en MRayl (10⁶ kg·m⁻²·s⁻¹)
+const VAPP=1540;            // célérité supposée par l'appareil (m/s)
+const ZMAX=16, XL=6.5, DZ=0.005;   // profondeur et demi-largeur du champ (cm), pas de calcul (cm)
+const NCY=2;                // impulsion de 2 périodes
+const MARGE=60;             // dynamique utile (dB) entre le bruit (−110 dB) et le speckle des tissus mous (≈ −50 dB)
+const GMAX=48;              // gain maximal de la compensation en profondeur (dB)
+const tgc=d=>Math.min(f*d,GMAX);   // compensation : 2 × 0,5 dB/(cm·MHz) × f × d, plafonnée
+
+// ---------- géométrie de la coupe (cm ; x latéral, z profondeur) ----------
+const zP=0.2, zF=x=>1.45+0.25*Math.sin(0.5*x+0.6), zM=x=>zF(x)+1.0+0.15*Math.cos(0.7*x), zB=x=>13.6+0.4*Math.sin(0.45*x+1);
+const K={x:0.9,z:9.0,rx:3.4,rz:2.2,rot:-0.12},SN={x:1.2,z:9.2,rx:1.9,rz:0.8},ST={x:1.9,z:9.35,r:0.38},SH=0.4;
+function ell(x,z,cx,cz,rx,rz,rot){const c=Math.cos(rot),s=Math.sin(rot),dx=x-cx,dz=z-cz,u=dx*c+dz*s,v=-dx*s+dz*c;return u*u/(rx*rx)+v*v/(rz*rz);}
+let gel=true,stone=false;
+function tissue(x,z){
+  if(z<zP)return 'peau';if(z<zF(x))return 'graisse';if(z<zM(x))return 'muscle';
+  if(stone&&Math.hypot(x-ST.x,z-ST.z)<ST.r)return 'pierre';
+  if(ell(x,z,SN.x,SN.z,SN.rx,SN.rz,K.rot)<1)return 'sinus';
+  if(ell(x,z,K.x,K.z,K.rx,K.rz,K.rot)<1)return 'rein';
+  if(ell(x,z,K.x,K.z,K.rx+SH,K.rz+SH,K.rot)<1)return 'gpr';
+  if(z>zB(x))return 'muscle';
+  return 'foie';}
+
+// ---------- une ligne de tir : couches, temps, échos ----------
+let f=3.5;
+function column(x){
+  const seg=[];let cur=null;
+  if(!gel)seg.push({t:'air',z0:-0.02,z1:0});
+  for(let i=0;i*DZ<ZMAX+1;i++){const z=i*DZ,t=tissue(x,z+DZ/2);if(!cur||cur.t!==t){cur={t,z0:z,z1:z+DZ};seg.push(cur);}else cur.z1=z+DZ;}
+  let ta=0,att=0,up=0,above=gel?'gel':'sonde';const ech=[];
+  seg.forEach(s=>{const T=TIS[s.t],Z1=TIS[above].Z,Z2=T.Z,r=(Z2-Z1)/(Z2+Z1),R=r*r;
+    s.ta=ta;s.att0=att;s.up=up+2*10*Math.log10(1-R);       // pertes (dB) aller-retour par transmission, jusqu'à l'entrée dans cette couche
+    const t=2*ta,d=VAPP*1e-4*t/2;                           // t en µs (aller-retour), d en cm (1540 m/s = 0,154 cm/µs)
+    ech.push({a:above,b:s.t,R,z:s.z0,t,d,L:10*Math.log10(Math.max(R,1e-30))+up-2*att});
+    up=s.up;ta+=(s.z1-s.z0)/(T.c*1e-4);att+=T.a*f*(s.z1-s.z0);s.tb=ta;s.att1=att;above=s.t;});
+  return {seg,ech};}
+// position (cm) atteinte après un temps aller τ (µs) dans une colonne
+function zAt(C,tau){for(const s of C.seg){if(tau<=s.tb)return s.z0+(tau-s.ta)*TIS[s.t].c*1e-4;}return ZMAX+1;}
+function segAt(C,tau){for(const s of C.seg){if(tau<=s.tb)return s;}return C.seg[C.seg.length-1];}
+
+// ---------- image de l'écran (mode B) ----------
+const NX=156,NZ=240,off=document.createElement('canvas');off.width=NX;off.height=NZ;const octx=off.getContext('2d');let imgDirty=true;
+function hsh(i,j,k){let h=(i*374761393+j*668265263+k*2147483647)|0;h=Math.imul(h^(h>>>13),1274126177);h=h^(h>>>16);return ((h>>>0)%100000)/100000;}
+function vnoise(u,v,k){const i=Math.floor(u),j=Math.floor(v),fu=u-i,fv=v-j,a=hsh(i,j,k),b=hsh(i+1,j,k),c=hsh(i,j+1,k),d=hsh(i+1,j+1,k);return (a*(1-fu)+b*fu)*(1-fv)+(c*(1-fu)+d*fu)*fv;}
+function ray(u){return Math.sqrt(-2*Math.log(Math.max(1e-4,u)));}
+const DMIN=-82,DSPAN=62;
+function pixD(C,x,d,lam,cz,cxl){const tau=d/(VAPP*1e-4),s=segAt(C,tau),T=TIS[s.t],z=Math.min(s.z1,s.z0+(tau-s.ta)*T.c*1e-4);
+  const G0=tgc(d),attz=s.att0+T.a*f*(z-s.z0),sp=T.bs+s.up-2*attz+G0;
+  const g=ray(vnoise(x/cxl,d/cz,3));let I=Math.pow(10,sp/10)*g*g;
+  C.ech.forEach(e=>{const u=(d-e.d)/lam;if(Math.abs(u)<4){I+=Math.pow(10,(e.L+tgc(e.d))/10)*Math.exp(-u*u)*(0.75+0.5*vnoise(x/0.25,e.d,7));}});
+  const nz=-110+G0,gn=ray(vnoise(x/0.09,d/0.05,11));I+=Math.pow(10,nz/10)*gn*gn;
+  return {D:10*Math.log10(I),sp,nz,t:s.t,z};}
+function buildImage(){const im=octx.createImageData(NX,NZ),lam=VAPP*1e-4/f,cz=Math.max(0.03,2*lam),cxl=0.1+1.2*lam;
+  for(let ix=0;ix<NX;ix++){const x=-XL+(ix+0.5)*2*XL/NX,C=column(x);
+    for(let iz=0;iz<NZ;iz++){const d=(iz+0.5)*ZMAX/NZ,D=pixD(C,x,d,lam,cz,cxl).D,gv=Math.max(0,Math.min(1,(D-DMIN)/DSPAN)),p=(iz*NX+ix)*4,v=Math.round(255*Math.pow(gv,1.15));
+      im.data[p]=v;im.data[p+1]=v;im.data[p+2]=Math.min(255,v+6);im.data[p+3]=255;}}
+  octx.putImageData(im,0,0);imgDirty=false;}
+
+// ---------- état ----------
+let xp=-1.5,auto=true,run=true,slow=false,tA=0,tSw=0,CP=null,cpX=null,hover=null;
+const TWIN=2*ZMAX/(VAPP*1e-4);      // fenêtre d'écoute : 207,8 µs
+const SLOW0=15000;                   // ralenti : 1 µs dure 15 ms à l'écran
+function colP(){if(CP===null||cpX!==xp){CP=column(xp);cpX=xp;}return CP;}
+
+// ---------- mise en page ----------
+let G={};
+function geo(){
+  if(!mob){const Wc=W*0.55,top=Math.max(104,H*0.16),s=Math.min((Wc-40)/(2*XL),(H-top-16)/ZMAX),x0=20+(Wc-20-2*XL*s)/2+XL*s;
+    const mx=Wc+12,mw=W-mx-10,my=top-6,mh=H-my-10;
+    let bw=mw-40,bh=bw*ZMAX/(2*XL);const amH=Math.max(120,mh*0.24);if(bh>mh-amH-80){bh=mh-amH-80;bw=bh*2*XL/ZMAX;}
+    G={s,x0,y0:top,cutL:x0-XL*s,cutR:x0+XL*s,cutB:top+ZMAX*s,mx,my,mw,mh,bx:mx+(mw-bw)/2,by:my+38,bw,bh,ax:mx+22,ay:my+38+bh+30,aw:mw-36,ah:mh-bh-38-30-46,vert:false};}
+  else{const top=104,s=(W-40)/(2*XL),cutB=top+ZMAX*s,x0=W/2+10;const my=cutB+12,mh=H-my-6,mx=6,mw=W-12;
+    const bw=Math.min(mw*0.52,(mh-52)*2*XL/ZMAX),bh=bw*ZMAX/(2*XL);
+    G={s,x0,y0:top,cutL:x0-XL*s,cutR:x0+XL*s,cutB,mx,my,mw,mh,bx:mx+22,by:my+42,bw,bh,ax:mx+22+bw+10,ay:my+42,aw:mw-bw-22-10-34,ah:bh,vert:true};}
+  G.X=x=>G.x0+x*G.s;G.Y=z=>G.y0+z*G.s;}
+
+// ---------- la coupe anatomique ----------
+function bandPath(fTop,fBot){const n=60;ctx.beginPath();for(let i=0;i<=n;i++){const x=-XL+2*XL*i/n;ctx[i?'lineTo':'moveTo'](G.X(x),G.Y(fTop(x)));}for(let i=n;i>=0;i--){const x=-XL+2*XL*i/n;ctx.lineTo(G.X(x),G.Y(fBot(x)));}ctx.closePath();}
+function ellPath(cx,cz,rx,rz,rot){ctx.beginPath();ctx.ellipse(G.X(cx),G.Y(cz),rx*G.s,rz*G.s,rot,0,2*Math.PI);}
+function grad(y1,y2,c){const g=ctx.createLinearGradient(0,y1,0,y2);g.addColorStop(0,c[0]);g.addColorStop(1,c[1]);return g;}
+function cut(){const {X,Y,s,cutL,cutR,y0,cutB}=G;
+  // la salle d'examen au-dessus de la peau
+  let g=ctx.createLinearGradient(0,0,0,y0);g.addColorStop(0,'#eef3f8');g.addColorStop(1,'#dfe7ef');ctx.fillStyle=g;ctx.fillRect(0,0,mob?W:cutR+16,y0);
+  ctx.save();rr(cutL,y0-2,cutR-cutL,cutB-y0+2,10);ctx.clip();
+  ctx.fillStyle=grad(Y(10),cutB,TIS.muscle.col);ctx.fillRect(cutL,y0,cutR-cutL,cutB-y0);
+  // fibres des muscles du dos
+  ctx.strokeStyle='rgba(255,210,200,.18)';ctx.lineWidth=1;for(let z=13;z<ZMAX;z+=0.35){ctx.beginPath();ctx.moveTo(cutL,Y(z));ctx.bezierCurveTo(X(-2),Y(z+0.3),X(2),Y(z-0.3),cutR,Y(z+0.1));ctx.stroke();}
+  bandPath(zM,zB);ctx.fillStyle=grad(Y(3),Y(13),TIS.foie.col);ctx.fill();
+  // texture lobulaire du foie
+  ctx.save();bandPath(zM,zB);ctx.clip();ctx.fillStyle='rgba(255,190,170,.07)';for(let i=0;i<140;i++){const x=-XL+2*XL*hsh(i,1,5),z=2+12*hsh(i,2,5);ctx.beginPath();ctx.arc(X(x),Y(z),(0.15+0.25*hsh(i,3,5))*s,0,7);ctx.fill();}
+  ctx.strokeStyle='rgba(60,10,10,.35)';ctx.lineWidth=Math.max(1.5,0.12*s);ctx.beginPath();ctx.moveTo(X(-6.5),Y(5.2));ctx.bezierCurveTo(X(-4),Y(5.0),X(-3),Y(6.4),X(-1.2),Y(6.0));ctx.stroke();  // une veine du foie
+  ctx.restore();
+  // rein : graisse, cortex, sinus
+  ellPath(K.x,K.z,K.rx+SH,K.rz+SH,K.rot);ctx.fillStyle=grad(Y(K.z-K.rz),Y(K.z+K.rz),TIS.gpr.col);ctx.fill();
+  ellPath(K.x,K.z,K.rx,K.rz,K.rot);g=ctx.createRadialGradient(X(K.x-1),Y(K.z-1),s*0.4,X(K.x),Y(K.z),K.rx*s);g.addColorStop(0,'#d07a74');g.addColorStop(1,'#7c3034');ctx.fillStyle=g;ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1.5;ctx.stroke();
+  ellPath(SN.x,SN.z,SN.rx,SN.rz,K.rot);ctx.fillStyle=grad(Y(SN.z-SN.rz),Y(SN.z+SN.rz),TIS.sinus.col);ctx.fill();
+  ctx.strokeStyle='rgba(150,60,60,.55)';ctx.lineWidth=Math.max(1.2,0.1*s);for(let k=-2;k<=2;k++){ctx.beginPath();ctx.moveTo(X(SN.x+0.3),Y(SN.z));ctx.quadraticCurveTo(X(SN.x-0.6+0.3*k),Y(SN.z+0.3*k),X(SN.x-1.6),Y(SN.z+0.55*k));ctx.stroke();}
+  if(stone){g=ctx.createRadialGradient(X(ST.x-0.12),Y(ST.z-0.15),1,X(ST.x),Y(ST.z),ST.r*s);g.addColorStop(0,'#ffffff');g.addColorStop(1,'#bfb48f');ctx.fillStyle=g;ctx.beginPath();ctx.arc(X(ST.x),Y(ST.z),ST.r*s,0,7);ctx.fill();ctx.strokeStyle='#8f8463';ctx.lineWidth=1;ctx.stroke();}
+  // paroi : muscle, graisse, peau
+  bandPath(zF,zM);ctx.fillStyle=grad(Y(1.5),Y(3),TIS.muscle.col);ctx.fill();
+  ctx.save();bandPath(zF,zM);ctx.clip();ctx.strokeStyle='rgba(255,220,210,.25)';ctx.lineWidth=1;for(let i=0;i<9;i++){ctx.beginPath();for(let j=0;j<=30;j++){const x=-XL+2*XL*j/30,z=zF(x)+(i+0.5)/9*(zM(x)-zF(x));ctx[j?'lineTo':'moveTo'](X(x),Y(z));}ctx.stroke();}ctx.restore();
+  bandPath(()=>zP,zF);ctx.fillStyle=grad(Y(0.2),Y(1.7),TIS.graisse.col);ctx.fill();
+  ctx.save();bandPath(()=>zP,zF);ctx.clip();ctx.strokeStyle='rgba(190,140,50,.4)';ctx.lineWidth=1;for(let i=0;i<34;i++){const x=-XL+2*XL*(i+hsh(i,4,9))/34;ctx.beginPath();ctx.arc(X(x),Y(0.85),0.38*s,0,7);ctx.stroke();}ctx.restore();
+  bandPath(()=>0,()=>zP);ctx.fillStyle=grad(Y(0),Y(zP),TIS.peau.col);ctx.fill();
+  // ombre de profondeur sur la tranche
+  g=ctx.createLinearGradient(cutL,0,cutR,0);g.addColorStop(0,'rgba(0,0,0,.22)');g.addColorStop(0.12,'rgba(0,0,0,0)');g.addColorStop(0.88,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.22)');ctx.fillStyle=g;ctx.fillRect(cutL,y0,cutR-cutL,cutB-y0);
+  ctx.restore();
+  ctx.strokeStyle='rgba(60,40,40,.35)';ctx.lineWidth=1.2;rr(cutL,y0-2,cutR-cutL,cutB-y0+2,10);ctx.stroke();
+  // règle des profondeurs
+  ctx.fillStyle=INK;ctx.font=FT;ctx.textAlign='right';ctx.textBaseline='middle';
+  for(let z=0;z<=ZMAX;z+=2){ctx.fillRect(cutL-6,Y(z)-0.5,5,1);if(!noLab)ctx.fillText(z+'',cutL-8,Y(z));}if(!noLab){ctx.textAlign='right';ctx.fillText('cm',cutL-8,Y(ZMAX)+0.01-14);}
+  // noms des tissus
+  const L=(t,x,z,dark)=>tag(t,X(x),Y(z),dark?'#3d2a00':'#fff',FB,'center',dark?'rgba(255,250,235,.85)':'rgba(60,10,10,.6)');
+  L('graisse',-4.6,1.0,true);L('muscle',-4.8,2.3);L('foie',-4.2,7.5);L('rein',K.x-0.6,K.z+0.95);
+  tag('peau',G.cutL+8,Y(zP/2)+1,'#5a2a1a',FT,'left','rgba(255,240,230,.9)');
+  if(!mob)L('graisse autour du rein',K.x+1.4,K.z-K.rz-0.2,true);L('muscles du dos',-3.2,15);
+  if(stone)L('calcul',ST.x+0.5,ST.z+0.75,true);}
+
+// ---------- la sonde, la main et le patient ----------
+function probe(){const {X,Y,s,y0}=G,px=X(xp),w=Math.max(30,1.5*s);
+  if(gel){ctx.fillStyle='rgba(150,210,240,.75)';ctx.beginPath();ctx.ellipse(px,y0-1,w*0.85,6,0,Math.PI,2*Math.PI);ctx.fill();}
+  // câble vers l'échographe
+  ctx.strokeStyle='#3b4450';ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(px,y0-58);if(mob)ctx.bezierCurveTo(px+30,y0-100,W-60,-10,W+4,10);else ctx.bezierCurveTo(px+60,y0-110,G.mx-30,G.my+20,G.mx+4,G.my+40);ctx.stroke();
+  const ty=y0-(gel?5:7);
+  let g=ctx.createLinearGradient(px-w/2,0,px+w/2,0);g.addColorStop(0,'#5d6772');g.addColorStop(0.35,'#e6ebf0');g.addColorStop(1,'#59636e');
+  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(px-w/2,ty);ctx.lineTo(px+w/2,ty);ctx.lineTo(px+w*0.36,ty-26);ctx.lineTo(px+w*0.2,ty-60);ctx.lineTo(px-w*0.2,ty-60);ctx.lineTo(px-w*0.36,ty-26);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=1;ctx.stroke();
+  ctx.fillStyle='#2b6cb0';ctx.fillRect(px-w/2,ty-4,w,4);   // la face active (cristaux piézoélectriques)
+  // la main de l'échographiste (paume derrière, doigts devant)
+  ctx.fillStyle='#2f6fb0';ctx.beginPath();ctx.moveTo(px+w*0.15,ty-70);ctx.lineTo(px+w*1.1,ty-108);ctx.lineTo(px+w*1.6,ty-86);ctx.lineTo(px+w*0.55,ty-40);ctx.closePath();ctx.fill();
+  g=ctx.createLinearGradient(px-w*0.6,0,px+w*0.7,0);g.addColorStop(0,'#f3cba8');g.addColorStop(1,'#c98f68');ctx.fillStyle=g;
+  ctx.beginPath();ctx.ellipse(px+w*0.32,ty-48,w*0.38,15,-0.3,0,7);ctx.fill();
+  for(let k=0;k<4;k++){ctx.beginPath();ctx.ellipse(px-w*0.28,ty-58+k*8,7,4.2,0.15,0,7);ctx.fill();ctx.strokeStyle='rgba(140,80,50,.55)';ctx.lineWidth=1;ctx.stroke();}
+  ctx.beginPath();ctx.ellipse(px+w*0.05,ty-30,9,5,-0.6,0,7);ctx.fill();ctx.strokeStyle='rgba(140,80,50,.55)';ctx.stroke();
+  tag('sonde',px-w*0.6-6,ty-24,INK,FB,'right');}
+function patient(){if(mob)return;const x=G.mx,y=6,w=G.mw,h=G.my-14;
+  ctx.save();rr(x,y,w,h,10);ctx.fillStyle='rgba(255,255,255,.9)';ctx.fill();ctx.strokeStyle='#c9d2dc';ctx.lineWidth=1;ctx.stroke();ctx.clip();
+  const k=Math.min(h/86,w/300);ctx.translate(x+w/2-150*k,y+h/2-43*k);ctx.scale(k,k);
+  let g=ctx.createLinearGradient(0,60,0,70);g.addColorStop(0,'#b7c1cb');g.addColorStop(1,'#7f8b97');ctx.fillStyle=g;ctx.fillRect(20,60,170,7);ctx.fillStyle='#8f9aa5';ctx.fillRect(34,67,5,16);ctx.fillRect(170,67,5,16);
+  g=ctx.createLinearGradient(0,40,0,62);g.addColorStop(0,'#9cc0e0');g.addColorStop(1,'#5f88b0');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(110,53,66,9,0,0,7);ctx.fill();
+  ctx.fillStyle='#ecc09c';ctx.beginPath();ctx.arc(37,48,10,0,7);ctx.fill();ctx.fillStyle='#5b3a24';ctx.beginPath();ctx.arc(34,45,10,Math.PI*0.85,Math.PI*1.85);ctx.fill();
+  ctx.fillStyle='#ecc09c';ctx.beginPath();ctx.ellipse(112,45,22,6,0,Math.PI,2*Math.PI);ctx.fill();
+  ctx.fillStyle='#4a5560';ctx.fillRect(112,28,5,13);
+  ctx.fillStyle='#2f6fb0';ctx.beginPath();ctx.moveTo(116,30);ctx.lineTo(150,8);ctx.lineTo(160,16);ctx.lineTo(122,40);ctx.closePath();ctx.fill();   // bras de l'échographiste
+  ctx.setLineDash([3,3]);ctx.strokeStyle=RED_D;ctx.lineWidth=1.4;ctx.strokeRect(102,40,26,13);ctx.setLineDash([]);
+  // l'échographe sur son chariot
+  ctx.fillStyle='#46505c';ctx.fillRect(232,4,58,40);ctx.fillStyle='#0b0f14';ctx.fillRect(236,8,50,32);ctx.fillStyle='#3a3f45';ctx.fillRect(237,9,48,30);
+  ctx.fillStyle='#9aa0a6';ctx.beginPath();ctx.ellipse(260,24,10,6,0,0,7);ctx.fill();
+  ctx.fillStyle='#5d6772';ctx.fillRect(256,44,6,30);ctx.fillRect(236,52,50,6);ctx.fillRect(240,74,42,5);
+  ctx.strokeStyle='#3b4450';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(114,28);ctx.bezierCurveTo(130,-4,210,0,236,56);ctx.stroke();
+  ctx.fillStyle=INK;ctx.font='700 11px Mulish,system-ui,sans-serif';ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('le patient',4,14);ctx.fillStyle=RED_D;ctx.fillText('coupe agrandie ↙',132,58);ctx.fillStyle=INK;ctx.fillText('l’échographe',222,80);
+  ctx.restore();}
+// ---------- le faisceau, l'impulsion et les échos ----------
+function beam(){const C=colP(),{X,Y,s}=G,px=X(xp),bw=Math.max(14,0.9*s);
+  ctx.save();rr(G.cutL,G.y0,G.cutR-G.cutL,G.cutB-G.y0,10);ctx.clip();
+  C.seg.forEach(sg=>{if(sg.z1<=0)return;const T=TIS[sg.t],a0=Math.max(0,1+(sg.up/2-sg.att0)/45),a1=Math.max(0,1+(sg.up/2-sg.att1)/45),y1=Y(Math.max(0,sg.z0)),y2=Y(Math.min(ZMAX,sg.z1));if(y2<=y1)return;
+    const g=ctx.createLinearGradient(0,y1,0,y2);g.addColorStop(0,'rgba(225,242,255,'+(0.05+0.33*a0)+')');g.addColorStop(1,'rgba(225,242,255,'+(0.05+0.33*a1)+')');ctx.fillStyle=g;ctx.fillRect(px-bw/2,y1,bw,y2-y1+0.5);});
+  ctx.strokeStyle='rgba(230,245,255,.45)';ctx.setLineDash([4,5]);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px-bw/2,G.y0);ctx.lineTo(px-bw/2,G.cutB);ctx.moveTo(px+bw/2,G.y0);ctx.lineTo(px+bw/2,G.cutB);ctx.stroke();ctx.setLineDash([]);
+  const Lp=Math.max(5,Math.min(26,NCY*VAPP*1e-4/f*s*14));      // longueur dessinée de l'impulsion (agrandie)
+  // impulsion qui descend
+  const tau=tA;if(tau<TWIN/2){const z=zAt(C,tau);if(z<ZMAX){const sg=segAt(C,tau),zz=Math.min(z,sg.z1),loss=sg.up+(-2*(sg.att0+TIS[sg.t].a*f*(zz-sg.z0)))/2,al=Math.max(0.15,Math.min(1,1+loss/60));
+      waves(px,Y(z),bw,Lp,INK,al,false,3.2);}}
+  // échos qui remontent
+  C.ech.forEach(e=>{if(e.t<=0.02&&gel)return;const back=tau-e.t/2;if(back<0||back>e.t/2)return;const z=zAt(C,e.t/2-back),Dk=e.L+tgc(e.d),al=Math.max(0,Math.min(1,(Dk-DMIN)/DSPAN));if(al<0.05)return;
+    waves(px,Y(z),bw,Lp,GREEN,0.35+0.65*al,true,1.2+3.2*al);});
+  ctx.restore();}
+function waves(x,y,bw,Lp,col,al,up,lw){ctx.save();ctx.globalAlpha=al;ctx.strokeStyle=col;ctx.lineWidth=lw;if(up)ctx.setLineDash([5,3]);
+  const n=NCY*2;for(let i=0;i<n;i++){const yy=y+(up?1:-1)*i*Lp/n;ctx.beginPath();ctx.moveTo(x-bw/2-2,yy+(up?-3:3));ctx.quadraticCurveTo(x,yy+(up?4:-4),x+bw/2+2,yy+(up?-3:3));
+    if(!up){ctx.save();ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=lw+3;ctx.stroke();ctx.restore();}ctx.stroke();}
+  ctx.setLineDash([]);
+  if(!up){ctx.shadowColor='rgba(255,255,255,.9)';ctx.shadowBlur=8;ctx.fillStyle='rgba(255,255,255,.9)';ctx.beginPath();ctx.arc(x,y,2.5,0,7);ctx.fill();}
+  ctx.restore();}
+
+// ---------- l'échographe ----------
+function monitor(){const {mx,my,mw,mh,bx,by,bw,bh}=G;
+  let g=ctx.createLinearGradient(mx,my,mx,my+mh);g.addColorStop(0,'#46505c');g.addColorStop(1,'#262d35');rr(mx,my,mw,mh,14);ctx.fillStyle=g;ctx.fill();
+  rr(mx+4,my+4,mw-8,mh-8,11);ctx.fillStyle='#0b0f14';ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.06)';ctx.beginPath();ctx.moveTo(mx+8,my+8);ctx.lineTo(mx+mw*0.6,my+8);ctx.lineTo(mx+8,my+mh*0.35);ctx.closePath();ctx.fill();
+  ctx.font=FT;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillStyle='#9fb3c6';
+  ctx.fillText('Échographe · '+fr(f,1)+' MHz · '+(gel?'gel':'SANS GEL'),mx+14,my+18);if(mob){ctx.textAlign='left';ctx.fillText('mode B',bx,by-10);}else{ctx.textAlign='right';ctx.fillText('mode B',bx+bw,by-8);}
+  if(imgDirty)buildImage();
+  ctx.imageSmoothingEnabled=true;ctx.drawImage(off,bx,by,bw,G.bh);
+  ctx.strokeStyle='rgba(160,190,210,.35)';ctx.lineWidth=1;ctx.strokeRect(bx-0.5,by-0.5,bw+1,G.bh+1);
+  // échelle en cm à gauche de l'image
+  ctx.fillStyle='#9fb3c6';ctx.textAlign='right';for(let d=0;d<=ZMAX;d+=4){const y=by+d/ZMAX*G.bh;ctx.fillRect(bx-4,y-0.5,4,1);if(!noLab)ctx.fillText(d+'',bx-6,y);}
+  // ligne de tir et front d'onde courant
+  const lx=bx+(xp+XL)/(2*XL)*bw;ctx.strokeStyle='rgba(255,214,90,.85)';ctx.setLineDash([4,4]);ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(lx,by);ctx.lineTo(lx,by+G.bh);ctx.stroke();ctx.setLineDash([]);
+  const dcur=Math.min(ZMAX,VAPP*1e-4*tA/2);ctx.fillStyle='#ffd65a';ctx.beginPath();ctx.moveTo(lx-6,by+dcur/ZMAX*G.bh-4);ctx.lineTo(lx,by+dcur/ZMAX*G.bh);ctx.lineTo(lx-6,by+dcur/ZMAX*G.bh+4);ctx.fill();
+  amode();
+  // boutons de la console
+  if(!mob){for(let i=0;i<6;i++){const cx=mx+28+i*(mw-56)/5,cy=my+mh-17;g=ctx.createRadialGradient(cx-2,cy-2,1,cx,cy,8);g.addColorStop(0,'#c9d2dc');g.addColorStop(1,'#56606b');ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,7,0,7);ctx.fill();}}}
+function echoesShown(C){return C.ech.filter(e=>!(gel&&e.t<0.02)).map(e=>({...e,D:e.L+tgc(e.d)}));}
+function amode(){const C=colP(),{ax,ay,aw,ah,vert}=G,E=echoesShown(C),sig=NCY/f/2.2;
+  ctx.fillStyle='#0e1a14';ctx.fillRect(ax,ay,aw,ah);ctx.strokeStyle='rgba(95,224,168,.18)';ctx.lineWidth=1;
+  for(let i=1;i<8;i++){const q=i/8;ctx.beginPath();if(vert){ctx.moveTo(ax,ay+q*ah);ctx.lineTo(ax+aw,ay+q*ah);}else{ctx.moveTo(ax+q*aw,ay);ctx.lineTo(ax+q*aw,ay+ah);}ctx.stroke();}
+  const amp=t=>{let a=0;E.forEach(e=>{const u=(t-e.t)/sig;if(Math.abs(u)<4)a=Math.max(a,Math.max(0,(e.D-DMIN)/DSPAN)*Math.exp(-u*u));});
+    const d=VAPP*1e-4*t/2,sg=segAt(C,t/2),T=TIS[sg.t],z=Math.min(sg.z1,sg.z0+(t/2-sg.ta)*T.c*1e-4),sp=T.bs+sg.up-2*(sg.att0+T.a*f*(z-sg.z0))+tgc(d),nz=-110+tgc(d);
+    const lev=10*Math.log10(Math.pow(10,sp/10)+Math.pow(10,nz/10)),b=Math.max(0,(lev-DMIN)/DSPAN)*0.55*(0.4+0.6*vnoise(t*f*0.8,1,17));return Math.max(a,b);};
+  const P=(t,a)=>vert?[ax+6+Math.min(1,a)*(aw-12),ay+t/TWIN*ah]:[ax+t/TWIN*aw,ay+ah-6-Math.min(1,a)*(ah-16)];
+  const N=Math.round(vert?ah:aw)*2;
+  for(const pass of [0,1]){ctx.beginPath();for(let i=0;i<=N;i++){const t=TWIN*i/N;if(pass&&t>tA)break;const p=P(t,amp(t));ctx[i?'lineTo':'moveTo'](p[0],p[1]);}
+    ctx.strokeStyle=pass?GREEN_L:'rgba(95,224,168,.22)';ctx.lineWidth=pass?1.6:1;ctx.stroke();}
+  // curseur temps
+  const pc=P(Math.min(tA,TWIN),0);ctx.strokeStyle='rgba(255,214,90,.8)';ctx.lineWidth=1;ctx.beginPath();if(vert){ctx.moveTo(ax,pc[1]);ctx.lineTo(ax+aw,pc[1]);}else{ctx.moveTo(pc[0],ay);ctx.lineTo(pc[0],ay+ah);}ctx.stroke();
+  // axes
+  ctx.fillStyle='#9fb3c6';ctx.font=FT;ctx.textBaseline='middle';
+  if(!noLab){if(vert){ctx.textAlign='right';for(let t=0;t<=200;t+=50){const y=ay+t/TWIN*ah;ctx.fillText(t+'',ax+aw+30,Math.min(ay+ah-6,y+6));}ctx.textAlign='left';ctx.fillText('mode A · t (µs) ↓',ax,ay-10);}
+    else{ctx.textAlign='center';for(let t=0;t<=200;t+=50){const x=ax+t/TWIN*aw;ctx.fillText(t+' µs',Math.max(ax+12,Math.min(ax+aw-16,x)),ay+ah+11);}
+      ctx.textAlign='left';ctx.fillText('mode A : amplitude des échos en fonction du temps t',ax,ay-10);}}
+  // noms des échos les plus forts (déjà revenus)
+  if(!noLab){const cand=E.filter(e=>e.t<=tA&&e.D>-52).sort((a,b)=>b.D-a.D),acc=[];
+    cand.forEach(e=>{if(acc.length>=(mob?3:4))return;const p=P(e.t,Math.max(0,(e.D-DMIN)/DSPAN));if(acc.some(q=>vert?Math.abs(q.p[1]-p[1])<13:Math.abs(q.p[0]-p[0])<80))return;acc.push({e,p});});
+    const SHN={gel:'gel',sonde:'sonde',air:'air',peau:'peau',graisse:'graisse',muscle:'muscle',foie:'foie',gpr:'graisse',rein:'rein',sinus:'sinus',pierre:'calcul'};
+    acc.forEach(({e,p})=>{const nm=SHN[e.a]+'/'+SHN[e.b];ctx.font=FT;ctx.fillStyle='#ffe9a8';ctx.textBaseline='middle';
+      if(vert){ctx.textAlign='right';ctx.fillText(nm,Math.max(ax+64,p[0]-4),p[1]-1);}
+      else{const w=ctx.measureText(nm).width;ctx.textAlign='center';ctx.fillText(nm,Math.max(ax+w/2+2,Math.min(ax+aw-w/2-2,p[0])),Math.max(ay+8,p[1]-8));}});
+    if(stone){const C2=column(ST.x);const ok=G.bx+(ST.x+XL)/(2*XL)*G.bw;ctx.font=FT;ctx.fillStyle='#ffe9a8';ctx.textAlign='left';ctx.fillText('ombre acoustique',ok+10,G.by+0.8*G.bh);}}}
+
+// ---------- texte ----------
+function upd(){const lam=VAPP/(f*1e6)*1000,dmax=MARGE/(2*0.5*f);
+  $('vF').textContent=fr(f,1)+' MHz · λ = '+fr(lam,2)+' mm';
+  $('fml').innerHTML='À chaque interface entre deux tissus, une fraction <b>R = ((Z₂ − Z₁)/(Z₂ + Z₁))²</b> de l’intensité revient vers la sonde (<b>Z = ρ·v</b>, l’impédance acoustique, en MRayl : 1 MRayl = 10⁶ kg·m⁻²·s⁻¹). L’appareil mesure la durée <b>t</b> de l’aller-retour et place l’écho à la profondeur <b>d = v·t/2</b>, avec v = 1540 m/s. Plus <b>f</b> est grande, plus λ = v/f est courte (image plus fine), mais plus l’onde est absorbée : on voit moins profond.';
+  const C=colP(),E=C.ech.filter(e=>e.R>1e-6&&!(gel&&e.t<0.02)).slice(0,10);
+  let h='<b>f = '+fr(f,1)+' MHz</b> · λ = v/f = <b>'+fr(lam,2)+' mm</b> · impulsion de 2 périodes : résolution en profondeur ≈ 2λ/2 = <b>'+fr(lam,2)+' mm</b> · profondeur explorable ≈ '+MARGE+' dB (dynamique supposée de l’appareil) / (2 × 0,5 dB/(cm·MHz) (moyenne des tissus mous) × f) = <b>'+fr(dmax,1)+' cm</b>'+(dmax<ZMAX?' (au-delà : bruit)':'')+'<br>';
+  h+='Sonde en x = '+fr(xp,1)+' cm · échos sur cette ligne :<br>';
+  h+=E.map(e=>'<span>'+TIS[e.a].n+' → '+TIS[e.b].n+' : R = <b>'+(e.R>0.5?fr(100*e.R,1):e.R>0.001?fr(100*e.R,2):fr(100*e.R,3))+' %</b> · t = '+fr(e.t,1)+' µs · d = '+fr(e.d,2)+' cm</span>').join('<br>');
+  if(!gel)h+='<br><b style="color:#a32d2d">Sans gel</b> : Z(air) = '+fr(TIS.air.Z*1e6,0)+' kg·m⁻²·s⁻¹, environ '+fi(Math.round(TIS.foie.Z/TIS.air.Z/100)*100)+' fois plus petite que celle du foie. Presque tout revient dès la surface : l’image reste noire.';
+  if(stone)h+='<br><b>Calcul</b> : Z = '+fr(TIS.pierre.Z,2)+' MRayl, très réfléchissant et très absorbant : écho brillant puis <b>ombre acoustique</b> derrière lui.';
+  $('info').innerHTML=h;}
+function draw(){size();geo();ctx.clearRect(0,0,W,H);cut();beam();probe();patient();monitor();
+  if(!noLab)tag('Coupe sous la sonde (ralenti '+fi(SLOW0*(slow?4:1))+' fois)',8,14,INK,FB,'left');}
+function fi(v){return Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
+
+// ---------- commandes ----------
+function seg2(ids,on){ids.forEach(i=>$(i).classList.toggle('on',i===on));}
+function rebuild(){CP=null;imgDirty=true;upd();}
+$('sF').oninput=e=>{f=+e.target.value;rebuild();};
+$('gOn').onclick=()=>{gel=true;seg2(['gOn','gOff'],'gOn');rebuild();};$('gOff').onclick=()=>{gel=false;seg2(['gOn','gOff'],'gOff');rebuild();};
+$('kN').onclick=()=>{stone=false;seg2(['kN','kS'],'kN');rebuild();};$('kS').onclick=()=>{stone=true;seg2(['kN','kS'],'kS');rebuild();};
+$('bAuto').onclick=()=>{auto=!auto;$('bAuto').classList.toggle('on',auto);};
+$('pp').onclick=()=>{run=!run;$('pp').textContent=run?'⏸ Pause':'▶ Reprendre';};
+$('bSlow').onclick=()=>{slow=!slow;$('bSlow').classList.toggle('on',slow);};
+$('lab').onclick=()=>{noLab=!noLab;$('lab').classList.toggle('on',noLab);};
+// souris
+let drag=null;
+function pos(e){const b=cv.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top];}
+function where(x,y){if(x>=G.bx&&x<=G.bx+G.bw&&y>=G.by&&y<=G.by+G.bh)return 'img';if(x>=G.cutL&&x<=G.cutR&&y>=G.y0-80&&y<=G.cutB)return Math.abs(x-G.X(xp))<Math.max(26,G.s)&&y<G.y0+10?'probe':'cut';return null;}
+function setX(x,y,w){let v=w==='img'?-XL+(x-G.bx)/G.bw*2*XL:(x-G.x0)/G.s;xp=Math.round(Math.max(-5.5,Math.min(5.5,v))*10)/10;auto=false;$('bAuto').classList.remove('on');upd();}
+cv.addEventListener('pointerdown',e=>{const [x,y]=pos(e),w=where(x,y);if(!w)return;drag=w;setX(x,y,w);cv.setPointerCapture(e.pointerId);});
+cv.addEventListener('pointermove',e=>{const [x,y]=pos(e);if(drag){setX(x,y,drag);return;}const w=where(x,y);cv.style.cursor=w==='probe'?'grab':w?'pointer':'default';
+  hover=(w==='cut'&&y>G.y0)?{x,y,t:tissue((x-G.x0)/G.s,(y-G.y0)/G.s)}:null;});
+cv.addEventListener('pointerup',()=>{drag=null;});cv.addEventListener('pointerleave',()=>{hover=null;});
+function hoverTip(){if(!hover||noLab)return;const T=TIS[hover.t],txt=T.n+' : ρ = '+fi(T.rho)+' kg/m³ · v = '+fi(T.c)+' m/s · Z = '+fr(T.Z,2)+' MRayl';
+  ctx.font=FS;const w=ctx.measureText(txt).width+14,x=Math.max(4,Math.min(W-w-4,hover.x+12)),y=Math.max(4,hover.y-30);rr(x,y,w,22,6);ctx.fillStyle='rgba(255,255,255,.95)';ctx.fill();ctx.strokeStyle='#c9d2dc';ctx.stroke();ctx.fillStyle=INK;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(txt,x+7,y+11);}
+let last=null;
+function frame(ts){if(last===null)last=ts;const dt=Math.min(0.05,(ts-last)/1000);last=ts;
+  if(run){tA+=dt*1e6/(SLOW0*(slow?4:1));if(tA>TWIN*1.12){tA=0;}
+    if(auto){tSw+=dt;const nx=Math.round(-4.6*Math.cos(tSw*2*Math.PI/18)*10)/10;if(nx!==xp){xp=nx;upd();}}}
+  draw();hoverTip();requestAnimationFrame(frame);}
+window.addEventListener('resize',()=>{imgDirty=true;});
+window.__echo={set:o=>{if(o.f!=null){f=o.f;$('sF').value=f;}if(o.gel!=null){gel=o.gel;seg2(['gOn','gOff'],gel?'gOn':'gOff');}if(o.stone!=null){stone=o.stone;seg2(['kN','kS'],stone?'kS':'kN');}
+    if(o.x!=null){xp=o.x;auto=false;$('bAuto').classList.remove('on');}if(o.t!=null)tA=o.t;if(o.run!=null)run=o.run;rebuild();},
+  pix:(x,d)=>{const lam=VAPP*1e-4/f;return pixD(column(x),x,d,lam,Math.max(0.03,2*lam),0.1+1.2*lam);},
+  get:()=>{const C=colP();return {f,xp,gel,stone,seg:C.seg.map(s=>({t:s.t,z0:s.z0,z1:s.z1})),ech:C.ech.map(e=>({a:e.a,b:e.b,R:e.R,t:e.t,d:e.d,L:e.L})),info:$('info').innerText,vf:$('vF').textContent};}};
+upd();requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Ondes, interférences et diffraction<span>18 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Onde-progressive/"><i>01</i>Onde progressive</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Fonction-d-onde-f-x-vt-/"><i>02</i>Fonction d'onde f(x − vt)</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Relation-v-f/"><i>03</i>Relation v = λf</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Onde-progressive-et-Onde-stationnaire/"><i>04</i>Onde progressive et stationnaire</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/diffraction/"><i>05</i>Diffraction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/yung/"><i>06</i>Fentes de Young</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/effet-de-battement/"><i>07</i>Battements</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Doppler/"><i>08</i>Effet Doppler</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/son-decibels/"><i>09</i>Son : intensité et décibels</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/longueur-onde-periode/"><i>10</i>Longueur d’onde ou période ?</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/interferences-deux-sources/"><i>11</i>Interférences de deux sources</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/chaine-oscillateurs/"><i>12</i>Chaîne d’oscillateurs couplés</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/reflexion-obstacle/"><i>13</i>Réflexion sur un obstacle libre ou fixe</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/onde-stationnaire-somme/"><i>14</i>Deux ondes opposées : y = 2A sin(kx) cos(ωt)</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/harmoniques-tuyaux/"><i>15</i>Harmoniques : deux extrémités ou une seule ouverte</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-son-onde-pression/"><i>16</i>Le son : un haut-parleur pousse l’air</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-echographie/"><i>17</i>Échographie : le trajet d’une impulsion</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-doppler-sanguin/"><i>18</i>Doppler sanguin : mesurer la vitesse du sang</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La profondeur apparente d’un bassin · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH6">Réflexion et réfraction</a>›<b>La profondeur apparente d’un bassin</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Réflexion et réfraction</span><span class="sfa-chip free">Gratuit</span></div><h1>La profondeur apparente d’un bassin</h1><p>Déplace l’œil au-dessus de la piscine : le rayon venu du caillou se brise à la surface (n·sin i eau = sin i air) et ton cerveau le prolonge en ligne droite. Tu vois le caillou plus haut qu’il n’est : à h/n ≈ 3/4 de la profondeur quand tu regardes d’en haut, et encore plus haut quand tu regardes de biais. Change le liquide, ou plante un bâton en biais : il semble cassé à la surface.</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:68vh;min-height:540px;cursor:default;touch-action:none" aria-label="Coupe d'une piscine : un caillou au fond, une personne qui le regarde depuis le bord ; le rayon venu du caillou se brise à la surface et l'image du caillou paraît plus haute ; on déplace l'œil et le caillou à la souris"></canvas>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill">Au fond</span>
+  <button class="btn on" id="oC">Un caillou</button>
+  <button class="btn" id="oB">Un bâton planté en biais</button>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px">h &nbsp;profondeur réelle</span>
+  <input type="range" id="sH" min="0.5" max="3" step="0.05" value="2" style="accent-color:#185fa5;">
+  <span class="val" id="vH" style="color:#185fa5"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px">n &nbsp;indice du liquide</span>
+  <input type="range" id="sN" min="1" max="1.8" step="0.01" value="1.33" style="accent-color:#5b6b7d;">
+  <span class="val" id="vN"></span>
+  <button class="btn" id="nE">Eau 1,33</button>
+  <button class="btn" id="nO">Huile 1,47</button>
+</div>
+<div class="row">
+  <button class="btn on" id="bAuto">L’œil se déplace tout seul</button>
+  <button class="btn" id="bTop">Regarder d’en haut</button>
+  <button class="btn" id="pp">⏸ Pause</button>
+  <button class="btn" id="lab">Masquer les écritures</button>
+</div>
+<div class="row"><span class="hint">Astuce : attrape l’œil (ou touche l’air au-dessus de l’eau) pour regarder d’ailleurs ; touche l’eau pour déplacer le caillou.</span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const INK='#1f2731',GREEN='#1D9E75',GREEN_D='#0F6E56',BLUE='#2a6fdb',BLUE_D='#185fa5',OR_D='#9a5f0f',RED_D='#a32d2d',GREY='#6b7580';
+const FS='600 12px Mulish,system-ui,sans-serif',FB='800 13px Mulish,system-ui,sans-serif',FT='700 11px Mulish,system-ui,sans-serif';
+const $=id=>document.getElementById(id),D2R=Math.PI/180;
+const fr=(v,d)=>{const s=(Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d).replace('.',',');return s.replace(/^-/,'−');};
+let W=0,H=0,dpr=1,noLab=false,mob=false;
+function size(){const b0=cv.getBoundingClientRect();
+  if(b0.width<700){const s=(b0.width-10)/7.1,want=Math.round(5.8*s+24+190);if(Math.abs(b0.height-want)>2){cv.style.height=want+'px';cv.style.minHeight='0';}}
+  else if(cv.style.minHeight==='0px'||cv.style.minHeight==='0'){cv.style.height='68vh';cv.style.minHeight='540px';}
+  const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.round(b.width)||800,h=Math.round(b.height)||540;
+  if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);mob=W<700;}
+function tag(t,x,y,col,font,al,bg){if(noLab)return;ctx.font=font||FS;ctx.textAlign=al||'center';ctx.textBaseline='middle';const w=ctx.measureText(t).width,A=al||'center';
+  const lo=A==='left'?4:A==='right'?w+4:w/2+4,hi=A==='left'?W-w-4:A==='right'?W-4:W-w/2-4;x=Math.max(lo,Math.min(hi,x));y=Math.max(9,Math.min(H-9,y));
+  ctx.lineWidth=3.5;ctx.strokeStyle=bg||'rgba(255,255,255,.92)';ctx.lineJoin='round';ctx.strokeText(t,x,y);ctx.fillStyle=col||INK;ctx.fillText(t,x,y);}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
+function line(P,col,w,dash,halo){ctx.lineCap='round';if(halo){ctx.setLineDash([]);ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=w+3;ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();}
+  ctx.strokeStyle=col;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();ctx.setLineDash([]);}
+function arrow(x1,y1,x2,y2,col,w){ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w||2;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();const a=Math.atan2(y2-y1,x2-x1),h=6+(w||2)*1.4;ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-h*Math.cos(a-0.45),y2-h*Math.sin(a-0.45));ctx.lineTo(x2-h*Math.cos(a+0.45),y2-h*Math.sin(a+0.45));ctx.closePath();ctx.fill();}
+
+// ---------- physique ----------
+let noGraph=false,n=1.33,h=2,xo=4.2,xe=1.6,ye=1.6,obj='C',auto=true,run=true,tt=0,ta=0;
+const PW=6.4;   // largeur du bassin (m)
+// point de la surface où le rayon objet → œil se brise (loi de Snell-Descartes : n sin i_eau = sin i_air)
+function solve(X,D,Xe,Ye){if(Math.abs(Xe-X)<1e-9)return{xs:X,iw:0,ia:0,dp:D/n};
+  const f=x=>n*(x-X)/Math.hypot(x-X,D)-(Xe-x)/Math.hypot(Xe-x,Ye);let a=X,b=Xe,fa=f(a);
+  for(let k=0;k<60;k++){const m=(a+b)/2,fm=f(m);if((fm>0)===(fa>0)){a=m;fa=fm;}else b=m;}
+  const xs=(a+b)/2,iw=Math.atan(Math.abs(xs-X)/D),ia=Math.atan(Math.abs(Xe-xs)/Ye);
+  return{xs,iw:iw/D2R,ia:ia/D2R,dp:D*Math.tan(iw)/Math.tan(ia)};}   // image sur la verticale de l'objet
+const ratioOf=a=>{if(a<1e-6)return 1/n;const ia=a*D2R,iw=Math.asin(Math.sin(ia)/n);return Math.tan(iw)/Math.tan(ia);};
+const STICK=()=>({top:[xo-1.7,0.9],bot:[xo,-h]});
+
+// ---------- mise en page ----------
+let G={};
+function geo(){const s=mob?(W-10)/7.1:Math.min((W-24)/8.2,(H-24)/5.8),X0=mob?5+0.45*s:12+1.0*s+Math.max(0,(W-24-8.2*s)/2),YS=(mob?10:12)+2.5*s;G={s,X0,YS,X:x=>X0+x*s,Y:y=>YS-y*s,bot:YS+3.2*s};}
+
+// ---------- décor ----------
+function scene(){const {X,Y,s,YS}=G,yb=Y(-h);
+  let g=ctx.createLinearGradient(0,0,0,YS);g.addColorStop(0,'#9cc8ef');g.addColorStop(1,'#e3f0fa');ctx.fillStyle=g;ctx.fillRect(0,0,W,YS);
+  ctx.fillStyle='rgba(255,255,255,.85)';[[0.55,0.18],[0.8,0.1]].forEach(([u,v],i)=>{const x=(u*W+tt*6*(i+1))%(W+160)-80,y=v*YS*1.4;ctx.beginPath();ctx.ellipse(x,y,46,13,0,0,7);ctx.ellipse(x+30,y-8,30,12,0,0,7);ctx.fill();});
+  ctx.fillStyle='#5d9b55';ctx.beginPath();ctx.moveTo(0,YS-0.5*s);for(let x=0;x<=W;x+=18)ctx.lineTo(x,YS-0.55*s-0.12*s*Math.sin(x*0.05)-0.08*s*Math.sin(x*0.13));ctx.lineTo(W,YS);ctx.lineTo(0,YS);ctx.fill();   // haie
+  // béton en coupe autour du bassin
+  g=ctx.createLinearGradient(0,YS,0,H);g.addColorStop(0,'#b9b3a6');g.addColorStop(1,'#8f897d');ctx.fillStyle=g;ctx.fillRect(0,YS,W,H-YS);
+  ctx.strokeStyle='rgba(80,70,60,.18)';ctx.lineWidth=1;for(let i=0;i<40;i++){const x=(i*73)%W,y=YS+((i*41)%Math.max(10,H-YS));ctx.beginPath();ctx.arc(x,y,2+(i%3),0,7);ctx.stroke();}
+  // plages carrelées
+  ctx.fillStyle='#e8dcc4';ctx.fillRect(0,YS-0.1*s,X(0),0.1*s+3);ctx.fillRect(X(PW),YS-0.1*s,W-X(PW),0.1*s+3);
+  // bassin : eau, carrelage du fond (vu en coupe), ligne de nage
+  const x0=X(0),x1=X(PW);ctx.fillStyle='#dfe9ee';ctx.fillRect(x0-0.12*s,YS,x1-x0+0.24*s,yb-YS+0.12*s);
+  g=ctx.createLinearGradient(0,YS,0,yb);g.addColorStop(0,'#8fd3ea');g.addColorStop(1,'#2f88b8');ctx.fillStyle=g;ctx.fillRect(x0,YS,x1-x0,yb-YS);
+  ctx.strokeStyle='rgba(255,255,255,.22)';ctx.lineWidth=1;const tl=0.25*s;for(let x=x0;x<=x1;x+=tl){ctx.beginPath();ctx.moveTo(x,YS);ctx.lineTo(x,yb);ctx.stroke();}for(let y=yb;y>=YS;y-=tl){ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x1,y);ctx.stroke();}
+  ctx.fillStyle='rgba(20,50,110,.55)';ctx.fillRect(x0+0.6*s,yb-0.07*s,x1-x0-1.2*s,0.07*s);
+  // reflets lumineux (caustiques) qui ondulent au fond
+  ctx.save();ctx.globalCompositeOperation='lighter';
+  for(let k=0;k<34;k++){const xc=x0+(k+0.5)*(x1-x0)/34+0.12*s*Math.sin(tt*0.9+k*2.1),w=(0.12+0.06*Math.sin(tt*1.4+k))*s;const gc=ctx.createRadialGradient(xc,yb-0.06*s,1,xc,yb-0.06*s,w);gc.addColorStop(0,'rgba(210,250,255,.35)');gc.addColorStop(1,'rgba(210,250,255,0)');ctx.fillStyle=gc;ctx.beginPath();ctx.ellipse(xc,yb-0.06*s,w,w*0.3,0,0,7);ctx.fill();}
+  ctx.restore();}
+function surface(){const {X,YS,s}=G,x0=X(0),x1=X(PW);ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=2.2;ctx.beginPath();
+  for(let x=x0;x<=x1;x+=4){const y=YS+1.6*Math.sin(x*0.045+tt*2.2)+1.0*Math.sin(x*0.11-tt*3.1);x===x0?ctx.moveTo(x,y):ctx.lineTo(x,y);}ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.35)';for(let k=0;k<12;k++){const x=x0+((k*97+tt*30)%(x1-x0));ctx.fillRect(x,YS+3,14,1.5);}}
+function pebble(x,y,alpha,dash){const {s}=G,rx=0.2*s,ry=0.11*s;ctx.save();ctx.globalAlpha=alpha;
+  if(!dash){ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(x+0.04*s,y+ry*0.8,rx*1.05,ry*0.35,0,0,7);ctx.fill();}
+  const g=ctx.createRadialGradient(x-rx*0.35,y-ry*0.5,1,x,y,rx);g.addColorStop(0,'#d9d4cc');g.addColorStop(0.6,'#8c857b');g.addColorStop(1,'#5a544c');ctx.fillStyle=g;
+  ctx.beginPath();ctx.ellipse(x,y,rx,ry,-0.08,0,7);ctx.fill();if(dash){ctx.setLineDash([4,3]);ctx.strokeStyle=BLUE_D;ctx.lineWidth=1.6;ctx.stroke();ctx.setLineDash([]);}ctx.restore();}
+function head(ex,ey,ang){// tête de profil : l'œil en (ex, ey), regard dans la direction ang
+  const {s}=G,k=Math.max(0.55,Math.min(1.1,s/80));ctx.save();ctx.translate(ex,ey);const flip=Math.cos(ang)<0;ctx.rotate(flip?ang+Math.PI:ang);if(flip)ctx.scale(-1,1);ctx.scale(k,k);
+  // épaules et cou (derrière)
+  const gn=ctx.createLinearGradient(0,10,0,46);gn.addColorStop(0,'rgba(214,160,125,1)');gn.addColorStop(1,'rgba(214,160,125,0)');ctx.fillStyle=gn;ctx.beginPath();ctx.moveTo(-34,12);ctx.lineTo(-16,14);ctx.lineTo(-12,46);ctx.lineTo(-38,46);ctx.closePath();ctx.fill();
+  const g=ctx.createRadialGradient(-20,-8,4,-18,0,32);g.addColorStop(0,'#f3cba8');g.addColorStop(1,'#cf966f');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(-18,0,26,24,0,0,7);ctx.fill();
+  ctx.beginPath();ctx.moveTo(4,-6);ctx.lineTo(13,4);ctx.lineTo(4,8);ctx.closePath();ctx.fill();   // nez
+  ctx.fillStyle='#4a2f1d';ctx.beginPath();ctx.ellipse(-24,-12,26,16,-0.2,Math.PI,2*Math.PI);ctx.fill();ctx.beginPath();ctx.ellipse(-36,-2,12,18,0,0,7);ctx.fill();
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(-1,-3,5,3.6,0,0,7);ctx.fill();ctx.fillStyle='#24323f';ctx.beginPath();ctx.arc(1,-3,2.3,0,7);ctx.fill();
+  ctx.strokeStyle='rgba(120,70,40,.7)';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(2,14);ctx.lineTo(-6,14);ctx.stroke();
+  ctx.restore();}
+
+// ---------- les rayons ----------
+let R={};
+function rays(){const {X,Y,s}=G,S=solve(xo,h,xe,ye);R=S;const P0=[X(xo),Y(-h)],PS=[X(S.xs),Y(0)],PE=[X(xe),Y(ye)],PI=[X(xo),Y(-S.dp)];
+  // normale au point d'incidence
+  line([[PS[0],PS[1]-0.9*s],[PS[0],PS[1]+0.9*s]],'rgba(31,39,49,.55)',1.2,[3,4]);
+  // réfléchi (partiel) sous la surface : vert pointillé
+  const dx=S.xs-xo,L=Math.min(1.4,h*0.8),u=Math.hypot(dx,h),rx=S.xs+dx/u*L,ry=-h/u*L;line([PS,[X(rx),Y(ry)]],GREEN,2,[8,5]);
+  // prolongement du rayon réfracté vers l'image
+  line([PS,PI],GREY,1.8,[2,4]);
+  // incident (noir) et réfracté (bleu)
+  line([P0,PS],INK,2.8,null,true);line([PS,PE],BLUE,2.8,null,true);
+  const mid=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t];const a1=mid(P0,PS,0.45),a2=mid(PS,PE,0.5);
+  arrow(a1[0]-(PS[0]-P0[0])*0.04,a1[1]-(PS[1]-P0[1])*0.04,a1[0]+(PS[0]-P0[0])*0.04,a1[1]+(PS[1]-P0[1])*0.04,INK,2.4);
+  arrow(a2[0]-(PE[0]-PS[0])*0.04,a2[1]-(PE[1]-PS[1])*0.04,a2[0]+(PE[0]-PS[0])*0.04,a2[1]+(PE[1]-PS[1])*0.04,BLUE,2.4);
+  // angles
+  const sg=Math.sign(xe-xo)||1,r1=0.55*s;ctx.lineWidth=2;
+  ctx.strokeStyle=INK;ctx.beginPath();ctx.arc(PS[0],PS[1],r1,Math.PI/2,Math.PI/2+sg*S.iw*D2R,sg<0);ctx.stroke();
+  ctx.strokeStyle=BLUE;ctx.beginPath();ctx.arc(PS[0],PS[1],r1*1.15,-Math.PI/2,-Math.PI/2+sg*S.ia*D2R,sg<0);ctx.stroke();
+  if(!noLab&&!mob){tag('i eau = '+fr(S.iw,1)+'°',PS[0]-sg*8+sg*r1*0.2,PS[1]+r1+12,INK,FT,sg>0?'right':'left');tag('i air = '+fr(S.ia,1)+'°',PS[0]+sg*r1*0.6,PS[1]-r1*1.15-10,BLUE_D,FT,sg>0?'left':'right');}
+  return{S,P0,PS,PE,PI};}
+function dims(Q){const {X,Y,s}=G,x=X(xo),side=(xe>xo?1:-1)*-1,ox=x+side*0.55*s;
+  line([[x,Y(0)-0.2*s],[x,Y(-h)]],'rgba(31,39,49,.45)',1.2,[6,4]);
+  const dl=(xx,y1,y2,col,txt,al)=>{ctx.strokeStyle=col;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(xx,y1);ctx.lineTo(xx,y2);ctx.stroke();[[y1,1],[y2,-1]].forEach(([y,d])=>{ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(xx,y);ctx.lineTo(xx-4,y+d*8);ctx.lineTo(xx+4,y+d*8);ctx.fill();});};
+  // les deux étiquettes à l'extérieur de la cote h, l'une au-dessus de l'autre (jamais à cheval sur un trait)
+  let yH=(Y(0)+Y(-h))/2,yP=(Y(0)+Y(-Q.S.dp))/2;const gap=mob?16:20;if(yH-yP<gap){const c=(yH+yP)/2;yP=c-gap/2;yH=c+gap/2;}
+  const al=side>0?'left':'right',lx=ox+(side>0?7:-7);
+  dl(ox,Y(0),Y(-h),INK);dl(x+side*0.2*s,Y(0),Y(-Q.S.dp),BLUE_D);
+  tag(mob?'h':'h = '+fr(h,2)+' m',lx,yH,INK,mob?FT:FB,al);tag(mob?'h′':'h′ = '+fr(Q.S.dp,2)+' m',lx,yP,BLUE_D,mob?FT:FB,al);
+  if(side>0)ctx.translate(0,0);}
+
+// ---------- graphique h′/h en fonction de l'angle de vue ----------
+function graph(){let gx,gy,gw,gh;if(mob){gw=W-16;gh=170;gx=8;gy=H-gh-8;}else{gw=Math.min(260,W*0.3);gh=Math.min(170,G.YS-24);gx=W-gw-12;gy=12;}
+  rr(gx,gy,gw,gh,9);ctx.fillStyle='rgba(255,255,255,.94)';ctx.fill();ctx.strokeStyle='#c9d2dc';ctx.lineWidth=1;ctx.stroke();
+  const px=gx+40,pw=gw-54,py=gy+24,ph=gh-48,Xa=a=>px+a/90*pw,Yr=r=>py+ph-r*ph;
+  ctx.strokeStyle='#c3c9d0';ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,py+ph);ctx.lineTo(px+pw,py+ph);ctx.stroke();
+  ctx.font=FT;ctx.fillStyle=INK;ctx.textBaseline='middle';ctx.textAlign='right';[0,0.25,0.5,0.75,1].forEach(r=>{ctx.fillText(fr(r,2),px-4,Yr(r));ctx.strokeStyle='#eef0f3';ctx.beginPath();ctx.moveTo(px+1,Yr(r));ctx.lineTo(px+pw,Yr(r));ctx.stroke();});
+  ctx.textAlign='center';[0,30,60,90].forEach(a=>ctx.fillText(a+'°',Xa(a),py+ph+10));ctx.textAlign='left';ctx.fillText('h′/h selon l’angle de vue (depuis la verticale)',gx+8,gy+12);
+  const P=[];for(let a=0;a<=89.5;a+=0.5)P.push([Xa(a),Yr(ratioOf(a))]);line(P,BLUE,2.2);
+  line([[px,Yr(1/n)],[px+pw,Yr(1/n)]],'rgba(31,39,49,.4)',1,[4,4]);tag('1/n = '+fr(1/n,3),px+pw-2,Yr(1/n)-9<py+4?Yr(1/n)+10:Yr(1/n)-9,GREY,FT,'right');
+  ctx.fillStyle=RED_D;ctx.beginPath();ctx.arc(Xa(R.ia),Yr(R.dp/h),5,0,7);ctx.fill();}
+
+// ---------- dessin ----------
+function draw(){size();geo();ctx.clearRect(0,0,W,H);scene();const {X,Y,s}=G;
+  let Q;
+  if(obj==='C'){Q=rays();pebble(X(xo),Y(-h),1,false);pebble(Q.PI[0],Q.PI[1],0.5,true);}
+  else{Q=rays();stick(Q);}
+  surface();dims(Q);
+  const look=Math.atan2(Q.PS[1]-Q.PE[1],Q.PS[0]-Q.PE[0]);head(Q.PE[0],Q.PE[1],look);
+  tag(obj==='C'?(mob?'caillou':'le caillou (vrai)'):(mob?'bout du bâton':'bout du bâton (vrai)'),X(xo),Y(-h)+0.32*s,INK,mob?FT:FB);
+  if(obj==='C')tag(mob?'image':'ce que tu vois (image)',Q.PI[0]+(xe>xo?1:-1)*(mob?0.5:0.3)*s,Q.PI[1]-0.2*s,BLUE_D,mob?FT:FB,xe>xo?'left':'right');
+  tag('surface',X(PW)-6,Y(0)-10,'#fff',FT,'right','rgba(30,90,130,.6)');
+  tag(Math.abs(n-1.33)<0.005?'eau':n<1.005?'air (n = 1)':'liquide n = '+fr(n,2),X(0.3),Y(-0.25),'#fff',FB,'left','rgba(30,90,130,.6)');
+  if(!noGraph)graph();}
+function stick(Q){const {X,Y,s}=G,T=STICK(),N=40,real=[],app=[];
+  for(let k=0;k<=N;k++){const u=k/N,x=T.top[0]+(T.bot[0]-T.top[0])*u,y=T.top[1]+(T.bot[1]-T.top[1])*u;
+    if(y>=0){real.push([X(x),Y(y)]);app.push([X(x),Y(y)]);}else{real.push([X(x),Y(y)]);const S=solve(x,-y,xe,ye);app.push([X(x),Y(-S.dp)]);}}
+  const und=real.filter((p,i)=>T.top[1]+(T.bot[1]-T.top[1])*i/N<0);line(und,'rgba(110,70,30,.45)',0.16*s,[6,6]);   // où est vraiment le bâton
+  ctx.lineCap='round';line(app,'#8a5a2b',0.12*s);line(app,'#c79158',0.05*s);
+  tag(mob?'le bâton semble cassé':'ce que tu vois : le bâton semble cassé',X(T.top[0])-0.1*s,Y(T.top[1])-14,OR_D,FB,'center');
+  tag('en réalité',X((T.top[0]+T.bot[0])/2+0.5),Y(-h*0.55),'rgba(90,50,20,.9)',FT,'left');}
+
+// ---------- texte ----------
+function upd(){$('vH').textContent=fr(h,2)+' m';$('vN').textContent='n = '+fr(n,2);$('nE').classList.toggle('on',Math.abs(n-1.33)<0.005);$('nO').classList.toggle('on',Math.abs(n-1.47)<0.005);
+  const S=solve(xo,h,xe,ye);R=S;
+  $('fml').innerHTML='Le rayon venu du caillou passe de l’eau à l’air : <b>n·sin i<sub>eau</sub> = sin i<sub>air</sub></b>. Il s’écarte de la normale. Ton cerveau prolonge le rayon en ligne droite : il voit le caillou <b>plus haut</b>, à la profondeur <b>h′ = h·tan i<sub>eau</sub> / tan i<sub>air</sub></b> (on la place sur la verticale du caillou, ce que voient deux yeux côte à côte). Vu d’en haut, h′ = h/n ≈ 3/4 de h pour l’eau ; plus on regarde de biais, plus le fond semble remonter.';
+  $('info').innerHTML='Angle de vue (rayon dans l’air, depuis la verticale) : <b>i air = '+fr(S.ia,1)+'°</b> → sin i eau = sin i air / n = '+fr(Math.sin(S.ia*D2R),3)+' / '+fr(n,2)+' → <b>i eau = '+fr(S.iw,1)+'°</b><br>'+
+    'h′ = h × tan i eau / tan i air = '+fr(h,2)+' × '+(S.ia<0.05?'1/n':fr(Math.tan(S.iw*D2R),3)+' / '+fr(Math.tan(S.ia*D2R),3))+' = <b>'+fr(S.dp,2)+' m</b> · h′/h = <b>'+fr(S.dp/h,3)+'</b> (d’en haut : 1/n = '+fr(1/n,3)+', soit h/n = '+fr(h/n,2)+' m)<br>'+
+    'Le caillou semble remonter de <b>'+fr(h-S.dp,2)+' m</b>.'+(n<1.005?' Avec n = 1, aucune différence : pas de réfraction.':'')+(S.ia>70?' Vu très en biais, le fond paraît presque à la surface.':'');}
+function draw0(){draw();}
+// ---------- commandes ----------
+function stopAuto(){auto=false;$('bAuto').classList.remove('on');}
+$('oC').onclick=()=>{obj='C';$('oC').classList.add('on');$('oB').classList.remove('on');};$('oB').onclick=()=>{obj='B';$('oB').classList.add('on');$('oC').classList.remove('on');};
+$('sH').oninput=e=>{h=+e.target.value;upd();};$('sN').oninput=e=>{n=+e.target.value;upd();};
+$('nE').onclick=()=>{n=1.33;$('sN').value=n;upd();};$('nO').onclick=()=>{n=1.47;$('sN').value=n;upd();};
+$('bAuto').onclick=()=>{auto=!auto;$('bAuto').classList.toggle('on',auto);};
+$('bTop').onclick=()=>{stopAuto();xe=xo;ye=1.8;upd();};
+$('pp').onclick=()=>{run=!run;$('pp').textContent=run?'⏸ Pause':'▶ Reprendre';};
+$('lab').onclick=()=>{noLab=!noLab;$('lab').classList.toggle('on',noLab);};
+let drag=null;
+function pos(e){const b=cv.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top];}
+function toW(x,y){return[(x-G.X0)/G.s,(G.YS-y)/G.s];}
+function setEye(x,y){const [wx,wy]=toW(x,y);xe=Math.max(-1,Math.min(PW+0.8,wx));ye=Math.max(0.12,Math.min(2.45,wy));upd();}
+function setObj(x){const [wx]=toW(x,0);xo=Math.max(0.5,Math.min(PW-0.5,wx));upd();}
+cv.addEventListener('pointerdown',e=>{const [x,y]=pos(e);if(mob&&y>G.bot+4)return;cv.setPointerCapture(e.pointerId);stopAuto();
+  if(y<G.YS){drag='eye';setEye(x,y);}else if(y<G.Y(-h)+0.4*G.s){drag='obj';setObj(x);}});
+cv.addEventListener('pointermove',e=>{const [x,y]=pos(e);if(drag==='eye')setEye(x,y);else if(drag==='obj')setObj(x);
+  else cv.style.cursor=y<G.YS?'crosshair':y<G.Y(-h)+0.4*G.s?'ew-resize':'default';});
+cv.addEventListener('pointerup',()=>{drag=null;});
+let last=null;
+function frame(ts){if(last===null)last=ts;const dt=Math.min(0.05,(ts-last)/1000);last=ts;
+  if(run){tt+=dt;if(auto){ta+=dt;const a=(8+70*(0.5-0.5*Math.cos(ta*2*Math.PI/16)))*D2R,Rr=2.4;   // l'œil tourne autour du point de la surface au-dessus du caillou
+      const S0=xo-0.9;xe=S0-Math.sin(a)*Rr;ye=Math.max(0.15,Math.cos(a)*Rr*0.9);upd();}}
+  draw();requestAnimationFrame(frame);}
+window.__prof={set:o=>{if(o.h!=null){h=o.h;$('sH').value=h;}if(o.n!=null){n=o.n;$('sN').value=n;}if(o.xo!=null)xo=o.xo;if(o.xe!=null){xe=o.xe;stopAuto();}if(o.ye!=null){ye=o.ye;stopAuto();}if(o.obj)(o.obj==='B'?$('oB'):$('oC')).onclick();if(o.run!=null)run=o.run;if(o.nograph!=null)noGraph=o.nograph;upd();},
+  get:()=>{const S=solve(xo,h,xe,ye);return{n,h,xo,xe,ye,...S,info:$('info').innerText};}};
+upd();requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Réflexion et réfraction de la lumière<span>5 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/reflexion-miroir/"><i>01</i>Miroir plan et réflexion</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/refraction/"><i>02</i>Réfraction et réflexion totale</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-miroir-spherique/"><i>03</i>Miroirs concave et convexe</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-arc-en-ciel/"><i>04</i>Prisme et goutte d’eau : l’arc-en-ciel</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-profondeur-apparente/"><i>05</i>La profondeur apparente d’un bassin</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

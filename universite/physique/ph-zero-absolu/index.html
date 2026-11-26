@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trouver le zéro absolu avec un ballon de gaz · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#TH">Gaz</a>›<b>Trouver le zéro absolu avec un ballon de gaz</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Gaz</span><span class="sfa-chip free">Gratuit</span></div><h1>Trouver le zéro absolu avec un ballon de gaz</h1><p>Un ballon de verre fermé, relié à un manomètre, passe d'un bain à l'autre : azote liquide, neige carbonique, eau glacée, eau bouillante. À volume fixe, la pression du gaz monte en ligne droite avec la température. Prolonge la droite : elle coupe p = 0 à −273 °C, quel que soit le gaz et quelle que soit sa quantité. C'est le zéro absolu, le 0 de l'échelle Kelvin.</p></div>
+<section class="sfa-sim">
+<style>
+#zaCv{width:100%;height:min(72vh,600px);min-height:500px;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+@media (max-width:640px){#zaCv{height:820px;min-height:0}}
+.za-read{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:12px}
+.za-read div{box-sizing:border-box;border:1px solid var(--line,#e3e7ed);border-radius:9px;padding:8px 10px;background:#fbfcfd;min-width:0}
+.za-read small{display:block;font:700 10.5px var(--f-ui,system-ui);letter-spacing:.04em;color:var(--muted,#5f6b7a)}
+.za-read b{font:800 17px var(--f-ui,system-ui);font-variant-numeric:tabular-nums;color:var(--ink,#0f1b2d)}
+.za-read span{display:block;font:600 12px var(--f-ui,system-ui);color:var(--muted,#5f6b7a)}
+.za-hint{font:500 .82rem var(--f-ui,system-ui);color:var(--muted,#5f6b7a)}
+</style>
+
+<canvas id="zaCv" aria-label="Un ballon de verre fermé, relié à un manomètre, plonge tour à tour dans de l'azote liquide, de la neige carbonique, de l'eau glacée et de l'eau bouillante ; les points p(θ) s'alignent et la droite prolongée coupe p = 0 à −273 °C"></canvas>
+
+<div class="za-read">
+  <div><small>Gaz dans le ballon</small><b id="zaT"></b><span id="zaTs"></span></div>
+  <div><small>Pression (manomètre)</small><b id="zaP"></b><span id="zaPs"></span></div>
+  <div><small>Bain</small><b id="zaB"></b><span id="zaBs"></span></div>
+  <div><small>Droite prolongée : p = 0 à</small><b id="zaZ"></b><span id="zaZs"></span></div>
+</div>
+
+<div class="fml" id="zaFml"></div>
+
+<div class="row">
+  <span class="pill">Gaz enfermé</span>
+  <button class="btn" data-g="0">Hélium</button><button class="btn" data-g="1">Néon</button><button class="btn on" data-g="2">Air</button>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#175cd3">n &nbsp;quantité de gaz</span>
+  <input type="range" id="zaN" min="10" max="80" step="1" value="42" style="accent-color:#2e90fa;">
+  <span class="val" id="zaNv" style="color:#175cd3"></span>
+</div>
+<div class="row">
+  <button class="btn on" id="zaAuto">Tour automatique</button>
+  <button class="btn" id="zaClr">Effacer les mesures</button>
+</div>
+<div class="row"><span class="za-hint">Attrape le ballon (ou son manomètre) et dépose-le dans un bain, ou clique sur un bain. Le point p(θ) s'ajoute quand la température du gaz est stable. Change de gaz ou de quantité : une nouvelle droite se trace.</span></div>
+
+<div class="info" id="zaInfo"></div>
+
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i)};
+var cv=$("zaCv"),ctx=cv.getContext("2d");
+function fr(v,d){var s=(Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d),neg=s.charAt(0)==="-";if(neg)s=s.slice(1);return (neg?"−":"")+s.replace(".",",");}
+var R=8.314,V=1.0e-3,TZ=273.15;
+var GAS=[{n:"hélium",M:4,c:"#7a5af8",m:"#9e77ed"},{n:"néon",M:20.2,c:"#e04f16",m:"#f97066"},{n:"air",M:29,c:"#175cd3",m:"#53b1fd"}];
+var ENV=[{n:"azote liquide",s:"azote liquide",T:-196,x:62},{n:"neige carbonique + alcool",s:"CO₂ solide",T:-78,x:178},{n:"eau + glace",s:"eau + glace",T:0,x:294},{n:"eau bouillante",s:"eau bouillante",T:100,x:410},{n:"air de la pièce",s:"air",T:20,x:0}];
+var gi=2,n=42,th=20,env=4,stab=0,auto=true,touched=false,t=0,W=0,H=0,dpr=1;
+var bx=300,by=150,lowered=0,target=null,drag=null;   /* position du ballon (virtuel) ; lowered : 0 en l'air, 1 dans le bain */
+var series=[];function newSeries(){series.push({g:gi,n:n,pts:{}});if(series.length>4)series.shift();}newSeries();
+function pr(T,nn){return (nn===undefined?n:nn)*1e-3*R*(T+TZ)/V;}   /* Pa */
+function fit(s){var k=Object.keys(s.pts);if(k.length<2)return null;var sx=0,sy=0,sxx=0,sxy=0,N=k.length;k.forEach(function(e){var p=s.pts[e];sx+=p[0];sy+=p[1];sxx+=p[0]*p[0];sxy+=p[0]*p[1];});
+  var a=(N*sxy-sx*sy)/(N*sxx-sx*sx);if(!isFinite(a)||Math.abs(N*sxx-sx*sx)<1e-6)return null;var b=(sy-a*sx)/N;return {a:a,b:b,z:-b/a};}
+
+/* ---------- étiquettes sans chevauchement ---------- */
+var LB=[];
+function tag(tx,X,Y,col,font,al,opt){opt=opt||{};ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.font=font||"700 12px Mulish,system-ui,sans-serif";ctx.textBaseline="middle";
+  var w=ctx.measureText(tx).width,h=parseFloat(ctx.font.match(/(\d+(\.\d+)?)px/)[1])+3,A=al||"center";
+  var x0=A==="left"?X:A==="right"?X-w:X-w/2;x0=Math.max(3,Math.min(W-w-3,x0));Y=Math.max(h/2+2,Math.min(H-h/2-2,Y));
+  var dy=[0,-1,1,-2,2,-3,3,-4,4],y=Y;
+  if(!opt.fixed){for(var k=0;k<dy.length;k++){var yy=Y+dy[k]*(h+1)*(opt.dir||1);if(yy<h/2+2||yy>H-h/2-2)continue;var ok=true;for(var j=0;j<LB.length;j++){var b=LB[j];if(x0<b[0]+b[2]+2&&x0+w+2>b[0]&&yy-h/2<b[1]+b[3]&&yy+h/2>b[1]){ok=false;break;}}if(ok){y=yy;break;}}}
+  LB.push([x0,y-h/2,w,h,tx]);
+  ctx.textAlign="left";ctx.lineJoin="round";ctx.lineWidth=4;ctx.strokeStyle=opt.halo||"rgba(255,255,255,.93)";ctx.strokeText(tx,x0,y);ctx.fillStyle=col||"#13233a";ctx.fillText(tx,x0,y);ctx.restore();return y;}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
+/* ---------- mise en page ---------- */
+var Lg={},VW=480,VH=560;
+function size(){var b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;var w=Math.round(b.width)||800,h=Math.round(b.height)||500;if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}W=w;H=h;
+  if(W>=640){var sw=Math.round(W*0.52);Lg.sc={x:0,y:0,w:sw,h:H};Lg.g={x:sw+58,y:46,w:W-sw-80,h:H-46-74};}
+  else{var sh=Math.round(W*1.15);Lg.sc={x:0,y:0,w:W,h:sh};Lg.g={x:50,y:sh+40,w:W-68,h:H-sh-40-70};}
+  var s=Math.min(Lg.sc.w/VW,Lg.sc.h/VH);Lg.s=s;Lg.ox=Lg.sc.x+(Lg.sc.w-VW*s)/2;Lg.oy=Lg.sc.y+(Lg.sc.h-VH*s)/2;}
+function SX(x){return Lg.ox+x*Lg.s} function SY(y){return Lg.oy+y*Lg.s}
+function VX(X){return (X-Lg.ox)/Lg.s} function VY(Y){return (Y-Lg.oy)/Lg.s}
+function scene(){ctx.setTransform(dpr*Lg.s,0,0,dpr*Lg.s,dpr*Lg.ox,dpr*Lg.oy);}
+function screen(){ctx.setTransform(dpr,0,0,dpr,0,0);}
+
+/* ---------- molécules dans le ballon (disque unité) ---------- */
+var MOL=[],HIT=[];for(var i=0;i<60;i++){var a=i*2.399,r=Math.sqrt((i+0.5)/60)*0.85,an=i*1.31;MOL.push({x:r*Math.cos(a),y:r*Math.sin(a),vx:Math.cos(an),vy:Math.sin(an)});}
+function molStep(dt){var g=GAS[gi],v=0.62*Math.sqrt((th+TZ)/g.M)/Math.sqrt(293/29),N=Math.round(n*0.62);
+  for(var k=0;k<N;k++){var o=MOL[k],sp=Math.hypot(o.vx,o.vy)||1;o.vx=o.vx/sp*v*(0.6+0.8*((k*37)%10)/10);o.vy=o.vy/sp*v*(0.6+0.8*((k*37)%10)/10);o.x+=o.vx*dt;o.y+=o.vy*dt;
+    var d=Math.hypot(o.x,o.y);if(d>0.9){var nx=o.x/d,ny=o.y/d,vn=o.vx*nx+o.vy*ny;if(vn>0){o.vx-=2*vn*nx;o.vy-=2*vn*ny;HIT.push([nx,ny,1]);}o.x=nx*0.9;o.y=ny*0.9;}}
+  HIT=HIT.filter(function(h){h[2]-=dt*4;return h[2]>0;});if(HIT.length>40)HIT.splice(0,HIT.length-40);}
+
+/* ---------- la scène ---------- */
+var BENCH=430,AIRY=200;
+function bathTop(e){return [290,300,300,286][e];}
+function liq(e){return [306,316,316,300][e];}
+function drawScene(){scene();
+  var g=ctx.createLinearGradient(0,0,0,BENCH);g.addColorStop(0,"#dfe7ee");g.addColorStop(1,"#c9d4de");ctx.fillStyle=g;ctx.fillRect(-300,-200,VW+600,BENCH+200);
+  ctx.strokeStyle="rgba(150,165,180,.35)";ctx.lineWidth=1.2;for(var y=-200;y<BENCH;y+=40){ctx.beginPath();ctx.moveTo(-300,y);ctx.lineTo(VW+300,y);ctx.stroke();}
+  /* étagère avec flacons et horloge murale */
+  ctx.fillStyle="#9c7a54";ctx.fillRect(-40,118,250,9);ctx.fillStyle="#6d5236";ctx.fillRect(-40,127,250,4);
+  [[10,"#c8e3f5",34],[46,"#f4d9a8",44],[84,"#d9f0d2",30],[150,"#e9d5f5",40]].forEach(function(b){var w=b[2]*0.62,gb=ctx.createLinearGradient(b[0]-w/2,0,b[0]+w/2,0);gb.addColorStop(0,b[1]);gb.addColorStop(0.4,"#fff");gb.addColorStop(1,b[1]);ctx.fillStyle=gb;rr(b[0]-w/2,118-b[2],w,b[2],5);ctx.fill();ctx.fillStyle="#3d4a5c";ctx.fillRect(b[0]-w*0.22,118-b[2]-7,w*0.44,8);});
+  ctx.fillStyle="rgba(0,0,0,.15)";ctx.beginPath();ctx.arc(312,62,30,0,6.2832);ctx.fill();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(310,58,28,0,6.2832);ctx.fill();ctx.strokeStyle="#475467";ctx.lineWidth=3;ctx.stroke();
+  ctx.lineCap="round";ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(310,58);ctx.lineTo(310+Math.sin(t*0.05)*14,58-Math.cos(t*0.05)*14);ctx.stroke();ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(310,58);ctx.lineTo(310+Math.sin(t*0.6)*21,58-Math.cos(t*0.6)*21);ctx.stroke();
+  /* paillasse */
+  var tg=ctx.createLinearGradient(0,BENCH-14,0,BENCH+16);tg.addColorStop(0,"#3a3f46");tg.addColorStop(1,"#1f2328");ctx.fillStyle=tg;ctx.fillRect(-300,BENCH-14,VW+600,30);
+  ctx.fillStyle="rgba(255,255,255,.12)";ctx.fillRect(-300,BENCH-14,VW+600,3);
+  var fg=ctx.createLinearGradient(0,BENCH+16,0,VH+200);fg.addColorStop(0,"#e7ebef");fg.addColorStop(1,"#b9c2cb");ctx.fillStyle=fg;ctx.fillRect(-300,BENCH+16,VW+600,400);ctx.fillStyle="rgba(0,0,0,.2)";ctx.fillRect(-300,BENCH+16,VW+600,5);
+  for(var dx=-280;dx<VW+300;dx+=180){ctx.strokeStyle="rgba(120,135,150,.5)";ctx.lineWidth=2;ctx.strokeRect(dx+6,BENCH+30,168,300);ctx.fillStyle="#8792a0";rr(dx+60,BENCH+44,60,7,3);ctx.fill();}
+  for(var e=0;e<4;e++)bathBack(e);
+  var inside=lowered>0.5&&env<4?env:-1;
+  if(inside<0){for(var e2=0;e2<4;e2++)bathFront(e2);ballon();}
+  else{ballon();for(var e3=0;e3<4;e3++)bathFront(e3);}
+  arm();}
+function bathBack(e){var x=ENV[e].x,top=bathTop(e),rx=e===0?48:52,ry=11;
+  ctx.fillStyle="rgba(0,0,0,.22)";ctx.beginPath();ctx.ellipse(x+4,BENCH-6,rx+8,8,0,0,6.2832);ctx.fill();
+  if(e===3){/* plaque chauffante */var pg=ctx.createLinearGradient(0,BENCH-44,0,BENCH-8);pg.addColorStop(0,"#f2f4f7");pg.addColorStop(1,"#98a2b3");ctx.fillStyle=pg;rr(x-66,BENCH-34,132,26,8);ctx.fill();ctx.fillStyle="#d92d20";ctx.beginPath();ctx.arc(x+48,BENCH-21,4,0,6.2832);ctx.fill();}
+  var bot=e===3?BENCH-30:BENCH-8;
+  ctx.fillStyle=e===0?"rgba(205,215,225,.5)":"rgba(220,235,245,.35)";ctx.beginPath();ctx.ellipse(x,top,rx,ry,0,Math.PI,2*Math.PI);ctx.lineTo(x+rx,bot);ctx.ellipse(x,bot,rx,ry,0,0,Math.PI);ctx.closePath();ctx.fill();
+  ctx.strokeStyle="rgba(110,130,150,.6)";ctx.lineWidth=1.4;ctx.beginPath();ctx.ellipse(x,top,rx,ry,0,Math.PI,2*Math.PI);ctx.stroke();}
+function bathFront(e){var x=ENV[e].x,top=bathTop(e),rx=e===0?48:52,ry=11,bot=e===3?BENCH-30:BENCH-8,ly=liq(e);
+  var col=["rgba(200,225,245,.55)","rgba(230,236,240,.55)","rgba(150,200,240,.5)","rgba(110,175,235,.5)"][e];
+  ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x-rx,ly);ctx.lineTo(x-rx,bot);ctx.ellipse(x,bot,rx,ry,0,Math.PI,0,true);ctx.lineTo(x+rx,ly);ctx.ellipse(x,ly,rx,ry,0,0,-Math.PI,true);ctx.fill();
+  ctx.fillStyle=["rgba(225,240,250,.7)","rgba(245,247,250,.75)","rgba(200,230,250,.7)","rgba(180,215,245,.7)"][e];ctx.beginPath();ctx.ellipse(x,ly,rx-1,ry-1,0,0,6.2832);ctx.fill();
+  if(e===0){/* azote : brouillard qui déborde */for(var k=0;k<9;k++){var q=(t*0.25+k/9)%1,fx=x+Math.sin(k*2.3+t*0.7)*rx*0.8+q*(k%2?24:-24),fy=top-4+q*40;ctx.fillStyle="rgba(255,255,255,"+(0.55*(1-q))+")";ctx.beginPath();ctx.arc(fx,fy,7+q*10,0,6.2832);ctx.fill();}}
+  if(e===1){for(var c=0;c<6;c++){ctx.fillStyle="rgba(255,255,255,.9)";rr(x-34+c*11,ly+4+((c*7)%3)*6,10,8,2);ctx.fill();}for(var k2=0;k2<10;k2++){var q2=(t*0.8+k2/10)%1;ctx.strokeStyle="rgba(255,255,255,.8)";ctx.lineWidth=1;ctx.beginPath();ctx.arc(x-30+(k2*13)%60,bot-6-q2*(bot-ly-6),1.5+q2*2,0,6.2832);ctx.stroke();}
+    for(var k3=0;k3<5;k3++){var q3=(t*0.3+k3/5)%1;ctx.fillStyle="rgba(255,255,255,"+(0.4*(1-q3))+")";ctx.beginPath();ctx.arc(x+Math.sin(k3*3+t)*rx*0.6,ly-4-q3*30,6+q3*8,0,6.2832);ctx.fill();}}
+  if(e===2){for(var c2=0;c2<5;c2++){var ix=x-34+c2*16,iy=ly-6+Math.sin(t*1.2+c2)*1.5;ctx.fillStyle="rgba(240,250,255,.92)";rr(ix,iy,14,13,3);ctx.fill();ctx.strokeStyle="rgba(150,190,220,.8)";ctx.lineWidth=1;ctx.stroke();}}
+  if(e===3){for(var k4=0;k4<14;k4++){var q4=(t*1.1+k4*0.137)%1;ctx.strokeStyle="rgba(255,255,255,.85)";ctx.lineWidth=1.1;ctx.beginPath();ctx.arc(x-38+(k4*29)%76,bot-4-q4*(bot-ly-6),1.5+q4*3,0,6.2832);ctx.stroke();}
+    for(var k5=0;k5<6;k5++){var q5=(t*0.35+k5/6)%1;ctx.fillStyle="rgba(255,255,255,"+(0.45*(1-q5))+")";ctx.beginPath();ctx.arc(x+Math.sin(k5*2+t)*rx*0.5,top-6-q5*50,7+q5*10,0,6.2832);ctx.fill();}}
+  ctx.strokeStyle="rgba(110,130,150,.75)";ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(x-rx,top);ctx.lineTo(x-rx,bot);ctx.ellipse(x,bot,rx,ry,0,Math.PI,0,true);ctx.lineTo(x+rx,top);ctx.stroke();ctx.beginPath();ctx.ellipse(x,top,rx,ry,0,0,Math.PI);ctx.stroke();
+  if(e===0){ctx.fillStyle="rgba(190,200,210,.45)";ctx.fillRect(x-rx,top+8,10,bot-top-10);ctx.fillRect(x+rx-10,top+8,10,bot-top-10);}
+  ctx.fillStyle="rgba(255,255,255,.4)";ctx.fillRect(x-rx+5,top+12,4,bot-top-18);
+  if(e===3){ctx.fillStyle="#475467";rr(x-rx-14,top+8,14,8,3);ctx.fill();rr(x+rx,top+8,14,8,3);ctx.fill();}}
+/* ballon de verre + capillaire + manomètre */
+function ballon(){var r=44,g=GAS[gi],TK=th+TZ,P=pr(th);
+  var cy=by,ny=cy-r-24,dy=ny-70;
+  /* capillaire */
+  ctx.strokeStyle="rgba(160,180,195,.9)";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(bx,cy-r+4);ctx.lineTo(bx,dy+30);ctx.stroke();ctx.strokeStyle="rgba(255,255,255,.7)";ctx.lineWidth=1.5;ctx.stroke();
+  /* sphère */
+  var sg=ctx.createRadialGradient(bx-r*0.4,cy-r*0.45,r*0.1,bx,cy,r*1.05);sg.addColorStop(0,"rgba(255,255,255,.9)");sg.addColorStop(0.55,"rgba(215,232,245,.45)");sg.addColorStop(1,"rgba(150,180,205,.65)");
+  ctx.fillStyle=sg;ctx.beginPath();ctx.arc(bx,cy,r,0,6.2832);ctx.fill();
+  ctx.save();ctx.beginPath();ctx.arc(bx,cy,r-2,0,6.2832);ctx.clip();var N=Math.round(n*0.62);
+  HIT.forEach(function(h){ctx.fillStyle="rgba(255,200,60,"+(0.8*h[2])+")";ctx.beginPath();ctx.arc(bx+h[0]*(r-3),cy+h[1]*(r-3),3.4,0,6.2832);ctx.fill();});
+  for(var k=0;k<N;k++){var o=MOL[k];ctx.fillStyle=g.m;ctx.beginPath();ctx.arc(bx+o.x*(r-4),cy+o.y*(r-4),gi===2?3.2:2.8,0,6.2832);ctx.fill();}
+  ctx.restore();ctx.strokeStyle="rgba(100,130,155,.85)";ctx.lineWidth=1.6;ctx.beginPath();ctx.arc(bx,cy,r,0,6.2832);ctx.stroke();
+  ctx.fillStyle="rgba(255,255,255,.75)";ctx.beginPath();ctx.ellipse(bx-r*0.4,cy-r*0.45,r*0.25,r*0.12,-0.7,0,6.2832);ctx.fill();
+  /* givre ou buée selon la température */
+  if(th<-20){ctx.fillStyle="rgba(255,255,255,"+Math.min(0.5,(-th-20)/250)+")";ctx.beginPath();ctx.arc(bx,cy,r,0,6.2832);ctx.fill();}
+  /* manomètre */
+  var mr=42;ctx.fillStyle="rgba(0,0,0,.2)";ctx.beginPath();ctx.arc(bx+3,dy+4,mr+4,0,6.2832);ctx.fill();
+  var mg=ctx.createLinearGradient(bx-mr,dy-mr,bx+mr,dy+mr);mg.addColorStop(0,"#eef2f6");mg.addColorStop(1,"#7d8794");ctx.fillStyle=mg;ctx.beginPath();ctx.arc(bx,dy,mr+4,0,6.2832);ctx.fill();
+  ctx.fillStyle="#fffdf6";ctx.beginPath();ctx.arc(bx,dy,mr,0,6.2832);ctx.fill();
+  var pm=pmax(),a0=-Math.PI*1.25,a1=Math.PI*0.25;ctx.strokeStyle="#344054";ctx.lineWidth=1;
+  for(var i=0;i<=10;i++){var a=a0+(a1-a0)*i/10;ctx.lineWidth=i%5?1:1.8;ctx.beginPath();ctx.moveTo(bx+Math.cos(a)*(mr-3),dy+Math.sin(a)*(mr-3));ctx.lineTo(bx+Math.cos(a)*(mr-(i%5?8:13)),dy+Math.sin(a)*(mr-(i%5?8:13)));ctx.stroke();}
+  ctx.fillStyle="#d92d20";ctx.beginPath();ctx.arc(bx,dy+mr*0.62,0.01,0,1);ctx.fill();
+  var an=a0+(a1-a0)*Math.min(1,P/1000/pm);ctx.strokeStyle="#d92d20";ctx.lineWidth=2.2;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(bx-Math.cos(an)*5,dy-Math.sin(an)*5);ctx.lineTo(bx+Math.cos(an)*(mr-6),dy+Math.sin(an)*(mr-6));ctx.stroke();
+  ctx.fillStyle="#344054";ctx.beginPath();ctx.arc(bx,dy,3.2,0,6.2832);ctx.fill();
+  ctx.fillStyle="rgba(255,255,255,.35)";ctx.beginPath();ctx.ellipse(bx-10,dy-14,14,6,-0.5,0,6.2832);ctx.fill();
+  BALL={x:bx,cy:cy,dy:dy,r:r,mr:mr};}
+var BALL=null;
+/* bras de la manipulatrice, ganté, qui tient le capillaire */
+function arm(){var hx=bx+3,hy=BALL.dy+BALL.mr+20,sx=bx+120,sy=-90;
+  var ex=(hx+sx)/2+30,ey=(hy+sy)/2+30;ctx.lineCap="round";
+  ctx.strokeStyle="#e9eef3";ctx.lineWidth=30;ctx.beginPath();ctx.moveTo(sx,sy);ctx.quadraticCurveTo(ex,ey,hx+18,hy-6);ctx.stroke();
+  ctx.strokeStyle="rgba(150,165,180,.5)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(sx+14,sy);ctx.quadraticCurveTo(ex+14,ey,hx+30,hy-2);ctx.stroke();
+  var gg=ctx.createLinearGradient(hx-10,hy-16,hx+26,hy+14);gg.addColorStop(0,"#5fa8ff");gg.addColorStop(1,"#1f5fbf");ctx.fillStyle=gg;rr(hx-8,hy-14,30,24,10);ctx.fill();
+  ctx.fillStyle="#2f74d0";rr(hx-12,hy-10,10,8,4);ctx.fill();rr(hx-12,hy-1,10,8,4);ctx.fill();}
+
+/* ---------- graphique p(θ) ---------- */
+function pmax(){var m=0;series.forEach(function(s){m=Math.max(m,pr(110,s.n));});m=Math.max(m,pr(110));return Math.ceil(m/1000/40)*40;}
+function graph(){screen();var g=Lg.g,pm=pmax(),X=function(T){return g.x+g.w*(T+300)/420},Y=function(p){return g.y+g.h*(1-p/1000/pm)};
+  ctx.fillStyle="#fff";rr(g.x-52,g.y-36,g.w+66,g.h+100,10);ctx.fill();ctx.strokeStyle="#e3e7ed";ctx.lineWidth=1;ctx.stroke();
+  ctx.strokeStyle="#eef1f5";for(var T=-300;T<=120;T+=50){ctx.beginPath();ctx.moveTo(X(T),g.y);ctx.lineTo(X(T),g.y+g.h);ctx.stroke();}
+  var ps=pm>160?40:20;for(var p=0;p<=pm;p+=ps){ctx.beginPath();ctx.moveTo(g.x,Y(p*1000));ctx.lineTo(g.x+g.w,Y(p*1000));ctx.stroke();}
+  /* zéro absolu */
+  ctx.fillStyle="rgba(19,35,58,.06)";ctx.fillRect(g.x,g.y,X(-TZ)-g.x,g.h);
+  ctx.strokeStyle="#13233a";ctx.setLineDash([4,4]);ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(X(-TZ),g.y);ctx.lineTo(X(-TZ),g.y+g.h);ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle="#5f6b7a";ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(g.x,g.y-6);ctx.lineTo(g.x,g.y+g.h);ctx.lineTo(g.x+g.w+4,g.y+g.h);ctx.stroke();
+  var f10="600 10.5px Mulish,system-ui,sans-serif",nar=g.w<330;
+  tag("p (kPa)",g.x-46,g.y-24,"#5f6b7a","700 11px Mulish,system-ui,sans-serif","left",{fixed:1});
+  for(var p2=0;p2<=pm;p2+=ps)tag(String(p2),g.x-6,Y(p2*1000),"#5f6b7a",f10,"right",{fixed:1});
+  for(var T2=(nar?-200:-250);T2<=50;T2+=(nar?100:50))tag(fr(T2,0),X(T2),g.y+g.h+11,"#5f6b7a",f10,"center",{fixed:1});
+  tag("θ (°C)",g.x+g.w,g.y+g.h+11,"#5f6b7a","700 11px Mulish,system-ui,sans-serif","right",{fixed:1});
+  /* axe en kelvins */
+  var yk=g.y+g.h+34;ctx.strokeStyle="#b42318";ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(X(-TZ),yk);ctx.lineTo(g.x+g.w,yk);ctx.stroke();
+  for(var K=0;K<=380;K+=100){ctx.beginPath();ctx.moveTo(X(K-TZ),yk-4);ctx.lineTo(X(K-TZ),yk+4);ctx.stroke();tag(String(K),X(K-TZ),yk+12,"#b42318",f10,"center",{fixed:1});}
+  tag("T (K)",g.x+g.w,yk+12,"#b42318","700 11px Mulish,system-ui,sans-serif","right",{fixed:1});
+  tag(nar?"0 K":"zéro absolu : 0 K",X(-TZ)+5,g.y+8,"#13233a","800 11.5px Mulish,system-ui,sans-serif","left",{fixed:1});
+  /* droites et points */
+  series.forEach(function(s,si){var c=GAS[s.g].c,cur=si===series.length-1,f=fit(s),k=Object.keys(s.pts);ctx.globalAlpha=cur?1:0.55;
+    if(f){ctx.strokeStyle=c;ctx.lineWidth=cur?2.4:1.8;ctx.setLineDash([6,5]);ctx.beginPath();ctx.moveTo(X(f.z),Y(0));ctx.lineTo(X(-210),Y(f.a*-210+f.b));ctx.stroke();ctx.setLineDash([]);
+      ctx.beginPath();ctx.moveTo(X(-210),Y(f.a*-210+f.b));ctx.lineTo(X(110),Y(f.a*110+f.b));ctx.stroke();}
+    k.forEach(function(e){var p=s.pts[e];ctx.fillStyle=c;ctx.beginPath();ctx.arc(X(p[0]),Y(p[1]),cur?5.5:4.5,0,6.2832);ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=1.5;ctx.stroke();});
+    ctx.globalAlpha=1;
+    if(f)tag(GAS[s.g].n+", "+s.n+" mmol",X(110)-4,Y(f.a*110+f.b)-12,c,"800 11px Mulish,system-ui,sans-serif","right");});
+  var fc=fit(series[series.length-1]);if(fc){ctx.fillStyle="#13233a";ctx.beginPath();ctx.arc(X(fc.z),Y(0),5,0,6.2832);ctx.fill();tag(fr(fc.z,0)+" °C",X(fc.z)+8,Y(0)-14,"#13233a","800 12px Mulish,system-ui,sans-serif","left");}
+  /* point courant (gaz) */
+  var P=pr(th);ctx.strokeStyle=GAS[gi].c;ctx.lineWidth=2;ctx.beginPath();ctx.arc(X(th),Y(P),8+2*Math.sin(t*5),0,6.2832);ctx.stroke();}
+
+/* ---------- textes ---------- */
+var last="";
+function read(){var P=pr(th),f=fit(series[series.length-1]),s=series[series.length-1],k=Object.keys(s.pts).length,e=ENV[env];
+  $("zaT").textContent=fr(th,1)+" °C";$("zaTs").textContent="T = "+fr(th+TZ,1)+" K · "+GAS[gi].n+", "+n+" mmol";
+  $("zaP").textContent=fr(P/1000,1)+" kPa";$("zaPs").textContent="p/T = "+fr(P/(th+TZ),1)+" Pa/K";
+  $("zaB").textContent=e.n;$("zaBs").textContent=(env<4&&lowered<0.5)?"le ballon descend…":"à "+fr(e.T,0)+" °C"+(Math.abs(th-e.T)<0.3?" : équilibre atteint":" : le gaz s'y met en équilibre");
+  $("zaZ").textContent=f?fr(f.z,2)+" °C":"—";$("zaZs").textContent=f?k+" points alignés":"il faut au moins 2 points";
+  var fml="Le volume du ballon est fixe (V = 1,00 L). Quand on chauffe, les molécules frappent la paroi plus vite et plus souvent : la pression monte <b>en ligne droite</b> avec θ. Prolongée, la droite coupe p = 0 à <b>θ₀ ≈ −273 °C</b>, pour tous les gaz et toutes les quantités : c'est le <b>zéro absolu</b>, origine de l'échelle Kelvin. <b style='color:#b42318'>T (K) = θ (°C) + 273,15</b> et alors <b style='color:#b42318'>p = n·R·T / V</b>.";
+  var inf="Maintenant : p = n·R·T / V = "+fr(n/1000,3)+" × 8,314 × "+fr(th+TZ,1)+" / 0,001 = <b>"+fr(P/1000,1)+" kPa</b>. ";
+  if(f)inf+="Droite des mesures : p = "+fr(f.a,1)+" Pa/°C × θ + "+fr(f.b/1000,1)+" kPa ; elle s'annule pour θ = −"+fr(f.b/1000,1)+" / "+fr(f.a/1000,4)+" = <b>"+fr(f.z,2)+" °C</b>. La pente vaut n·R/V = "+fr(n*1e-3*R/V,1)+" Pa/K : elle double si n double, mais le point d'arrivée ne bouge pas. ";
+  else inf+="Plonge le ballon dans au moins deux bains pour tracer la droite. ";
+  inf+="Le gaz est supposé parfait : à ces faibles pressions, l'écart réel reste de l'ordre de 1 à 2 % pour l'air dans l'azote liquide, bien moins pour l'hélium. En vrai, aucun gaz n'atteint 0 K : il se liquéfie avant.";
+  if(fml+inf!==last){last=fml+inf;$("zaFml").innerHTML=fml;$("zaInfo").innerHTML=inf;}}
+
+/* ---------- mouvement du ballon ---------- */
+var tour=[[4,2,3,0,1],[3,2,0],[0,3,2]],tourCfg=[[2,42],[0,25],[1,70]],ti=0,tj=0,tw=0;
+function goTo(e){target=e;}
+function step(dt){
+  if(drag){lowered=Math.max(0,lowered-dt*4);env=4;}
+  else if(target!==null){
+    if(env!==target&&lowered>0){lowered=Math.max(0,lowered-dt*2.2);}
+    else{if(env!==target){env=4;var tx=target===4?Math.max(90,Math.min(VW-90,bx)):ENV[target].x,d=tx-bx;
+        if(Math.abs(d)>1)bx+=Math.sign(d)*Math.min(Math.abs(d),dt*260);else{bx=tx;env=target;}}
+      if(env===target){if(target<4&&lowered<1)lowered=Math.min(1,lowered+dt*1.8);else target=null;}}}
+  var low=env<4?liq(env)+50:AIRY;by=AIRY+(low-AIRY)*(env<4?lowered:0);
+  var inB=env<4&&lowered>0.9,envT=inB?ENV[env].T:20,tau=inB?0.8:2.5;th+=(envT-th)*(1-Math.exp(-dt/tau));
+  var eq=(env<4?lowered>0.99:lowered<0.01)&&Math.abs(th-envT)<0.3&&!drag&&target===null;stab=eq?stab+dt:0;
+  if(stab>0.6){var s=series[series.length-1],key=env===4?"a":String(env);if(!s.pts[key]||Math.abs(s.pts[key][0]-th)>0.05)s.pts[key]=[th,pr(th)];}
+  if(auto&&!drag&&target===null&&stab>1.4){tw+=dt;if(tw>0.3){tw=0;advance();}}else tw=0;}
+function advance(){tj++;if(tj>=tour[ti].length){tj=0;ti=(ti+1)%tour.length;if(!touched){if(ti===0)series=[];gi=tourCfg[ti][0];n=tourCfg[ti][1];sync();newSeries();}}goTo(tour[ti][tj]);stab=0;}
+function sync(){document.querySelectorAll("[data-g]").forEach(function(b){b.classList.toggle("on",+b.dataset.g===gi)});$("zaN").value=n;$("zaNv").textContent=n+" mmol";}
+
+/* ---------- commandes ---------- */
+document.querySelectorAll("[data-g]").forEach(function(b){b.onclick=function(){gi=+b.dataset.g;touched=true;sync();newSeries();};});
+$("zaN").oninput=function(){n=+this.value;touched=true;sync();var s=series[series.length-1];if(Object.keys(s.pts).length)newSeries();else s.n=n;};
+$("zaAuto").onclick=function(){auto=!auto;this.classList.toggle("on",auto);};
+$("zaClr").onclick=function(){series=[];newSeries();};
+function setAuto(v){auto=v;$("zaAuto").classList.toggle("on",v);}
+function pos(ev){var b=cv.getBoundingClientRect();return [ev.clientX-b.left,ev.clientY-b.top];}
+function onBall(p){if(!BALL)return false;var x=VX(p[0]),y=VY(p[1]);return Math.hypot(x-BALL.x,y-BALL.cy)<BALL.r+8||Math.hypot(x-BALL.x,y-BALL.dy)<BALL.mr+8||(Math.abs(x-BALL.x)<10&&y>BALL.dy&&y<BALL.cy);}
+function bathAt(p){var x=VX(p[0]),y=VY(p[1]);for(var e=0;e<4;e++)if(Math.abs(x-ENV[e].x)<56&&y>bathTop(e)-40&&y<BENCH+60)return e;return -1;}
+cv.addEventListener("pointerdown",function(ev){var p=pos(ev);if(onBall(p)){drag={dx:VX(p[0])-bx};setAuto(false);target=null;cv.setPointerCapture(ev.pointerId);ev.preventDefault();return;}
+  var e=bathAt(p);if(e>=0){setAuto(false);goTo(e);}else if(VY(p[1])<BENCH-20&&p[0]<Lg.sc.x+Lg.sc.w){setAuto(false);goTo(4);}});
+cv.addEventListener("pointermove",function(ev){var p=pos(ev);if(drag){env=4;bx=Math.max(40,Math.min(VW-40,VX(p[0])-drag.dx));}
+  cv.style.cursor=drag?"grabbing":onBall(p)?"grab":bathAt(p)>=0?"pointer":"default";});
+cv.addEventListener("pointerup",function(){if(!drag)return;drag=null;var best=-1,bd=60;for(var e=0;e<4;e++){var d=Math.abs(bx-ENV[e].x);if(d<bd){bd=d;best=e;}}goTo(best>=0?best:4);});
+var lt=null;
+function frame(ts){if(lt===null)lt=ts;var dt=Math.min(0.05,(ts-lt)/1000);lt=ts;t+=dt;size();step(dt);molStep(dt);
+  LB=[];screen();ctx.clearRect(0,0,W,H);ctx.fillStyle="#f7f9fb";ctx.fillRect(0,0,W,H);
+  ctx.save();ctx.beginPath();ctx.rect(Lg.sc.x,Lg.sc.y,Lg.sc.w,Lg.sc.h);ctx.clip();drawScene();screen();
+  var P=pr(th),sd=BALL.x>VW/2?-1:1,al=sd<0?"right":"left";tag(fr(P/1000,1)+" kPa",SX(BALL.x)+sd*(BALL.mr+8)*Lg.s,SY(BALL.dy),"#b42318","800 12.5px Mulish,system-ui,sans-serif",al);
+  tag(fr(th,0)+" °C",SX(BALL.x)+sd*(BALL.r+8)*Lg.s,SY(BALL.cy),"#175cd3","800 12.5px Mulish,system-ui,sans-serif",al);
+  for(var e=0;e<4;e++){var yy=SY(BENCH+30);tag(fr(ENV[e].T,0)+" °C",SX(ENV[e].x),yy,"#13233a","800 12px Mulish,system-ui,sans-serif","center",{fixed:1});tag(ENV[e].s,SX(ENV[e].x),yy+16,"#475467",(W<640?"600 10.5px":"600 11.5px")+" Mulish,system-ui,sans-serif","center",{fixed:1});}
+  ctx.restore();graph();read();requestAnimationFrame(frame);}
+sync();goTo(4);
+window.__za={set:function(o){if("auto" in o)setAuto(o.auto);if("g" in o){gi=o.g;sync();}if("n" in o){n=o.n;sync();}if("clear" in o){series=[];newSeries();}if("ser" in o)newSeries();if("pts" in o){/* mesure directe dans des bains */var s=series[series.length-1];o.pts.forEach(function(e){s.pts[String(e)]=[ENV[e].T,pr(ENV[e].T)];});}
+    if("env" in o){target=null;env=o.env;bx=o.env<4?ENV[o.env].x:250;lowered=o.env<4?1:0;th=ENV[o.env].T;}var f=fit(series[series.length-1]);return {th:th,p:pr(th),fit:f,ser:series.length};},labels:function(){return LB.map(function(b){return b.slice()});}};
+requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Gaz et thermodynamique<span>9 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/gaz-piston/"><i>01</i>Gaz chauffé : le piston monte</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/diagramme-pv/"><i>02</i>Diagramme PV et premier principe</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-transferts-thermiques/"><i>03</i>Conduction, convection, rayonnement</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-dilatation/"><i>04</i>La dilatation</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-machine-thermique/"><i>05</i>Moteur, frigo, pompe à chaleur</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-detente-irreversible/"><i>06</i>Une détente qui ne revient jamais</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-glace-vapeur/"><i>07</i>Chauffer 1 kg de glace de −20 à 120 °C</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-zero-absolu/"><i>08</i>Trouver le zéro absolu avec un ballon de gaz</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-respiration-boyle/"><i>09</i>Respirer, c'est appliquer Boyle-Mariotte</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

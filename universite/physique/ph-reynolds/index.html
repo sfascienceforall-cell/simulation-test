@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laminaire ou turbulent : l’expérience de Reynolds · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#FL">Fluides</a>›<b>Laminaire ou turbulent : l’expérience de Reynolds</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Fluides</span><span class="sfa-chip free">Gratuit</span></div><h1>Laminaire ou turbulent : l’expérience de Reynolds</h1><p>Le montage de Reynolds en 3D : un réservoir, un long tube de verre et un robinet. Un filet d’encre est injecté au centre. Ouvre le robinet : le filet reste droit, ondule, puis se brise en tourbillons. Re = ρvD/η est calculé en direct, avec le cas de l’aorte.</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:68vh;min-height:540px;cursor:grab;touch-action:none" aria-label="Montage de Reynolds en 3D : un réservoir d'eau, un long tube de verre horizontal et un robinet de sortie ; un fin filet d'encre est injecté au centre du tube ; il reste droit, ondule puis se brise en tourbillons quand on ouvre le robinet"></canvas>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill" style="min-width:150px">v &nbsp;vitesse moyenne</span>
+  <input type="range" id="sV" min="0" max="4" step="0.005" value="0.05" style="accent-color:#185fa5;">
+  <span class="val" id="vV" style="color:#185fa5"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px">D &nbsp;diamètre du tube</span>
+  <input type="range" id="sD" min="5" max="30" step="0.5" value="20" style="accent-color:#5b6b7d;">
+  <span class="val" id="vD"></span>
+</div>
+<div class="row">
+  <span class="pill">Liquide</span>
+  <button class="btn on" id="f0">Eau à 20 °C</button>
+  <button class="btn" id="f1">Eau à 60 °C</button>
+  <button class="btn" id="f2">Sang</button>
+  <button class="btn" id="f3">Huile d’olive</button>
+</div>
+<div class="row">
+  <span class="pill">Aorte</span>
+  <button class="btn" id="aR">Au repos (5 L/min)</button>
+  <button class="btn" id="aE">Effort intense (25 L/min)</button>
+  <button class="btn" id="bSt">Sténose : D ÷ 2 à débit fixé</button>
+</div>
+<div class="row">
+  <button class="btn" id="bDemo" style="font-weight:800">▶ Ouvrir le robinet peu à peu</button>
+  <button class="btn on" id="bProf">Profil des vitesses</button>
+  <button class="btn" id="bRst">↺ Vider l’encre</button>
+  <button class="btn" id="lab">Masquer les écritures</button>
+</div>
+<div class="row"><span class="hint">Astuce : tourne la poignée rouge du robinet pour ouvrir ou fermer ; glisse ailleurs pour tourner autour du montage.</span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const INK='#2c3440',RED='#E24B4A',RED_D='#a32d2d',BLUE_D='#185fa5',GREEN_D='#0F6E56',OR_D='#9a5f0f',GREY='#8a939c',DYE='#1b2a8c';
+const FS='600 12px Mulish,system-ui,sans-serif',FB='800 13.5px Mulish,system-ui,sans-serif',FBIG='800 16px Mulish,system-ui,sans-serif';
+const $=id=>document.getElementById(id);
+const fr=(v,d)=>(Math.abs(v)<5e-10?0:v).toFixed(d).replace('.',',').replace(/^-/,'−');
+const fi=v=>Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+let W=0,H=0,dpr=1,noLab=false,prof=true;
+function size(){const b0=cv.getBoundingClientRect();if(b0.width<560){const want=Math.round(b0.width*0.9+150);if(Math.abs(b0.height-want)>2)cv.style.height=want+'px';cv.style.minHeight='0';}else if(cv.style.minHeight==='0px'||cv.style.minHeight==='0'){cv.style.height='68vh';cv.style.minHeight='540px';}
+  const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.round(b.width)||800,h=Math.round(b.height)||540;if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);}
+function tag(t,x,y,col,font,al){if(noLab)return;ctx.font=font||FS;ctx.textAlign=al||'center';ctx.textBaseline='middle';const w=ctx.measureText(t).width,A=al||'center';const lo=A==='left'?4:A==='right'?w+4:w/2+4,hi=A==='left'?W-w-4:A==='right'?W-4:W-w/2-4;x=Math.max(lo,Math.min(hi,x));y=Math.max(9,Math.min(H-9,y));
+  ctx.lineWidth=3.5;ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineJoin='round';ctx.strokeText(t,x,y);ctx.fillStyle=col||INK;ctx.fillText(t,x,y);}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
+
+// ---------- physique ----------
+const FLU=[{n:'eau à 20 °C',rho:998,eta:1.00e-3,tint:'rgba(170,210,240,'},{n:'eau à 60 °C',rho:983,eta:0.47e-3,tint:'rgba(170,210,240,'},{n:'sang',rho:1060,eta:3.5e-3,tint:'rgba(225,140,140,'},{n:'huile d’olive',rho:910,eta:84e-3,tint:'rgba(225,205,110,'}];
+let fl=0,v=0.05,Dmm=20,aorte='',demo=false,sten=0;
+const Re=()=>FLU[fl].rho*v*(Dmm/1000)/FLU[fl].eta;
+const Qlmin=()=>v*Math.PI*Math.pow(Dmm/1000,2)/4*60000;
+function regime(r){return r<2000?'laminaire':r<4000?'de transition':'turbulent';}
+
+// ---------- caméra en perspective (z vers le haut) ----------
+let yaw=-0.42,pitch=0.30,zoom=1,C={};
+function cam(){const f=Math.min(W*1.0,H*1.75)*(W<560?0.97:1);C={Dc:3.6/zoom,f,cx:W*0.5,cy:H*(W<560?0.60:0.53),cyw:Math.cos(yaw),syw:Math.sin(yaw),cp:Math.cos(pitch),sp:Math.sin(pitch)};}
+function pr(x,y,z){x+=0.0;z+=0.06;const xr=x*C.cyw-y*C.syw,yr=x*C.syw+y*C.cyw,dep=C.Dc+yr*C.cp-z*C.sp,k=C.f/Math.max(0.05,dep);return[C.cx+xr*k,C.cy-(z*C.cp+yr*C.sp)*k,dep,k];}
+function poly(P,fill,stroke,lw){ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();}}
+function shade(hex,k,a){const n=parseInt(hex.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255,f=q=>Math.max(0,Math.min(255,Math.round(q*k)));return a==null?`rgb(${f(r)},${f(g)},${f(b)})`:`rgba(${f(r)},${f(g)},${f(b)},${a})`;}
+function box(x0,x1,y0,y1,z0,z1,col,alpha,line){const P=[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]].map(p=>pr(...p));
+  const F=[[[4,5,6,7],1.08],[[0,1,5,4],0.86],[[1,2,6,5],0.74],[[2,3,7,6],0.8],[[3,0,4,7],0.95],[[3,2,1,0],0.5]];
+  F.forEach(([ix,k])=>{const q=ix.map(i=>P[i]);let a=0;for(let i=0;i<4;i++){const p=q[i],n=q[(i+1)%4];a+=p[0]*n[1]-n[0]*p[1];}if(a<0)poly(q,shade(col,k,alpha),line||'rgba(0,0,0,.15)',1);});}
+function rod(a3,b3,r,col){const a=pr(...a3),b=pr(...b3),w=Math.max(1.5,r*(a[3]+b[3]));[[1,0.6],[0.65,1.0],[0.25,1.4]].forEach(([k,sh],i)=>{ctx.strokeStyle=shade(col,sh);ctx.lineWidth=w*k;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(a[0]-(1-k)*w*0.2,a[1]-(1-k)*w*0.3);ctx.lineTo(b[0]-(1-k)*w*0.2,b[1]-(1-k)*w*0.3);ctx.stroke();});}
+function ring(x,R,n){const P=[];for(let i=0;i<n;i++){const a=i/n*2*Math.PI;P.push(pr(x,R*Math.cos(a),R*Math.sin(a)));}return P;}
+// cylindre horizontal d'axe x : silhouette à partir des deux cercles d'extrémité
+function hull(x0,x1,R){const A=ring(x0,R,48),B=ring(x1,R,48),a=pr(x0,0,0),b=pr(x1,0,0),dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L;
+  const ext=P=>{let mn=1e9,mx=-1e9,pm=null,pM=null;P.forEach(p=>{const d=(p[0]-a[0])*nx+(p[1]-a[1])*ny;if(d<mn){mn=d;pm=p;}if(d>mx){mx=d;pM=p;}});return[pm,pM];};
+  const [a1,a2]=ext(A),[b1,b2]=ext(B);return{A,B,q:[a1,b1,b2,a2],nx,ny,a,b};}
+
+// ---------- géométrie du montage (unités de la scène) ----------
+const X0=-1.18,X1=1.18,XN=-1.10;           // tube de verre, bout de l'aiguille d'encre
+const Rv=()=>0.06+0.0045*Dmm;              // rayon dessiné (le tube réel fait D mm ; le dessin est agrandi)
+const TABLE=-0.55;
+
+// ---------- l'encre : des particules suivies dans le tube ----------
+let parts=[],tt=0,emitAcc=0,tapAng=0,rngS=7;
+function rnd(){rngS=(rngS*16807)%2147483647;return rngS/2147483647;}
+const smooth=(e0,e1,x)=>{const u=Math.max(0,Math.min(1,(x-e0)/(e1-e0)));return u*u*(3-2*u);};
+function Uvis(){return v<=0?0:0.08+1.9*Math.sqrt(v);}
+function step(dt){const U=Uvis(),R=Rv(),re=Re(),sTr=smooth(1800,4000,re),sTu=smooth(4000,9000,re);
+  if(U>0){emitAcc+=dt*(140+220*Math.min(1,U/1.5));while(emitAcc>=1){emitAcc-=1;let a=rnd()*2*Math.PI,r=Math.sqrt(rnd());parts.push({x:XN,ry:r*Math.cos(a),rz:r*Math.sin(a),sw:rnd()<0.5?-1:1,m:0,te:tt,sp:0.6+0.8*rnd(),yy:0,zz:0});}}
+  const xb=re>=4000?XN+0.22+1.25*Math.pow(4000/re,2.2):99;
+  parts.forEach(p=>{const xs=p.x-XN;
+    // fond du filet : ondulation (au-delà de Re ≈ 2000) qui grandit vers l'aval
+    const Aw=R*0.5*sTr*smooth(0,0.35+1.3*(1-sTr),xs),kw=8,ph=kw*p.x-kw*1.1*U*tt;
+    const wy=Aw*Math.sin(ph),wz=Aw*0.55*Math.sin(0.7*ph+1.3);
+    // bouffées de turbulence (transition) puis rupture complète (turbulent)
+    const puff=0.5+0.5*Math.sin(2.4*(p.x-0.9*U*tt)),thr=1-0.55*sTr;
+    let mi=re<2000?0:smooth(thr,thr+0.12,puff)*smooth(0.15,0.7,xs)*Math.sqrt(sTr)*(re<4000?1:0.6);
+    if(re>=4000)mi=Math.max(mi,smooth(xb-XN,xb-XN+0.18,xs));
+    p.m=Math.max(p.m,Math.min(1,mi));
+    const th=p.sw*(tt-p.te)*(1.5+4*sTu)*p.sp,c=Math.cos(th),s=Math.sin(th),my=(p.ry*c-p.rz*s)*R*0.9*p.m,mz=(p.ry*s+p.rz*c)*R*0.9*p.m;
+    p.yy=wy*(1-p.m)+my;p.zz=wz*(1-p.m)+mz;
+    const rho=Math.min(1,Math.hypot(p.yy,p.zz)/R),lam=2*(1-rho*rho),tur=1.22*Math.pow(Math.max(0,1-rho),1/7);
+    p.x+=U*dt*(lam*(1-p.m)+tur*p.m);});
+  parts=parts.filter(p=>p.x<X1+0.03);if(parts.length>2600)parts.splice(0,parts.length-2600);}
+
+// ---------- dessin ----------
+function scene(){const R=Rv(),tint=FLU[fl].tint;
+  let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#eef2f6');g.addColorStop(0.62,'#dde4eb');g.addColorStop(1,'#c9d1d9');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // carrelage du mur du labo
+  ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=1;for(let y=0;y<H*0.6;y+=34){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}for(let x=0;x<W;x+=34){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H*0.6);ctx.stroke();}
+  // paillasse
+  box(-2.15,1.95,-0.62,0.62,TABLE-0.08,TABLE,'#3f4a55');box(-2.05,-1.9,-0.5,-0.38,TABLE-0.9,TABLE-0.08,'#56616c');box(1.75,1.9,-0.5,-0.38,TABLE-0.9,TABLE-0.08,'#56616c');
+  // ombre du tube sur la paillasse
+  {const P=[[X0,-R*1.4,TABLE+0.001],[X1,-R*1.4,TABLE+0.001],[X1,R*1.4,TABLE+0.001],[X0,R*1.4,TABLE+0.001]].map(p=>pr(...p));poly(P,'rgba(0,0,0,.18)');}
+  // supports du tube
+  [-0.6,0.6].forEach(x=>{box(x-0.05,x+0.05,-0.12,0.12,TABLE,TABLE+0.03,'#6b7682');rod([x,0,TABLE+0.03],[x,0,-R-0.01],0.012,'#9aa5ad');const P=[];for(let i=0;i<=16;i++){const a=Math.PI+Math.PI*i/16;P.push(pr(x,(R+0.012)*Math.cos(a),(R+0.012)*Math.sin(a)));}ctx.strokeStyle='#5d6670';ctx.lineWidth=3;ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();});
+  // réservoir (verre) avec l'eau
+  const TX0=-1.82,TX1=-1.2,TY=0.36,TZ0=TABLE,TZ1=0.42,lvl=0.32;
+  box(TX0,TX1,-TY,TY,TZ0,TZ1,'#cfe3f2',0.25,'rgba(80,110,140,.35)');
+  box(TX0+0.01,TX1-0.01,-TY+0.01,TY-0.01,TZ0+0.01,lvl,'#7fb6e2',0.38,'rgba(60,110,160,.18)');
+  // pavillon d'entrée (évasé) dans le réservoir
+  for(let k=0;k<6;k++){const x=X0-0.012*k,rr_=R*(1+0.18*k*k/5);const P=ring(x,rr_,40);poly(P,null,'rgba(120,150,175,'+(0.55-k*0.06)+')',1.4);}
+  // flacon d'encre et son tube jusqu'à l'aiguille
+  const bx=-1.52,bz=0.70;rod([bx,0,bz-0.12],[bx,0,0.06],0.008,'#c0c8cf');rod([bx,0,0.06],[bx+0.06,0,0],0.008,'#c0c8cf');rod([bx+0.06,0,0],[XN,0,0],0.006,'#aab4bc');
+  box(bx-0.09,bx+0.09,-0.09,0.09,bz-0.12,bz+0.12,'#2a3a9e',0.85);box(bx-0.03,bx+0.03,-0.03,0.03,bz+0.12,bz+0.17,'#3d454c');
+  {const p=pr(bx,0,bz+0.3);tag('encre',p[0],p[1],DYE,FB);}
+  {const p=pr(-1.5,0,TZ1+0.07);tag('réservoir',p[0]-60,p[1]-10,INK,FS);}
+  // tube de verre : fond, liquide, puis l'encre
+  const Hh=hull(X0,X1,R);poly(Hh.q,tint+'0.30)');
+  // l'eau dans le tube : reflet bleuté le long de l'axe
+  const T=hull(X0,X1,R*0.98);const gq=ctx.createLinearGradient(T.a[0]-T.nx*40,T.a[1]-T.ny*40,T.a[0]+T.nx*40,T.a[1]+T.ny*40);
+  poly(T.q,tint+'0.22)');
+  return {Hh,R};}
+function dyeDraw(){const R=Rv();if(!parts.length)return;
+  const P=parts.map(p=>{const s=pr(p.x,p.yy,p.zz);return[s[0],s[1],p.m,p.x,s[3]];});
+  // filet continu (partie non mélangée)
+  ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='rgba(27,42,140,.92)';ctx.lineWidth=Math.max(1.6,0.009*P[0][4]);ctx.beginPath();let on=false;
+  for(let i=0;i<P.length;i++){const p=P[i],q=P[i-1];if(p[2]<0.22&&q&&q[2]<0.22&&Math.abs(p[3]-q[3])<0.08){if(!on){ctx.moveTo(q[0],q[1]);on=true;}ctx.lineTo(p[0],p[1]);}else on=false;}ctx.stroke();
+  // nuages d'encre (partie brisée en tourbillons)
+  P.forEach(p=>{if(p[2]>=0.22){const a=0.07+0.22*(1-p[2]*0.75),r=Math.max(2,(0.008+0.02*p[2])*p[4]);ctx.fillStyle=`rgba(27,42,140,${a})`;ctx.beginPath();ctx.arc(p[0],p[1],r,0,7);ctx.fill();}});}
+function glass(Hh,R){// reflets du verre et bords
+  const {A,B,q}=Hh;ctx.strokeStyle='rgba(90,120,150,.55)';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(q[0][0],q[0][1]);ctx.lineTo(q[1][0],q[1][1]);ctx.moveTo(q[3][0],q[3][1]);ctx.lineTo(q[2][0],q[2][1]);ctx.stroke();
+  poly(B,null,'rgba(90,120,150,.6)',1.4);poly(A,null,'rgba(90,120,150,.35)',1);
+  [[0.62,0.72,3],[0.78,0.55,1.5]].forEach(([u,al,w])=>{const a=pr(X0+0.05,R*0.25,R*u),b=pr(X1-0.05,R*0.25,R*u);ctx.strokeStyle=`rgba(255,255,255,${al})`;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();});
+  // aiguille d'injection (dans l'axe, à l'entrée)
+  rod([XN-0.12,0,0],[XN,0,0],0.005,'#8c96a1');}
+function outlet(){const R=Rv();
+  // coude et robinet
+  rod([X1-0.01,0,0],[X1+0.13,0,0],R*0.75,'#9aa5ad');rod([X1+0.13,0,0],[X1+0.13,0,-0.16],R*0.75,'#9aa5ad');
+  box(X1+0.07,X1+0.19,-0.07,0.07,-0.26,-0.15,'#b08a3e');
+  // poignée : tourne avec l'ouverture
+  const ang=tapAng,hx=X1+0.13,hz=-0.205,Lh=0.24,tip=[hx+Lh*Math.cos(ang),-0.09,hz+Lh*Math.sin(ang)];
+  rod([hx,-0.07,hz],[hx,-0.1,hz],0.02,'#7d8793');rod([hx,-0.1,hz],tip,0.022,'#c0392b');
+  const tp=pr(...tip);ctx.fillStyle='#e05545';ctx.beginPath();ctx.arc(tp[0],tp[1],Math.max(6,0.03*tp[3]),0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.6)';ctx.beginPath();ctx.arc(tp[0]-2,tp[1]-2,Math.max(2,0.01*tp[3]),0,7);ctx.fill();
+  TAP=tp;
+  // jet de sortie vers le bac
+  rod([X1+0.13,0,-0.26],[X1+0.13,0,-0.3],0.03,'#8c96a1');
+  if(v>0){const w=0.006+0.035*Math.sqrt(v),N=20,pts=[];for(let i=0;i<=N;i++){const u=i/N,z=-0.31-u*0.2,x=X1+0.13+0.04*Math.sqrt(v)*u*3;pts.push(pr(x,0,z));}
+    ctx.strokeStyle=FLU[fl].tint+'0.85)';ctx.lineCap='round';ctx.lineWidth=Math.max(2,w*pts[0][3]);ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=1;ctx.setLineDash([4,7]);ctx.lineDashOffset=-tt*80*(0.3+v);ctx.stroke();ctx.setLineDash([]);}
+  box(X1+0.0,X1+0.32,-0.2,0.2,TABLE,TABLE+0.04,'#8c96a1');box(X1+0.02,X1+0.30,-0.18,0.18,TABLE+0.04,TABLE+0.05,'#6fa3d6',0.8);
+  {const p=pr(X1+0.13,0,-0.03);tag('robinet',p[0]+48,p[1]-14,RED_D,FS,'left');}}
+let TAP=[0,0];
+function profile(){if(!prof)return;const R=Rv(),re=Re(),x0=0.55,U=0.22,sT=smooth(2000,4000,re);
+  const P=ring(x0,R,40);poly(P,'rgba(255,255,255,.18)','rgba(15,110,86,.8)',1.4);
+  const n=9;for(let i=0;i<n;i++){const z=-R+2*R*(i+0.5)/n,r=Math.abs(z)/R,u=(2*(1-r*r))*(1-sT)+(1.22*Math.pow(Math.max(0,1-r),1/7))*sT,L=U*u;
+    const a=pr(x0,0,z),b=pr(x0+L,0,z);ctx.strokeStyle='#0F6E56';ctx.fillStyle='#0F6E56';ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();
+    const an=Math.atan2(b[1]-a[1],b[0]-a[0]),h=6;if(Math.hypot(b[0]-a[0],b[1]-a[1])>5){ctx.beginPath();ctx.moveTo(b[0],b[1]);ctx.lineTo(b[0]-h*Math.cos(an-0.45),b[1]-h*Math.sin(an-0.45));ctx.lineTo(b[0]-h*Math.cos(an+0.45),b[1]-h*Math.sin(an+0.45));ctx.fill();}}
+  ctx.strokeStyle='rgba(15,110,86,.85)';ctx.setLineDash([3,3]);ctx.beginPath();for(let i=0;i<=30;i++){const z=-R+2*R*i/30,r=Math.abs(z)/R,u=(2*(1-r*r))*(1-sT)+(1.22*Math.pow(Math.max(0,1-r),1/7))*sT,p=pr(x0+U*u,0,z);i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);}ctx.stroke();ctx.setLineDash([]);
+  const p=pr(x0+0.2,0,R+0.09);tag(re<2000?'profil parabolique (laminaire)':re<4000?'profil qui s’aplatit':'profil aplati (turbulent)',p[0],p[1],GREEN_D,FS);}
+function hud(){const re=Re(),rg=regime(re);
+  const col=re<2000?GREEN_D:re<4000?OR_D:RED_D,bg=re<2000?'#e3f4ed':re<4000?'#fbf1df':'#fbe9e9';
+  // compteur de Re (jauge en haut)
+  const w=Math.min(W-20,520),x=(W-w)/2,y=12,h=W<560?92:78;ctx.save();ctx.shadowColor='rgba(19,35,58,.12)';ctx.shadowBlur=10;ctx.fillStyle='rgba(255,255,255,.95)';rr(x,y,w,h,12);ctx.fill();ctx.restore();
+  tag('Re = ρ v D / η = '+fi(re),x+14,y+18,INK,FBIG,'left');
+  if(W<560)tag(v<=0?'robinet fermé : l’encre stagne':re<2000?'le filet d’encre reste droit':re<4000?'le filet ondule, se brise par bouffées':'le filet se brise en tourbillons',W/2,H-14,col,FB);
+  ctx.fillStyle=bg;ctx.font=FB;const lab=rg==='laminaire'?'laminaire':rg==='de transition'?'transition':'turbulent';const lw=ctx.measureText(lab).width+20;rr(x+w-lw-12,y+7,lw,24,12);ctx.fill();tag(lab,x+w-lw/2-12,y+19,col,FB);
+  // barre logarithmique de 100 à 20 000
+  const bx=x+14,bw=w-28,by=y+(W<560?52:46),lg=r=>Math.max(0,Math.min(1,(Math.log10(Math.max(1,r))-2)/(Math.log10(20000)-2)));
+  const g=ctx.createLinearGradient(bx,0,bx+bw,0);g.addColorStop(0,'#bfe6d3');g.addColorStop(lg(2000),'#bfe6d3');g.addColorStop(lg(2000)+0.001,'#f5ddb0');g.addColorStop(lg(4000),'#f5ddb0');g.addColorStop(lg(4000)+0.001,'#f3c0bf');g.addColorStop(1,'#f3c0bf');
+  ctx.fillStyle=g;rr(bx,by,bw,12,6);ctx.fill();
+  [100,1000,2000,4000,10000].forEach(r=>{const X=bx+bw*lg(r);ctx.fillStyle='rgba(44,52,64,.5)';ctx.fillRect(X-0.5,by+12,1,4);if(W>=420||r!==1000)tag(r===10000?'10 000':r===4000?'≈ 4000':r===2000?'≈ 2000':String(r),X,by+24,GREY,'600 11px Mulish,system-ui,sans-serif');});
+  const X=bx+bw*lg(re);ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(X,by-2);ctx.lineTo(X-6,by-10);ctx.lineTo(X+6,by-10);ctx.fill();ctx.fillRect(X-1.5,by-2,3,16);
+  // légende en bas
+  const p=pr(-0.35,0,-Rv()-0.12);
+  tag(W<560?'':v<=0?'robinet fermé : l’eau est immobile, l’encre stagne':re<2000?'le filet d’encre reste droit':re<4000?'le filet ondule et se brise par bouffées':'le filet se brise en tourbillons : l’encre remplit le tube',p[0],Math.min(H-16,p[1]+8),col,FB);}
+function draw(){size();cam();ctx.clearRect(0,0,W,H);const {Hh,R}=scene();dyeDraw();profile();glass(Hh,R);outlet();hud();
+  if(aorte||sten){const p=pr(-0.2,0,Rv()+0.16);tag((aorte?'modèle de l’aorte : ':'')+'D = '+fr(Dmm,1)+' mm'+(aorte?', sang':'')+(sten?' (sténose)':''),p[0],p[1],RED_D,FB);}}
+
+// ---------- texte ----------
+function upd(){const F=FLU[fl],re=Re();
+  $('vV').textContent=fr(v,3)+' m/s';$('vD').textContent=fr(Dmm,1)+' mm';
+  ['f0','f1','f2','f3'].forEach((id,i)=>$(id).classList.toggle('on',i===fl));$('aR').classList.toggle('on',aorte==='R');$('aE').classList.toggle('on',aorte==='E');
+  $('fml').innerHTML='<b>Nombre de Reynolds</b> : <b>Re = ρ·v·D / η</b> (sans unité). Ordres de grandeur dans un tube droit : <b style="color:#0F6E56">Re ≲ 2000 : laminaire</b>, <b style="color:#9a5f0f">entre ≈ 2000 et ≈ 4000 : transition</b>, <b style="color:#a32d2d">Re ≳ 4000 : turbulent</b>. Ces seuils ne sont pas des valeurs exactes : un tube très lisse et une entrée calme retardent la turbulence. À débit fixé, <b>v ∝ 1/D²</b>, donc <b>Re ∝ 1/D</b> : un rétrécissement augmente Re.';
+  let t='<b>'+F.n+'</b> : ρ = '+fi(F.rho)+' kg/m³, η = '+fr(F.eta*1000,F.eta<0.01?2:0)+' mPa·s · D = '+fr(Dmm,1)+' mm · v = '+fr(v,3)+' m/s'+
+    ' → <b>Re = '+fi(F.rho)+' × '+fr(v,3)+' × '+fr(Dmm/1000,4)+' / '+fr(F.eta,F.eta<0.01?5:3)+' = '+fi(re)+'</b> : écoulement <b>'+regime(re)+'</b> · débit Q = v·πD²/4 = '+fr(Qlmin(),2)+' L/min';
+  if(sten)t+='<br><b>Sténose</b> : D divisé par 2 à débit fixé ('+sten+' fois) → v multipliée par 4, Re multiplié par 2.';
+  if(aorte)t+='<br><b style="color:#a32d2d">Aorte</b> (D ≈ '+fr(Dmm,1)+' mm, sang ρ ≈ 1060 kg/m³, η ≈ 3,5 mPa·s, valeur indicative : le sang n’est pas un liquide simple) : '+(sten?(aorte==='R'?'au repos (≈ 5 L/min)':'à l’effort intense (≈ 25 L/min)')+', avec une sténose qui divise D par 2 : v ≈ '+fr(v,2)+' m/s, Re ≈ '+fi(re)+', écoulement <b>'+regime(re)+'</b>.':(aorte==='R'?'au repos, le cœur pompe ≈ 5 L/min, soit v ≈ '+fr(v,2)+' m/s en moyenne : Re ≈ '+fi(re)+', l’écoulement moyen est <b>laminaire</b>.':'à l’effort intense, ≈ 25 L/min, soit v ≈ '+fr(v,2)+' m/s : Re ≈ '+fi(re)+', la turbulence devient possible.'))+' Au pic de chaque systole, la vitesse dépasse 1 m/s mais pendant un temps court : la turbulence n’a pas le temps de s’installer complètement. Un rétrécissement (sténose d’une valve) la provoque : on l’entend au stéthoscope, c’est un souffle.';
+  $('info').innerHTML=t;
+  tapAng=-0.15-1.25*Math.min(1,Math.sqrt(v/4));$('bSt').classList.toggle('on',sten>0);}
+function setFl(i){fl=i;aorte='';sten=0;upd();}
+function aortaSet(m){fl=2;Dmm=25;const Q=(m==='R'?5:25)/60000;v=Math.round(Q/(Math.PI*0.025*0.025/4)/0.005)*0.005;aorte=m;sten=0;$('sD').value=Dmm;$('sV').value=v;demo=false;upd();}
+['f0','f1','f2','f3'].forEach((id,i)=>$(id).onclick=()=>setFl(i));$('aR').onclick=()=>aortaSet('R');$('aE').onclick=()=>aortaSet('E');
+$('sV').oninput=e=>{v=+e.target.value;demo=false;sten=0;upd();};$('sD').oninput=e=>{Dmm=+e.target.value;aorte='';sten=0;upd();};
+$('bSt').onclick=()=>{if(Dmm/2<5)return;const Q=v*Dmm*Dmm;Dmm=Dmm/2;v=Math.min(4,Q/(Dmm*Dmm));v=Math.round(v/0.005)*0.005;sten++;demo=false;$('sD').value=Dmm;$('sV').value=v;upd();};
+$('bProf').onclick=()=>{prof=!prof;$('bProf').classList.toggle('on',prof);};
+$('bRst').onclick=()=>{parts=[];};
+$('bDemo').onclick=()=>{fl=0;Dmm=20;$('sD').value=20;aorte='';sten=0;v=0.02;demo=true;parts=[];upd();};
+$('lab').onclick=()=>{noLab=!noLab;$('lab').classList.toggle('on',noLab);};
+// souris : poignée du robinet, sinon on tourne la vue
+let drag=null;
+function pos(e){const b=cv.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top];}
+const onTap=(x,y)=>Math.hypot(x-TAP[0],y-TAP[1])<26;
+cv.addEventListener('pointerdown',e=>{const [x,y]=pos(e);drag=onTap(x,y)?{k:'tap',x,y,v0:v}:{k:'rot',x,y,yaw0:yaw,p0:pitch};cv.setPointerCapture(e.pointerId);if(drag.k==='rot')cv.style.cursor='grabbing';});
+cv.addEventListener('pointermove',e=>{const [x,y]=pos(e);if(!drag){cv.style.cursor=onTap(x,y)?'pointer':'grab';return;}
+  if(drag.k==='tap'){v=Math.max(0,Math.min(4,drag.v0+((x-drag.x)-(y-drag.y))/260*(1+2*drag.v0)));sten=0;v=Math.round(v/0.005)*0.005;$('sV').value=v;demo=false;upd();}
+  else{yaw=Math.max(-1.25,Math.min(1.25,drag.yaw0+(x-drag.x)*0.006));pitch=Math.max(0.02,Math.min(1.1,drag.p0+(y-drag.y)*0.005));}});
+cv.addEventListener('pointerup',()=>{drag=null;cv.style.cursor='grab';});
+cv.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(0.7,Math.min(2.2,zoom*(e.deltaY<0?1.08:0.93)));},{passive:false});
+let last=null;
+function frame(ts){if(last===null)last=ts;const dt=Math.min(0.05,(ts-last)/1000);last=ts;tt+=dt;
+  if(demo){v=Math.min(0.45,v+dt*0.012);$('sV').value=v;if(v>=0.45)demo=false;upd();}
+  step(dt);draw();requestAnimationFrame(frame);}
+window.__rey={set:o=>{if(o.fl!=null)fl=o.fl;if(o.v!=null){v=o.v;$('sV').value=v;}if(o.D!=null){Dmm=o.D;$('sD').value=Dmm;}if(o.aorte)aortaSet(o.aorte);if(o.yaw!=null)yaw=o.yaw;upd();},get:()=>({fl,v,D:Dmm,Re:Re(),Q:Qlmin(),regime:regime(Re()),n:parts.length})};
+upd();for(let i=0;i<300;i++){tt+=1/60;step(1/60);}requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Mécanique des fluides<span>10 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/archimede/"><i>01</i>Poussée d'Archimède</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/pascal/"><i>02</i>Principe de Pascal</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Bernouilli-/"><i>03</i>Bernoulli</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/tube-en-u/"><i>04</i>Tube en U : liquides non miscibles</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/deux-cubes-immerges/"><i>05</i>Deux cubes immergés : action-réaction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/bulles-laplace/"><i>06</i>Deux bulles de savon reliées : loi de Laplace</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/venturi-aspiration/"><i>07</i>Tube en T et rétrécissement : effet Venturi</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/poiseuille/"><i>08</i>Écoulement visqueux : loi de Poiseuille</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-perfusion-posture/"><i>09</i>Perfusion et posture : ρgh dans le corps</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-reynolds/"><i>10</i>Laminaire ou turbulent : l’expérience de Reynolds</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

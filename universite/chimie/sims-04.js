@@ -312,8 +312,8 @@ var EXPL = {ionique:"réseau d'ions, attraction électrostatique forte : T<sub>f
 SFA.sim({
   id:"uc-c04-types-solides", ch:"c04", tag:"Solides",
   titre:"Le détective des solides : ionique, covalent, métallique ou moléculaire ?",
-  resume:"À partir de la température de fusion, de la conductivité et de la dureté, identifie le type de solide. Un score te dit où tu en es.",
-  but:"Un solide mystère apparaît avec ses propriétés. Clique sur l'image du réseau qui lui correspond (ou utilise les boutons), puis passe au suivant. Les indices sont ceux d'un vrai tableau de propriétés.",
+  resume:"À partir de la température de fusion, de la conductivité et de la dureté, identifie le type de solide, puis compare-le librement avec les quatre réseaux.",
+  but:"Un solide mystère apparaît avec ses propriétés. Clique sur un réseau (ou utilise les boutons) pour voir s'il explique ces propriétés : tu peux les essayer tous, autant de fois que tu veux, puis passe au solide suivant. Les indices sont ceux d'un vrai tableau de propriétés.",
   aRetenir:"Ionique : fond à haute T, conduit fondu/dissous mais pas solide. Réseau covalent : T<sub>f</sub> très haute, très dur, isolant. Métallique : conduit solide, malléable. Moléculaire : T<sub>f</sub> basse, mou, isolant (le sucre se dissout sans conduire).",
   piege:"Une solution qui conduit ne prouve pas un solide ionique à elle seule (il faut aussi qu'il ne conduise pas à l'état solide) ; le graphite, covalent, conduit ; un solide moléculaire polaire peut se dissoudre dans l'eau sans la rendre conductrice (sucre).",
   build:function(k, S){
@@ -321,16 +321,14 @@ SFA.sim({
     var c = k.canvas(phone ? 500 : 420);
     var order = []; for (var i = 0; i < SOL.length; i++) order.push((i * 5 + 3) % SOL.length);
     var HARD = [3.5, 4, 5, 4, 3, 2, 0.8, 1, 0.8, 0.8, 2.2];
-    var st = {i:0, score:0, tried:0, answered:false, last:""}, tiles = [], tt = 0;
+    var st = {i:0, answered:false, last:""}, tiles = [], tt = 0;
     function answer(v){
-      if (st.answered) return;
-      var it = SOL[order[st.i]]; st.answered = true; st.tried++; st.last = v; tp.set(v);
-      if (v === it[1]) st.score++;
+      st.answered = true; st.last = v; tp.set(v);
       k.redraw();
     }
-    var tp = k.seg("Ton choix", TYPES, "ionique", function(v){ if (!st.answered){ st.answered = false; answer(v); } });
+    var tp = k.seg("Compare avec le réseau", TYPES, "ionique", function(v){ answer(v); });
     k.button("Solide suivant", function(){ st.i = (st.i + 1) % SOL.length; st.answered = false; st.last = ""; }, true);
-    var ro = k.readouts(["Score", "Fusion", "Conduit solide / fondu", "Dureté"]);
+    var ro = k.readouts(["Type de solide", "Fusion", "Conduit solide / fondu", "Dureté"]);
     var nt = k.note("", "ok");
     c.pointer(function(type, p){
       if (type !== "down") return;
@@ -388,9 +386,9 @@ SFA.sim({
         S.draw.text(c, t[1].replace(" (réseau)", ""), cx2 + tw / 2, cy2 + th - 13, {size:tw < 90 ? 10.5 : 11.5, color:good ? P.green : bad ? P.red : P.ink, weight:800});
         tiles.push({x:cx2, y:cy2, w:tw, h:th, v:t[0]});
       });
-      if (st.answered){ var ok = st.last === it[1]; S.draw.label(c, ok ? "Correct : " + it[0] + " est " + it[1] : "Pas tout à fait : " + it[0] + " est " + it[1], W / 2, 18 + 0, {color:ok ? P.green : P.red, size:12.5}); }
-      ro.set(0, st.score + " / " + st.tried); ro.set(1, it[2]); ro.set(2, it[3] + " / " + it[4]); ro.set(3, it[5]);
-      nt.set(st.answered ? (it[0] + " : " + EXPL[it[1]]) : "Lis les propriétés, puis clique sur le réseau qui correspond (un seul essai par solide). Le nom du solide apparaîtra après ta réponse.", st.answered ? (st.last === it[1] ? "ok" : "warn") : "ok");
+      if (st.answered){ var ok = st.last === it[1]; S.draw.label(c, ok ? "Oui : " + it[0] + " est un solide " + it[1] : "Le réseau " + st.last + " n'explique pas tout : " + it[0] + " est " + it[1], W / 2, 18 + 0, {color:ok ? P.green : P.amber, size:12.5}); }
+      ro.set(0, st.answered ? it[1] : "clique un réseau"); ro.set(1, it[2]); ro.set(2, it[3] + " / " + it[4]); ro.set(3, it[5]);
+      nt.set(st.answered ? ((st.last !== it[1] ? "Réseau " + st.last + " : " + EXPL[st.last] + "<br>" : "") + it[0] + " (" + it[1] + ") : " + EXPL[it[1]]) : "Lis les propriétés, puis clique sur un réseau pour comparer : tu peux les essayer tous. Le nom du solide apparaît dès ton premier clic.", "ok");
     });
   }
 });

@@ -271,11 +271,11 @@ SFA.sim({
   id:"uc-c09-entraineur-additions", ch:"c09", tag:"Entraînement",
   titre:"Entraîneur : prédire le produit (10 questions)",
   resume:"Dix cas de type examen : Markovnikov, anti-Markovnikov, transposition, stéréochimie.",
-  but:"Observe le schéma de la réaction (alcène, réactif, conditions), choisis A, B, C ou D, puis lis l’explication. Le score se cumule ; la question suivante te propose un autre cas.",
+  but:"Observe le schéma de la réaction (alcène, réactif, conditions), choisis A, B, C ou D, puis lis l’explication. Tu peux changer de réponse autant de fois que tu veux pour relire chaque cas ; la question suivante te propose un autre exemple.",
   aRetenir:"Avant de répondre : (1) cation ou pas de cation ? (2) transposition possible ? (3) mode syn ou anti ? (4) régiochimie de Markovnikov ou inverse ?",
   piege:"Appliquer « Markovnikov » partout. Les peroxydes n’inversent que HBr. L’hydroboration et l’oxymercuration évitent les transpositions.",
   build:function(k,S){
-    var i=0, ok=0, tot=0, done=false, hist=[], chosen=-1;
+    var i=0, done=false, chosen=-1;
     var c = k.canvas(260);
     /* squelettes des alcènes : atomes [x, y] et liaisons [i, j, ordre] (x : 0-110, y : 0-80) */
     function hexa(dbl, me){ var at = [], b = [], r; for (r = 0; r < 6; r++){ var a = -Math.PI / 2 + r * Math.PI / 3; at.push([55 + 32 * Math.cos(a), 45 + 32 * Math.sin(a)]); } for (r = 0; r < 6; r++) b.push([r, (r + 1) % 6, r === 0 ? 2 : 1]); if (me){ at.push([55 + 32 * Math.cos(-Math.PI / 2) , 45 - 32 - 18]); b.push([0, 6, 1]); } return {at:at, b:b}; }
@@ -294,20 +294,18 @@ SFA.sim({
     var q = k.note("","","stage");
     var fb = k.note("","");
     var ans = k.seg("Ta réponse",[["0","A"],["1","B"],["2","C"],["3","D"]],undefined,function(v){
-      if (done) return; done=true; tot++; chosen = Number(v); var qq=QB[i]; var good=chosen===qq.b; if (good) ok++; hist[i] = good ? 1 : 0;
-      fb.set((good?"✅ <b>Bonne réponse.</b> ":"❌ <b>Pas tout à fait.</b> Bonne réponse : "+"ABCD"[qq.b]+". ")+qq.e,good?"ok":"warn"); upd();
+      done=true; chosen = Number(v); var qq=QB[i]; var good=chosen===qq.b;
+      fb.set((good?"<b>Oui, c’est "+"ABCD"[qq.b]+".</b> ":"<b>"+"ABCD"[chosen]+" ne convient pas : réponse attendue "+"ABCD"[qq.b]+".</b> ")+qq.e,good?"ok":"warn");
     });
     ans.set(null);
-    var ro = k.readouts(["Bonnes réponses","Questions traitées"]);
     k.button("Question suivante",function(){ i=(i+1)%QB.length; done=false; chosen=-1; fb.set("","" ); ans.set(undefined); show(); },true);
-    function upd(){ ro.set(0,String(ok)); ro.set(1,String(tot)); }
-    function show(){ var qq=QB[i]; q.set("<b>Question "+(i+1)+" / "+QB.length+" : "+qq.q+"</b><br>"+qq.c.map(function(x,j){ return "<b>"+"ABCD"[j]+".</b> "+x; }).join("<br>"),""); upd(); }
+    function show(){ var qq=QB[i]; q.set("<b>Question "+(i+1)+" / "+QB.length+" : "+qq.q+"</b><br>"+qq.c.map(function(x,j){ return "<b>"+"ABCD"[j]+".</b> "+x; }).join("<br>"),""); }
     function wrap(s,n){ var w=s.split(" "), out=[], cur=""; w.forEach(function(x){ if ((cur+" "+x).trim().length>n && cur){ out.push(cur.trim()); cur=x; } else cur+=" "+x; }); out.push(cur.trim()); return out; }
     k.draw(function(){
       var ctx = c.ctx, Pl = S.draw.palette, W = c.W, H = c.H, ph = W < 420, qq = QB[i], sk = SK[i], cut = qq.q.lastIndexOf(" + "), reag = cut > 0 ? qq.q.slice(0, cut) : qq.q, alc = cut > 0 ? qq.q.slice(cut + 3) : "";
       UC.bg(c, "#f6f9fc", "#ffffff");
       /* progression */
-      for (var d = 0; d < QB.length; d++){ var x = 14 + d * ((W - 28) / QB.length); ctx.fillStyle = d === i ? Pl.mat : hist[d] === 1 ? Pl.green : hist[d] === 0 ? Pl.red : "#e3e7ed"; S.draw.rrect(c, x, 10, (W - 28) / QB.length - 4, 6, 3); ctx.fill(); }
+      for (var d = 0; d < QB.length; d++){ var x = 14 + d * ((W - 28) / QB.length); ctx.fillStyle = d === i ? Pl.mat : "#e3e7ed"; S.draw.rrect(c, x, 10, (W - 28) / QB.length - 4, 6, 3); ctx.fill(); }
       /* réactif : squelette à gauche */
       var bx = 10, bw = ph ? 118 : 150, by = 50, bh = 110, sc = Math.min((bw - 10) / 112, 1.05), ox = bx + (bw - 112 * sc) / 2 + 4, oy = by + (bh - 90 * sc) / 2 + 4;
       ctx.save(); ctx.fillStyle = "#fff"; ctx.strokeStyle = "#d3dae3"; ctx.lineWidth = 1.4; S.draw.rrect(c, bx, by, bw, bh, 12); ctx.fill(); ctx.stroke(); ctx.restore();
@@ -323,7 +321,7 @@ SFA.sim({
       ctx.save(); ctx.fillStyle = done ? (good ? "rgba(36,119,90,.10)" : "rgba(192,50,29,.08)") : "#fff"; ctx.strokeStyle = done ? (good ? Pl.green : Pl.red) : "#cbd5e1"; ctx.lineWidth = 2; if (!done) ctx.setLineDash([6, 4]); S.draw.rrect(c, px, by, pw, bh, 12); ctx.fill(); ctx.stroke(); ctx.restore();
       if (!done) S.draw.text(c, "?", px + pw / 2, by + bh / 2, {size:44, color:"#94a3b8", weight:800});
       else wrap(qq.c[qq.b], ph ? 12 : 16).forEach(function(line, j, arr){ S.draw.text(c, line, px + pw / 2, by + bh / 2 + j * 15 - (arr.length - 1) * 7.5, {size:ph ? 11 : 12.5, color:Pl.green, weight:800}); });
-      if (done) S.draw.label(c, good ? "Bien joué" : "Réponse : " + "ABCD"[qq.b], W / 2, by + bh + 52, {color:good ? Pl.green : Pl.red, size:12.5});
+      if (done) S.draw.label(c, good ? "Oui : " + "ABCD"[qq.b] : "Réponse attendue : " + "ABCD"[qq.b], W / 2, by + bh + 52, {color:good ? Pl.green : Pl.red, size:12.5});
       else S.draw.text(c, "Quel est le produit majoritaire ?", W / 2, by + bh + 52, {size:12.5, color:Pl.ink, weight:800});
       show();
     });

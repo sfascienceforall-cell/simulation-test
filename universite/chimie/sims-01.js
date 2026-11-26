@@ -95,7 +95,7 @@ SFA.sim({
   id:"uc-c01-bohr", ch:"c01", tag:"Atome",
   titre:"Spectre d'émission et d'absorption de l'hydrogène",
   resume:"Fais sauter l'électron d'un niveau de Bohr à l'autre : le photon, sa longueur d'onde et la série (Lyman, Balmer, Paschen) apparaissent.",
-  but:"Clique deux niveaux sur le diagramme d'énergie (ou utilise les curseurs) : l'électron saute, un photon est émis ou absorbé, et la raie correspondante s'allume dans le spectre. Défi : retrouve la raie rouge de Balmer (656 nm).",
+  but:"Clique deux niveaux sur le diagramme d'énergie (ou utilise les curseurs) : l'électron saute, un photon est émis ou absorbé, et la raie correspondante s'allume dans le spectre. Repère par exemple la raie rouge de Balmer (n = 3 → 2, 656 nm).",
   aRetenir:"ΔE = 13,6·Z²·|1/n<sub>f</sub>² − 1/n<sub>i</sub>²| eV ; λ = hc/ΔE ; 1/λ = R<sub>H</sub>·Z²·|1/n<sub>f</sub>² − 1/n<sub>i</sub>²| avec R<sub>H</sub> = 1,097·10⁷ m⁻¹. Émission : n<sub>i</sub> > n<sub>f</sub> ; absorption : n<sub>i</sub> < n<sub>f</sub> (la raie est à la même longueur d'onde).",
   piege:"Une raie d'absorption occupe la même position qu'une raie d'émission : seule la lumière change (raie noire sur fond continu, ou raie colorée sur fond noir). Le modèle de Bohr n'est exact que pour un seul électron (H, He⁺, Li²⁺).",
   build:function(k, S){
@@ -209,7 +209,7 @@ SFA.sim({
       var zone = L1 < 380 ? "UV" : L1 <= 750 ? "visible" : "IR";
       ro.set(0, em ? "émission" : "absorption"); ro.set(1, S.fmt(dE, 3) + " eV"); ro.set(2, S.sci(EJ, 3) + " J");
       ro.set(3, S.fmt(L1, 1) + " nm"); ro.set(4, S.sci(nu, 3) + " Hz"); ro.set(5, (names[lo] || "série " + lo) + " · " + zone);
-      var win = (Z === 1 && lo === 2 && hi === 3) ? " Bravo : c'est la raie rouge H<sub>α</sub> de Balmer, 656 nm." : "";
+      var win = (Z === 1 && lo === 2 && hi === 3) ? " C'est la raie rouge H<sub>α</sub> de Balmer, 656 nm." : "";
       nt.set("Série de type " + (names[lo] || ("n = " + lo)) + " (retour vers n = " + lo + "). " + (Z > 1 ? "Pour Z = " + Z + ", les énergies sont multipliées par Z² = " + (Z*Z) + " et les longueurs d'onde divisées par " + (Z*Z) + " : les séries se décalent vers l'UV. " : "") + (a >= 8 || b >= 8 ? "Niveaux élevés : l'écart entre niveaux devient très petit." : "") + win, zone === "visible" ? "ok" : "warn");
     });
   }

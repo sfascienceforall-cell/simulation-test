@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La dilatation · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#TH">Gaz</a>›<b>La dilatation</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Gaz</span><span class="sfa-chip free">Gratuit</span></div><h1>La dilatation</h1><p>Chauffe une barre de métal et regarde l'aiguille du comparateur tourner : ΔL = α·L₀·ΔT. Puis suis le joint d'un rail au fil des saisons.</p></div>
+<section class="sfa-sim">
+<style>
+#dlCv{width:100%;height:min(68vh,580px);min-height:470px;display:block;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+@media (max-width:640px){#dlCv{height:380px;min-height:0}}
+.dl-hint{font:500 .82rem var(--f-ui,system-ui);color:var(--muted,#5f6b7a)}
+.dl-read{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:12px}
+.dl-read div{border:1px solid var(--line,#e3e7ed);border-radius:9px;padding:8px 10px;background:#fbfcfd;min-width:0}
+.dl-read small{display:block;font:700 10.5px var(--f-ui,system-ui);letter-spacing:.05em;text-transform:none;color:var(--muted,#5f6b7a)}
+.dl-read b{font:800 16px var(--f-ui,system-ui);font-variant-numeric:tabular-nums;color:var(--ink,#0f1b2d)}
+</style>
+
+<div class="row" style="margin-top:0">
+  <span class="pill">Expérience</span>
+  <button class="btn on" id="dlM1">Barre chauffée et comparateur</button>
+  <button class="btn" id="dlM2">Voie ferrée, de l'hiver à l'été</button>
+</div>
+
+<canvas id="dlCv" aria-label="Dilatation thermique : une barre de métal chauffée par des becs Bunsen pousse l'aiguille d'un comparateur ; ou une voie ferrée dont le joint de dilatation s'ouvre en hiver et se ferme en été"></canvas>
+
+<div class="fml" id="dlFml"></div>
+
+<div id="dlC1">
+<div class="row">
+  <span class="pill">Métal</span>
+  <button class="btn on" data-m="0">Acier</button><button class="btn" data-m="1">Aluminium</button><button class="btn" data-m="2">Cuivre</button><button class="btn" data-m="3">Laiton</button><button class="btn" data-m="4">Invar</button>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px">L₀ &nbsp;longueur à 20 °C</span>
+  <input type="range" id="dlL" min="0.5" max="1.5" step="0.05" value="1" style="accent-color:#5b6b7d;">
+  <span class="val" id="dlLv"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#a32d2d">T &nbsp;température visée</span>
+  <input type="range" id="dlT" min="20" max="200" step="1" value="120" style="accent-color:#E24B4A;">
+  <span class="val" id="dlTv" style="color:#a32d2d"></span>
+</div>
+<div class="row">
+  <button class="btn on" id="dlHeat">🔥 Becs allumés</button>
+  <button class="btn on" id="dlAuto">Cycle chauffe / refroidissement</button>
+  <span class="dl-hint">Glisse pour tourner autour du montage. Clique sur un bec Bunsen pour l'allumer ou l'éteindre.</span>
+</div>
+</div>
+
+<div id="dlC2" style="display:none">
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#a32d2d">T &nbsp;température du rail</span>
+  <input type="range" id="dlTr" min="-20" max="60" step="1" value="-20" style="accent-color:#E24B4A;">
+  <span class="val" id="dlTrv" style="color:#a32d2d"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px">L₀ &nbsp;longueur d'un rail</span>
+  <input type="range" id="dlLr" min="12" max="36" step="1" value="18" style="accent-color:#5b6b7d;">
+  <span class="val" id="dlLrv"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px">jeu laissé à la pose (15 °C)</span>
+  <input type="range" id="dlG" min="0" max="15" step="0.5" value="8" style="accent-color:#5b6b7d;">
+  <span class="val" id="dlGv"></span>
+</div>
+<div class="row">
+  <button class="btn on" id="dlSeason">Les saisons défilent</button>
+  <span class="dl-hint">Glisse de gauche à droite sur le paysage pour passer de l'hiver à l'été. Réduis le jeu à 1 mm pour voir le rail flamber.</span>
+</div>
+</div>
+
+<div class="dl-read" id="dlRead"></div>
+<div class="info" id="dlInfo" style="margin-top:10px"></div>
+
+<script>
+(function(){
+"use strict";
+var $=function(i){return document.getElementById(i)};
+var cv=$("dlCv"),ctx=cv.getContext("2d");
+function fr(v,d){return (Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d).replace(".",",").replace(/^-/,"−");}
+var MET=[{n:"acier",a:12e-6,c:[150,160,172]},{n:"aluminium",a:23e-6,c:[196,202,210]},{n:"cuivre",a:17e-6,c:[196,112,62]},{n:"laiton",a:19e-6,c:[205,170,80]},{n:"invar",a:1.2e-6,c:[120,128,138]}];
+var ALR=12e-6,EST=210e9,TPOSE=15;
+var mode=1,mi=0,L0=1,Tset=120,T=20,heat=true,auto=true,phase=0,t=0;
+var Tr=-20,Lr=18,G0=8,season=true,sT=0;
+var yaw=-0.42,pitch=0.36,W=0,H=0,dpr=1;
+
+/* ---------- caméra et outils 3D (projection faite à la main) ---------- */
+var C={};
+function cam(D,f,tx,tz,cy){C={D:D,f:f,cx:W*(W<600&&mode===1?0.55:0.5),cy:cy,tx:tx,tz:tz,cyw:Math.cos(yaw),syw:Math.sin(yaw),cp:Math.cos(pitch),sp:Math.sin(pitch)};
+  C.V=[-C.syw*C.cp,-C.cyw*C.cp,C.sp];}
+function pr(x,y,z){x-=C.tx;z-=C.tz;var xr=x*C.cyw-y*C.syw,yr=x*C.syw+y*C.cyw,dep=C.D+yr*C.cp-z*C.sp,k=C.f/Math.max(0.05,dep);return [C.cx+xr*k,C.cy-(z*C.cp+yr*C.sp)*k,dep,k];}
+function poly(q,fill,stroke,lw){ctx.beginPath();q.forEach(function(p,i){i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])});ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();}}
+function area(q){var a=0;for(var i=0;i<q.length;i++){var p=q[i],n=q[(i+1)%q.length];a+=p[0]*n[1]-n[0]*p[1];}return a;}
+var LIG=(function(){var v=[-0.45,-0.55,0.7],n=Math.hypot(v[0],v[1],v[2]);return [v[0]/n,v[1]/n,v[2]/n];})();
+function lit(c,n,spec){var d=Math.max(0,n[0]*LIG[0]+n[1]*LIG[1]+n[2]*LIG[2]),k=0.42+0.68*d,h=[LIG[0]+C.V[0],LIG[1]+C.V[1],LIG[2]+C.V[2]],hn=Math.hypot(h[0],h[1],h[2]),s=spec?Math.pow(Math.max(0,(n[0]*h[0]+n[1]*h[1]+n[2]*h[2])/hn),24)*spec:0;
+  return "rgb("+[0,1,2].map(function(i){return Math.max(0,Math.min(255,Math.round(c[i]*k+255*s)))}).join(",")+")";}
+function box(x0,x1,y0,y1,z0,z1,c,spec){var V=[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]].map(function(p){return pr(p[0],p[1],p[2])});
+  [[[4,5,6,7],[0,0,1]],[[0,1,5,4],[0,-1,0]],[[1,2,6,5],[1,0,0]],[[2,3,7,6],[0,1,0]],[[3,0,4,7],[-1,0,0]],[[3,2,1,0],[0,0,-1]]].forEach(function(F){var q=F[0].map(function(i){return V[i]});if(area(q)<0)poly(q,lit(c,F[1],spec),"rgba(0,0,0,.16)",0.8);});}
+function cross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
+function nrm(a){var n=Math.hypot(a[0],a[1],a[2]);return [a[0]/n,a[1]/n,a[2]/n];}
+/* cylindre d'axe A → A + len·u, de rayon r, éclairé facette par facette */
+function cyl(A,u,len,r,c,spec,capCol){var n=30,a=Math.abs(u[2])<0.9?[0,0,1]:[1,0,0],e1=nrm(cross(u,a)),e2=cross(u,e1),R0=[],R1=[],N=[];
+  for(var i=0;i<n;i++){var an=i/n*2*Math.PI,ca=Math.cos(an),sa=Math.sin(an),d=[e1[0]*ca+e2[0]*sa,e1[1]*ca+e2[1]*sa,e1[2]*ca+e2[2]*sa];N.push(d);
+    R0.push(pr(A[0]+d[0]*r,A[1]+d[1]*r,A[2]+d[2]*r));R1.push(pr(A[0]+u[0]*len+d[0]*r,A[1]+u[1]*len+d[1]*r,A[2]+u[2]*len+d[2]*r));}
+  for(var j=0;j<n;j++){var k=(j+1)%n,q=[R0[j],R0[k],R1[k],R1[j]];if(area(q)<0){var m=nrm([N[j][0]+N[k][0],N[j][1]+N[k][1],N[j][2]+N[k][2]]);poly(q,lit(c,m,spec));ctx.strokeStyle=lit(c,m,spec);ctx.lineWidth=0.8;ctx.stroke();}}
+  var cap1=R1.slice(),cap0=R0.slice().reverse();if(area(cap1)<0)poly(cap1,capCol||lit(c,u,spec));if(area(cap0)<0)poly(cap0,capCol||lit(c,[-u[0],-u[1],-u[2]],spec));}
+function size(){var b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;var w=Math.round(b.width)||800,h=Math.round(b.height)||500;if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);}W=w;H=h;ctx.setTransform(dpr,0,0,dpr,0,0);}
+function tag(t,px,py,col,font,al){ctx.font=font||"700 12.5px Mulish,system-ui,sans-serif";ctx.textAlign=al||"center";ctx.textBaseline="middle";var w=ctx.measureText(t).width,A=al||"center",lo=A==="left"?4:A==="right"?w+4:w/2+4,hi=A==="left"?W-w-4:A==="right"?W-4:W-w/2-4;px=Math.max(lo,Math.min(hi,px));py=Math.max(10,Math.min(H-10,py));
+  ctx.lineJoin="round";ctx.lineWidth=4;ctx.strokeStyle="rgba(255,255,255,.92)";ctx.strokeText(t,px,py);ctx.fillStyle=col||"#13233a";ctx.fillText(t,px,py);ctx.textBaseline="alphabetic";}
+function flame(x,y,h,w,ph){for(var k=0;k<3;k++){var hh=h*(1-k*0.28)*(0.86+0.14*Math.sin(t*13+ph+k)),ww=w*(1-k*0.3),g=ctx.createLinearGradient(0,y-hh,0,y);
+  if(k===0){g.addColorStop(0,"rgba(255,190,60,0)");g.addColorStop(0.45,"rgba(255,140,40,.55)");g.addColorStop(1,"rgba(80,110,255,.75)");}else{g.addColorStop(0,"rgba(120,170,255,0)");g.addColorStop(1,"rgba(40,80,235,.9)");}
+  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(x-ww,y);ctx.quadraticCurveTo(x-ww*1.1,y-hh*0.5,x+Math.sin(t*9+ph)*ww*0.3,y-hh);ctx.quadraticCurveTo(x+ww*1.1,y-hh*0.5,x+ww,y);ctx.closePath();ctx.fill();}}
+
+/* ================= 1. barre chauffée et comparateur ================= */
+var burners=[];
+function dL(){return MET[mi].a*L0*(T-20);}
+function scene1(){
+  var Lv=0.55+0.5*L0,xa=-0.62-0.25*(L0-1),zb=0.24,xe=xa+Lv,Rd=0.15,xc=xe+0.1+Rd,dl=dL();
+  cam(3.1,Math.min(W*(W<600?2.05:1.62),H*2.6),(xa-0.2+xc+Rd)/2,0.2,H*(W<600?0.6:0.54));
+  var g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#e8edf2");g.addColorStop(1,"#c8d0d8");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  /* mur du labo et paillasse */
+  var E=1.6,q=[pr(-E,E*0.7,0),pr(E,E*0.7,0),pr(E,-E*0.6,0),pr(-E,-E*0.6,0)];
+  var tg=ctx.createLinearGradient(0,Math.min(q[0][1],q[1][1]),0,Math.max(q[2][1],q[3][1]));tg.addColorStop(0,"#c9b08a");tg.addColorStop(1,"#a3845c");poly(q,tg);
+  ctx.save();ctx.beginPath();q.forEach(function(p,i){i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])});ctx.closePath();ctx.clip();ctx.strokeStyle="rgba(90,60,25,.15)";ctx.lineWidth=1.2;
+  for(var k=-10;k<=10;k++){ctx.beginPath();for(var i=0;i<=16;i++){var p=pr(-E+2*E*i/16,k*0.14+0.01*Math.sin(i+k),0);i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);}ctx.stroke();}ctx.restore();
+  /* ombre de la barre */
+  var sh=[pr(xa,-0.05,0.001),pr(xe,-0.05,0.001),pr(xe+0.05,0.08,0.001),pr(xa+0.05,0.08,0.001)];poly(sh,"rgba(40,25,10,.18)");
+  /* étau à gauche */
+  box(xa-0.2,xa+0.02,-0.12,0.12,0,0.06,[70,84,100],0.25);box(xa-0.12,xa+0.02,-0.07,0.07,0.06,zb+0.08,[46,92,150],0.3);
+  /* supports en V (la barre glisse librement) */
+  [0.35,0.82].forEach(function(u){var x=xa+u*Lv;box(x-0.03,x+0.03,-0.05,0.05,0,zb-0.04,[92,100,110],0.2);});
+  /* becs Bunsen (dessinés de l'arrière vers l'avant) */
+  burners=[];
+  [0.22,0.5,0.75].forEach(function(u,i){var x=xa+u*Lv;box(x-0.05,x+0.05,-0.05,0.05,0,0.015,[50,56,64],0.2);cyl([x,0,0.015],[0,0,1],0.1,0.018,[150,156,165],0.5);var p=pr(x,0,0.118);burners.push({x:p[0],y:p[1],i:i});
+    if(heat){var k=p[3];flame(p[0],p[1],(zb-0.11)*k*1.05,0.026*k,i*1.7);}});
+  /* la barre (teinte vers le rouge sombre quand elle chauffe) */
+  var m=MET[mi],hot=Math.max(0,Math.min(1,(T-20)/180)),bc=[m.c[0]+(150-m.c[0])*hot*0.35,m.c[1]-m.c[1]*hot*0.3,m.c[2]-m.c[2]*hot*0.38];
+  cyl([xa,0,zb],[1,0,0],Lv+dl*Lv/L0,0.03,bc,0.55);
+  /* thermomètre à sonde */
+  var xp=xa+0.6*Lv;cyl([xp,-0.03,zb+0.02],[0,-0.6,0.8],0.08,0.007,[60,60,60],0.3);
+  var dX0=xa-0.05,dY0=-0.45;box(dX0,dX0+0.32,dY0,dY0+0.14,0,0.12,[235,238,242],0.2);
+  var s1=pr(dX0+0.03,dY0-0.001,0.03),s2=pr(dX0+0.29,dY0-0.001,0.03),s3=pr(dX0+0.29,dY0-0.001,0.1),s4=pr(dX0+0.03,dY0-0.001,0.1);poly([s1,s2,s3,s4],"#1b2a1f");
+  var sc=pr(dX0+0.16,dY0-0.002,0.065),fs=Math.max(9,Math.min(20,Math.abs(s2[0]-s1[0])/6));ctx.save();ctx.fillStyle="#ff8a6b";ctx.shadowColor="#ff5533";ctx.shadowBlur=6;ctx.font="800 "+fs+"px ui-monospace,Menlo,monospace";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(fr(T,1)+" °C",sc[0],sc[1]);ctx.restore();
+  var c0=pr(dX0+0.3,dY0+0.14,0.06),c1=pr(xp,-0.08,zb+0.08);ctx.strokeStyle="#222";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(c0[0],c0[1]);ctx.bezierCurveTo(c0[0]+60,c0[1]-10,c1[0]-20,c1[1]+60,c1[0],c1[1]);ctx.stroke();
+  /* comparateur sur pied magnétique */
+  box(xc-0.1,xc+0.1,0.03,0.2,0,0.07,[40,44,50],0.35);cyl([xc,0.12,0.07],[0,0,1],zb+0.05,0.014,[190,196,204],0.7);cyl([xc,0.12,zb+0.02],[0,-1,0],0.09,0.012,[190,196,204],0.7);
+  var xs=xe+dl*Lv/L0;cyl([xs,0,zb],[1,0,0],xc-Rd-xs,0.009,[205,210,215],0.8);
+  cyl([xc,0.035,zb],[0,-1,0],0.04,Rd+0.012,[200,205,212],0.9,"#cfd5dc");
+  dial3(xc,-0.0055,zb,Rd,dl);
+  /* étiquettes */
+  var lb=pr(xa+Lv*0.5,0,zb+0.06);tag(m.n+" · L₀ = "+fr(L0,2)+" m",lb[0]-(W<600?30:0),lb[1]-22,"#13233a","800 13px Mulish,system-ui,sans-serif");
+  var lc=pr(xc,-0.05,0);if(W>=600)tag("comparateur : 1 tour = 1 mm",lc[0],lc[1]+16,"#13233a","700 12px Mulish,system-ui,sans-serif");
+  hud(dl);graphL();
+}
+/* petite courbe ΔL(T) pour le métal choisi, de 20 à 200 °C */
+function graphL(){var w=W<600?150:200,h=W<600?92:118,x0=10,y0=W<600?10:H-h-10,L=x0+34,R_=x0+w-8,T_=y0+20,B=y0+h-20,m=MET[mi],dm=MET[1].a*1.5*180*1000;
+  ctx.fillStyle="rgba(255,255,255,.9)";ctx.strokeStyle="#cfd6de";ctx.lineWidth=1;ctx.beginPath();ctx.rect(x0,y0,w,h);ctx.fill();ctx.stroke();
+  var X=function(T){return L+(R_-L)*(T-20)/180},Y=function(d){return B-(B-T_)*d/dm};
+  ctx.strokeStyle="#334155";ctx.beginPath();ctx.moveTo(L,T_);ctx.lineTo(L,B);ctx.lineTo(R_,B);ctx.stroke();
+  ctx.fillStyle="#64748b";ctx.font="600 9.5px Mulish,system-ui";ctx.textAlign="right";ctx.fillText("0",L-3,B+3);ctx.fillText(fr(dm,1),L-3,T_+3);ctx.textAlign="center";ctx.fillText("20",L,B+11);ctx.fillText("200 °C",R_-8,B+11);
+  ctx.strokeStyle="#c62828";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(20),Y(0));ctx.lineTo(X(200),Y(m.a*L0*180*1000));ctx.stroke();
+  ctx.fillStyle="#c62828";ctx.beginPath();ctx.arc(X(T),Y(dL()*1000),3.5,0,6.2832);ctx.fill();
+  ctx.fillStyle="#13233a";ctx.font="800 11px Mulish,system-ui";ctx.textAlign="left";ctx.fillText("ΔL (mm) en fonction de T",x0+6,y0+12);}
+/* cadran du comparateur dans le plan (x, z) */
+function dial3(xc,y,zc,R,dl){var face=[];for(var i=0;i<48;i++){var a=i/48*2*Math.PI;face.push(pr(xc+R*Math.cos(a),y,zc+R*Math.sin(a)));}
+  if(area(face)<0){poly(face,"#f7f7f2","#555",1);}else{poly(face,"#9aa3ad");return;}
+  var mm=dl*1000;for(var j=0;j<100;j++){var an=Math.PI/2-j/100*2*Math.PI,r1=R*(j%10===0?0.8:j%5===0?0.86:0.9),a1=pr(xc+R*0.95*Math.cos(an),y,zc+R*0.95*Math.sin(an)),b1=pr(xc+r1*Math.cos(an),y,zc+r1*Math.sin(an));
+    ctx.strokeStyle="#222";ctx.lineWidth=j%10===0?1.3:0.6;ctx.beginPath();ctx.moveTo(a1[0],a1[1]);ctx.lineTo(b1[0],b1[1]);ctx.stroke();}
+  var c=pr(xc,y,zc);if(c[3]*R>40){ctx.fillStyle="#222";ctx.font="700 "+Math.round(c[3]*R*0.13)+"px Mulish,system-ui";ctx.textAlign="center";ctx.textBaseline="middle";
+    for(var q=0;q<10;q++){var an2=Math.PI/2-q/10*2*Math.PI,pp=pr(xc+R*0.66*Math.cos(an2),y,zc+R*0.66*Math.sin(an2));ctx.fillText(String(q*10),pp[0],pp[1]);}ctx.textBaseline="alphabetic";}
+  /* petit cadran des millimètres */
+  var rs=R*0.22,ys=zc-R*0.38,sc=[];for(var i2=0;i2<24;i2++){var a3=i2/24*2*Math.PI;sc.push(pr(xc+rs*Math.cos(a3),y-0.0005,ys+rs*Math.sin(a3)));}poly(sc,"#fff","#777",0.8);
+  var as=Math.PI/2-mm/10*2*Math.PI,s0=pr(xc,y-0.001,ys),s1=pr(xc+rs*0.85*Math.cos(as),y-0.001,ys+rs*0.85*Math.sin(as));ctx.strokeStyle="#1e3f8f";ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(s0[0],s0[1]);ctx.lineTo(s1[0],s1[1]);ctx.stroke();
+  var an4=Math.PI/2-(mm%1)*2*Math.PI,n0=pr(xc-R*0.15*Math.cos(an4),y-0.002,zc-R*0.15*Math.sin(an4)),n1=pr(xc+R*0.88*Math.cos(an4),y-0.002,zc+R*0.88*Math.sin(an4));
+  ctx.strokeStyle="#c62828";ctx.lineWidth=Math.max(1.5,c[3]*0.006);ctx.lineCap="round";ctx.beginPath();ctx.moveTo(n0[0],n0[1]);ctx.lineTo(n1[0],n1[1]);ctx.stroke();ctx.fillStyle="#333";ctx.beginPath();ctx.arc(c[0],c[1],Math.max(2,c[3]*0.012),0,6.2832);ctx.fill();}
+/* loupe sur le cadran, toujours lisible */
+function hud(dl){var mm=dl*1000,R=Math.min(74,W*0.15),cx=W-R-16,cy=R+18;
+  ctx.save();ctx.shadowColor="rgba(0,0,0,.25)";ctx.shadowBlur=10;ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(cx,cy,R+6,0,6.2832);ctx.fill();ctx.restore();
+  var g=ctx.createRadialGradient(cx-R*0.3,cy-R*0.3,R*0.2,cx,cy,R+6);g.addColorStop(0,"#f4f6f8");g.addColorStop(1,"#a9b2bc");ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,R+6,0,6.2832);ctx.fill();
+  ctx.fillStyle="#fbfbf6";ctx.beginPath();ctx.arc(cx,cy,R,0,6.2832);ctx.fill();
+  for(var j=0;j<100;j++){var an=-Math.PI/2+j/100*2*Math.PI,r1=R*(j%10===0?0.78:j%5===0?0.84:0.89);ctx.strokeStyle="#222";ctx.lineWidth=j%10===0?1.4:0.7;ctx.beginPath();ctx.moveTo(cx+R*0.96*Math.cos(an),cy+R*0.96*Math.sin(an));ctx.lineTo(cx+r1*Math.cos(an),cy+r1*Math.sin(an));ctx.stroke();}
+  ctx.fillStyle="#222";ctx.font="700 "+Math.round(R*0.15)+"px Mulish,system-ui";ctx.textAlign="center";ctx.textBaseline="middle";
+  for(var q=0;q<10;q++){var a2=-Math.PI/2+q/10*2*Math.PI;ctx.fillText(String(q*10),cx+R*0.63*Math.cos(a2),cy+R*0.63*Math.sin(a2));}
+  var rs=R*0.2,ys=cy+R*0.36;ctx.fillStyle="#fff";ctx.strokeStyle="#777";ctx.lineWidth=1;ctx.beginPath();ctx.arc(cx,ys,rs,0,6.2832);ctx.fill();ctx.stroke();
+  for(var m=0;m<10;m++){var a4=-Math.PI/2+m/10*2*Math.PI;ctx.beginPath();ctx.moveTo(cx+rs*0.95*Math.cos(a4),ys+rs*0.95*Math.sin(a4));ctx.lineTo(cx+rs*0.75*Math.cos(a4),ys+rs*0.75*Math.sin(a4));ctx.stroke();}
+  var as=-Math.PI/2+mm/10*2*Math.PI;ctx.strokeStyle="#1e3f8f";ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(cx,ys);ctx.lineTo(cx+rs*0.85*Math.cos(as),ys+rs*0.85*Math.sin(as));ctx.stroke();
+  var an3=-Math.PI/2+(mm%1)*2*Math.PI;ctx.strokeStyle="#c62828";ctx.lineWidth=2.6;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(cx-R*0.14*Math.cos(an3),cy-R*0.14*Math.sin(an3));ctx.lineTo(cx+R*0.86*Math.cos(an3),cy+R*0.86*Math.sin(an3));ctx.stroke();
+  ctx.fillStyle="#333";ctx.beginPath();ctx.arc(cx,cy,4,0,6.2832);ctx.fill();ctx.textBaseline="alphabetic";
+  tag("ΔL = "+fr(mm,2)+" mm",cx,cy+R+20,"#c62828","800 14px Mulish,system-ui,sans-serif");
+  tag("loupe",cx-R-2,cy-R+4,"#5f6b7a","700 11px Mulish,system-ui,sans-serif","right");}
+
+/* ================= 2. voie ferrée ================= */
+var flakes=[];for(var f=0;f<140;f++)flakes.push([Math.random(),Math.random(),0.4+Math.random()*0.8]);
+function gap(){return G0-ALR*Lr*(Tr-TPOSE)*1000;}             /* jeu en mm */
+function stress(){var g=gap();return g>=0?0:EST*ALR*(-g/1000/(ALR*Lr));}  /* contrainte quand le joint est fermé (Pa) */
+function mix(a,b,u){return [0,1,2].map(function(i){return Math.round(a[i]+(b[i]-a[i])*u)});}
+function rgb(c,a){return "rgba("+c[0]+","+c[1]+","+c[2]+","+(a==null?1:a)+")";}
+function scene2(){
+  var u=(Tr+20)/80,snow=Math.max(0,Math.min(1,(5-Tr)/20)),sum=Math.max(0,Math.min(1,(Tr-25)/30)),g=gap(),sig=stress();
+  yaw=-1.08;pitch=0.2;cam(9,Math.min(W*1.15,H*1.9),1.2,0.6,H*0.58);
+  var hz=pr(0,60,0)[1];
+  var sk=ctx.createLinearGradient(0,0,0,hz);sk.addColorStop(0,rgb(mix([150,170,190],[70,140,220],u)));sk.addColorStop(1,rgb(mix([215,222,230],[200,228,250],u)));ctx.fillStyle=sk;ctx.fillRect(0,0,W,hz+2);
+  /* soleil : plus haut et plus éclatant en été */
+  var sx=W*0.18,sy=hz-(hz*0.25+hz*0.55*u);ctx.save();ctx.shadowColor="rgba(255,220,120,"+(0.3+0.6*u)+")";ctx.shadowBlur=30;ctx.fillStyle=rgb(mix([240,236,215],[255,214,90],u));ctx.beginPath();ctx.arc(sx,sy,16+10*u,0,6.2832);ctx.fill();ctx.restore();
+  /* collines */
+  ctx.fillStyle=rgb(mix(mix([120,140,120],[240,244,248],snow),[160,170,90],sum));ctx.beginPath();ctx.moveTo(0,hz);for(var i=0;i<=20;i++){ctx.lineTo(W*i/20,hz-18-14*Math.sin(i*0.9)-8*Math.sin(i*2.3));}ctx.lineTo(W,hz);ctx.closePath();ctx.fill();
+  var gr=ctx.createLinearGradient(0,hz,0,H);var gc=mix(mix([86,140,70],[236,240,245],snow),[175,170,85],sum);gr.addColorStop(0,rgb(gc));gr.addColorStop(1,rgb(mix(gc,[60,70,50],0.3)));ctx.fillStyle=gr;ctx.fillRect(0,hz,W,H-hz);
+  trees(snow,sum,true);
+  /* ballast */
+  var bq=[pr(-40,-1.6,0),pr(40,-1.6,0),pr(40,1.6,0),pr(-40,1.6,0)];poly(bq,rgb(mix([130,124,116],[236,238,242],snow*0.7)));
+  /* traverses */
+  for(var x=-40;x<=40;x+=0.62){var p=pr(x,0,0);if(p[2]<0.5)continue;box(x-0.12,x+0.12,-1.3,1.3,0,0.12,mix([110,82,56],[220,224,230],snow*0.6),0.1);}
+  /* flambage : au-delà d'environ 100 MPa le rail risque de se déformer latéralement */
+  var buck=Math.max(0,Math.min(1,(sig/1e6-100)/40));
+  var gv=Math.max(g,0)*0.02;                       /* jeu exagéré ×20 dans la vue (mm → m) */
+  function lat(x){return buck*0.35*Math.exp(-Math.pow((x+4)/1.6,2));}
+  [-0.7175,0.7175].forEach(function(y){[[-40,-gv/2],[gv/2,40]].forEach(function(s){
+    var pts=[],top=[];for(var k=0;k<=60;k++){var xx=s[0]+(s[1]-s[0])*k/60,yy=y+lat(xx);pts.push(pr(xx,yy-0.035,0.12));top.push(pr(xx,yy+0.035,0.3));}
+    var side=[];for(var k2=0;k2<=60;k2++){var x2=s[0]+(s[1]-s[0])*k2/60;side.push(pr(x2,y+lat(x2)-0.035,0.3));}
+    poly(pts.concat(side.slice().reverse()),"rgb(92,84,78)");
+    var tops=[];for(var k3=0;k3<=60;k3++){var x3=s[0]+(s[1]-s[0])*k3/60;tops.push(pr(x3,y+lat(x3)-0.035,0.3));}for(var k4=60;k4>=0;k4--){var x4=s[0]+(s[1]-s[0])*k4/60;tops.push(pr(x4,y+lat(x4)+0.035,0.3));}
+    poly(tops,snow>0.6?"#e9eef3":"#c9ced4");});
+    /* éclisse du joint */
+    box(-0.45,0.45,y-0.07,y-0.04,0.15,0.26,[80,74,70],0.2);});
+  /* train qui passe de temps en temps */
+  trees(snow,sum,false);
+  /* neige qui tombe ou air qui tremble */
+  if(snow>0.05){ctx.fillStyle="rgba(255,255,255,"+(0.4+0.5*snow)+")";flakes.forEach(function(fl){var fx=(fl[0]*W+Math.sin(t*0.7+fl[1]*9)*14)%W,fy=((fl[1]+t*0.06*fl[2])%1)*H;ctx.beginPath();ctx.arc(fx,fy,1.2+1.6*fl[2],0,6.2832);ctx.fill();});}
+  if(sum>0.1){ctx.strokeStyle="rgba(255,255,255,"+(0.12*sum)+")";ctx.lineWidth=2;for(var h2=0;h2<6;h2++){var yy2=hz+20+h2*16;ctx.beginPath();for(var xw=0;xw<=W;xw+=12){ctx.lineTo(xw,yy2+3*Math.sin(xw*0.05+t*4+h2));}ctx.stroke();}}
+  /* étiquettes */
+  var jp=pr(0,-0.7175,0.32);ctx.strokeStyle="#c62828";ctx.lineWidth=2;ctx.beginPath();ctx.arc(jp[0],jp[1]+6,22,0,6.2832);ctx.stroke();
+  tag("joint de dilatation",jp[0],jp[1]-28,"#c62828","800 12.5px Mulish,system-ui,sans-serif");
+  tag(Tr<=2?"hiver":Tr>=28?"été":"mi-saison",16,22,"#13233a","800 15px Mulish,system-ui,sans-serif","left");
+  tag("rail à "+fr(Tr,0)+" °C",16,42,"#a32d2d","800 13px Mulish,system-ui,sans-serif","left");
+  if(buck>0)tag("Flambage : le rail se tord (déformation exagérée)",W/2,H-16,"#a32d2d","800 13px Mulish,system-ui,sans-serif");
+  else tag("jeu dessiné ×20 sur la voie ; à vraie grandeur dans la loupe",W/2,H-14,"#3d4650","600 11.5px Mulish,system-ui,sans-serif");
+  loupe(g);
+}
+function trees(snow,sum,back){var L=[[-16,6],[-11,-7],[-24,-8],[-32,7],[-40,-10],[-20,12],[-48,9]].map(function(a){var p=pr(a[0],a[1],0);return [a,p];}).filter(function(o){return o[1][2]>0.5&&(o[0][1]>0)===back}).sort(function(a,b){return b[1][2]-a[1][2]});
+  L.forEach(function(o){var p=o[1],k=p[3],h=4.2*k,w=0.24*k;ctx.fillStyle="#5b4330";ctx.fillRect(p[0]-w/2,p[1]-h*0.55,w,h*0.55);
+    if(snow>0.5){ctx.strokeStyle="#4a3626";ctx.lineWidth=Math.max(1,w*0.35);for(var b=0;b<6;b++){var a=-Math.PI/2+(b-2.5)*0.35,y0=p[1]-h*(0.35+0.07*b);ctx.beginPath();ctx.moveTo(p[0],y0);ctx.lineTo(p[0]+Math.cos(a)*h*0.3,y0+Math.sin(a)*h*0.3);ctx.stroke();}
+      ctx.fillStyle="rgba(255,255,255,.85)";ctx.beginPath();ctx.ellipse(p[0],p[1]-h*0.86,w*1.6,w*0.5,0,0,6.2832);ctx.fill();}
+    else{var c=mix([70,130,60],[110,140,50],sum);[[0,-0.78,0.36],[-0.22,-0.62,0.27],[0.22,-0.62,0.27],[0,-0.95,0.24]].forEach(function(q,i){var g=ctx.createRadialGradient(p[0]+q[0]*h-q[2]*h*0.3,p[1]+q[1]*h-q[2]*h*0.3,q[2]*h*0.1,p[0]+q[0]*h,p[1]+q[1]*h,q[2]*h);
+      g.addColorStop(0,rgb(mix(c,[200,230,150],0.35)));g.addColorStop(1,rgb(mix(c,[20,50,20],0.35)));ctx.fillStyle=g;ctx.beginPath();ctx.arc(p[0]+q[0]*h,p[1]+q[1]*h,q[2]*h,0,6.2832);ctx.fill();});}
+    ctx.fillStyle="rgba(0,0,0,.15)";ctx.beginPath();ctx.ellipse(p[0]+w,p[1],w*2.5,w*0.6,0,0,6.2832);ctx.fill();});}
+function train(x0){var cars=[[x0,x0+5.2,[176,38,38]],[x0-5.6,x0-0.4,[40,80,140]],[x0-11.2,x0-6,[40,80,140]]];
+  cars.forEach(function(c){if(c[1]<-40||c[0]>40)return;box(c[0],c[1],-1.25,1.25,0.55,2.9,c[2],0.4);
+    for(var w=c[0]+0.5;w<c[1]-0.4;w+=1.05){var p1=pr(w,-1.251,1.7),p2=pr(w+0.7,-1.251,1.7),p3=pr(w+0.7,-1.251,2.4),p4=pr(w,-1.251,2.4);poly([p1,p2,p3,p4],"rgba(190,220,240,.9)","rgba(0,0,0,.3)",0.8);}
+    [c[0]+0.8,c[1]-0.8].forEach(function(wx){cyl([wx,-0.75,0.42],[0,-1,0],0.12,0.4,[45,45,48],0.3,"#3a3a3d");});});}
+function loupe(g){var R=Math.min(84,W*0.17),cx=W-R-16,cy=R+16;
+  ctx.save();ctx.shadowColor="rgba(0,0,0,.3)";ctx.shadowBlur=12;ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(cx,cy,R+5,0,6.2832);ctx.fill();ctx.restore();
+  ctx.save();ctx.beginPath();ctx.arc(cx,cy,R,0,6.2832);ctx.clip();ctx.fillStyle="#e9edf1";ctx.fillRect(cx-R,cy-R,2*R,2*R);
+  var mmPx=2*R/34,gp=Math.max(0,g)*mmPx,yb=cy-R*0.1;          /* champ de 34 mm */
+  [[-1,cx-gp/2],[1,cx+gp/2]].forEach(function(s){var x1=s[1],x2=s[1]+s[0]*R*1.3,a=Math.min(x1,x2),w=Math.abs(x2-x1);
+    var hg=ctx.createLinearGradient(0,yb-26,0,yb+30);hg.addColorStop(0,"#f2f4f6");hg.addColorStop(0.18,"#9da5ad");hg.addColorStop(0.42,"#6d757d");hg.addColorStop(1,"#4b5259");ctx.fillStyle=hg;ctx.fillRect(a,yb-24,w,22);
+    ctx.fillStyle="#5a6168";ctx.fillRect(a,yb-2,w,10);ctx.fillStyle="#4b5259";ctx.fillRect(a,yb+8,w,22);});
+  if(g<=0){ctx.fillStyle="#2a2f35";ctx.fillRect(cx-0.8,yb-24,1.6,54);}
+  ctx.strokeStyle="#13233a";ctx.lineWidth=1;for(var m=-17;m<=17;m++){var x=cx+m*mmPx,h=m%5===0?10:5;ctx.beginPath();ctx.moveTo(x,cy+R*0.55);ctx.lineTo(x,cy+R*0.55-h);ctx.stroke();}
+  ctx.fillStyle="#13233a";ctx.font="700 10px Mulish,system-ui";ctx.textAlign="center";(R<75?[-5,0,5]:[-10,0,10]).forEach(function(m){ctx.fillText(m+" mm",cx+m*mmPx,cy+R*0.55+12);});
+  ctx.restore();
+  ctx.strokeStyle="#c62828";ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,R+2,0,6.2832);ctx.stroke();
+  tag(g>0?"jeu : "+fr(g,1)+" mm":"joint fermé",cx,cy+R+20,"#c62828","800 14px Mulish,system-ui,sans-serif");}
+
+/* ---------- textes ---------- */
+var lastT="";
+function read(){
+  var h;
+  if(mode===1){var m=MET[mi],d=dL(),dF=m.a*L0*(Tset-20);
+    h='<div><small>Coefficient α ('+m.n+')</small><b>'+fr(m.a*1e6,1)+' · 10⁻⁶ K⁻¹</b></div><div><small>Température</small><b>'+fr(T,1)+' °C</b></div><div><small>ΔT depuis 20 °C</small><b>'+fr(T-20,1)+' K</b></div><div><small>ΔL = α·L₀·ΔT</small><b>'+fr(d*1000,3)+' mm</b></div><div><small>L = L₀ + ΔL</small><b>'+fr(L0*1000+d*1000,2)+' mm</b></div>';
+    var info="À "+fr(Tset,0)+" °C (température visée), la barre de "+m.n+" de "+fr(L0,2)+" m s'allonge de ΔL = "+fr(m.a*1e6,1)+" · 10⁻⁶ × "+fr(L0,2)+" × "+fr(Tset-20,0)+" = <b>"+fr(dF*1000,3)+" mm</b>, soit "+fr(dF*1e6/L0/1000,3).replace(/,?0+$/,"")+" mm par mètre : invisible à l'œil, d'où le comparateur (1 graduation = 0,01 mm). "+
+      (mi===4?"L'<b>invar</b> (alliage fer-nickel) se dilate dix fois moins que l'acier : on l'utilise pour les étalons de longueur et les balanciers d'horloge.":"L'aluminium se dilate environ deux fois plus que l'acier : à même ΔT, l'aiguille tourne deux fois plus.");}
+  else{var g=gap(),dLr=ALR*Lr*(Tr-TPOSE),sg=stress();
+    h='<div><small>Température du rail</small><b>'+fr(Tr,0)+' °C</b></div><div><small>ΔT depuis la pose</small><b>'+fr(Tr-TPOSE,0)+' K</b></div><div><small>ΔL = α·L₀·ΔT</small><b>'+fr(dLr*1000,2)+' mm</b></div><div><small>Jeu du joint</small><b>'+(g>0?fr(g,2)+' mm':'fermé')+'</b></div><div><small>Contrainte</small><b>'+(sg>0?fr(sg/1e6,0)+' MPa':'aucune')+'</b></div>';
+    var Tc=TPOSE+G0/1000/(ALR*Lr);
+    var info="Rail en acier (α = 12 · 10⁻⁶ K⁻¹) de "+fr(Lr,0)+" m, posé à 15 °C avec un jeu de "+fr(G0,1)+" mm. Le joint se ferme quand α·L₀·ΔT atteint le jeu, à T = 15 + "+fr(G0,1)+" mm / ("+fr(ALR*Lr*1e3,3)+" mm/K) = <b>"+fr(Tc,1)+" °C</b>. "+
+      (sg>0?"Au-delà, le rail ne peut plus s'allonger : il est comprimé, avec une contrainte σ = E·α·(T − "+fr(Tc,1)+" °C) = <b>"+fr(sg/1e6,0)+" MPa</b> (E = 210 GPa). Vers 100 MPa (ordre de grandeur), la voie risque de flamber (se tordre sur le côté).":"En hiver, le jeu s'ouvre : à −20 °C il vaut "+fr(G0+ALR*Lr*35*1000,1)+" mm.")+
+      " Les voies modernes sont soudées en continu et très fortement fixées aux traverses : le rail reste en tension ou en compression sans bouger.";}
+  if(h+info!==lastT){lastT=h+info;$("dlRead").innerHTML=h;$("dlInfo").innerHTML=info;}
+}
+function fml(){$("dlFml").innerHTML=mode===1?"Chauffé, un solide s'allonge proportionnellement à sa longueur et à l'écart de température : <b style='color:#a32d2d'>ΔL = α·L₀·ΔT</b>, où α est le <b>coefficient de dilatation linéique</b> du matériau (en K⁻¹). Les atomes vibrent plus fort et s'écartent un peu les uns des autres. Une barre de 1 m d'acier chauffée de 100 K s'allonge d'environ 1,2 mm.":
+  "Un rail est une longue barre d'acier : entre l'hiver et l'été, sa température varie de plus de 60 K. Avec <b style='color:#a32d2d'>ΔL = α·L₀·ΔT</b>, un rail de 18 m s'allonge de plus d'un centimètre. On laisse donc un <b>jeu</b> au joint entre deux rails : il se referme en été et s'ouvre en hiver.";}
+
+/* ---------- commandes ---------- */
+function seg(sel,on){document.querySelectorAll(sel).forEach(function(b){b.classList.toggle("on",b===on)});}
+$("dlM1").onclick=function(){mode=1;seg("#dlM1,#dlM2",this);$("dlC1").style.display="";$("dlC2").style.display="none";yaw=MOB?-0.78:-0.42;pitch=MOB?0.42:0.36;cv.style.cursor="grab";fml();};
+$("dlM2").onclick=function(){mode=2;seg("#dlM1,#dlM2",this);$("dlC1").style.display="none";$("dlC2").style.display="";cv.style.cursor="ew-resize";fml();};
+document.querySelectorAll("#dlC1 [data-m]").forEach(function(b){b.onclick=function(){mi=+b.dataset.m;seg("#dlC1 [data-m]",b);};});
+$("dlL").oninput=function(){L0=+this.value;$("dlLv").textContent=fr(L0,2)+" m";};
+$("dlT").oninput=function(){Tset=+this.value;$("dlTv").textContent=fr(Tset,0)+" °C";if(!auto){heat=true;btns();}};
+function btns(){$("dlHeat").classList.toggle("on",heat);$("dlHeat").textContent=heat?"🔥 Becs allumés":"Becs éteints";$("dlAuto").classList.toggle("on",auto);$("dlSeason").classList.toggle("on",season);}
+$("dlHeat").onclick=function(){heat=!heat;auto=false;btns();};
+$("dlAuto").onclick=function(){auto=!auto;phase=0;btns();};
+$("dlTr").oninput=function(){Tr=+this.value;season=false;btns();};
+$("dlLr").oninput=function(){Lr=+this.value;$("dlLrv").textContent=fr(Lr,0)+" m";};
+$("dlG").oninput=function(){G0=+this.value;$("dlGv").textContent=fr(G0,1)+" mm";};
+$("dlSeason").onclick=function(){season=!season;btns();};
+var drag=null,moved=0;
+function pos(e){var b=cv.getBoundingClientRect();return [e.clientX-b.left,e.clientY-b.top];}
+function setTr(x){Tr=Math.round(-20+80*Math.max(0,Math.min(1,(x-W*0.1)/(W*0.8))));season=false;btns();$("dlTr").value=Tr;}
+cv.addEventListener("pointerdown",function(e){drag=pos(e);moved=0;cv.setPointerCapture(e.pointerId);if(mode===1)cv.style.cursor="grabbing";else setTr(drag[0]);});
+cv.addEventListener("pointermove",function(e){if(!drag)return;var p=pos(e);moved+=Math.abs(p[0]-drag[0])+Math.abs(p[1]-drag[1]);
+  if(mode===1){yaw+=(p[0]-drag[0])*0.008;pitch=Math.max(-0.05,Math.min(1.3,pitch+(p[1]-drag[1])*0.006));}else setTr(p[0]);drag=p;});
+cv.addEventListener("pointerup",function(e){var p=pos(e);if(mode===1&&moved<6){burners.forEach(function(b){if(Math.hypot(p[0]-b.x,p[1]-b.y+10)<30){heat=!heat;auto=false;btns();}});}drag=null;if(mode===1)cv.style.cursor="grab";});
+
+var last=null;
+function frame(ts){if(last===null)last=ts;var dt=Math.min(0.05,(ts-last)/1000);last=ts;t+=dt;size();
+  if(auto){phase+=dt;var on=(phase%20)<11;if(on!==heat){heat=on;btns();}}
+  var target=heat?Tset:20;T+=(target-T)*(1-Math.exp(-dt/2.2));
+  if(season){sT+=dt;Tr=Math.round(20-40*Math.cos(2*Math.PI*sT/22));$("dlTr").value=Tr;}
+  $("dlTrv").textContent=fr(Tr,0)+" °C";
+  if(mode===1)scene1();else scene2();read();requestAnimationFrame(frame);}
+$("dlLv").textContent=fr(L0,2)+" m";$("dlTv").textContent=fr(Tset,0)+" °C";$("dlLrv").textContent=fr(Lr,0)+" m";$("dlGv").textContent=fr(G0,1)+" mm";
+var MOB=cv.getBoundingClientRect().width<600;if(MOB){yaw=-0.78;pitch=0.42;}
+fml();btns();
+window.__dl={set:function(o){if(o.mode)$(o.mode===1?"dlM1":"dlM2").click();if(o.mi!=null)mi=o.mi;if(o.L0)L0=o.L0;if(o.T!=null){T=o.T;Tset=o.T;auto=false;heat=true;}if(o.Tr!=null){Tr=o.Tr;season=false;}if(o.Lr)Lr=o.Lr;if(o.G0!=null)G0=o.G0;btns();return [dL(),gap(),stress()];}};
+requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Gaz et thermodynamique<span>6 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/gaz-piston/"><i>01</i>Gaz chauffé : le piston monte</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/diagramme-pv/"><i>02</i>Diagramme PV et premier principe</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-transferts-thermiques/"><i>03</i>Conduction, convection, rayonnement</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-dilatation/"><i>04</i>La dilatation</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-machine-thermique/"><i>05</i>Moteur, frigo, pompe à chaleur</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-detente-irreversible/"><i>06</i>Une détente qui ne revient jamais</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

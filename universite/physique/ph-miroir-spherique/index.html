@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Miroirs concave et convexe · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH6">Réflexion et réfraction</a>›<b>Miroirs concave et convexe</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Réflexion et réfraction</span><span class="sfa-chip free">Gratuit</span></div><h1>Miroirs concave et convexe</h1><p>Une bougie devant un miroir de maquillage (concave) ou un rétroviseur (convexe). Déplace-la le long du banc : les trois rayons particuliers construisent l’image, réelle ou virtuelle, droite ou renversée. 1/p + 1/p′ = 1/f avec f = R/2.</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:66vh;min-height:540px;cursor:default;touch-action:none" aria-label="Banc d'optique : une bougie devant un miroir de maquillage concave ou un rétroviseur convexe ; les trois rayons particuliers (incidents en noir, réfléchis en vert pointillé) construisent l'image de la flamme, réelle ou virtuelle"></canvas>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill">Miroir</span>
+  <button class="btn on" id="mC">Miroir de maquillage : concave</button>
+  <button class="btn" id="mV">Rétroviseur : convexe</button>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:160px">p &nbsp;distance bougie – miroir</span>
+  <input type="range" id="sP" min="2" max="150" step="0.5" value="30" style="accent-color:#2c3440;">
+  <span class="val" id="vP"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:160px">|R| &nbsp;rayon de courbure</span>
+  <input type="range" id="sR" min="10" max="150" step="1" value="40" style="accent-color:#5b6b7d;">
+  <span class="val" id="vR"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:160px">h &nbsp;hauteur de la bougie</span>
+  <input type="range" id="sH" min="3" max="15" step="0.5" value="10" style="accent-color:#BA7517;">
+  <span class="val" id="vH" style="color:#9a5f0f"></span>
+</div>
+<div class="row">
+  <span class="pill">Rayons</span>
+  <button class="btn on" id="r1">① parallèle à l’axe</button>
+  <button class="btn on" id="r2">② par le centre C</button>
+  <button class="btn on" id="r3">③ par le foyer F</button>
+  <button class="btn" id="rF">Faisceau de la flamme</button>
+  <button class="btn" id="lab">Masquer les écritures</button>
+</div>
+<div class="row"><span class="hint">Astuce : attrape la bougie et fais-la glisser le long du banc (ou vers le haut pour la grandir). Touche le miroir pour passer de concave à convexe. Repère : on ne trace que des rayons proches de l’axe (approximation de Gauss), réfléchis sur le plan du sommet S ; l’échelle verticale est agrandie pour mieux voir.</span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const INK='#1f2630',GREEN='#1D9E75',GREEN_D='#0F6E56',RED_D='#a32d2d',BLUE_D='#185fa5',OR='#BA7517',OR_D='#9a5f0f',GREY='#8a939c',PUR='#534AB7';
+const FS='600 12px Mulish,system-ui,sans-serif',FB='800 13.5px Mulish,system-ui,sans-serif',FBIG='800 15px Mulish,system-ui,sans-serif';
+const $=id=>document.getElementById(id);
+const fr=(v,d)=>(Math.abs(v)<5e-10?0:v).toFixed(d).replace('.',',').replace(/^-/,'−');
+let W=0,H=0,dpr=1,noLab=false;
+function size(){const b0=cv.getBoundingClientRect();if(b0.width<560){const want=Math.round(b0.width*1.05+140);if(Math.abs(b0.height-want)>2)cv.style.height=want+'px';cv.style.minHeight='0';}
+  const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.round(b.width)||800,h=Math.round(b.height)||540;if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);}
+function tag(t,x,y,col,font,al){if(noLab)return;ctx.font=font||FS;ctx.textAlign=al||'center';ctx.textBaseline='middle';const w=ctx.measureText(t).width,A=al||'center';const lo=A==='left'?4:A==='right'?w+4:w/2+4,hi=A==='left'?W-w-4:A==='right'?W-4:W-w/2-4;x=Math.max(lo,Math.min(hi,x));y=Math.max(9,Math.min(H-9,y));
+  ctx.lineWidth=3.5;ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineJoin='round';ctx.strokeText(t,x,y);ctx.fillStyle=col||INK;ctx.fillText(t,x,y);}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);}
+function arrowHead(x,y,ang,col,s){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x+Math.cos(ang)*s*0.6,y+Math.sin(ang)*s*0.6);ctx.lineTo(x-s*Math.cos(ang-0.45),y-s*Math.sin(ang-0.45));ctx.lineTo(x-s*Math.cos(ang+0.45),y-s*Math.sin(ang+0.45));ctx.closePath();ctx.fill();}
+
+// ---------- optique (convention : distances réelles positives, devant le miroir) ----------
+let kind='C',p=30,Rabs=40,h=10,show={1:true,2:true,3:true},fan=false,t=0;
+const R=()=>kind==='C'?Rabs:-Rabs, f=()=>R()/2;
+function img(){const F=f();if(Math.abs(p-F)<1e-9)return{pp:Infinity,g:Infinity,hp:Infinity};const pp=1/(1/F-1/p);return{pp,g:-pp/p,hp:-pp/p*h};}
+// rayons particuliers : point d'impact (0, y) sur le plan du sommet, direction du rayon réfléchi (dx < 0)
+function rays(){const F=f(),Rr=R(),sg=Math.sign(F),out=[];
+  out.push({id:1,y:h,d:[-Math.abs(F),-h*sg],via:[-F,0]});
+  if(Math.abs(p-Rr)>0.4){const y2=h*Rr/(Rr-p);out.push({id:2,y:y2,d:[-Rr*sg,-y2*sg],via:[-Rr,0]});}
+  if(Math.abs(p-F)>0.4){const y3=h*F/(F-p);out.push({id:3,y:y3,d:[-1,0],via:[-F,0]});}
+  return out.map(r=>{const n=Math.hypot(r.d[0],r.d[1]);r.d=[r.d[0]/n,r.d[1]/n];return r;});}
+
+// ---------- géométrie de l'écran ----------
+let G={};
+function geo(){const narrow=W<560,front=Math.max(narrow?70:80,(narrow?2.2:2.4)*Rabs+(narrow?10:16)),back=Math.max(narrow?30:35,(narrow?0.7:0.8)*Rabs+10);
+  const sc=(W-24)/(front+back),sy=Math.min(2.2*sc,H*0.013),xS=12+front*sc,y0=H*0.47;
+  // échelle verticale agrandie (sy > sc) : les droites restent des droites, la construction reste exacte
+  G={narrow,front,back,sc,sy,xS,y0,X:x=>xS+x*sc,Y:y=>y0-y*sy,rail:H-28};
+  $('sP').max=Math.floor(front-4);if(p>front-4){p=Math.floor(front-4);$('sP').value=p;}}
+
+// ---------- décor ----------
+function decor(){const {X,Y,y0,rail,xS,sc}=G;
+  let g=ctx.createLinearGradient(0,0,0,H);
+  if(kind==='C'){g.addColorStop(0,'#f4efe8');g.addColorStop(1,'#e6ddd2');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=1;for(let y=10;y<rail;y+=38){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}for(let x=10;x<W;x+=38){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,rail);ctx.stroke();}}
+  else{g.addColorStop(0,'#bcdcf3');g.addColorStop(0.55,'#e8f3fb');g.addColorStop(0.56,'#9aa6ae');g.addColorStop(1,'#7f8a92');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='rgba(255,255,255,.75)';[[0.2,0.12],[0.55,0.08],[0.8,0.16]].forEach(([u,v])=>{ctx.beginPath();ctx.ellipse(W*u,H*v,48,12,0,0,7);ctx.ellipse(W*u+30,H*v-6,30,11,0,0,7);ctx.fill();});
+    ctx.fillStyle='#c9d1b5';ctx.beginPath();ctx.moveTo(0,H*0.555);for(let i=0;i<=12;i++)ctx.lineTo(W*i/12,H*(0.50+0.03*Math.sin(i*1.9)));ctx.lineTo(W,H*0.555);ctx.fill();
+    ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=3;ctx.setLineDash([26,22]);ctx.beginPath();ctx.moveTo(0,H*0.8);ctx.lineTo(W,H*0.8);ctx.stroke();ctx.setLineDash([]);}
+  // banc d'optique
+  g=ctx.createLinearGradient(0,rail,0,rail+18);g.addColorStop(0,'#e9edf0');g.addColorStop(0.5,'#a7b1b9');g.addColorStop(1,'#6f7985');ctx.fillStyle=g;rr(6,rail,W-12,16,4);ctx.fill();
+  ctx.fillStyle='rgba(0,0,0,.12)';ctx.fillRect(6,rail+16,W-12,5);
+  // graduation en cm à partir du sommet S
+  ctx.fillStyle='rgba(44,52,64,.55)';const step=G.front>200?20:10;for(let c=0;c<=G.front;c+=step){const x=X(-c);ctx.fillRect(x-0.5,rail+2,1,c%(2*step)===0?8:5);if(c%(2*step)===0&&c>0&&!noLab){ctx.font='600 10px Mulish,system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText(c+' cm',x,rail+4+8);}}
+  // zones du banc pour le miroir concave : au-delà de C, entre C et F, entre F et S
+  if(kind==='C'){const F=f(),Rr=R(),zy=rail-13,zh=9,zs=[[G.front,Rr,'au-delà de C','rgba(24,95,165,.16)',BLUE_D],[Rr,F,'entre C et F','rgba(186,117,23,.18)',OR_D],[F,0,'entre F et S','rgba(83,74,183,.16)',PUR]];
+    zs.forEach(([a,b,n,c,tc])=>{const xa=Math.max(8,X(-a)),xb=X(-b);if(xb-xa<4)return;ctx.fillStyle=c;rr(xa,zy-zh/2,xb-xa,zh,4);ctx.fill();if(!noLab){ctx.font='700 11px Mulish,system-ui,sans-serif';const w=ctx.measureText(n).width;if(w+8<xb-xa)tag(n,(xa+xb)/2,zy-12,tc,'700 11px Mulish,system-ui,sans-serif');}});}
+  // axe optique
+  ctx.strokeStyle='rgba(44,52,64,.55)';ctx.lineWidth=1;ctx.setLineDash([10,4,2,4]);ctx.beginPath();ctx.moveTo(6,y0);ctx.lineTo(W-6,y0);ctx.stroke();ctx.setLineDash([]);}
+
+// ---------- la bougie (objet) et son image ----------
+function candle(x,y0,hpx,alpha,ghost){// hpx > 0 : debout ; < 0 : renversée. La pointe de la flamme est à y0 - hpx
+  const s=Math.sign(hpx)||1,Hh=Math.abs(hpx),bw=Math.max(5,Math.min(24,Hh*0.28)),body=Hh*0.70,fl=Hh*0.30,fk=1+0.06*Math.sin(t*17)+0.04*Math.sin(t*29);
+  ctx.save();ctx.globalAlpha=alpha;ctx.translate(x,y0);ctx.scale(1,s);
+  if(ghost){ctx.setLineDash([4,3]);ctx.strokeStyle=PUR;ctx.lineWidth=1.5;rr(-bw/2,-body,bw,body,3);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='rgba(83,74,183,.12)';ctx.fill();}
+  else{let g=ctx.createLinearGradient(-bw/2,0,bw/2,0);g.addColorStop(0,'#e9d9bf');g.addColorStop(0.45,'#fffaf0');g.addColorStop(1,'#d8c3a0');ctx.fillStyle=g;rr(-bw/2,-body,bw,body,3);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.7)';ctx.beginPath();ctx.ellipse(0,-body,bw/2,Math.max(1.5,bw*0.14),0,0,7);ctx.fill();}
+  ctx.strokeStyle='#3d3020';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(0,-body);ctx.lineTo(0,-body-fl*0.25);ctx.stroke();
+  const fy=-body-fl*0.5,fw=Math.max(3,bw*0.42)*fk;let g=ctx.createRadialGradient(0,fy+fl*0.2,1,0,fy,fl*0.7);g.addColorStop(0,'#fffbe0');g.addColorStop(0.35,'#ffd34d');g.addColorStop(0.8,'#ff8a1f');g.addColorStop(1,'rgba(255,120,20,0)');
+  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(0,-Hh*fk+fl*0.0);ctx.bezierCurveTo(fw,fy-fl*0.1,fw*0.9,fy+fl*0.45,0,fy+fl*0.5);ctx.bezierCurveTo(-fw*0.9,fy+fl*0.45,-fw,fy-fl*0.1,0,-Hh*fk);ctx.fill();
+  if(!ghost){const gl=ctx.createRadialGradient(0,fy,1,0,fy,fl*2.2);gl.addColorStop(0,'rgba(255,210,90,.35)');gl.addColorStop(1,'rgba(255,210,90,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(0,fy,fl*2.2,0,7);ctx.fill();}
+  ctx.restore();}
+function holder(x){const {y0,rail}=G;let g=ctx.createLinearGradient(x-4,0,x+4,0);g.addColorStop(0,'#7d8793');g.addColorStop(0.5,'#eef1f4');g.addColorStop(1,'#6f7985');ctx.fillStyle=g;ctx.fillRect(x-3,y0+3,6,rail-y0-3);
+  ctx.fillStyle='#3d454c';rr(x-16,rail-8,32,12,3);ctx.fill();ctx.fillStyle='#8c96a1';rr(x-12,y0-2,24,7,2);ctx.fill();}
+
+// ---------- le miroir (profil en volume) ----------
+function mirror(ext){const {X,Y,sc,y0,rail}=G,Rr=R(),ap=Math.min(Rabs*0.32,(y0-14)/G.sy*0.9,14);// demi-ouverture dessinée (cm)
+  const sag=y=>y*y/(2*Rr);    // profil parabolique (proche du sphérique près de l'axe)
+  const N=40,front=[],back=[];for(let i=0;i<=N;i++){const y=-ap+2*ap*i/N;front.push([X(-sag(y)),Y(y)]);back.push([X(-sag(y))+Math.max(7,1.4*sc),Y(y)]);}
+  // support
+  const sx=X(0)+Math.max(10,2.2*sc);let g=ctx.createLinearGradient(sx-4,0,sx+4,0);g.addColorStop(0,'#7d8793');g.addColorStop(0.5,'#f4f7fa');g.addColorStop(1,'#6f7985');ctx.fillStyle=g;ctx.fillRect(sx-3,y0,6,rail-y0);ctx.fillStyle='#3d454c';rr(sx-18,rail-8,36,12,3);ctx.fill();
+  if(kind==='V'){// coque de rétroviseur
+    ctx.save();ctx.shadowColor='rgba(0,0,0,.25)';ctx.shadowBlur=10;ctx.shadowOffsetX=4;const bx=X(0)+Math.max(10,2*sc);g=ctx.createLinearGradient(bx,0,bx+ap*sc*0.9,0);g.addColorStop(0,'#3d4752');g.addColorStop(0.5,'#1f262d');g.addColorStop(1,'#11161b');ctx.fillStyle=g;
+    ctx.beginPath();ctx.ellipse(X(0)+3,y0,Math.max(18,ap*sc*0.8),ap*G.sy+6,0,-Math.PI/2,Math.PI/2);ctx.closePath();ctx.globalAlpha=0.9;ctx.fill();ctx.globalAlpha=1;ctx.restore();
+    ctx.strokeStyle='rgba(255,255,255,.25)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(X(0)+3,y0,Math.max(12,ap*sc*0.6),ap*G.sy*0.85,0,-Math.PI/2,-0.2);ctx.stroke();}
+  else{ctx.save();ctx.shadowColor='rgba(0,0,0,.22)';ctx.shadowBlur=10;ctx.shadowOffsetX=4;ctx.fillStyle='#c9ced3';ctx.beginPath();back.forEach((q,i)=>i?ctx.lineTo(q[0]+3,q[1]):ctx.moveTo(q[0]+3,q[1]));ctx.lineTo(back[N][0]-6,back[N][1]);ctx.closePath();ctx.fill();ctx.restore();}
+  // verre argenté
+  ctx.beginPath();front.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));for(let i=N;i>=0;i--)ctx.lineTo(back[i][0],back[i][1]);ctx.closePath();
+  g=ctx.createLinearGradient(front[N/2][0],0,back[N/2][0],0);g.addColorStop(0,'#f8fbfd');g.addColorStop(0.35,'#bcd0dc');g.addColorStop(0.7,'#8ea3b1');g.addColorStop(1,'#5d6670');ctx.fillStyle=g;ctx.fill();
+  ctx.strokeStyle='#4a535c';ctx.lineWidth=2.2;ctx.beginPath();front.forEach((q,i)=>i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]));ctx.stroke();
+  // hachures de la face arrière (convention du schéma)
+  ctx.strokeStyle='rgba(60,68,78,.6)';ctx.lineWidth=1;for(let i=1;i<N;i+=3){const q=back[i];ctx.beginPath();ctx.moveTo(q[0],q[1]);ctx.lineTo(q[0]+6,q[1]-6);ctx.stroke();}
+  // prolongement du miroir si un rayon frappe plus loin que le bord (plan du sommet)
+  if(ext>ap){ctx.strokeStyle='rgba(74,83,92,.55)';ctx.setLineDash([4,4]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(X(0),Y(Math.min(ext,(y0-6)/G.sy)));ctx.lineTo(X(0),Y(-Math.min(ext,(H-y0-6)/G.sy)));ctx.stroke();ctx.setLineDash([]);}
+  return ap;}
+
+// ---------- tracé des rayons ----------
+function clipLine(x1,y1,x2,y2){// segment à l'écran, borné au cadre
+  return[x1,y1,x2,y2];}
+function seg(a,b,col,w,dash){ctx.strokeStyle=col;ctx.lineWidth=w;ctx.setLineDash(dash||[]);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();ctx.setLineDash([]);}
+function toEdge(P,d){// du point P (écran) dans la direction d jusqu'au bord gauche/haut/bas
+  let tm=1e9;if(d[0]<0)tm=Math.min(tm,(P[0]-4)/-d[0]);if(d[1]<0)tm=Math.min(tm,(P[1]-4)/-d[1]);if(d[1]>0)tm=Math.min(tm,(G.rail-4-P[1])/d[1]);return[P[0]+d[0]*tm,P[1]+d[1]*tm];}
+function pulses(a,b,col,ph){const L=Math.hypot(b[0]-a[0],b[1]-a[1]);if(L<8)return;for(let s=(ph%40);s<L;s+=40){const u=s/L,x=a[0]+(b[0]-a[0])*u,y=a[1]+(b[1]-a[1])*u;ctx.fillStyle=col;ctx.beginPath();ctx.arc(x,y,2.2,0,7);ctx.fill();}}
+function drawRays(I){const {X,Y,sc}=G,B=[X(-p),Y(h)],colN=['','①','②','③'];let maxY=0;const virt=!(I.pp>0)&&isFinite(I.pp);
+  const RS=rays().filter(r=>show[r.id]);
+  RS.forEach(r=>{maxY=Math.max(maxY,Math.abs(r.y));});
+  RS.forEach(r=>{const P=[X(0),Y(r.y)];let ds=[r.d[0]*G.sc,-r.d[1]*G.sy];{const n=Math.hypot(ds[0],ds[1]);ds=[ds[0]/n,ds[1]/n];}
+    // incident (noir, plein)
+    seg(B,P,INK,2.2);const ang=Math.atan2(P[1]-B[1],P[0]-B[0]);arrowHead((B[0]+P[0])/2,(B[1]+P[1])/2,ang,INK,9);
+    // prolongement de l'incident jusqu'au point visé derrière le miroir (convexe), ou depuis C/F devant (objet entre F/C et le miroir)
+    if(r.id!==1){const vx=X(r.via[0]),vy=Y(r.via[1]);if(r.via[0]>0)seg(P,[vx,vy],GREY,1.2,[2,4]);else if(r.via[0]<-p)seg(B,[vx,vy],GREY,1.2,[2,4]);}
+    // réfléchi (vert, pointillé)
+    const E=toEdge(P,ds);seg(P,E,GREEN,2.2,[8,6]);const mx=P[0]+(E[0]-P[0])*0.35,my=P[1]+(E[1]-P[1])*0.35;arrowHead(mx,my,Math.atan2(ds[1],ds[0]),GREEN_D,9);
+    pulses(B,P,'rgba(255,190,60,.95)',t*90);pulses(P,E,'rgba(255,190,60,.95)',t*90);
+    // prolongement virtuel derrière le miroir (image virtuelle) ou depuis F (rayon ① du convexe)
+    if(virt){const tt=(X(-I.pp)-P[0])/(-ds[0]);seg(P,[P[0]-ds[0]*tt,P[1]-ds[1]*tt],'rgba(29,158,117,.7)',1.3,[2,4]);}
+    if(r.id===1&&kind==='V')seg(P,[X(-f()),Y(0)],'rgba(29,158,117,.7)',1.3,[2,4]);
+    LBL.push([r.id,P[0]+12,P[1]+(r.y>=0?-10:10)]);});
+  LBL.sort((a,b)=>a[2]-b[2]);for(let i=1;i<LBL.length;i++)if(LBL[i][2]-LBL[i-1][2]<15)LBL[i][2]=LBL[i-1][2]+15;LBL.forEach(l=>tag(colN[l[0]],l[1],l[2],INK,FB,'left'));LBL=[];
+  return maxY;}
+let LBL=[];
+function drawFan(I){if(!fan)return;const {X,Y}=G,B=[X(-p),Y(h)],n=9;
+  if(!isFinite(I.pp))return;const Bi=[X(-I.pp),Y(I.hp)];
+  for(let i=0;i<n;i++){const y=-Rabs*0.45+Rabs*0.9*i/(n-1),P=[X(0),Y(y)];ctx.globalAlpha=0.35;seg(B,P,'#c98a1b',1.2);
+    let d=I.pp>0?[Bi[0]-P[0],Bi[1]-P[1]]:[P[0]-Bi[0],P[1]-Bi[1]];const n2=Math.hypot(d[0],d[1]);d=[d[0]/n2,d[1]/n2];if(d[0]>0)d=[-d[0],-d[1]];
+    seg(P,toEdge(P,d),'#c98a1b',1.2,[5,5]);ctx.globalAlpha=1;}}
+function points(){const {X,Y,y0}=G,F=f(),Rr=R();
+  [['S',0,INK],['F',-F,RED_D],['C',-Rr,BLUE_D]].forEach(([n,x,c])=>{const sx=X(x);if(sx<6||sx>W-6)return;ctx.fillStyle=c;ctx.beginPath();ctx.arc(sx,y0,4,0,7);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();tag(n,sx+(n==='S'?-10:0),y0+15,c,FB);});}
+function card(I){const narrow=G.narrow,x=10,y=10,w=narrow?W-20:262,hh=narrow?62:118;ctx.save();ctx.shadowColor='rgba(19,35,58,.14)';ctx.shadowBlur=10;ctx.fillStyle='rgba(255,255,255,.94)';rr(x,y,w,hh,10);ctx.fill();ctx.restore();
+  tag(kind==='C'?'Miroir de maquillage : concave':'Rétroviseur : convexe',x+12,y+15,INK,FB,'left');
+  const inf=!isFinite(I.pp)||Math.abs(I.pp)>5000;let nat;
+  if(inf)nat='image rejetée à l’infini';else nat=(I.pp>0?'réelle':'virtuelle')+', '+(I.g>0?'droite':'renversée')+', '+(Math.abs(I.g)>1.001?'agrandie':Math.abs(I.g)<0.999?'réduite':'même taille');
+  const col=inf?GREY:I.pp>0?GREEN_D:PUR;
+  if(narrow){tag('f = '+fr(f(),1)+' cm · p′ = '+(inf?'∞':fr(I.pp,1)+' cm')+' · γ = '+(inf?'∞':fr(I.g,2)),x+12,y+33,INK,FS,'left');tag(nat,x+12,y+50,col,FB,'left');}
+  else{tag('f = R/2 = '+fr(f(),1)+' cm',x+12,y+37,INK,FS,'left');tag('p = '+fr(p,1)+' cm   →   p′ = '+(inf?'∞':fr(I.pp,1)+' cm'),x+12,y+55,INK,FS,'left');
+    tag('γ = −p′/p = '+(inf?'∞':fr(I.g,2))+'   h′ = '+(inf?'∞':fr(I.hp,1)+' cm'),x+12,y+73,INK,FS,'left');tag(nat,x+12,y+95,col,FB,'left');}}
+function legend(){if(noLab)return;const y=22,x=W-14;ctx.font=FS;ctx.fillStyle='rgba(255,255,255,.9)';rr(W-388,10,378,24,8);ctx.fill();const items=[['rayon incident',INK,[]],['rayon réfléchi',GREEN,[8,6]],['prolongement',GREEN,[2,4]]];let xx=x;
+  for(let i=items.length-1;i>=0;i--){const [n,c,d]=items[i];const w=ctx.measureText(n).width;xx-=w;tag(n,xx,y,INK,FS,'left');xx-=30;seg([xx,y],[xx+24,y],c,2,d);xx-=14;}}
+function draw(){size();geo();ctx.clearRect(0,0,W,H);decor();const I=img();
+  holder(G.X(-p));
+  // image d'abord (sous les rayons)
+  const inf=!isFinite(I.pp)||Math.abs(I.pp)>5000,ix=inf?0:G.X(-I.pp),vis=!inf&&ix>-40&&ix<W+40;
+  if(vis&&I.pp>0)candle(ix,G.y0,I.hp*G.sy,0.85,false);
+  let ext=0;rays().filter(r=>show[r.id]).forEach(r=>{ext=Math.max(ext,Math.abs(r.y));});mirror(ext);
+  drawFan(I);drawRays(I);points();
+  if(vis&&I.pp<0)candle(ix,G.y0,I.hp*G.sy,0.8,true);
+  if(vis)tag(I.pp>0?'image réelle':'image virtuelle',ix+(I.pp<0?6:0),G.Y(I.hp)+(I.hp>0?-14:14),I.pp>0?GREEN_D:PUR,FB,I.pp<0?'left':'center');
+  candle(G.X(-p),G.y0,h*G.sy,1,false);tag('bougie',G.X(-p),G.Y(h)-18,OR_D,FB);
+  card(I);if(!G.narrow)legend();}
+
+// ---------- texte ----------
+function upd(){const I=img(),F=f(),inf=!isFinite(I.pp)||Math.abs(I.pp)>5000;
+  $('vP').textContent=fr(p,1)+' cm';$('vR').textContent=Rabs+' cm · f = '+fr(F,1)+' cm';$('vH').textContent=fr(h,1)+' cm';
+  $('mC').classList.toggle('on',kind==='C');$('mV').classList.toggle('on',kind==='V');
+  $('fml').innerHTML='<b>1/p + 1/p′ = 1/f</b> avec <b>f = R/2</b> · grandissement <b>γ = h′/h = −p′/p</b>. Convention : p, p′ et f sont <b>positifs devant le miroir</b> (côté réel) ; '+(kind==='C'?'concave : <b>f &gt; 0</b>.':'convexe : <b>f &lt; 0</b> (foyer virtuel, derrière le miroir).')+
+   ' Rayons particuliers : ① parallèle à l’axe → repart par F ; ② par C → revient sur lui-même ; ③ par F → repart parallèle à l’axe.';
+  let txt='f = R/2 = '+fr(R(),0)+'/2 = <b>'+fr(F,1)+' cm</b> · 1/p′ = 1/f − 1/p = 1/'+(F<0?'('+fr(F,1)+')':fr(F,1))+' − 1/'+fr(p,1)+' = '+(inf?'0':fr(1/I.pp,4))+' cm⁻¹ → <b>p′ = '+(inf?'∞':fr(I.pp,1)+' cm')+'</b>';
+  if(!inf)txt+=' ('+(I.pp>0?'devant le miroir : image <b>réelle</b>, on peut la recueillir sur un écran':'derrière le miroir : image <b>virtuelle</b>, on la voit dans le miroir')+') · γ = −p′/p = <b>'+fr(I.g,2)+'</b> · h′ = γ·h = '+fr(I.hp,1)+' cm';
+  else txt+=' : la bougie est au foyer, les rayons ressortent parallèles.';
+  if(kind==='C'&&!inf&&I.pp<0)txt+='<br>C’est l’usage du <b>miroir de maquillage</b> : visage plus près que le foyer → image droite et agrandie.';
+  if(kind==='V')txt+='<br>Le <b>rétroviseur</b> donne toujours une image virtuelle, droite et réduite : on voit plus large, mais les voitures semblent plus loin parce que leur image est plus petite.';
+  $('info').innerHTML=txt;}
+function setKind(k){kind=k;upd();}
+$('mC').onclick=()=>setKind('C');$('mV').onclick=()=>setKind('V');
+$('sP').oninput=e=>{p=+e.target.value;upd();};$('sR').oninput=e=>{Rabs=+e.target.value;upd();};$('sH').oninput=e=>{h=+e.target.value;upd();};
+[1,2,3].forEach(i=>{$('r'+i).onclick=()=>{show[i]=!show[i];$('r'+i).classList.toggle('on',show[i]);};});
+$('rF').onclick=()=>{fan=!fan;$('rF').classList.toggle('on',fan);};
+$('lab').onclick=()=>{noLab=!noLab;$('lab').classList.toggle('on',noLab);};
+// souris : la bougie se déplace le long du banc ; le miroir change de type
+let drag=null;
+function pos(e){const b=cv.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top];}
+function onCandle(x,y){const cx=G.X(-p);return Math.abs(x-cx)<Math.max(18,h*G.sy*0.3)&&y>G.Y(h)-24&&y<G.rail+10;}
+function onMirror(x,y){return Math.abs(x-G.X(0)-6)<20&&Math.abs(y-G.y0)<Math.min(Rabs*0.32,14)*G.sy+10;}
+cv.addEventListener('pointerdown',e=>{const [x,y]=pos(e);if(onCandle(x,y)){drag={x,y,p0:p,h0:h,mode:y<G.Y(h)+0.35*h*G.sy?'h':'p'};cv.setPointerCapture(e.pointerId);}else if(onMirror(x,y))setKind(kind==='C'?'V':'C');});
+cv.addEventListener('pointermove',e=>{const [x,y]=pos(e);if(drag){if(drag.mode==='p'||Math.abs(x-drag.x)>Math.abs(y-drag.y)){p=Math.max(2,Math.min(G.front-4,drag.p0-(x-drag.x)/G.sc));p=Math.round(p*2)/2;$('sP').value=p;}
+    if(drag.mode==='h'){h=Math.max(3,Math.min(15,drag.h0-(y-drag.y)/G.sy));h=Math.round(h*2)/2;$('sH').value=h;}upd();}
+  else cv.style.cursor=onCandle(x,y)?'grab':(onMirror(x,y)?'pointer':'default');});
+cv.addEventListener('pointerup',()=>{drag=null;});
+let last=null;
+function frame(ts){if(last===null)last=ts;const dt=Math.min(0.05,(ts-last)/1000);last=ts;t+=dt;draw();requestAnimationFrame(frame);}
+window.__mir={set:o=>{if(o.kind)kind=o.kind;if(o.p!=null){p=o.p;$('sP').value=p;}if(o.R!=null){Rabs=o.R;$('sR').value=Rabs;}if(o.h!=null){h=o.h;$('sH').value=h;}if(o.fan!=null)fan=o.fan;upd();},get:()=>Object.assign({kind,p,R:R(),f:f(),h},img(),{rays:rays()})};
+upd();requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Réflexion et réfraction de la lumière<span>3 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/reflexion-miroir/"><i>01</i>Miroir plan et réflexion</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/refraction/"><i>02</i>Réfraction et réflexion totale</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-miroir-spherique/"><i>03</i>Miroirs concave et convexe</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

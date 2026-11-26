@@ -15,6 +15,18 @@ il a vérifié chaque lot, publié ceux qui passaient les contrôles, puis encha
   - vérification visuelle à 1280 et 420 px (une soixantaine de défauts d’affichage corrigés, dont 5 blocages) ;
   - `test_sims` à 0 erreur, et `check-course` à 0 erreur JS en chimie.
 
+## Mise à jour du 26/11, 11:30
+
+- **P2 complet** : les 5 dernières simulations (ch-force-acide-structure, ch-tampon-sang, ch-corrosion-goutte, ch-regle-gamma-ph, ch-especes-reactives-oxygene) sont en ligne (commit 7484d52).
+- **Physique quantique en ligne** : nouveau cours `universite/quantique/` (15 chapitres pq01…pq16 sans pq12, 45 simulations, visuels seulement), ajouté à la page Université (commit 7c6fc5a).
+  - Chaque lot a été relu et vérifié en parallèle (relecteur et vérificateur en même temps, puis un correcteur).
+  - Le gabarit des cours a une nouvelle option `visuels:true` dans `page.js`. Elle masque tout ce qui concerne la théorie, les exercices et la progression. Elle supprime aussi la tentative de chargement de `sims-01.js`, qui provoquait un 404.
+  - Fichiers modifiés : `kit/course-engine.js`, `kit/sim-page.js`, `kit/sfa-shell.js`, `secondaire/_lib/sfa-sec.js`.
+  - Sans cette option, les autres cours restent identiques (non-régression vérifiée sur 7 cours).
+- **Règle de la main droite** : à la demande d'Enzo, retour à l'ancienne scène (fond blanc, mêmes réglages, θ = 70°). Seule la main est améliorée, et une manche bleue a été ajoutée. Les valeurs par défaut sont les anciennes : **la vidéo existante reste valable** (on retire cette page de la liste des reels à refilmer).
+- **Total publié** : 198 nouvelles simulations et 4 pages refaites.
+- **Maths** : Enzo a envoyé ses 15 cours (M00–M14). L'analyse des écarts avec `universite/maths/` est en cours ; la liste sera montrée à Enzo avant toute création.
+
 ## Incident de crédit et reprise
 
 - Vers 00:50, le crédit de la clé API s'est épuisé de nouveau. Les 7 lots P1 du Mac ont été récupérés (68 fichiers des worktrees `~/sim-p1-*`), puis intégrés et terminés dans le cloud.
@@ -111,7 +123,7 @@ Elles sont réparties dans les fichiers `sims-p1chimie`, `sims-p1orga1`, `sims-p
 - `rotation-roulement` : vue 3D, et la course part toute seule en boucle (avant, il fallait cliquer).
 - `pascal` : page entièrement nouvelle, avec pompage automatique ; F₁ = 100 N, r₁ = 1 cm, r₂ = 15 cm (avant : 20 N, 5 cm, 15 cm).
 - `diagramme-pv` : la transformation tourne en boucle ; « Rejouer » devient « Arrêter l'animation ».
-- `regle-main-droite` : vecteurs non unitaires (|a| = 2, |b| = 1,5, |a × b| = 2,82) ; nouvelle main en 3D.
+- ~~`regle-main-droite`~~ : revenue à l'ancienne scène le 26/11 à 11:30 (main seule améliorée), donc rien à refilmer.
 
 Toutes les autres simulations sont nouvelles : aucune vidéo existante n'est touchée. Pour un reel futur sur la pile Daniell, l'électrode à hydrogène, le transfert de proton ou l'astigmatisme, filme la version actuelle : elle a changé pendant la nuit, avant même d'être filmée.
 

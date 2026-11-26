@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>p = p₀ + ρgh : la sonde et le paradoxe · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#FL">Fluides</a>›<b>p = p₀ + ρgh : la sonde et le paradoxe</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Fluides</span><span class="sfa-chip free">Gratuit</span></div><h1>p = p₀ + ρgh : la sonde et le paradoxe</h1><p>Fais descendre la sonde dans la piscine : l’aiguille du manomètre monte d’environ 9,8 kPa par mètre d’eau. Déplace-la de côté à la même profondeur : rien ne change. Dans les vases de formes différentes remplis à la même hauteur, la pression au fond est la même partout, alors que le poids du liquide n’est pas le même : c’est le paradoxe hydrostatique. Un bouton passe de la pression absolue à la pression relative.</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:clamp(580px,min(78vh,165vw),800px);cursor:grab;touch-action:none" aria-label="Piscine et vases en 3D : une sonde reliée à un manomètre descend dans l’eau ; la pression augmente avec la profondeur, p = p0 + ρgh ; dans des vases de formes différentes remplis à la même hauteur, la pression à une profondeur donnée est la même ; on fait glisser la sonde à la souris"></canvas>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill">Scène</span>
+  <button class="btn on" id="s0">La piscine</button>
+  <button class="btn" id="s1">Les vases (paradoxe)</button>
+</div>
+<div class="row">
+  <span class="pill">Pression</span>
+  <button class="btn on" id="pa">absolue : p = p₀ + ρgh</button>
+  <button class="btn" id="prl">relative : p − p₀ = ρgh</button>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:170px;color:#185fa5">h &nbsp;profondeur de la sonde</span>
+  <input type="range" id="sd" min="0" max="4" step="0.01" value="1.5" style="accent-color:#378ADD;">
+  <span class="val" id="vd" style="color:#185fa5"></span>
+</div>
+<div class="row" id="roww">
+  <span class="pill" style="min-width:170px;color:#1f6f8b">H &nbsp;hauteur d’eau dans les vases</span>
+  <input type="range" id="sw" min="5" max="28" step="0.5" value="25" style="accent-color:#2a8db0;">
+  <span class="val" id="vw" style="color:#1f6f8b"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:170px">ρ &nbsp;liquide</span>
+  <button class="btn on" id="r0">eau douce</button>
+  <button class="btn" id="r1">eau de mer</button>
+  <button class="btn" id="r2">huile</button>
+</div>
+<div class="row">
+  <button class="btn on" id="auto">Sonde automatique</button>
+  <button class="btn" id="lab">Masquer les écritures</button>
+  <span class="pill">Vue</span>
+  <button class="btn on" id="v3">3D</button>
+  <button class="btn" id="vF">De face</button>
+</div>
+<div class="row"><span class="hint">Attrape la sonde (le petit disque jaune) et fais-la glisser : vers le bas, la pression monte ; de côté, à la même profondeur, elle ne change pas. Dans les vases, lâche-la au-dessus d’un autre vase. Glisse ailleurs pour tourner la vue, molette pour zoomer.</span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const $=id=>document.getElementById(id);
+const fr=(v,d)=>{const s=(Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d).replace('.',',');return s.replace(/^-/,'−');};
+const FS='600 12px Mulish,system-ui,sans-serif',FB='800 13px Mulish,system-ui,sans-serif';
+let W=0,H=0,dpr=1,noLab=false,yaw=-0.6,pitch=0.35,zoom=1,TG=[0,0,0],SC=1,PMIN=0.03,PMAX=1.45;
+function size(){const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.round(b.width)||800,h=Math.round(b.height)||560;if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);}
+const V3={s:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],a:(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],m:(a,k)=>[a[0]*k,a[1]*k,a[2]*k],d:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+  x:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],n:a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return[a[0]/l,a[1]/l,a[2]/l];}};
+let C={};
+function cam(cyFrac){const f=Math.min(W*(W<640?1.2:0.95),H*1.05)*1.05,Dc=2.35*SC/zoom,cp=Math.cos(pitch),sp=Math.sin(pitch),cyw=Math.cos(yaw),syw=Math.sin(yaw);
+  C={Dc,f,cx:W*0.5,cy:H*(cyFrac||0.5),cyw,syw,cp,sp};C.pos=V3.a(TG,[-Dc*cp*syw,-Dc*cp*cyw,Dc*sp]);}
+function pr(p){const x=p[0]-TG[0],y=p[1]-TG[1],z=p[2]-TG[2],xr=x*C.cyw-y*C.syw,yr=x*C.syw+y*C.cyw,dep=C.Dc+yr*C.cp-z*C.sp,k=C.f/Math.max(0.05,dep);return[C.cx+xr*k,C.cy-(z*C.cp+yr*C.sp)*k,dep,k];}
+function mat(hex,sp,sh,amb){const n=parseInt(hex.slice(1),16);return{r:n>>16,g:(n>>8)&255,b:n&255,sp:sp==null?0.25:sp,sh:sh||18,amb:amb==null?0.4:amb};}
+const LT=V3.n([-0.45,-0.75,0.9]);
+function rgbk(m,k,s,al){const f=c=>Math.max(0,Math.min(255,Math.round(c*k*(1-s)+255*s)));return`rgba(${f(m.r)},${f(m.g)},${f(m.b)},${al==null?1:al})`;}
+function lit(m,n,P,al){const l=Math.max(0,V3.d(n,LT)),v=V3.n(V3.s(C.pos,P)),h=V3.n(V3.a(LT,v)),s=m.sp*Math.pow(Math.max(0,V3.d(n,h)),m.sh);return rgbk(m,m.amb+(1-m.amb)*l,s,al);}
+let Q=[];
+function push(d,fn){Q.push([d,fn]);}
+function flush(){Q.sort((a,b)=>b[0]-a[0]);for(const q of Q)q[1]();Q=[];}
+function path(P){ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();}
+function face(P3,m,o){o=o||{};let n=o.n||V3.n(V3.x(V3.s(P3[1],P3[0]),V3.s(P3[2],P3[0])));const c=V3.m(P3.reduce((s,p)=>V3.a(s,p),[0,0,0]),1/P3.length);
+  if(V3.d(n,V3.s(c,C.pos))>0){if(!o.two)return;n=V3.m(n,-1);}
+  const P=P3.map(pr);if(P.some(p=>p[2]<0.1))return;const d=(o.dz||0)+P.reduce((s,p)=>s+p[2],0)/P.length,col=lit(m,n,c,o.al);
+  const draw=()=>{path(P);ctx.fillStyle=col;ctx.fill();if(o.st){ctx.strokeStyle=o.st;ctx.lineWidth=o.lw||1;ctx.stroke();}else if(o.al==null){ctx.strokeStyle=col;ctx.lineWidth=0.7;ctx.stroke();}};
+  if(o.now)draw();else push(d,draw);}
+function basis(w){const u=V3.n(V3.x(w,Math.abs(w[2])<0.9?[0,0,1]:[1,0,0])),v=V3.x(w,u);return[u,v];}
+// cylindre (ou tronc de cône) de a à b ; o.seg découpe en tronçons pour un meilleur tri ; o.a0 fait tourner les facettes (rotation visible)
+function cyl(a,b,r1,r2,m,o){o=o||{};const S=o.seg||1;if(S>1){for(let j=0;j<S;j++){const p=V3.a(a,V3.m(V3.s(b,a),j/S)),q=V3.a(a,V3.m(V3.s(b,a),(j+1)/S));cyl(p,q,r1+(r2-r1)*j/S,r1+(r2-r1)*(j+1)/S,m,Object.assign({},o,{seg:1,caps:o.caps===false?false:(j===0?'a':j===S-1?'b':false)}));}return;}
+  const N=o.n||18,w=V3.n(V3.s(b,a)),[u,v]=o.uv||basis(w),a0=o.a0||0,ring=(c,r,t)=>V3.a(c,V3.a(V3.m(u,Math.cos(t)*r),V3.m(v,Math.sin(t)*r)));
+  for(let i=0;i<N;i++){const t0=a0+i/N*2*Math.PI,t1=a0+(i+1)/N*2*Math.PI,tm=(t0+t1)/2,nn=V3.n(V3.a(V3.m(u,Math.cos(tm)),V3.m(v,Math.sin(tm))));
+    face([ring(a,r1,t0),ring(a,r1,t1),ring(b,r2,t1),ring(b,r2,t0)],(o.stripe&&o.stripe(i))||m,{n:nn,dz:o.dz,al:o.al,two:o.two});}
+  const cp=o.caps==null?true:o.caps;if(cp){const T=[],B=[];for(let i=0;i<N;i++){const t=a0+i/N*2*Math.PI;T.push(ring(b,r2,t));B.push(ring(a,r1,t));}
+    if(r2>0&&cp!=='a')face(T,o.capm||m,{n:w,dz:o.dz,al:o.al});if(r1>0&&cp!=='b')face(B,o.capm||m,{n:V3.m(w,-1),dz:o.dz,al:o.al});}}
+function sphere(c,r,m,o){o=o||{};const p=pr(c),R=Math.max(1,r*p[3]),h=pr(V3.a(c,V3.m(V3.n(V3.a(LT,V3.n(V3.s(C.pos,c)))),r*0.55)));
+  push(p[2]+(o.dz||0),()=>{const g=ctx.createRadialGradient(h[0],h[1],R*0.05,p[0],p[1],R);g.addColorStop(0,rgbk(m,1.15,m.sp*0.9,o.al));g.addColorStop(0.45,rgbk(m,0.95,0,o.al));g.addColorStop(1,rgbk(m,m.amb*0.9,0,o.al));
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(p[0],p[1],R,0,7);ctx.fill();});}
+function box3(x0,x1,y0,y1,z0,z1,m,o){o=o||{};const P=[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]];
+  [[[4,5,6,7],[0,0,1]],[[3,2,1,0],[0,0,-1]],[[0,1,5,4],[0,-1,0]],[[2,3,7,6],[0,1,0]],[[1,2,6,5],[1,0,0]],[[3,0,4,7],[-1,0,0]]].forEach(([ix,n])=>face(ix.map(i=>P[i]),m,Object.assign({n},o)));}
+function blob(x,y,z,rx,ry,al){const N=28,pts=[];for(let i=0;i<N;i++){const a=i/N*2*Math.PI;pts.push(pr([x+rx*Math.cos(a),y+ry*Math.sin(a),z]));}
+  const c=pr([x,y,z]),R=Math.max(...pts.map(p=>Math.hypot(p[0]-c[0],p[1]-c[1])))||1,g=ctx.createRadialGradient(c[0],c[1],0,c[0],c[1],R);g.addColorStop(0,`rgba(20,15,10,${al})`);g.addColorStop(1,'rgba(20,15,10,0)');path(pts);ctx.fillStyle=g;ctx.fill();}
+function line3(a,b,col,w,o){o=o||{};const p=pr(a),q=pr(b);push((p[2]+q[2])/2+(o.dz||0),()=>{ctx.strokeStyle=col;ctx.lineWidth=w;ctx.lineCap='round';if(o.dash)ctx.setLineDash(o.dash);ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();ctx.setLineDash([]);});}
+function arrow(x1,y1,x2,y2,col,w){if(!arrow.nohalo){arrow.nohalo=1;arrow(x1,y1,x2,y2,'rgba(255,255,255,.85)',(w||2)+3);arrow.nohalo=0;}ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w||2;ctx.lineCap='round';const a=Math.atan2(y2-y1,x2-x1),h=8+(w||2)*1.6;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-Math.cos(a)*h*0.6,y2-Math.sin(a)*h*0.6);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x2+Math.cos(a)*2,y2+Math.sin(a)*2);ctx.lineTo(x2-h*Math.cos(a-0.42),y2-h*Math.sin(a-0.42));ctx.lineTo(x2-h*Math.cos(a+0.42),y2-h*Math.sin(a+0.42));ctx.closePath();ctx.fill();}
+function arrow3(a,b,col,w){const p=pr(a),q=pr(b);arrow(p[0],p[1],q[0],q[1],col,w);return[p,q];}
+function tag(t,x,y,col,font,al){if(noLab)return;ctx.font=font||FS;ctx.textAlign=al||'center';ctx.textBaseline='middle';const w=ctx.measureText(t).width,A=al||'center';const lo=A==='left'?4:A==='right'?w+4:w/2+4,hi=A==='left'?W-w-4:A==='right'?W-4:W-w/2-4;x=Math.max(lo,Math.min(hi,x));y=Math.max(9,Math.min(H-9,y));
+  ctx.lineWidth=3.5;ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineJoin='round';ctx.strokeText(t,x,y);ctx.fillStyle=col||'#2c3440';ctx.fillText(t,x,y);}
+function rrect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+// panneau de valeurs : lignes = [[texte, couleur], …]
+function panel(x,y,lines,o){if(noLab)return;o=o||{};const sm=W<560,fs=sm?11.5:13,lh=sm?17:20;ctx.font=`700 ${fs}px Mulish,system-ui,sans-serif`;let w=0;lines.forEach(l=>w=Math.max(w,ctx.measureText(l[0]).width));w+=20;const h=lines.length*lh+12;
+  if(o.right)x=W-x-w;if(o.bottom)y=H-y-h;rrect(x,y,w,h,9);ctx.fillStyle='rgba(255,255,255,.88)';ctx.fill();ctx.strokeStyle='rgba(19,35,58,.15)';ctx.lineWidth=1;ctx.stroke();
+  ctx.textAlign='left';ctx.textBaseline='middle';lines.forEach((l,i)=>{ctx.fillStyle=l[1]||'#13233a';ctx.font=`${l[2]||700} ${fs}px Mulish,system-ui,sans-serif`;ctx.fillText(l[0],x+10,y+6+lh*(i+0.5));});return[x,y,w,h];}
+// souris : glisser = tourner la vue ; molette = zoom ; pick(x,y) peut renvoyer une poignée {move(x,y), up()}
+let drag=null,handle=null,viewT=null,onViewBtn=null;
+function pos(e){const b=cv.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top];}
+function bindMouse(pick,hover){
+  cv.addEventListener('pointerdown',e=>{const [x,y]=pos(e);cv.setPointerCapture(e.pointerId);handle=pick?pick(x,y):null;if(handle){cv.style.cursor='grabbing';return;}drag=[x,y];cv.style.cursor='grabbing';viewT=null;if(onViewBtn)onViewBtn('');});
+  cv.addEventListener('pointermove',e=>{const [x,y]=pos(e);if(handle){handle.move(x,y);return;}if(drag){yaw+=(x-drag[0])*0.008;pitch=Math.max(PMIN,Math.min(PMAX,pitch+(y-drag[1])*0.006));drag=[x,y];}else if(hover)cv.style.cursor=hover(x,y)?'pointer':'grab';});
+  const up=()=>{if(handle&&handle.up)handle.up();handle=null;drag=null;cv.style.cursor='grab';};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+  cv.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(0.6,Math.min(2.4,zoom*Math.exp(-e.deltaY*0.001)));},{passive:false});}
+function stepView(){if(viewT){yaw+=(viewT[0]-yaw)*0.12;pitch+=(viewT[1]-pitch)*0.12;zoom+=(viewT[2]-zoom)*0.12;if(Math.abs(viewT[0]-yaw)+Math.abs(viewT[1]-pitch)+Math.abs(viewT[2]-zoom)<1e-3)viewT=null;}}
+function seg(ids,o){ids.forEach(i=>$(i).classList.toggle('on',i===o));}
+
+
+// ---------- modèle : p = p0 + ρ·g·h, h = profondeur sous la surface libre ----------
+const g=9.81,P0=101325,RHO=[1000,1025,920],RN=['eau douce','eau de mer','huile'];
+const DP=4,PW=2.5,PD=1.5;                                  // piscine : 4 m de profondeur, 5 m × 3 m
+const VX=[-0.5,-0.17,0.17,0.5],RB=0.05,SB=Math.PI*RB*RB,VH=0.3;   // vases : même fond (rayon 5 cm), hauteur 30 cm
+const VP=[[[0,0.05],[0.3,0.05]],[[0,0.05],[0.3,0.115]],[[0,0.05],[0.3,0.022]],[[0,0.05],[0.06,0.085],[0.15,0.085],[0.22,0.035],[0.3,0.03]]],VN=['droit','évasé','resserré','ventru'];
+let S=0,abs=true,ri=0,auto=true,t=0,HW=0.25,px=0.6,pd=1.5,vk=0,vd=0.15,hot=false,camT=[0,0,-1.7],camS=2.5;
+const rho=()=>RHO[ri];
+function depth(){return S===0?Math.max(0,pd):Math.max(0,vd);}
+function pres(d){return(abs?P0:0)+rho()*g*d;}
+function rAt(P,z){for(let i=0;i<P.length-1;i++){if(z<=P[i+1][0]){const f=(z-P[i][0])/(P[i+1][0]-P[i][0]);return P[i][1]+(P[i+1][1]-P[i][1])*f;}}return P[P.length-1][1];}
+function vol(P,h){let V=0;const zs=P.map(q=>q[0]).filter(z=>z<h).concat([h]);for(let i=0;i<zs.length-1;i++){const a=rAt(P,zs[i]),b=rAt(P,zs[i+1]);V+=Math.PI*(zs[i+1]-zs[i])/3*(a*a+a*b+b*b);}return V;}
+// ---------- matières ----------
+const mTile=mat('#dfeef6',0.3,20,0.6),mTile2=mat('#c6e0ee',0.3,20,0.6),mDeck=mat('#e9e1d3',0.1,10,0.6),mDeck2=mat('#d8cfbf',0.1,10,0.6),mWater=mat('#3a9fd0',0.5,40,0.6),mWater2=mat('#2b7fb5',0.5,40,0.55),
+  mSteel=mat('#c9d1d8',0.7,40,0.45),mProbe=mat('#f2c230',0.6,30,0.5),mCable=mat('#2a2f36',0.3,16,0.4),mBench=mat('#5d6b78',0.2,12,0.5),mBench2=mat('#46525e',0.2,12,0.5),mGlass=mat('#dff3fb',0.9,60,0.75),mWood=mat('#b98a5a',0.15,10,0.55);
+const WCOL=[mat('#3a9fd0',0.5,40,0.6),mat('#2f8fb0',0.5,40,0.58),mat('#d9b440',0.5,40,0.6)];
+function water(){return WCOL[ri];}
+function probePos(){return S===0?[px,0,-pd]:[VX[vk],0,HW+0.03-vd];}
+// ---------- la piscine ----------
+function pool(){let gr=ctx.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#cfe6f5');gr.addColorStop(1,'#eef5fa');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);
+  // hall : mur du fond et baies vitrées
+  face([[-6,4,-0.2],[6,4,-0.2],[6,4,5],[-6,4,5]],mat('#f3f1ec',0.05,8,0.7),{now:true,two:true});
+  for(let i=0;i<5;i++){const x0=-5+i*2.2;face([[x0,3.98,1.2],[x0+1.8,3.98,1.2],[x0+1.8,3.98,4.2],[x0,3.98,4.2]],mat('#a9cfe8',0.6,30,0.7),{now:true,two:true});}
+  // plage autour du bassin
+  const dk=(x0,x1,y0,y1)=>{for(let i=0;i<Math.ceil((x1-x0)/0.75);i++)for(let j=0;j<Math.ceil((y1-y0)/0.75);j++){const a=x0+i*0.75,b=y0+j*0.75;face([[a,b,0.15],[Math.min(x1,a+0.75),b,0.15],[Math.min(x1,a+0.75),Math.min(y1,b+0.75),0.15],[a,Math.min(y1,b+0.75),0.15]],(i+j)%2?mDeck:mDeck2,{now:true,two:true});}};
+  dk(-6,6,PD,4);dk(-6,-PW,-PD,PD);dk(PW,6,-PD,PD);
+  // bassin vu en coupe : fond, mur du fond, murs latéraux carrelés
+  const tl=(P,i,j)=>face(P,(i+j)%2?mTile:mTile2,{now:true,two:true});
+  for(let i=0;i<10;i++)for(let j=0;j<6;j++){const x0=-PW+i*0.5,y0=-PD+j*0.5;tl([[x0,y0,-DP],[x0+0.5,y0,-DP],[x0+0.5,y0+0.5,-DP],[x0,y0+0.5,-DP]],i,j);}
+  for(let i=0;i<10;i++)for(let k=0;k<9;k++){const x0=-PW+i*0.5,z0=-DP+k*0.5;tl([[x0,PD,z0],[x0+0.5,PD,z0],[x0+0.5,PD,Math.min(0.15,z0+0.5)],[x0,PD,Math.min(0.15,z0+0.5)]],i,k);}
+  [-PW,PW].forEach(xx=>{for(let j=0;j<6;j++)for(let k=0;k<9;k++){const y0=-PD+j*0.5,z0=-DP+k*0.5;tl([[xx,y0,z0],[xx,y0+0.5,z0],[xx,y0+0.5,Math.min(0.15,z0+0.5)],[xx,y0,Math.min(0.15,z0+0.5)]],j,k);}});
+  // lignes de nage au fond et graduations de profondeur sur le mur du fond
+  for(let k=0;k<3;k++){const y=-0.9+k*0.9;face([[-PW+0.4,y-0.07,-DP+0.002],[PW-0.4,y-0.07,-DP+0.002],[PW-0.4,y+0.07,-DP+0.002],[-PW+0.4,y+0.07,-DP+0.002]],mat('#20456e',0.2,10,0.6),{now:true,two:true});}
+  // échelle
+  [-0.25,0.25].forEach(dx=>cyl([1.6+dx,PD-0.08,-2.2],[1.6+dx,PD-0.08,0.9],0.025,0.025,mSteel,{n:8}));for(let k=0;k<6;k++)cyl([1.35,PD-0.08,-2+k*0.4],[1.85,PD-0.08,-2+k*0.4],0.02,0.02,mSteel,{n:6});
+  cyl([1.35,PD-0.08,0.9],[1.35,PD-0.4,0.9],0.025,0.025,mSteel,{n:8});cyl([1.85,PD-0.08,0.9],[1.85,PD-0.4,0.9],0.025,0.025,mSteel,{n:8});}
+function poolWater(){const w=water(),N=12;
+  // surface ondulée (vue de dessus) et face avant vitrée
+  for(let i=0;i<N;i++)for(let j=0;j<5;j++){const x0=-PW+i*2*PW/N,x1=x0+2*PW/N,y0=-PD+j*2*PD/5,y1=y0+2*PD/5,z=(x,y)=>0.025*Math.sin(x*3+t*1.6)*Math.cos(y*2.4-t*1.1);
+    face([[x0,y0,z(x0,y0)],[x1,y0,z(x1,y0)],[x1,y1,z(x1,y1)],[x0,y1,z(x0,y1)]],w,{al:0.42,two:true});}
+  for(let i=0;i<N;i++){const x0=-PW+i*2*PW/N,x1=x0+2*PW/N;for(let k=0;k<4;k++){const z0=-DP+k*DP/4,z1=z0+DP/4;face([[x0,-PD,z0],[x1,-PD,z0],[x1,-PD,z1],[x0,-PD,z1]],k<2?mWater2:w,{al:0.16+0.06*(3-k),two:true});}}
+  // bord de la vitre
+  box3(-PW-0.06,PW+0.06,-PD-0.06,-PD,-DP-0.1,-DP,mat('#9aa6b2',0.3,16,0.5));box3(-PW-0.06,PW+0.06,-PD-0.06,-PD,0,0.15,mDeck2);}
+// ---------- les vases ----------
+function rev(cx,cy,P,z0,z1,m,o){o=o||{};const N=o.n||22,zs=P.map(q=>q[0]).filter(z=>z>z0&&z<z1);const Z=[z0].concat(zs,[z1]);
+  for(let k=0;k<Z.length-1;k++){const za=Z[k],zb=Z[k+1],ra=rAt(P,za)*(o.k||1),rb=rAt(P,zb)*(o.k||1);for(let i=0;i<N;i++){const a0=i/N*2*Math.PI,a1=(i+1)/N*2*Math.PI,am=(a0+a1)/2,sl=(ra-rb)/(zb-za),nn=V3.n([Math.cos(am),Math.sin(am),sl]);
+    face([[cx+ra*Math.cos(a0),cy+ra*Math.sin(a0),za],[cx+ra*Math.cos(a1),cy+ra*Math.sin(a1),za],[cx+rb*Math.cos(a1),cy+rb*Math.sin(a1),zb],[cx+rb*Math.cos(a0),cy+rb*Math.sin(a0),zb]],m,{n:nn,al:o.al,two:o.two,dz:o.dz});}}
+  if(o.top){const r=rAt(P,z1)*(o.k||1),T=[];for(let i=0;i<N;i++){const a=i/N*2*Math.PI;T.push([cx+r*Math.cos(a),cy+r*Math.sin(a),z1]);}face(T,m,{n:[0,0,1],al:o.topal||o.al,two:true});}}
+function lab(){let gr=ctx.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#eef1f4');gr.addColorStop(1,'#d9dfe5');ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);
+  face([[-2,0.8,-1],[2,0.8,-1],[2,0.8,1.2],[-2,0.8,1.2]],mat('#e6eaee',0.05,8,0.7),{now:true,two:true});
+  for(let i=0;i<4;i++)face([[-2,0.79,0.35+i*0.006],[2,0.79,0.35+i*0.006],[2,0.79,0.352+i*0.006],[-2,0.79,0.352+i*0.006]],mat('#c7ced6',0.05,8,0.7),{now:true,two:true});
+  // étagère avec flacons au fond
+  box3(-1.2,1.2,0.62,0.78,0.55,0.57,mWood,{now:true});[[-0.9,'#d9534f'],[-0.6,'#3b7dd8'],[0.7,'#2f8f5a'],[0.95,'#e6b422']].forEach(([x,c])=>cyl([x,0.7,0.57],[x,0.7,0.72],0.035,0.035,mat(c,0.4,20,0.5),{n:10}));
+  box3(-1.3,1.3,-0.45,0.8,-0.06,0,mBench);box3(-1.3,1.3,-0.47,-0.45,-0.9,0,mBench2);
+  // tube de liaison sous les vases (vases communicants)
+  cyl([VX[0],0,0.018],[VX[3],0,0.018],0.012,0.012,mGlass,{n:10,al:0.5});cyl([VX[0],0,0.018],[VX[3],0,0.018],0.008,0.008,water(),{n:8,al:0.7});
+  VX.forEach(x=>{cyl([x,0,0],[x,0,0.03],0.065,0.06,mat('#3a4048',0.3,16,0.45),{n:16});blob(x,0.02,0.001,0.09,0.07,0.2);});}
+function vases(){VX.forEach((x,k)=>{const P=VP[k].map(q=>[q[0]+0.03,q[1]]);
+  rev(x,0,P,0.03,0.03+HW,water(),{al:0.62,top:true,topal:0.75,k:0.94,dz:0.01});
+  rev(x,0,P,0.03,0.03+VH,mGlass,{al:0.22,two:true});});}
+// ---------- sonde, câble, manomètre ----------
+function probe(){const p=S===0?[px,0,-pd]:[VX[vk],0,HW+0.03-vd],r=S===0?0.09:0.022;
+  cyl(V3.a(p,[0,0,r*0.2]),V3.a(p,[0,0,r*1.6]),r*0.5,r*0.35,mSteel,{n:12});cyl(V3.a(p,[0,0,-r*0.25]),V3.a(p,[0,0,r*0.2]),r,r,mProbe,{n:16});
+  // câble jusqu'au manomètre posé au bord
+  const G=S===0?[-PW-0.6,-0.6,0.95]:[-0.85,-0.25,0.28],top=S===0?[p[0],p[1],0.4]:[p[0],p[1],0.03+VH+0.05];
+  line3(V3.a(p,[0,0,r*1.6]),top,'#2a2f36',S===0?3:2);line3(top,G,'#2a2f36',S===0?3:2);
+  if(S===0){cyl([-PW-0.6,-0.6,0.15],[-PW-0.6,-0.6,0.85],0.04,0.04,mSteel,{n:8});}else{cyl([-0.85,-0.25,0],[-0.85,-0.25,0.24],0.012,0.012,mSteel,{n:8});}
+  const c=S===0?0.22:0.06;cyl(V3.a(G,[0,0.03,0]),V3.a(G,[0,-0.03,0]),c,c,mat('#d5dbe1',0.6,30,0.5),{n:22,capm:mat('#ffffff',0.3,20,0.9)});return p;}
+function dial(x0,y0,R){const sm=W<560,d=depth(),p=pres(d),pool=S===0;
+  let lo,hi,step,lb;if(abs){if(pool){lo=0;hi=200;step=20;lb=40;}else{lo=100;hi=106;step=1;lb=1;}}else{if(pool){lo=0;hi=50;step=5;lb=10;}else{lo=0;hi=3;step=0.5;lb=0.5;}}
+  const cx=x0+R,cy=y0+R,a0=Math.PI*0.75,a1=Math.PI*2.25,A=v=>a0+(Math.max(lo,Math.min(hi,v))-lo)/(hi-lo)*(a1-a0);
+  let gb=ctx.createRadialGradient(cx-R*0.3,cy-R*0.3,R*0.2,cx,cy,R);gb.addColorStop(0,'#f5f7f9');gb.addColorStop(0.8,'#b9c2cb');gb.addColorStop(1,'#7d8893');ctx.fillStyle=gb;ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.fill();
+  ctx.fillStyle='#fdfdfb';ctx.beginPath();ctx.arc(cx,cy,R*0.86,0,7);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.15)';ctx.lineWidth=1;ctx.stroke();
+  ctx.strokeStyle='rgba(31,111,194,.25)';ctx.lineWidth=R*0.08;ctx.beginPath();ctx.arc(cx,cy,R*0.74,a0,A(p/1000));ctx.stroke();
+  ctx.fillStyle='#13233a';ctx.strokeStyle='#13233a';ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`700 ${Math.max(8,R*0.12)}px Mulish,system-ui,sans-serif`;
+  for(let v=lo;v<=hi+1e-9;v+=step){const a=A(v);ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*R*0.84,cy+Math.sin(a)*R*0.84);ctx.lineTo(cx+Math.cos(a)*R*0.72,cy+Math.sin(a)*R*0.72);ctx.stroke();if(Math.abs(((v-lo)/lb)-Math.round((v-lo)/lb))<1e-6)ctx.fillText(fr(v,lb<1?1:0),cx+Math.cos(a)*R*0.58,cy+Math.sin(a)*R*0.58);}
+  for(let v=lo;v<=hi+1e-9;v+=step/5){const a=A(v);ctx.lineWidth=0.8;ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*R*0.84,cy+Math.sin(a)*R*0.84);ctx.lineTo(cx+Math.cos(a)*R*0.79,cy+Math.sin(a)*R*0.79);ctx.stroke();}
+  ctx.font=`800 ${Math.max(8,R*0.12)}px Mulish,system-ui,sans-serif`;ctx.fillStyle='#5f6b7a';ctx.fillText('kPa · '+(abs?'absolue':'relative'),cx,cy+R*0.3);
+  ctx.fillStyle='#1c2a22';rrect(cx-R*0.32,cy+R*0.56,R*0.64,R*0.24,4);ctx.fill();ctx.fillStyle='#7dffb0';ctx.font=`800 ${Math.max(9,R*0.15)}px "JetBrains Mono",monospace`;ctx.fillText(fr(p/1000,pool?1:2),cx,cy+R*0.68);
+  const a=A(p/1000);ctx.save();ctx.shadowColor='rgba(0,0,0,.3)';ctx.shadowBlur=4;ctx.shadowOffsetY=2;ctx.strokeStyle='#d9534f';ctx.lineWidth=Math.max(2,R*0.035);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(cx-Math.cos(a)*R*0.12,cy-Math.sin(a)*R*0.12);ctx.lineTo(cx+Math.cos(a)*R*0.76,cy+Math.sin(a)*R*0.76);ctx.stroke();ctx.restore();
+  ctx.fillStyle='#2c3440';ctx.beginPath();ctx.arc(cx,cy,R*0.06,0,7);ctx.fill();}
+function isobars(){if(noLab)return;const sm=W<560;if(S===0){for(let k=1;k<=DP;k++){const a=pr([-PW,PD-0.01,-k]),b=pr([PW,PD-0.01,-k]);ctx.strokeStyle='rgba(19,35,58,.35)';ctx.setLineDash([6,5]);ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();ctx.setLineDash([]);
+      tag(k+' m : '+(abs?fr((P0+rho()*g*k)/1000,1):'+'+fr(rho()*g*k/1000,1))+' kPa',a[0]+6,a[1]-9,'#1f4f7a',FS,'left');}}
+  else{const pz=HW+0.03-vd;const a=pr([VX[0]-0.14,0,pz]),b=pr([VX[3]+0.14,0,pz]);ctx.strokeStyle='rgba(217,83,79,.75)';ctx.setLineDash([6,5]);ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();ctx.setLineDash([]);
+    tag('même profondeur, même pression',b[0],b[1]-12,'#a32d2d',FS,'right');}}
+function paradox(x0,y0,w){if(noLab)return;const sm=W<560,lh=sm?16:19,h=lh*6+14;rrect(x0,y0,w,h,10);ctx.fillStyle='rgba(255,255,255,.92)';ctx.fill();ctx.strokeStyle='rgba(19,35,58,.15)';ctx.lineWidth=1;ctx.stroke();
+  const F=rho()*g*HW*SB;ctx.font=`800 ${sm?10.5:12}px Mulish,system-ui,sans-serif`;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillStyle='#13233a';ctx.fillText('Le paradoxe : même fond (S = '+fr(SB*1e4,1)+' cm²)',x0+10,y0+14);
+  const c1=x0+10,c2=x0+w*0.36,c3=x0+w*0.68;ctx.font=`700 ${sm?10:11}px Mulish,system-ui,sans-serif`;ctx.fillStyle='#5f6b7a';ctx.fillText('vase',c1,y0+14+lh);ctx.fillText('poids du liquide',c2,y0+14+lh);ctx.fillText('force sur le fond',c3,y0+14+lh);
+  VN.forEach((n,k)=>{const y=y0+14+lh*(k+2),Wt=rho()*vol(VP[k],HW)*g;ctx.fillStyle=k===vk?'#185fa5':'#13233a';ctx.font=`${k===vk?800:700} ${sm?10.5:11.5}px Mulish,system-ui,sans-serif`;ctx.fillText(n,c1,y);ctx.fillText(fr(Wt,1)+' N',c2,y);ctx.fillStyle='#a32d2d';ctx.fillText(fr(F,1)+' N',c3,y);});}
+function draw(){size();const sm=W<560,T=S===0?{TG:[0,0,-1.6],SC:3.5}:{TG:[0,0,0.13],SC:0.6};for(let i=0;i<3;i++)camT[i]+=(T.TG[i]-camT[i])*0.12;camS+=(T.SC-camS)*0.12;TG=camT;SC=camS*(sm?(S===0?0.85:1.2):1);
+  cam(sm?0.4:0.47);ctx.clearRect(0,0,W,H);
+  if(S===0){pool();flush();probe();flush();poolWater();flush();}else{lab();flush();vases();probe();flush();}
+  isobars();
+  const pp=probePos(),q=pr(pp),rr=S===0?Math.max(9,0.09*q[3]):Math.max(8,0.022*q[3]);ctx.strokeStyle=hot?'#d9534f':'rgba(242,194,48,.95)';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(q[0],q[1],rr+5,0,7);ctx.stroke();
+  if(!noLab){const d=depth();tag('h = '+fr(S===0?d:d*100,S===0?2:1)+(S===0?' m':' cm'),q[0]+rr+10,q[1],'#185fa5',FB,'left');
+    const P=pres(d);panel(10,10,[[S===0?'Piscine · '+RN[ri]+' (ρ = '+fr(rho(),0)+' kg/m³)':'Vases · '+RN[ri]+' (ρ = '+fr(rho(),0)+')','#13233a',800],['profondeur h = '+(S===0?fr(d,2)+' m':fr(d*100,1)+' cm'),'#185fa5'],
+      ['ρ·g·h = '+fr(rho()*g*d/1000,S===0?1:3)+' kPa','#0F6E56'],[abs?'p = p₀ + ρgh = '+fr(P/1000,S===0?1:3)+' kPa':'p − p₀ = '+fr(P/1000,S===0?1:3)+' kPa','#a32d2d',800],[abs?'= '+fr(P/1e5,3)+' bar':'p₀ = '+fr(P0/1000,1)+' kPa non comptée','#5f6b7a',600]]);
+    const R=sm?54:78;dial(W-2*R-12,12,R);
+    if(S===1)paradox(10,H-(sm?16:19)*6-24,sm?W-20:Math.min(440,W*0.45));}}
+function upd(){const d=depth();['s0','s1'].forEach((id,i)=>$(id).classList.toggle('on',S===i));$('pa').classList.toggle('on',abs);$('prl').classList.toggle('on',!abs);['r0','r1','r2'].forEach((id,i)=>$(id).classList.toggle('on',ri===i));
+  $('roww').style.display=S===1?'':'none';const sd=$('sd');if(S===0){sd.min=0;sd.max=DP;sd.step=0.01;sd.value=pd;$('vd').textContent=fr(pd,2)+' m';}else{sd.min=0;sd.max=HW*100;sd.step=0.1;sd.value=vd*100;$('vd').textContent=fr(vd*100,1)+' cm';}
+  $('vw').textContent=fr(HW*100,1)+' cm';$('sw').value=HW*100;
+  $('fml').innerHTML='Sous la surface, chaque couche de liquide porte le poids des couches au-dessus : la pression augmente avec la profondeur, <b style="color:#a32d2d">p = p₀ + ρ·g·h</b>. '+
+    'Elle ne dépend que de la profondeur h (et du liquide), pas de la forme du récipient ni de la position sur le côté. Un manomètre ordinaire mesure souvent la <b>pression relative</b> p − p₀ = ρ·g·h ; la <b>pression absolue</b> compte en plus la pression atmosphérique p₀ = 101,3 kPa.';
+  const per=rho()*g,Vs=VP.map(P=>vol(P,HW));let kMin=0,kMax=0;Vs.forEach((v,k)=>{if(v<Vs[kMin])kMin=k;if(v>Vs[kMax])kMax=k;});
+  $('info').innerHTML=S===0?'Dans '+['l’eau douce','l’eau de mer','l’huile'][ri]+' (ρ = '+fr(rho(),0)+' kg/m³), la pression augmente de ρ·g × 1 m = <b>'+fr(per/1000,2)+' kPa par mètre</b>. À h = '+fr(pd,2)+' m : ρ·g·h = '+fr(per*pd/1000,2)+' kPa, p = '+fr((P0+per*pd)/1000,2)+' kPa. '+
+      'Au fond (4 m) : p = '+fr((P0+per*4)/1000,1)+' kPa ; il faut environ '+fr(P0/per,1)+' m '+['d’eau douce','d’eau de mer','d’huile'][ri]+' pour ajouter une atmosphère. Déplace la sonde de côté : à profondeur égale, la pression est la même partout.'
+    :'Les quatre vases ont le même fond (rayon 5 cm, S = '+fr(SB*1e4,1)+' cm²) et sont reliés par un tube : le liquide monte partout à la même hauteur H = '+fr(HW*100,1)+' cm. Pression sur le fond : ρ·g·H = '+fr(per*HW,1)+' Pa, force F = p·S = <b>'+fr(per*HW*SB,2)+' N</b> dans chaque vase, '+
+      'alors que le poids du liquide va de '+fr(rho()*vol(VP[kMin],HW)*g,1)+' N (vase '+VN[kMin]+') à '+fr(rho()*vol(VP[kMax],HW)*g,1)+' N (vase '+VN[kMax]+'). C’est le paradoxe hydrostatique : dans le vase évasé, les parois penchées portent le surplus ; dans le vase resserré, elles appuient vers le bas sur le liquide. Forces relatives (sans p₀, qui agit aussi sous le fond).';}
+function setS(s){S=s;auto&&(t=0);upd();}
+$('s0').onclick=()=>setS(0);$('s1').onclick=()=>setS(1);
+$('pa').onclick=()=>{abs=true;upd();};$('prl').onclick=()=>{abs=false;upd();};
+['r0','r1','r2'].forEach((id,i)=>$(id).onclick=()=>{ri=i;upd();});
+$('sd').oninput=e=>{auto=false;$('auto').classList.remove('on');if(S===0)pd=+e.target.value;else vd=+e.target.value/100;upd();};
+$('sw').oninput=e=>{HW=+e.target.value/100;vd=Math.min(vd,HW);upd();};
+$('auto').onclick=()=>{auto=!auto;$('auto').classList.toggle('on',auto);};
+$('lab').onclick=()=>{noLab=!noLab;$('lab').classList.toggle('on',noLab);};
+onViewBtn=id=>seg(['v3','vF'],id);$('v3').onclick=()=>{viewT=[-0.35,0.28,1];onViewBtn('v3');};$('vF').onclick=()=>{viewT=[0,0.04,1];onViewBtn('vF');};
+// ---------- souris : on attrape la sonde ; on retrouve le point (x, z) du plan y = 0 sous le pointeur ----------
+function inv(mx,my,z0,x0){let x=x0,z=z0;for(let it=0;it<6;it++){const p=pr([x,0,z]),e=1e-3,px1=pr([x+e,0,z]),pz1=pr([x,0,z+e]),a=(px1[0]-p[0])/e,b=(pz1[0]-p[0])/e,c=(px1[1]-p[1])/e,d=(pz1[1]-p[1])/e,det=a*d-b*c;if(Math.abs(det)<1e-9)break;
+  const ex=mx-p[0],ey=my-p[1];x+=(d*ex-b*ey)/det;z+=(-c*ex+a*ey)/det;}return[x,z];}
+bindMouse((x,y)=>{const pp=probePos(),q=pr(pp);if(Math.hypot(x-q[0],y-q[1])>Math.max(26,(S===0?0.15:0.04)*q[3]))return null;auto=false;$('auto').classList.remove('on');hot=true;
+  return{move:(mx,my)=>{const P=probePos(),[X,Z]=inv(mx,my,P[2],P[0]);
+      if(S===0){px=Math.max(-PW+0.25,Math.min(PW-0.25,X));pd=Math.max(0,Math.min(DP-0.1,-Z));}
+      else{let k=0,bd=9;VX.forEach((vx,i)=>{if(Math.abs(X-vx)<bd){bd=Math.abs(X-vx);k=i;}});vk=k;vd=Math.max(0,Math.min(HW-0.005,HW+0.03-Z));}upd();},up:()=>{hot=false;}};},
+  (x,y)=>{const pp=probePos(),q=pr(pp);return Math.hypot(x-q[0],y-q[1])<Math.max(26,(S===0?0.15:0.04)*q[3]);});
+yaw=-0.35;pitch=0.34;PMIN=-0.1;
+let last=null,au=0;
+function frame(ts){if(last===null)last=ts;const dt=Math.min(0.05,(ts-last)/1000);last=ts;stepView();t+=dt;
+  if(auto){au+=dt;if(S===0){pd=1.9-1.75*Math.cos(au*2*Math.PI/10);px=1.2*Math.sin(au*2*Math.PI/20);}else{const per=4,ph=(au%(per*4))/per;vk=Math.floor(ph);const f=ph-vk;vd=(HW-0.01)*Math.sin(Math.PI*Math.min(1,f*1.15))*0.9+0.005;}upd();}
+  draw();requestAnimationFrame(frame);}
+window.__pp={get:()=>({S,abs,rho:rho(),d:depth(),p:pres(depth()),HW,vk,F:rho()*g*HW*SB,Wv:VP.map((P,k)=>rho()*vol(P,HW)*g)}),set:o=>{if(o.auto!=null){auto=o.auto;$('auto').classList.toggle('on',auto);}if(o.S!=null)S=o.S;if(o.abs!=null)abs=o.abs;if(o.ri!=null)ri=o.ri;if(o.pd!=null)pd=o.pd;if(o.px!=null)px=o.px;if(o.vd!=null)vd=o.vd;if(o.vk!=null)vk=o.vk;if(o.HW!=null)HW=o.HW;upd();}};
+upd();requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Mécanique des fluides<span>12 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/archimede/"><i>01</i>Poussée d'Archimède</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/pascal/"><i>02</i>Principe de Pascal</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Bernouilli-/"><i>03</i>Bernoulli</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/tube-en-u/"><i>04</i>Tube en U : liquides non miscibles</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/deux-cubes-immerges/"><i>05</i>Deux cubes immergés : action-réaction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/bulles-laplace/"><i>06</i>Deux bulles de savon reliées : loi de Laplace</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/venturi-aspiration/"><i>07</i>Tube en T et rétrécissement : effet Venturi</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/poiseuille/"><i>08</i>Écoulement visqueux : loi de Poiseuille</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-perfusion-posture/"><i>09</i>Perfusion et posture : ρgh dans le corps</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-reynolds/"><i>10</i>Laminaire ou turbulent : l’expérience de Reynolds</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-pression-profondeur/"><i>11</i>p = p₀ + ρgh : la sonde et le paradoxe</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-vidange-torricelli/"><i>12</i>Vidange d’un réservoir : la vitesse de Torricelli</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

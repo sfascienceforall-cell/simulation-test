@@ -19,7 +19,7 @@ def pages(dossier, only):
     d = os.path.join(RACINE, dossier)
     for f in sorted(glob.glob(os.path.join(d, '*', 'index.html'))):
         sid = os.path.basename(os.path.dirname(f))
-        if sid in ('thumbs', 'exercices') or sid.startswith('_'):
+        if sid in ('thumbs', 'exercices') or (sid.startswith('_') and sid not in only):
             continue
         if only and sid not in only:
             continue

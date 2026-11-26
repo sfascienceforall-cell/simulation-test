@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deux lampes : la bobine retarde le courant · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH11">Magnétisme</a>›<b>Deux lampes : la bobine retarde le courant</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Magnétisme</span><span class="sfa-chip free">Gratuit</span></div><h1>Deux lampes : la bobine retarde le courant</h1><p>Deux lampes identiques sont branchées en parallèle : l’une avec un rhéostat, l’autre avec une grosse bobine sur un noyau de fer. Ferme l’interrupteur : la première s’allume tout de suite, la seconde traîne, et la courbe i(t) montre la constante de temps τ = L/R. Soulève la barre du noyau, retire une branche et ouvre : une étincelle jaillit.</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:72vh;min-height:560px;cursor:grab;touch-action:none" aria-label="Montage en 3D sur une planche : un générateur, un interrupteur à couteau et deux lampes en parallèle, l'une en série avec un rhéostat, l'autre avec une grosse bobine sur un noyau de fer ; à la fermeture, la seconde lampe s'allume en retard ; la courbe i(t) montre la constante de temps τ = L/R"></canvas>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill">Interrupteur K</span>
+  <button class="btn" id="kT" style="font-weight:800">Fermer K</button>
+  <button class="btn on" id="au">Automatique : K s’ouvre et se ferme tout seul</button>
+</div>
+<div class="row">
+  <span class="pill">Branche de la lampe L₁</span>
+  <button class="btn on" id="b1">Branchée (deux lampes en parallèle)</button>
+  <button class="btn" id="b0">Retirée : la bobine seule</button>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#185fa5">g &nbsp;entrefer du noyau</span>
+  <input type="range" id="sG" min="0" max="30" step="0.5" value="0" style="accent-color:#378ADD;">
+  <span class="val" id="vG" style="color:#185fa5"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#9a5f0f">R &nbsp;rhéostat de la branche 1</span>
+  <input type="range" id="sR" min="0" max="50" step="1" value="10" style="accent-color:#BA7517;">
+  <span class="val" id="vR" style="color:#9a5f0f"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:150px;color:#a32d2d">E &nbsp;tension du générateur</span>
+  <input type="range" id="sE" min="2" max="12" step="0.5" value="6" style="accent-color:#E24B4A;">
+  <span class="val" id="vE" style="color:#a32d2d"></span>
+</div>
+<div class="row">
+  <span class="pill">Temps</span>
+  <button class="btn on" id="s1">Réel</button>
+  <button class="btn" id="s5">Ralenti ×5</button>
+  <button class="btn on" id="bL">Noms des pièces</button>
+  <button class="btn on" id="bD">Courant (points dorés)</button>
+</div>
+<div class="row">
+  <span class="pill">Vue</span>
+  <button class="btn on" id="v3">3D</button>
+  <button class="btn" id="vT">De dessus</button>
+  <button class="btn" id="vB">Près de la bobine</button>
+  <button class="btn" id="pa">Pause</button>
+</div>
+<div class="row"><span class="hint">Clique sur le levier de l’interrupteur pour l’ouvrir ou le fermer. Soulève la barre de fer posée sur le noyau (attrape-la et tire vers le haut) : l’entrefer fait chuter L et la lampe L₂ ne traîne presque plus. Retire la branche L₁ puis ouvre K : une étincelle jaillit. Glisse ailleurs pour tourner la vue, molette pour zoomer.</span></div>
+<div class="row"><span class="hint">Modèle : les lampes sont prises comme des résistances fixes de 30 Ω (un vrai filament froid résiste moins) ; la bobine a 1 000 spires et 10 Ω, son noyau en fer feuilleté a μr ≈ 3 000.</span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const $=id=>document.getElementById(id);
+const INK='#2c3440',BLU='#185fa5',BLU_L='#378ADD',GRN='#0F6E56',GRN_L='#1D9E75',RED='#E24B4A',RED_D='#a32d2d',OR_D='#9a5f0f',GREY='#7c8794',GOLD='#f2b233',PUR='#7b2cbf';
+const fr=(v,d)=>(Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d).replace('.',',').replace(/^-/,'−');
+let W=0,H=0,dpr=1;
+function size(){const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.round(b.width)||800,h=Math.round(b.height)||560;if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);}
+const small=()=>W<620;
+function font(w,s){return w+' '+(small()?Math.round(s*0.86):s)+'px Mulish,system-ui,sans-serif';}
+function tag(t,x,y,col,f,al){ctx.font=f||font(700,12.5);ctx.textAlign=al||'center';ctx.textBaseline='middle';const w=ctx.measureText(t).width,A=al||'center';const lo=A==='left'?4:A==='right'?w+4:w/2+4,hi=A==='left'?W-w-4:A==='right'?W-4:W-w/2-4;x=Math.max(lo,Math.min(hi,x));y=Math.max(9,Math.min(H-9,y));
+  ctx.lineWidth=3.5;ctx.strokeStyle='rgba(255,255,255,.94)';ctx.lineJoin='round';ctx.strokeText(t,x,y);ctx.fillStyle=col||INK;ctx.fillText(t,x,y);}
+function arrow2(x1,y1,x2,y2,col,w){ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w||2;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();const a=Math.atan2(y2-y1,x2-x1),h=7+(w||2)*1.7;ctx.beginPath();ctx.moveTo(x2+Math.cos(a)*2,y2+Math.sin(a)*2);ctx.lineTo(x2-h*Math.cos(a-0.42),y2-h*Math.sin(a-0.42));ctx.lineTo(x2-h*Math.cos(a+0.42),y2-h*Math.sin(a+0.42));ctx.closePath();ctx.fill();}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function lit(hex,k){const n=parseInt(hex.slice(1),16),c=[n>>16,(n>>8)&255,n&255].map(v=>k<=1?v*k:v+(255-v)*Math.min(1,k-1));return'rgb('+c.map(v=>Math.max(0,Math.min(255,Math.round(v)))).join(',')+')';}
+
+// ---------- petit moteur 3D ----------
+const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],mul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s],dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+  crs=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],nrm=a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return[a[0]/l,a[1]/l,a[2]/l];};
+let yaw=-0.3,pitch=0.78,zoom=1,C={},CP=[0,0,0],TG=[0,-0.005,0.05];
+const VW={v3:[-0.3,0.78,1,[0,-0.005,0.05]],vT:[-0.001,1.5,1,[0,0,0.03]],vB:[-0.55,0.45,1.9,[0.13,-0.06,0.08]]};
+function cam(){const sm=small(),Dc=1.0/zoom,f=sm?Math.min(W*1.75,H*1.2):Math.min(W*1.45,H*1.6);C={Dc,f,cx:W*(sm?0.5:0.44),cy:H*(sm?0.5:0.56),cyw:Math.cos(yaw),syw:Math.sin(yaw),cp:Math.cos(pitch),sp:Math.sin(pitch)};CP=[TG[0]-Dc*C.cp*C.syw,TG[1]-Dc*C.cp*C.cyw,TG[2]+Dc*C.sp];}
+function pr(x,y,z){x-=TG[0];y-=TG[1];z-=TG[2];const xr=x*C.cyw-y*C.syw,yr=x*C.syw+y*C.cyw,dep=C.Dc+yr*C.cp-z*C.sp,k=C.f/Math.max(0.02,dep);return[C.cx+xr*k,C.cy-(z*C.cp+yr*C.sp)*k,dep,k];}
+const P3=p=>pr(p[0],p[1],p[2]);
+function rayAt(X,Y,d){const a=(X-C.cx)/C.f,b=(C.cy-Y)/C.f,xr=a*d,u=b*d,yr=(d-C.Dc)*C.cp+u*C.sp,z=-(d-C.Dc)*C.sp+u*C.cp;return[xr*C.cyw+yr*C.syw+TG[0],-xr*C.syw+yr*C.cyw+TG[1],z+TG[2]];}
+function hitPlane(X,Y,i,v){const A=rayAt(X,Y,0),D=sub(rayAt(X,Y,1),A);if(Math.abs(D[i])<1e-9)return null;const d=(v-A[i])/D[i];return d>0?add(A,mul(D,d)):null;}
+let Q=[];const LD=nrm([-0.4,-0.7,0.8]);
+function face(P,col,ctr,o){o=o||{};let n=[0,0,0];for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];n[0]+=(a[1]-b[1])*(a[2]+b[2]);n[1]+=(a[2]-b[2])*(a[0]+b[0]);n[2]+=(a[0]-b[0])*(a[1]+b[1]);}n=nrm(n);
+  let c=[0,0,0];P.forEach(p=>{c=add(c,p);});c=mul(c,1/P.length);if(ctr&&dot(n,sub(c,ctr))<0)n=mul(n,-1);
+  const vd=sub(CP,c);if(dot(n,vd)<=0){if(!o.two)return;n=mul(n,-1);}
+  const l=Math.max(0,dot(n,LD)),hh=Math.max(0,dot(nrm(add(LD,nrm(vd))),n)),spc=o.spec?Math.pow(hh,o.spec)*0.7:0;
+  const S=P.map(P3);let d=0;S.forEach(s=>d+=s[2]);d=d/S.length+(o.bias||0);
+  Q.push({d,S,fill:lit(col,(o.amb==null?0.5:o.amb)+0.58*l+spc),a:o.a,st:o.st,lw:o.lw});}
+function item(d,fn){Q.push({d,fn});}
+function drawList(L){L.sort((a,b)=>b.d-a.d);for(const q of L){if(q.fn){ctx.globalAlpha=1;q.fn();continue;}ctx.globalAlpha=q.a==null?1:q.a;ctx.beginPath();q.S.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fillStyle=q.fill;ctx.fill();ctx.lineJoin='round';ctx.strokeStyle=q.st||q.fill;ctx.lineWidth=q.st?(q.lw||1):0.7;if(q.a==null||q.st)ctx.stroke();}ctx.globalAlpha=1;}
+function flush(){drawList(Q);Q=[];}
+function obox(c,ex,ey,ez,col,o){const P=[];for(const sx of[-1,1])for(const sy of[-1,1])for(const sz of[-1,1])P.push(add(add(add(c,mul(ex,sx)),mul(ey,sy)),mul(ez,sz)));
+  [[0,1,3,2],[4,5,7,6],[0,1,5,4],[2,3,7,6],[0,2,6,4],[1,3,7,5]].forEach((f,k)=>{if(!o||!o.only||o.only.includes(k))face(f.map(i=>P[i]),col,c,o);});}
+function box(x0,x1,y0,y1,z0,z1,col,o){obox([(x0+x1)/2,(y0+y1)/2,(z0+z1)/2],[(x1-x0)/2,0,0],[0,(y1-y0)/2,0],[0,0,(z1-z0)/2],col,o);}
+function basis(a){const t=Math.abs(a[2])<0.9?[0,0,1]:[1,0,0];const u=nrm(crs(a,t));return[u,crs(a,u)];}
+function cyl(p0,p1,r,col,o){o=o||{};const n=o.n||18,ax=nrm(sub(p1,p0)),bs=basis(ax),u=bs[0],v=bs[1],ctr=mul(add(p0,p1),0.5);const ring=(p,a)=>add(p,add(mul(u,r*Math.cos(a)),mul(v,r*Math.sin(a))));
+  for(let i=0;i<n;i++){const a0=2*Math.PI*i/n,a1=2*Math.PI*(i+1)/n;face([ring(p0,a0),ring(p0,a1),ring(p1,a1),ring(p1,a0)],col,ctr,o);}
+  if(o.caps!==false){const c0=[],c1=[];for(let i=0;i<n;i++){const a=2*Math.PI*i/n;c0.push(ring(p0,a));c1.push(ring(p1,a));}face(c0,o.cap||col,ctr,o);face(c1,o.cap||col,ctr,o);}}
+function wire(pts,col,r){for(let i=0;i<pts.length-1;i++){const a=P3(pts[i]),b=P3(pts[i+1]);item((a[2]+b[2])/2,()=>{const w=Math.max(1.6,r*2*(a[3]+b[3])/2);ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();ctx.strokeStyle='rgba(255,255,255,.3)';ctx.lineWidth=w*0.32;ctx.beginPath();ctx.moveTo(a[0],a[1]-w*0.18);ctx.lineTo(b[0],b[1]-w*0.18);ctx.stroke();});}}
+
+// ---------- circuit et physique ----------
+const RL=30,RC=10,NS=1000,SF=1.6e-3,LF=0.32,MUR=3000,MU0=4e-7*Math.PI,ZB=0.02;
+let E=6,R=10,gmm=0,br1=true,closed=false,auto=true,slow=1,paused=false,names=true,dots=true,t=0,clean=false;
+let i1=0,i2=0,tEv=0,cyc=0,spark=0,sparkU=0,lev=1,hist=[],lastOpenI=0;
+const Lh=()=>{const g=gmm/1000,Rm=LF/(MU0*MUR*SF)+2*g/(MU0*SF);return NS*NS/Rm;};
+const tauC=()=>Lh()/(RL+RC), tauO=()=>Lh()/(2*RL+RC+R), Iinf=()=>E/(RL+RC), I1c=()=>br1?E/(RL+R):0;
+const halfT=()=>Math.min(6,Math.max(2,6*tauC()));
+function uL(){if(closed)return E-(RL+RC)*i2;if(br1)return -(RL+R+RL+RC)*i2;return spark>0?-sparkU:0;}
+function setK(c){if(c===closed)return;closed=c;tEv=t;hist=[];$('kT').textContent=closed?'Ouvrir K':'Fermer K';$('kT').classList.toggle('on',closed);
+  if(!closed&&!br1&&Math.abs(i2)>1e-3){lastOpenI=i2;sparkU=Lh()*Math.abs(i2)/1e-3;spark=0.3;}handT=0.5;upd();}
+function step(dt){const ts=dt/slow;t+=ts;
+  if(auto){cyc+=ts;if(cyc>halfT()){cyc=0;setK(!closed);}}
+  if(closed){i1=I1c();const ii=Iinf(),ta=tauC();i2=ii+(i2-ii)*Math.exp(-ts/ta);}
+  else if(br1){i2=i2*Math.exp(-ts/tauO());i1=-i2;}
+  else{i1=0;i2=i2*Math.exp(-ts/0.003);}
+  if(spark>0)spark-=ts;handT=Math.max(0,handT-dt);
+  lev+=((closed?0:1)-lev)*Math.min(1,dt*14);
+  const ts0=t-tEv;hist.push([ts0,i1,i2]);if(hist.length>4000)hist.shift();}
+let handT=0;
+
+// ---------- décor ----------
+function table(){const q=[[-0.5,-0.35,0],[0.5,-0.35,0],[0.5,0.32,0],[-0.5,0.32,0]];box(-0.5,0.5,-0.35,0.32,-0.04,0,'#8a9aa8',{spec:30});flush();
+  box(-0.32,0.33,-0.19,0.19,0,ZB,'#c49058',{spec:14});flush();
+  const b=[[-0.32,-0.19,ZB],[0.33,-0.19,ZB],[0.33,0.19,ZB],[-0.32,0.19,ZB]].map(P3);ctx.save();ctx.beginPath();b.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.clip();ctx.strokeStyle='rgba(90,50,20,.14)';ctx.lineWidth=1;
+  for(let k=0;k<14;k++){const y=-0.19+0.38*k/13;ctx.beginPath();for(let i=0;i<=20;i++){const x=-0.32+0.65*i/20,p=pr(x,y+0.003*Math.sin(i*0.8+k*2.1),ZB);i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);}ctx.stroke();}ctx.restore();}
+function supply(){box(-0.3,-0.17,-0.02,0.12,ZB,ZB+0.095,'#d7dde3',{spec:24});
+  const fc=[-0.235,-0.02,ZB+0.05];if(dot([0,-1,0],sub(CP,fc))>0){const P=(x,z)=>P3([x,-0.0205,z]);const a=P(-0.285,ZB+0.085),b=P(-0.185,ZB+0.085),c=P(-0.185,ZB+0.05),d=P(-0.285,ZB+0.05);
+    item(P3(fc)[2]-0.01,()=>{ctx.fillStyle='#1c252e';ctx.beginPath();[a,b,c,d].forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fill();const m=P(-0.235,ZB+0.067);ctx.fillStyle='#7dff9a';ctx.font='800 '+Math.max(10,Math.round(0.018*m[3]))+'px Mulish,system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(fr(E,1)+' V',m[0],m[1]);
+      const k=P(-0.235,ZB+0.035);ctx.fillStyle='#55606b';ctx.beginPath();ctx.arc(k[0],k[1],Math.max(4,0.009*k[3]),0,7);ctx.fill();});}
+  cyl([-0.26,-0.02,ZB+0.018],[-0.26,-0.035,ZB+0.018],0.006,'#c62828',{n:12,spec:30});cyl([-0.21,-0.02,ZB+0.018],[-0.21,-0.035,ZB+0.018],0.006,'#263238',{n:12,spec:30});}
+const HX=-0.13,JX=-0.07,KY=-0.13,LEN=0.066;
+function knife(){box(-0.145,-0.055,KY-0.022,KY+0.022,ZB,ZB+0.01,'#3b2a20',{spec:16});
+  box(HX-0.006,HX+0.006,KY-0.012,KY+0.012,ZB+0.01,ZB+0.03,'#c9a34a',{spec:30});box(JX-0.006,JX+0.006,KY-0.012,KY+0.012,ZB+0.01,ZB+0.03,'#c9a34a',{spec:30});
+  const a=lev*1.05,dir=[Math.cos(a),0,Math.sin(a)],h=[HX,KY,ZB+0.026],e=add(h,mul(dir,LEN));
+  obox(add(h,mul(dir,LEN/2)),mul(dir,LEN/2),[0,0.003,0],mul([-Math.sin(a),0,Math.cos(a)],0.006),'#d9b25c',{spec:30});
+  cyl(add(e,mul(dir,-0.004)),add(e,mul(dir,0.03)),0.008,'#1f2328',{n:12,spec:24});
+  if(spark>0){const p=P3([JX,KY,ZB+0.03]),q=P3(add(h,mul(dir,LEN*0.95)));item(-1e3,()=>{const s=Math.min(1,spark/0.3);ctx.save();ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(p[0],p[1],1,p[0],p[1],60*s+10);g.addColorStop(0,`rgba(200,220,255,${0.9*s})`);g.addColorStop(1,'rgba(120,150,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(p[0],p[1],60*s+10,0,7);ctx.fill();
+    for(let k=0;k<3;k++){ctx.strokeStyle=`rgba(${230},${240},255,${s})`;ctx.lineWidth=2.2-k*0.5;ctx.beginPath();ctx.moveTo(p[0],p[1]);for(let i=1;i<=6;i++){const u=i/6;ctx.lineTo(p[0]+(q[0]-p[0])*u+(Math.random()-0.5)*14*s,p[1]+(q[1]-p[1])*u+(Math.random()-0.5)*14*s);}ctx.stroke();}
+    for(let k=0;k<10;k++){const an=Math.random()*6.3,r=Math.random()*40*s;ctx.fillStyle='rgba(255,230,160,.9)';ctx.fillRect(p[0]+Math.cos(an)*r,p[1]+Math.sin(an)*r,2,2);}ctx.restore();});}
+  const kp=P3(add(e,mul(dir,0.03)));return kp;}
+function bulb(X,Y,i,lab){box(X-0.03,X+0.03,Y-0.025,Y+0.025,ZB,ZB+0.018,'#2f3a46',{spec:20});cyl([X,Y,ZB+0.018],[X,Y,ZB+0.034],0.011,'#c9a34a',{n:14,spec:20});
+  const P=RL*i*i,lum=Math.min(1,Math.sqrt(P/(RL*0.2*0.2))),c=P3([X,Y,ZB+0.056]);
+  item(c[2]-0.01,()=>{const R0=0.022*c[3];
+    if(lum>0.02){ctx.save();ctx.globalCompositeOperation='lighter';const h=ctx.createRadialGradient(c[0],c[1],R0*0.2,c[0],c[1],R0*(2+3.5*lum));h.addColorStop(0,`rgba(255,220,120,${0.85*lum})`);h.addColorStop(1,'rgba(255,200,80,0)');ctx.fillStyle=h;ctx.beginPath();ctx.arc(c[0],c[1],R0*(2+3.5*lum),0,7);ctx.fill();ctx.restore();}
+    const gg=ctx.createRadialGradient(c[0]-R0*0.35,c[1]-R0*0.4,R0*0.1,c[0],c[1],R0);gg.addColorStop(0,lum>0.02?'rgba(255,250,215,.97)':'rgba(255,255,255,.9)');gg.addColorStop(0.7,lum>0.02?`rgba(255,${220-30*lum},${120-60*lum},${0.45+0.45*lum})`:'rgba(215,228,238,.5)');gg.addColorStop(1,'rgba(150,170,190,.6)');
+    ctx.fillStyle=gg;ctx.beginPath();ctx.arc(c[0],c[1],R0,0,7);ctx.fill();ctx.strokeStyle='rgba(90,110,130,.6)';ctx.lineWidth=1;ctx.stroke();
+    ctx.strokeStyle=lum>0.02?`rgb(255,${200+55*lum},${120+120*lum})`:'#6a5a4a';ctx.lineWidth=1.6;ctx.beginPath();for(let k=0;k<=8;k++){const u=k/8,x=c[0]-R0*0.35+R0*0.7*u,y=c[1]+(k%2?-1:1)*R0*0.12;k?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,.75)';ctx.beginPath();ctx.ellipse(c[0]-R0*0.38,c[1]-R0*0.42,R0*0.18,R0*0.1,-0.7,0,7);ctx.fill();
+    if(names&&!clean)tag(lab,c[0],c[1]-R0-14,OR_D,font(800,13));});}
+function rheostat(){const X0=0.09,X1=0.21,Y=0.09,Z=ZB+0.03;box(X0-0.012,X0,Y-0.02,Y+0.02,ZB,Z+0.025,'#4a5561',{spec:20});box(X1,X1+0.012,Y-0.02,Y+0.02,ZB,Z+0.025,'#4a5561',{spec:20});
+  cyl([X0,Y,Z],[X1,Y,Z],0.018,'#efe9dd',{n:16,spec:14,cap:'#d8d0c0'});
+  for(let k=0;k<=30;k++){const x=X0+0.004+(X1-X0-0.008)*k/30,P=[];for(let j=0;j<=10;j++){const a=-Math.PI*0.95+Math.PI*0.9*j/10;P.push([x,Y+0.0185*Math.cos(a+Math.PI/2),Z+0.0185*Math.sin(a+Math.PI/2)]);}const S=P.map(P3);item(S[5][2]-0.0005,()=>{ctx.strokeStyle='rgba(150,90,40,.75)';ctx.lineWidth=1;ctx.beginPath();S.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();});}
+  box(X0,X1,Y-0.004,Y+0.004,Z+0.026,Z+0.032,'#9aa4ae',{spec:30});const xc=X0+0.005+(X1-X0-0.01)*R/50;box(xc-0.007,xc+0.007,Y-0.01,Y+0.01,Z+0.016,Z+0.038,'#1f2328',{spec:30});
+  if(names&&!clean){const p=P3([0.15,Y,Z+0.06]);item(p[2]-0.02,()=>tag('rhéostat R = '+R+' Ω',p[0],p[1],OR_D,font(700,12)));}}
+const CX=0.11,CY=-0.06,TOP=ZB+0.11;
+function coil(){const yo=0.022;box(0.095,0.245,CY-yo,CY+yo,ZB,ZB+0.025,'#6b7682',{spec:20});box(0.095,0.125,CY-yo,CY+yo,ZB+0.025,TOP,'#6b7682',{spec:20});box(0.215,0.245,CY-yo,CY+yo,ZB+0.025,TOP,'#6b7682',{spec:20});
+  // feuilletage du noyau
+  for(let k=1;k<8;k++){const y=CY-yo+2*yo*k/8,a=P3([0.095,y,TOP]),b=P3([0.125,y,TOP]);item(a[2]-0.0003,()=>{ctx.strokeStyle='rgba(30,40,50,.35)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();});}
+  // bobine : flasques rouges et enroulement de cuivre
+  const z0=ZB+0.03,z1=ZB+0.1;cyl([CX,CY,z0],[CX,CY,z0+0.006],0.045,'#b3261e',{n:22,spec:20});cyl([CX,CY,z1-0.006],[CX,CY,z1],0.045,'#b3261e',{n:22,spec:20});
+  cyl([CX,CY,z0+0.006],[CX,CY,z1-0.006],0.04,'#c87533',{n:22,spec:14,caps:false});
+  for(let k=1;k<14;k++){const z=z0+0.006+(z1-z0-0.012)*k/14,P=[];for(let j=0;j<=24;j++){const a=2*Math.PI*j/24;P.push([CX+0.0402*Math.cos(a),CY+0.0402*Math.sin(a),z]);}
+    for(let j=0;j<24;j++){const a=P[j],b=P[j+1],m=[(a[0]+b[0])/2,(a[1]+b[1])/2,z];if(dot([m[0]-CX,m[1]-CY,0],sub(CP,m))<=0)continue;const pa=P3(a),pb=P3(b);item((pa[2]+pb[2])/2-0.0004,()=>{ctx.strokeStyle='rgba(110,55,15,.45)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pa[0],pa[1]);ctx.lineTo(pb[0],pb[1]);ctx.stroke();});}}
+  // barre de fermeture (I) : on la soulève pour créer l'entrefer
+  const g=gmm/1000,zb=TOP+g;box(0.09,0.25,CY-yo-0.002,CY+yo+0.002,zb,zb+0.024,'#7d8894',{spec:24});
+  if(g>0.0005&&!clean){const a=P3([0.235,CY-yo-0.004,TOP]),b=P3([0.235,CY-yo-0.004,zb]);item(a[2]-0.02,()=>{ctx.strokeStyle=BLU;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(a[0]+8,a[1]);ctx.lineTo(b[0]+8,b[1]);ctx.stroke();tag('g = '+fr(gmm,1)+' mm',b[0]+12,(a[1]+b[1])/2,BLU,font(800,12),'left');});}
+  if(hoverY||dragY){const p=P3([0.17,CY,zb+0.024]);item(p[2]-0.03,()=>{ctx.strokeStyle='rgba(29,158,117,.65)';ctx.lineWidth=3;ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(p[0],p[1],0.09*p[3],0.035*p[3],0,0,7);ctx.stroke();ctx.setLineDash([]);});}
+  if(names&&!clean){const p=P3([CX,CY-0.075,ZB+0.01]),q=P3([0.25,CY-0.04,zb+0.03]);item(p[2]-0.03,()=>{tag('bobine L (1 000 spires)',p[0],p[1],RED_D,font(800,12.5));if(!small())tag('barre de fer : soulève-la',q[0],q[1]+18,GREY,font(700,12),'left');});}}
+// ---------- fils et courant ----------
+const z=ZB+0.004;
+const PATH={
+  main:[[-0.26,-0.035,ZB+0.018],[-0.26,-0.13,z],[HX,KY,z]],
+  mainB:[[JX,KY,z],[-0.04,KY,z],[-0.04,-0.06,z]],
+  b2:[[-0.04,-0.06,z],[-0.03,-0.06,z]],b2b:[[0.03,-0.06,z],[0.05,-0.115,z],[0.09,-0.115,z],[0.105,-0.105,ZB+0.03]],b2c:[[0.115,-0.105,ZB+0.1],[0.135,-0.13,z],[0.29,-0.13,z],[0.29,0.09,z]],
+  b1:[[-0.04,-0.06,z],[-0.04,0.09,z],[-0.03,0.09,z]],b1b:[[0.03,0.09,z],[0.078,0.09,z]],b1c:[[0.222,0.09,z],[0.29,0.09,z]],
+  ret:[[0.29,0.09,z],[0.29,0.16,z],[-0.14,0.16,z],[-0.14,-0.06,z],[-0.21,-0.06,z],[-0.21,-0.035,ZB+0.018]]};
+function wires(){wire(PATH.main,'#c62828',0.0022);wire(PATH.mainB,'#c62828',0.0022);wire(PATH.b2,'#c62828',0.0022);wire(PATH.b2b,'#e08a00',0.0022);wire(PATH.b2c,'#263238',0.0022);
+  if(br1){wire(PATH.b1,'#c62828',0.0022);wire(PATH.b1b,'#e08a00',0.0022);wire(PATH.b1c,'#263238',0.0022);}
+  else{wire([[-0.04,0.09,z+0.005],[-0.03,0.09,ZB+0.02]],'#c62828',0.0022);}
+  wire(PATH.ret,'#263238',0.0022);
+  if(!dots)return;const it=closed?i1+i2:0;
+  [[PATH.main,it],[PATH.mainB,it],[PATH.b2,i2],[PATH.b2b,i2],[PATH.b2c,i2],[PATH.ret,it]].concat(br1?[[PATH.b1,i1],[PATH.b1b,i1],[PATH.b1c,i1]]:[]).forEach(([P,I])=>flow(P,I));}
+function flow(P,I){if(Math.abs(I)<2e-3)return;const L=[0];for(let i=0;i<P.length-1;i++)L.push(L[i]+Math.hypot(P[i+1][0]-P[i][0],P[i+1][1]-P[i][1],P[i+1][2]-P[i][2]));const T=L[L.length-1],sp=0.02,ph=((t*Math.sign(I)*Math.min(0.3,0.04+Math.abs(I)*0.8))%sp+sp)%sp;
+  for(let s=ph;s<T;s+=sp){let k=0;while(k<P.length-2&&s>L[k+1])k++;const u=(s-L[k])/(L[k+1]-L[k]),a=P[k],b=P[k+1],p=P3([a[0]+(b[0]-a[0])*u,a[1]+(b[1]-a[1])*u,a[2]+(b[2]-a[2])*u+0.002]);
+    item(p[2]-0.001,()=>{ctx.globalAlpha=Math.min(1,0.35+Math.abs(I)*5);ctx.fillStyle=GOLD;ctx.beginPath();ctx.arc(p[0],p[1],Math.max(2,0.0035*p[3]),0,7);ctx.fill();ctx.globalAlpha=1;});}}
+function hand(kp){if(!(auto||handT>0))return;const E_=P3([-0.12,-0.5,0.08]),p=kp;item(p[2]-0.05,()=>{const r=Math.max(7,0.014*p[3]*1.0),re=r*1.5,dx=p[0]-E_[0],dy=p[1]-E_[1],L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L;
+  if(E_[2]>0.45&&pitch>0.3){const g=ctx.createLinearGradient(E_[0]+nx*re,E_[1]+ny*re,E_[0]-nx*re,E_[1]-ny*re);g.addColorStop(0,'#f2c9a5');g.addColorStop(0.55,'#e0a98a');g.addColorStop(1,'#b97d60');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(E_[0]+nx*re,E_[1]+ny*re);ctx.lineTo(p[0]+nx*r*0.7,p[1]+ny*r*0.7);ctx.lineTo(p[0]-nx*r*0.7,p[1]-ny*r*0.7);ctx.lineTo(E_[0]-nx*re,E_[1]-ny*re);ctx.closePath();ctx.fill();
+    const sx=E_[0]+dx*0.15,sy=E_[1]+dy*0.15;ctx.fillStyle='#1D9E75';ctx.beginPath();ctx.moveTo(E_[0]+nx*re*1.2,E_[1]+ny*re*1.2);ctx.lineTo(sx+nx*re*1.1,sy+ny*re*1.1);ctx.lineTo(sx-nx*re*1.1,sy-ny*re*1.1);ctx.lineTo(E_[0]-nx*re*1.2,E_[1]-ny*re*1.2);ctx.closePath();ctx.fill();}
+  const an=Math.atan2(dy,dx);ctx.save();ctx.translate(p[0]-dx/L*r*0.4,p[1]-dy/L*r*0.4);ctx.rotate(an);const hg=ctx.createLinearGradient(0,-r*1.3,0,r*1.3);hg.addColorStop(0,'#f6d3b5');hg.addColorStop(1,'#c58a6b');ctx.fillStyle=hg;rr(-r*1.1,-r*1.2,r*2.1,r*2.4,r*0.7);ctx.fill();
+  ctx.strokeStyle='rgba(120,70,50,.5)';ctx.lineWidth=1.1;for(let k=0;k<4;k++){const yy=-r*1.2+r*2.4*(k+0.5)/4;ctx.beginPath();ctx.ellipse(r*0.75,yy,r*0.32,r*0.28,0,-1.4,1.4);ctx.stroke();}ctx.restore();});}
+
+// ---------- tableau de bord et graphe ----------
+function hud(){const sm=small(),L=Lh(),ta=tauC(),to=tauO(),ts=t-tEv,u=uL();
+  const w=sm?W-16:480,h=sm?96:118,X=8,Y=8;ctx.fillStyle='rgba(255,255,255,.94)';rr(X,Y,w,h,10);ctx.fill();ctx.strokeStyle='#dfe5ec';ctx.lineWidth=1;ctx.stroke();
+  ctx.textAlign='left';ctx.textBaseline='alphabetic';const lh=sm?19:23,x0=X+12;let y=Y+(sm?20:25);ctx.font=font(800,sm?13.5:15);
+  ctx.fillStyle=INK;ctx.fillText((closed?'K fermé':'K ouvert')+' depuis '+fr(ts,2)+' s · L = '+fr(L,L<1?3:2)+' H',x0,y);y+=lh;ctx.font=font(700,sm?12.5:13.5);
+  ctx.fillStyle=OR_D;ctx.fillText(br1?'L₁ (avec R) : i₁ = '+fr(i1*1000,0)+' mA'+(closed?(sm?'':', tout de suite E/(R lampe + R)'):(Math.abs(i1)>1e-3?(sm?' (sens inverse)':' : c’est le courant de la bobine, en sens inverse'):'')):'branche L₁ retirée',x0,y);y+=lh;
+  ctx.fillStyle=RED_D;ctx.fillText('L₂ (avec la bobine) : i₂ = '+fr(i2*1000,0)+' mA'+(closed&&!sm?' = I∞·(1 − e^(−t/τ))':''),x0,y);y+=lh;
+  ctx.fillStyle=PUR;ctx.fillText(sm?'τ = L/(R lampe + r) = '+fr(ta,3)+' s · u bobine = '+(Math.abs(u)>999?fr(u/1000,1)+' kV':fr(u,1)+' V'):'τ = L/(R lampe + r) = '+fr(L,2)+'/'+(RL+RC)+' = '+fr(ta,3)+' s · tension de la bobine u = L·di/dt = '+(Math.abs(u)>999?fr(u/1000,1)+' kV':fr(u,2)+' V'),x0,y);
+  // graphe i(t)
+  const gw=sm?W-16:Math.min(380,W*0.36),gh=sm?118:170,GX=sm?8:W-gw-10,GY=H-gh-(sm?8:10);ctx.fillStyle='rgba(255,255,255,.96)';rr(GX,GY,gw,gh,10);ctx.fill();ctx.strokeStyle='#dfe5ec';ctx.stroke();
+  const px=GX+40,pw=gw-52,py0=GY+26,ph=gh-50,Tw=halfT(),Im=Math.max(Iinf(),I1c(),0.01)*1.1,z0=br1?0.5:0.86,sc=br1?0.46:0.8,ym=v=>py0+ph*z0-v/Im*ph*sc;
+  ctx.font=font(700,11);ctx.textAlign='left';ctx.fillStyle=INK;ctx.fillText('i (mA) depuis le dernier basculement de K',GX+10,GY+15);
+  ctx.strokeStyle='#d5dbe2';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px,ym(0));ctx.lineTo(px+pw,ym(0));ctx.moveTo(px,py0);ctx.lineTo(px,py0+ph);ctx.stroke();
+  ctx.fillStyle=GREY;ctx.font=font(600,10);ctx.textAlign='right';ctx.fillText(fr(Iinf()*1000,0),px-3,ym(Iinf())+3);ctx.fillText('0',px-3,ym(0)+3);
+  const xs=s=>px+pw*Math.min(1,s/Tw),tau=closed?ta:(br1?to:0.003);
+  if(closed||br1){const I0=closed?Iinf():(hist.length?hist[0][2]:0);ctx.setLineDash([4,4]);ctx.strokeStyle='rgba(123,44,191,.7)';ctx.beginPath();const yy=closed?ym(0.632*I0):ym(0.368*I0);ctx.moveTo(px,yy);ctx.lineTo(xs(tau),yy);ctx.lineTo(xs(tau),ym(0));ctx.stroke();ctx.setLineDash([]);
+    ctx.strokeStyle='rgba(123,44,191,.45)';ctx.beginPath();ctx.moveTo(px,ym(closed?0:I0));ctx.lineTo(xs(tau),ym(closed?I0:0));ctx.stroke();
+    ctx.fillStyle=PUR;ctx.font=font(800,11);ctx.textAlign='center';ctx.fillText(closed?'τ':'τ′',xs(tau),ym(0)+12);ctx.textAlign='left';ctx.fillText(closed?'63 %':'37 %',px+3,yy-4);}
+  [[2,RED,'i₂ (bobine)'],[1,'#d48806','i₁ (rhéostat)']].forEach(([k,col,lab],j)=>{if(k===1&&!br1)return;ctx.strokeStyle=col;ctx.lineWidth=2.4;ctx.beginPath();let f=true;hist.forEach(o=>{if(o[0]>Tw)return;const X_=xs(o[0]),Y_=ym(o[k]);f?ctx.moveTo(X_,Y_):ctx.lineTo(X_,Y_);f=false;});ctx.stroke();
+});
+  ctx.font=font(800,11);ctx.textAlign='left';ctx.fillStyle=RED;ctx.fillText('— i₂ bobine',px+4,GY+gh-8);if(br1){ctx.fillStyle='#d48806';ctx.fillText('— i₁ rhéostat',px+(sm?96:110),GY+gh-8);}
+  ctx.fillStyle=GREY;ctx.font=font(600,10);ctx.textAlign='right';ctx.fillText(fr(Tw,1)+' s',px+pw,GY+gh-8);}
+
+function draw(){size();cam();ctx.clearRect(0,0,W,H);const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#eef2f6');g.addColorStop(1,'#cfd8e1');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  table();supply();const kp=knife();bulb(0,0.09,br1?i1:0,'L₁');bulb(0,-0.06,i2,'L₂');rheostat();coil();wires();hand(kp);flush();
+  if(names&&!clean){const p=P3([-0.1,KY-0.03,ZB+0.03]),q=P3([-0.235,0.05,ZB+0.11]);tag('interrupteur K',p[0],p[1]+10,INK,font(800,12.5));if(!small())tag('générateur',q[0],q[1],GREY,font(700,12));}
+  if(spark>0&&!clean){const p=P3([JX,KY,ZB+0.05]);tag('étincelle !',p[0],p[1]-30,'#3b5bdb',font(900,15));}
+  if(!clean)hud();}
+
+function upd(){$('vG').textContent=fr(gmm,1)+' mm';$('vR').textContent=R+' Ω';$('vE').textContent=fr(E,1)+' V';
+  const L=Lh(),Rm=NS*NS/L,ta=tauC(),to=tauO(),Ii=Iinf(),W_=0.5*L*Ii*Ii;
+  $('fml').innerHTML='Quand le courant dans la bobine change, son propre flux change : elle produit une tension <b style="color:#7b2cbf">u = L·di/dt</b> qui s’oppose à ce changement (loi de Lenz). À la fermeture, la lampe L₁ s’allume tout de suite, mais dans L₂ le courant monte en <b style="color:#a32d2d">i₂ = I∞·(1 − e<sup>−t/τ</sup>)</b> avec <b style="color:#7b2cbf">τ = L/R</b> (R : résistance totale de la branche). À l’ouverture, la bobine refuse que son courant s’annule d’un coup : il continue dans L₁ (en sens inverse), ou, si L₁ est retirée, il saute dans l’air entre les contacts de K : une étincelle.';
+  $('info').innerHTML='Bobine : L = N²/ℛ avec ℛ = l/(μ₀·μr·S) + 2g/(μ₀·S) = '+(Rm>=1e6?fr(Rm/1e6,2)+'·10⁶':fr(Rm/1e4,2)+'·10⁴')+' H⁻¹ (N = 1 000, S = 16 cm², l = 32 cm, μr = 3 000), donc <b>L = '+fr(L,L<1?3:2)+' H</b>. '+
+    'Fermeture : I∞ = E/(R lampe + r) = '+fr(E,1)+'/'+(RL+RC)+' = '+fr(Ii*1000,0)+' mA dans L₂, τ = '+fr(ta,3)+' s (63 % atteints à τ, 95 % à 3τ = '+fr(3*ta,2)+' s) ; '+(br1?'i₁ = E/(R lampe + R) = '+fr(I1c()*1000,0)+' mA dans L₁. ':'')+
+    'Énergie stockée dans la bobine ½·L·I∞² = '+fr(W_*1000,0)+' mJ. Ouverture : '+(br1?'le courant tourne dans la boucle bobine + L₂ + L₁ + R avec τ′ = L/(2·R lampe + r + R) = '+fr(to,3)+' s ; la tension de la bobine vaut au départ '+fr((2*RL+RC+R)*Ii,0)+' V.':'aucun chemin : si i tombe de '+fr(Ii*1000,0)+' mA à 0 en 1 ms, u = L·Δi/Δt ≈ '+fr(L*Ii/1e-3,0)+' V, bien assez pour ioniser l’air entre les contacts.');}
+
+// ---------- commandes ----------
+function seg(ids,o){ids.forEach(i=>$(i).classList.toggle('on',i===o));}
+$('kT').onclick=()=>{auto=false;$('au').classList.remove('on');setK(!closed);};
+$('au').onclick=()=>{auto=!auto;$('au').classList.toggle('on',auto);cyc=0;};
+$('b1').onclick=()=>{br1=true;seg(['b1','b0'],'b1');upd();};$('b0').onclick=()=>{br1=false;seg(['b1','b0'],'b0');upd();};
+$('sG').oninput=e=>{gmm=+e.target.value;upd();};$('sR').oninput=e=>{R=+e.target.value;upd();};$('sE').oninput=e=>{E=+e.target.value;upd();};
+$('s1').onclick=()=>{slow=1;seg(['s1','s5'],'s1');};$('s5').onclick=()=>{slow=5;seg(['s1','s5'],'s5');};
+const tg=(id,f)=>{$(id).onclick=()=>{const v=f();$(id).classList.toggle('on',v);};};tg('bL',()=>names=!names);tg('bD',()=>dots=!dots);
+let viewT=null;function view(id){viewT=VW[id];seg(['v3','vT','vB'],id);}
+['v3','vT','vB'].forEach(id=>{$(id).onclick=()=>view(id);});
+$('pa').onclick=()=>{paused=!paused;$('pa').classList.toggle('on',paused);$('pa').textContent=paused?'Reprendre':'Pause';};
+function pos(e){const b=cv.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top];}
+let rot=null,hoverY=false,dragY=null,down=null;
+function nearLever(X,Y){const a=lev*1.05,h=[HX,KY,ZB+0.026],pts=[0.3,0.6,0.9,1.2].map(u=>P3(add(h,mul([Math.cos(a),0,Math.sin(a)],LEN*u))));return pts.some(p=>Math.hypot(X-p[0],Y-p[1])<Math.max(16,0.02*p[3]));}
+function nearYoke(X,Y){const zb=TOP+gmm/1000+0.012;return[0.1,0.14,0.17,0.2,0.24].some(x=>{const p=P3([x,CY,zb]);return Math.hypot(X-p[0],Y-p[1])<Math.max(16,0.02*p[3]);});}
+cv.addEventListener('pointerdown',e=>{const [X,Y]=pos(e);cv.setPointerCapture(e.pointerId);down=[X,Y];
+  if(nearYoke(X,Y)){const h=hitPlane(X,Y,1,CY);dragY={z0:h?h[2]:0,g0:gmm};cv.style.cursor='grabbing';return;}
+  if(nearLever(X,Y)){down.lever=true;return;}
+  rot=[X,Y];viewT=null;seg(['v3','vT','vB'],'');cv.style.cursor='grabbing';});
+cv.addEventListener('pointermove',e=>{const [X,Y]=pos(e);
+  if(dragY){const h=hitPlane(X,Y,1,CY);if(h){gmm=Math.max(0,Math.min(30,dragY.g0+(h[2]-dragY.z0)*1000));gmm=Math.round(gmm*2)/2;$('sG').value=gmm;upd();}}
+  else if(rot){yaw+=(X-rot[0])*0.008;pitch=Math.max(0.05,Math.min(1.55,pitch+(Y-rot[1])*0.008));rot=[X,Y];}
+  else{hoverY=nearYoke(X,Y);cv.style.cursor=hoverY?'grab':nearLever(X,Y)?'pointer':'default';}});
+function up(e){if(down&&down.lever){const [X,Y]=pos(e);if(Math.hypot(X-down[0],Y-down[1])<8){auto=false;$('au').classList.remove('on');setK(!closed);}}dragY=null;rot=null;down=null;cv.style.cursor='grab';}
+cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+cv.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(0.6,Math.min(3,zoom*Math.exp(-e.deltaY*0.001)));},{passive:false});
+
+let last=null,acc=0;
+function frame(ts){if(last===null)last=ts;const dt=Math.min(0.04,(ts-last)/1000);last=ts;
+  if(!paused)step(dt);
+  if(viewT){yaw+=(viewT[0]-yaw)*0.12;pitch+=(viewT[1]-pitch)*0.12;zoom+=(viewT[2]-zoom)*0.12;for(let k=0;k<3;k++)TG[k]+=(viewT[3][k]-TG[k])*0.12;if(Math.abs(viewT[0]-yaw)+Math.abs(viewT[1]-pitch)+Math.abs(viewT[2]-zoom)<1e-3)viewT=null;}
+  acc+=dt;if(acc>0.15){acc=0;upd();}
+  draw();requestAnimationFrame(frame);}
+window.__ai={get:()=>({E,R,gmm,br1,closed,L:Lh(),tau:tauC(),tauO:tauO(),Iinf:Iinf(),I1:I1c(),i1,i2,ts:t-tEv,u:uL(),W:0.5*Lh()*Iinf()**2}),
+  set:o=>{if(o.E!=null){E=o.E;$('sE').value=E;}if(o.R!=null){R=o.R;$('sR').value=R;}if(o.g!=null){gmm=o.g;$('sG').value=gmm;}if(o.br1!=null)$(o.br1?'b1':'b0').click();
+    if(o.auto!=null){auto=o.auto;$('au').classList.toggle('on',auto);}if(o.K!=null)setK(o.K);if(o.run!=null){step(o.run);}if(o.pause!=null)paused=o.pause;if(o.clean!=null)clean=o.clean;if(o.view)$(o.view).click();upd();return window.__ai.get();}};
+upd();setK(true);requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Magnétisme et forces électromagnétiques<span>13 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/regle-main-droite/"><i>01</i>Règle de la main droite</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/aimants-laplace/"><i>02</i>Aimants, courants et force de Laplace</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/forces-magn-tique-sur-fils-/"><i>03</i>Forces entre fils parallèles</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Cyclotron/"><i>04</i>Cyclotron</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/loi-de-lenz/"><i>05</i>Loi de Lenz : induction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/fils-paralleles-3d/"><i>06</i>Deux fils parallèles en 3D : champ et attraction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-loi-ampere/"><i>07</i>Loi d'Ampère : faire le tour des courants</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-rails-induction/"><i>08</i>La barre qui glisse sur des rails : e = B·L·v</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-spectrometre-masse/"><i>09</i>Spectromètre de masse avec sélecteur de vitesse</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-lorentz-helice/"><i>10</i>Cercle, hélice et aurores polaires</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-irm-principe/"><i>11</i>Le principe de l’IRM</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-foucault/"><i>12</i>Courants de Foucault : freiner et chauffer</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-auto-induction/"><i>13</i>Deux lampes : la bobine retarde le courant</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

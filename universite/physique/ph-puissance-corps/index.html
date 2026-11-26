@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Monter un escalier, sauter : énergie et puissance du corps · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH4">Travail et énergie</a>›<b>Monter un escalier, sauter : énergie et puissance du corps</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Travail et énergie</span><span class="sfa-chip free">Gratuit</span></div><h1>Monter un escalier, sauter : énergie et puissance du corps</h1><p>Un personnage monte un long escalier, saute sur place ou pose une caisse sur une étagère. Règle la masse, la hauteur et la durée : l’énergie gagnée m·g·h, la puissance P = W/Δt en watts (comparée à une ampoule, un cycliste et un sprint) et l’énergie que consomment tes muscles avec un rendement d’environ 25 %, en kilocalories. Attrape le personnage, la caisse ou l’étagère à la souris.</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:clamp(600px,min(80vh,185vw),800px);cursor:default;touch-action:none" aria-label="Un personnage dessiné monte un long escalier, saute sur place ou soulève une caisse jusqu’à une étagère ; à côté, l’énergie gagnée, la puissance en watts sur une échelle avec une ampoule, un cycliste et un sprinteur, et l’énergie dépensée par les muscles en kilocalories"></canvas>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill">Effort</span>
+  <button class="btn on" id="mE">Monter l’escalier</button>
+  <button class="btn" id="mS">Sauter sur place</button>
+  <button class="btn" id="mC">Soulever une caisse</button>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:170px;color:#534AB7" id="lM">m &nbsp;masse</span>
+  <input type="range" id="sM" min="40" max="120" step="1" value="70" style="accent-color:#7F77DD;">
+  <span class="val" id="vM" style="color:#534AB7"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:170px;color:#0F6E56" id="lH">h &nbsp;hauteur</span>
+  <input type="range" id="sH" min="3" max="12" step="0.5" value="6" style="accent-color:#1D9E75;">
+  <span class="val" id="vH" style="color:#0F6E56"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:170px;color:#BA7517" id="lT">Δt &nbsp;durée</span>
+  <input type="range" id="sT" min="4" max="60" step="0.5" value="12" style="accent-color:#BA7517;">
+  <span class="val" id="vT" style="color:#9a5f0f"></span>
+</div>
+<div class="row">
+  <button class="btn" id="pp">⏸ Pause</button>
+  <button class="btn" id="re">↺ Recommencer</button>
+  <button class="btn" id="lab">Masquer les écritures</button>
+</div>
+<div class="row"><span class="hint" id="hint"></span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const $=id=>document.getElementById(id);
+const fr=(v,d)=>{const s=(Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d).replace('.',',');return s.replace(/^-/,'−');};
+const fk=(v,d)=>{const s=fr(v,d||0),i=s.indexOf(','),e=i<0?s:s.slice(0,i),r=i<0?'':s.slice(i);return e.replace(/\B(?=(\d{3})+(?!\d))/g,' ')+r;};
+const INK='#13233a',MUTED='#5f6b7a',GREEN='#1D9E75',GREEN_D='#0F6E56',OR='#BA7517',OR_D='#9a5f0f',VIO='#534AB7',RED_D='#a32d2d',BLUE='#185fa5';
+let W=0,H=0,dpr=1,noLab=false;
+function size(){const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.round(b.width)||800,h=Math.round(b.height)||640;if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function arrow(x1,y1,x2,y2,col,w,halo){const L=Math.hypot(x2-x1,y2-y1);if(L<2)return;if(halo!==false)arrow(x1,y1,x2,y2,'rgba(255,255,255,.85)',(w||2)+3,false);
+  ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w||2;ctx.lineCap='round';const a=Math.atan2(y2-y1,x2-x1),hh=Math.min(L*0.6,7+(w||2)*1.6);
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-Math.cos(a)*hh*0.6,y2-Math.sin(a)*hh*0.6);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-hh*Math.cos(a-0.42),y2-hh*Math.sin(a-0.42));ctx.lineTo(x2-hh*Math.cos(a+0.42),y2-hh*Math.sin(a+0.42));ctx.closePath();ctx.fill();}
+function tag(t,x,y,col,font,al,bg){if(noLab)return 0;ctx.font=font||'700 12px Mulish,system-ui,sans-serif';ctx.textAlign=al||'center';ctx.textBaseline='middle';const w=ctx.measureText(t).width,A=al||'center';
+  if(bg){const x0=A==='left'?x-6:A==='right'?x-w-6:x-w/2-6;rr(x0,y-11,w+12,22,7);ctx.fillStyle=bg;ctx.fill();}
+  else{ctx.lineWidth=3.5;ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineJoin='round';ctx.strokeText(t,x,y);}ctx.fillStyle=col||INK;ctx.fillText(t,x,y);return w;}
+const F=(w,s)=>`${w} ${s}px Mulish,system-ui,sans-serif`;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),ease=u=>{u=clamp(u,0,1);return u*u*(3-2*u);},lerp=(a,b,u)=>a+(b-a)*u;
+
+// ---------- physique ----------
+const G=9.81,ETA=0.25,KCAL=4184,LEG=0.45,SHIN=0.45,ANK=0.07,TR=0.52,UA=0.3,FA=0.32;
+const REF=[[60,'ampoule 60 W','bulb'],[200,'cycliste ≈ 200 W','bike'],[1500,'sprint ≈ 1 500 W','run']];
+let mode='E',paused=false,t=0,hold=0,drag=null;
+const S={E:{m:70,h:6,dt:12},S:{m:70,h:0.4,dt:0.3},C:{m:20,h:1.2,dt:1.5}};
+const v0=()=>Math.sqrt(2*G*S.S.h),sJ=()=>v0()*S.S.dt/2;
+function work(md){md=md||mode;const o=S[md];if(md==='S')return o.m*G*(o.h+sJ());return o.m*G*o.h;}
+const pow=md=>work(md)/S[md||mode].dt;
+// travail déjà fourni après un temps d'effort te (pour le graphique W(t))
+function workAt(te){const o=S[mode],u=clamp(te/o.dt,0,1);if(mode==='E')return work()*u;if(mode==='C')return work()*ease(u);const a=v0()/o.dt;return o.m*(G+a)*0.5*a*Math.pow(u*o.dt,2);}
+// durées des phases (s réelles)
+function T(){const o=S[mode];if(mode==='E')return{pre:0.6,eff:o.dt,post:1.8};if(mode==='S'){const tf=2*v0()/G;return{pre:0.7,eff:o.dt,fly:tf,land:0.9,post:1.0};}return{pre:1.0,eff:o.dt,post:2.0};}
+const SLOWJ=3; // ralenti pour le saut
+function tTot(){const p=T();return mode==='S'?p.pre+p.eff+p.fly+p.land+p.post:p.pre+p.eff+p.post;}
+// fraction d'énergie déjà gagnée et temps d'effort écoulé
+function state(){const p=T(),o=S[mode];
+  if(mode==='E'){const u=clamp((t-p.pre)/p.eff,0,1);return{te:u*p.eff,frac:u,y:u*o.h};}
+  if(mode==='C'){const u=clamp((t-p.pre)/p.eff,0,1),e=ease(u);return{te:u*p.eff,frac:e,y:e*o.h};}
+  const s=sJ(),a=v0()/o.dt,tau=t-p.pre;let y,frac,te,vy=0;
+  if(tau<0){y=-s*ease(t/p.pre);frac=0;te=0;}
+  else if(tau<o.dt){y=-s+0.5*a*tau*tau;vy=a*tau;te=tau;frac=(o.m*G*(y+s)+0.5*o.m*vy*vy)/work();}
+  else{const tf=tau-o.dt;te=o.dt;frac=1;if(tf<p.fly){y=v0()*tf-0.5*G*tf*tf;vy=v0()-G*tf;}else{const ul=(tf-p.fly)/p.land;y=ul<0.35?-s*0.6*Math.sin(ul/0.35*Math.PI/2):-s*0.6*(1-ease((ul-0.35)/0.65));}}
+  return{te,frac,y,vy,s};}
+
+// ---------- mise en page ----------
+let L={};
+function layout(){const mob=W<640;L.mob=mob;
+  if(mob){L.sc={x:0,y:0,w:W,h:Math.round(H*0.58)};L.pn={x:8,y:L.sc.h+8,w:W-16,h:H-L.sc.h-14};}
+  else{const sw=Math.round(W*0.6);L.sc={x:0,y:0,w:sw,h:H};L.pn={x:sw+10,y:10,w:W-sw-20,h:H-20};}}
+let cam={x:0,y:0,k:100};
+const X=x=>L.sc.x+L.sc.w*0.5+(x-cam.x)*cam.k,Y=y=>L.sc.y+L.sc.h*0.5-(y-cam.y)*cam.k;
+
+// ---------- le personnage (dessin en volume, cinématique inverse) ----------
+function ik(a,b,l1,l2,sg){let dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy);const mx=l1+l2-1e-3;let e=b;if(d>mx){e=[a[0]+dx/d*mx,a[1]+dy/d*mx];d=mx;}
+  const th=Math.atan2(e[1]-a[1],e[0]-a[0]),c=clamp((l1*l1+d*d-l2*l2)/(2*l1*Math.max(d,1e-6)),-1,1),al=Math.acos(c);return[[a[0]+l1*Math.cos(th+sg*al),a[1]+l1*Math.sin(th+sg*al)],e];}
+function seg(p,q,r,c1,c2){const A=[X(p[0]),Y(p[1])],B=[X(q[0]),Y(q[1])],R=r*cam.k;ctx.lineCap='round';ctx.strokeStyle=c1;ctx.lineWidth=2*R;ctx.beginPath();ctx.moveTo(A[0],A[1]);ctx.lineTo(B[0],B[1]);ctx.stroke();
+  ctx.strokeStyle=c2;ctx.lineWidth=R*0.8;ctx.beginPath();ctx.moveTo(A[0]-R*0.3,A[1]-R*0.35);ctx.lineTo(B[0]-R*0.3,B[1]-R*0.35);ctx.stroke();}
+function shoe(an,dir,tilt,far){const k=cam.k,a=[X(an[0]),Y(an[1])];ctx.save();ctx.translate(a[0],a[1]);ctx.rotate(-dir*(tilt||0));ctx.scale(dir,1);
+  ctx.fillStyle=far?'#c9ced6':'#f4f5f7';rr(-0.06*k,-0.03*k,0.27*k,0.085*k,0.04*k);ctx.fill();ctx.fillStyle=far?'#5d6570':'#e24b4a';ctx.fillRect(-0.06*k,0.035*k,0.27*k,0.02*k);ctx.restore();}
+// o : {hip, lean, dir, feet:[ankle back, ankle front], tilts, hands:[back, front] (ou null), m}
+function person(o){const dir=o.dir,w=Math.sqrt(o.m/70),sh=[o.hip[0]+dir*TR*Math.sin(o.lean),o.hip[1]+TR*Math.cos(o.lean)],
+  hd=[sh[0]+dir*0.22*Math.sin(o.lean*0.7),sh[1]+0.22*Math.cos(o.lean*0.7)];
+  const skin='#eab38b',skinD='#c98d66',shirt='#2f7fd1',shirtD='#1d5f9f',pants='#2c3440',pantsD='#1b2028';
+  const legs=o.feet.map(f=>ik(o.hip,f,LEG,SHIN,dir)),arms=(o.hands||[null,null]).map((h,i)=>{if(!h){const sw=(o.swing||0)*(i?1:-1);h=[sh[0]+dir*0.6*Math.sin(sw),sh[1]-0.6*Math.cos(sw)];}return ik(sh,h,UA,FA,-dir);});
+  // ombre au sol
+  if(o.ground!=null){const gy=Y(o.ground),hgt=Math.max(0,Math.min(o.feet[0][1],o.feet[1][1])-o.ground);ctx.fillStyle=`rgba(0,0,0,${0.28/(1+hgt*2)})`;ctx.beginPath();ctx.ellipse(X(o.hip[0]),gy,(0.32+hgt*0.2)*cam.k,0.05*cam.k,0,0,7);ctx.fill();}
+  // membres du fond
+  seg(o.hip,legs[0][0],0.075*w,'#1b2028','#2c3440');seg(legs[0][0],legs[0][1],0.06*w,'#c08a63','#d6a27c');shoe(legs[0][1],dir,o.tilts?o.tilts[0]:0,true);
+  seg(sh,arms[0][0],0.05*w,'#174d82','#1d5f9f');seg(arms[0][0],arms[0][1],0.042*w,'#c08a63','#d6a27c');
+  // tronc
+  seg(o.hip,sh,0.14*w,shirtD,shirt);ctx.fillStyle=pantsD;const hp=[X(o.hip[0]),Y(o.hip[1])];ctx.beginPath();ctx.arc(hp[0],hp[1],0.12*w*cam.k,0,7);ctx.fill();
+  if(!noLab&&cam.k>60){ctx.save();ctx.translate((X(o.hip[0])+X(sh[0]))/2,(Y(o.hip[1])+Y(sh[1]))/2);ctx.rotate(dir*o.lean);ctx.fillStyle='rgba(255,255,255,.85)';ctx.font=F(800,Math.max(8,0.075*cam.k));ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('SFA',0,0);ctx.restore();}
+  // cou + tête
+  seg(sh,hd,0.045,skinD,skin);const H0=[X(hd[0]),Y(hd[1])],R=0.11*cam.k;
+  let g=ctx.createRadialGradient(H0[0]-R*0.3,H0[1]-R*0.35,R*0.1,H0[0],H0[1],R);g.addColorStop(0,'#f8d2b4');g.addColorStop(0.6,skin);g.addColorStop(1,skinD);ctx.fillStyle=g;ctx.beginPath();ctx.arc(H0[0],H0[1],R,0,7);ctx.fill();
+  ctx.fillStyle='#3b2a20';ctx.beginPath();ctx.arc(H0[0]-dir*R*0.12,H0[1]-R*0.12,R*1.0,Math.PI*(dir>0?1.05:-0.05)-0.3*dir,Math.PI*(dir>0?2.05:0.95)-0.6*dir,dir<0);ctx.fill();
+  ctx.fillStyle='#1b2028';ctx.beginPath();ctx.arc(H0[0]+dir*R*0.5,H0[1]-R*0.05,Math.max(1.2,R*0.1),0,7);ctx.fill();
+  ctx.strokeStyle=skinD;ctx.lineWidth=Math.max(1,R*0.1);ctx.beginPath();ctx.moveTo(H0[0]+dir*R*0.55,H0[1]+R*0.42);ctx.lineTo(H0[0]+dir*R*0.25,H0[1]+R*0.45);ctx.stroke();
+  // membres de devant
+  seg(o.hip,legs[1][0],0.08*w,pantsD,pants);seg(legs[1][0],legs[1][1],0.062*w,skinD,skin);shoe(legs[1][1],dir,o.tilts?o.tilts[1]:0,false);
+  seg(sh,arms[1][0],0.052*w,shirtD,shirt);seg(arms[1][0],arms[1][1],0.044*w,skinD,skin);
+  const hn=arms[1][1];ctx.fillStyle=skin;ctx.beginPath();ctx.arc(X(hn[0]),Y(hn[1]),0.045*cam.k,0,7);ctx.fill();
+  return{hd,sh,hip:o.hip,R};}
+
+// ---------- scène 1 : le grand escalier ----------
+const RISE0=0.17,RUN=0.29;
+function stairs(){const o=S.E,n=Math.max(1,Math.round(o.h/RISE0)),r=o.h/n;return{n,r};}
+function stairScene(st){const {n,r}=stairs(),o=S.E,q=st.frac*n,k=cam.k,sc=L.sc;
+  // ciel, collines et ville au loin (parallaxe)
+  let g=ctx.createLinearGradient(0,0,0,sc.h);g.addColorStop(0,'#8fc0ec');g.addColorStop(0.75,'#d9e9f6');g.addColorStop(1,'#eef4f9');ctx.fillStyle=g;ctx.fillRect(sc.x,sc.y,sc.w,sc.h);
+  ctx.fillStyle='rgba(255,246,214,.9)';ctx.beginPath();ctx.arc(sc.x+sc.w*0.82,sc.h*0.13,22,0,7);ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,.85)';[[0.18,0.14],[0.55,0.08],[0.9,0.25]].forEach(([fx,fy])=>{const x=sc.x+((fx*sc.w-cam.x*k*0.04)%sc.w+sc.w)%sc.w,y=sc.h*fy;ctx.beginPath();ctx.ellipse(x,y,38,12,0,0,7);ctx.ellipse(x+24,y-7,26,12,0,0,7);ctx.fill();});
+  const hz=sc.h*0.62+cam.y*k*0.06;
+  for(let L2=0;L2<2;L2++){const par=L2?0.3:0.15,base=hz+(L2?sc.h*0.06:0),col=L2?'#9fb0c3':'#bccad8';
+    for(let i=-3;i<18;i++){const sp=(L2?0.62:0.45)*k,bw=sp*(0.6+((i*37)%5)*0.08),x=sc.x+((i*sp-cam.x*k*par)%(sc.w+3*sp)+sc.w+3*sp)%(sc.w+3*sp)-1.5*sp,bh=sp*(0.8+((i*53)%7)*0.35);
+      ctx.fillStyle=col;ctx.fillRect(x,base-bh,bw,bh+2);ctx.fillStyle='rgba(255,255,255,.4)';for(let wy=base-bh+sp*0.15;wy<base-sp*0.15;wy+=sp*0.28)for(let wx=x+sp*0.1;wx<x+bw-sp*0.12;wx+=sp*0.2)ctx.fillRect(wx,wy,sp*0.08,sp*0.12);}}
+  g=ctx.createLinearGradient(0,hz+sc.h*0.05,0,sc.h);g.addColorStop(0,'#86ad62');g.addColorStop(1,'#5f8c42');ctx.fillStyle=g;ctx.fillRect(sc.x,hz+sc.h*0.06,sc.w,sc.h);
+  for(let i=-2;i<12;i++){const x=sc.x+((i*1.1*k-cam.x*k*0.45)%(sc.w+2.2*k)+sc.w+2.2*k)%(sc.w+2.2*k)-1.1*k,y=hz+sc.h*0.07;ctx.fillStyle='#6d5034';ctx.fillRect(x-1.5,y-0.25*k,3,0.25*k);
+    const gg=ctx.createRadialGradient(x-0.06*k,y-0.4*k,2,x,y-0.32*k,0.2*k);gg.addColorStop(0,'#8fc46a');gg.addColorStop(1,'#3f7a35');ctx.fillStyle=gg;ctx.beginPath();ctx.arc(x,y-0.34*k,0.18*k,0,7);ctx.fill();}
+  // mur de soutènement sous l'escalier (blocs de pierre)
+  ctx.save();ctx.beginPath();ctx.moveTo(X(-8),Y(-6));ctx.lineTo(X(-8),Y(0));ctx.lineTo(X(0),Y(0));ctx.lineTo(X(n*RUN),Y(o.h));ctx.lineTo(X(n*RUN+12),Y(o.h));ctx.lineTo(X(n*RUN+12),Y(-6));ctx.closePath();
+  g=ctx.createLinearGradient(0,0,sc.w,sc.h);g.addColorStop(0,'#cfc6b6');g.addColorStop(1,'#b3a893');ctx.fillStyle=g;ctx.fill();ctx.clip();
+  ctx.strokeStyle='rgba(110,98,80,.35)';ctx.lineWidth=1;const bh2=0.34*k,bw2=0.62*k,oy=Y(0)%bh2;for(let r2=-1,y=oy-bh2;y<sc.h;r2++,y+=bh2){ctx.beginPath();ctx.moveTo(sc.x,y);ctx.lineTo(sc.x+sc.w,y);ctx.stroke();
+    const ox=(X(0)+(r2%2?bw2/2:0))%bw2;for(let x=ox-bw2;x<sc.w;x+=bw2){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+bh2);ctx.stroke();}}
+  ctx.restore();
+  // marches en pierre
+  const j0=Math.max(1,Math.floor((cam.x-sc.w/2/k)/RUN)-1),j1=Math.min(n,Math.ceil((cam.x+sc.w/2/k)/RUN)+1);
+  for(let j=j0;j<=j1;j++){const x0=X((j-1)*RUN),x1=X(j*RUN),yt=Y(j*r),yb=Y((j-1)*r);
+    g=ctx.createLinearGradient(0,yt,0,yb);g.addColorStop(0,'#e6e0d4');g.addColorStop(1,'#bdb4a3');ctx.fillStyle=g;ctx.fillRect(x0,yt,x1-x0+1,yb-yt+1);
+    ctx.fillStyle='#f6f2ea';ctx.fillRect(x0-2,yt-2.5,x1-x0+3,5);ctx.fillStyle='rgba(0,0,0,.14)';ctx.fillRect(x0,yt+2.5,x1-x0,3);}
+  ctx.fillStyle='#a9a294';ctx.fillRect(X(-8),Y(0),X(0)-X(-8),Y(-6)-Y(0));ctx.fillStyle='#f6f2ea';ctx.fillRect(X(-8),Y(0)-2,X(0)-X(-8),4);
+  // palier du haut, porte et drapeau d'arrivée
+  ctx.fillStyle='#ece7dd';ctx.fillRect(X(n*RUN),Y(o.h)-2,X(n*RUN+12)-X(n*RUN),4);
+  const dx=n*RUN+2.2;g=ctx.createLinearGradient(X(dx),0,X(dx+3),0);g.addColorStop(0,'#c75b3a');g.addColorStop(1,'#a8472c');ctx.fillStyle=g;ctx.fillRect(X(dx),Y(o.h+3.2),3*k,3.2*k);
+  ctx.fillStyle='#5a3a24';rr(X(dx+0.9),Y(o.h+2.1),1.1*k,2.1*k,4);ctx.fill();ctx.fillStyle='#e7c46a';ctx.beginPath();ctx.arc(X(dx+1.85),Y(o.h+1.05),0.05*k,0,7);ctx.fill();
+  ctx.strokeStyle='#59616c';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(X(n*RUN+1.2),Y(o.h));ctx.lineTo(X(n*RUN+1.2),Y(o.h+2.0));ctx.stroke();
+  ctx.fillStyle='#d9534f';ctx.beginPath();ctx.moveTo(X(n*RUN+1.2),Y(o.h+2.0));ctx.lineTo(X(n*RUN+1.95),Y(o.h+1.78));ctx.lineTo(X(n*RUN+1.2),Y(o.h+1.56));ctx.closePath();ctx.fill();
+  // rampe métallique
+  ctx.strokeStyle='#6b7480';ctx.lineWidth=Math.max(2,0.04*k);ctx.beginPath();ctx.moveTo(X(-1),Y(0.95));ctx.lineTo(X(0),Y(0.95));ctx.lineTo(X(n*RUN),Y(o.h+0.95));ctx.lineTo(X(n*RUN+1),Y(o.h+0.95));ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.6)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(X(0),Y(0.95)-1.5);ctx.lineTo(X(n*RUN),Y(o.h+0.95)-1.5);ctx.stroke();
+  ctx.strokeStyle='#7d8691';ctx.lineWidth=Math.max(1.5,0.025*k);for(let j=0;j<=n;j+=4){const x=j*RUN;ctx.beginPath();ctx.moveTo(X(x),Y(j*r));ctx.lineTo(X(x),Y(j*r+0.95+0.0));ctx.stroke();}
+  // le grimpeur : à chaque marche, un pied d'appui et un pied qui passe de la marche j−1 à j+1
+  const tread=f=>{f=clamp(f,-1,n);return[(f-0.5)*RUN+(f>=n?0.05:0)+0.02,Math.max(0,f)*r+ANK];};
+  const j=Math.min(Math.floor(q),n-1),u=q-j,swU=ease(u/0.7),from=tread(j-1),to=tread(Math.min(j+1,n)),stn=tread(j);
+  let sw=[lerp(from[0],to[0],swU),lerp(from[1],to[1],swU)+0.12*Math.sin(Math.PI*clamp(u/0.7,0,1))];
+  const atTop=st.frac>=1,hip=[(q-0.5)*RUN+0.08,q*r+0.86+0.02*Math.sin(2*Math.PI*q)];
+  if(atTop){sw=[tread(n)[0]+0.08,tread(n)[1]];hip[1]=o.h+0.94;}
+  const back=(j%2===0)?[stn,sw]:[sw,stn];
+  // le pied d'appui est devant quand l'autre arrive derrière : on dessine le plus en arrière comme « fond »
+  const ft=back[0][0]<back[1][0]?back:[back[1],back[0]];
+  const P=person({hip,lean:atTop?0.05:0.22,dir:1,feet:ft,m:o.m,swing:atTop?0.1:0.5*Math.sin(Math.PI*q)});
+  // règle d'altitude
+  if(!noLab){const rx=sc.x+sc.w-(L.mob?40:54);ctx.fillStyle='rgba(255,255,255,.75)';rr(rx-8,Y(Math.min(o.h,cam.y+3))-6,L.mob?34:44,Y(Math.max(0,cam.y-3))-Y(Math.min(o.h,cam.y+3))+12,6);ctx.fill();
+    ctx.strokeStyle=GREEN_D;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(rx,Y(0));ctx.lineTo(rx,Y(o.h));ctx.stroke();
+    ctx.font=F(700,10.5);ctx.fillStyle=GREEN_D;ctx.textAlign='left';ctx.textBaseline='middle';for(let m=0;m<=o.h+1e-6;m+=0.5){const y=Y(m);if(y<sc.y-5||y>sc.h+5)continue;ctx.fillRect(rx,y-1,m%1?5:9,2);if(m%1===0)ctx.fillText(fr(m,0)+' m',rx+11,y);}
+    const yy=Y(st.y);ctx.fillStyle=GREEN;ctx.beginPath();ctx.moveTo(rx-2,yy);ctx.lineTo(rx-10,yy-6);ctx.lineTo(rx-10,yy+6);ctx.closePath();ctx.fill();}
+  return P;}
+
+// ---------- scène 2 : la salle de sport (saut) ----------
+const H0J=SHIN+LEG+ANK-0.02;
+function jumpScene(st){const o=S.S,k=cam.k,sc=L.sc,s=st.s,p=T();
+  let g=ctx.createLinearGradient(0,0,0,Y(0));g.addColorStop(0,'#e9e4da');g.addColorStop(1,'#d8d0c2');ctx.fillStyle=g;ctx.fillRect(sc.x,sc.y,sc.w,sc.h);
+  // plinthe, espalier, fenêtres hautes
+  ctx.fillStyle='#c9bfae';ctx.fillRect(sc.x,Y(0.25),sc.w,Y(0)-Y(0.25));
+  for(let i=0;i<3;i++){const x=X(-2.6+i*1.1);ctx.fillStyle='rgba(255,255,255,.55)';rr(x,Y(3.3),0.8*k,0.5*k,4);ctx.fill();ctx.strokeStyle='#b9ae9b';ctx.lineWidth=2;ctx.stroke();}
+  const ex=X(-2.1);ctx.strokeStyle='#a27a4f';ctx.lineWidth=Math.max(3,0.05*k);for(const dx of[0,0.9]){ctx.beginPath();ctx.moveTo(ex+dx*k,Y(0));ctx.lineTo(ex+dx*k,Y(2.6));ctx.stroke();}
+  ctx.lineWidth=Math.max(2,0.03*k);for(let y=0.3;y<2.6;y+=0.28){ctx.beginPath();ctx.moveTo(ex,Y(y));ctx.lineTo(ex+0.9*k,Y(y));ctx.stroke();}
+  // plancher en bois
+  g=ctx.createLinearGradient(0,Y(0),0,sc.h);g.addColorStop(0,'#d7ad74');g.addColorStop(1,'#b98a50');ctx.fillStyle=g;ctx.fillRect(sc.x,Y(0),sc.w,sc.h-Y(0));
+  ctx.strokeStyle='rgba(120,80,30,.25)';ctx.lineWidth=1;for(let x=-6;x<6;x+=0.5){ctx.beginPath();ctx.moveTo(X(x),Y(0));ctx.lineTo(X(x*1.5),sc.h);ctx.stroke();}
+  // planche de saut graduée au mur
+  const bx=X(0.75),bw=0.5*k,top=H0J+2.0;g=ctx.createLinearGradient(bx,0,bx+bw,0);g.addColorStop(0,'#fbfbf8');g.addColorStop(1,'#e2e0da');ctx.fillStyle=g;ctx.fillRect(bx,Y(top),bw,Y(0.3)-Y(top));ctx.strokeStyle='#9a9384';ctx.strokeRect(bx,Y(top),bw,Y(0.3)-Y(top));
+  ctx.fillStyle='#3c4450';ctx.font=F(700,Math.max(9,Math.min(11,0.07*k)));ctx.textAlign='left';ctx.textBaseline='middle';
+  for(let c=0;c<=Math.round((top-0.3)*10);c++){const y=0.3+c*0.1;ctx.fillRect(bx,Y(y)-0.5,c%5?0.08*k:0.16*k,1);if(c%5===0&&!noLab)ctx.fillText(fr(y,1),bx+0.2*k,Y(y));}
+  // repères : hanche debout et sommet
+  const yTop=H0J+o.h;ctx.setLineDash([6,5]);ctx.strokeStyle=GREEN_D;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(X(-0.7),Y(yTop));ctx.lineTo(bx+bw,Y(yTop));ctx.stroke();
+  ctx.strokeStyle='#7d8691';ctx.beginPath();ctx.moveTo(X(-0.7),Y(H0J));ctx.lineTo(bx+bw,Y(H0J));ctx.stroke();ctx.strokeStyle=OR;ctx.beginPath();ctx.moveTo(X(-0.7),Y(H0J-s));ctx.lineTo(X(0.6),Y(H0J-s));ctx.stroke();ctx.setLineDash([]);
+  // poignée de la hauteur du saut
+  ctx.fillStyle=GREEN;ctx.beginPath();ctx.arc(X(-0.7),Y(yTop),7,0,7);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+  // le sauteur
+  const y=st.y,hip=[0,H0J+y],air=y>0.001,tau=t-p.pre;let lean=0,feet,sw=0,tilts=[0,0];
+  const flex=-Math.min(0,y);lean=0.75*flex/0.5;
+  if(air){feet=[[-0.06,hip[1]-H0J+ANK+0.02],[0.06,hip[1]-H0J+ANK+0.02]];tilts=[-0.5,-0.5];lean=0.05;sw=Math.PI*0.85;}
+  else{feet=[[-0.08,ANK],[0.06,ANK]];if(tau<0)sw=-0.9*ease(t/p.pre);else if(tau<o.dt)sw=lerp(-0.9,2.6,ease(tau/o.dt));else sw=lerp(2.6,0,ease((tau-o.dt-p.fly)/p.land));if(tau>=o.dt&&tau<o.dt+0.02)tilts=[-0.4,-0.4];}
+  const P=person({hip,lean,dir:1,feet,m:o.m,swing:sw,ground:0});
+  // centre de masse ≈ hanche
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(X(hip[0]),Y(hip[1]),5,0,7);ctx.fill();ctx.fillStyle=INK;ctx.beginPath();ctx.arc(X(hip[0]),Y(hip[1]),3,0,7);ctx.fill();
+  if(!noLab){const lx=X(-0.75);tag('sommet : +'+fr(o.h,2)+' m',lx-10,Y(yTop),GREEN_D,F(800,L.mob?11:12.5),'right');tag('debout',lx-10,Y(H0J),MUTED,F(700,L.mob?10.5:11.5),'right');
+    tag('accroupi : −'+fr(s,2)+' m',lx-10,Y(H0J-s),OR_D,F(800,L.mob?10.5:11.5),'right');
+    if(st.vy>0.05||(tau>0&&tau<o.dt+p.fly)){const vy=st.vy||0;if(Math.abs(vy)>0.05)arrow(X(0.32),Y(hip[1]),X(0.32),Y(hip[1])-vy*0.18*k,BLUE,3);}
+    if(tau>0&&tau<o.dt){tag('poussée : '+fr(tau*1000,0)+' ms / '+fr(o.dt*1000,0)+' ms',X(0)+0.4*k,Y(hip[1]+0.9),OR_D,F(800,L.mob?11:12.5),'left','rgba(255,248,235,.9)');}}
+  return P;}
+
+// ---------- scène 3 : la réserve (caisse sur une étagère) ----------
+const HIPX=-0.32;
+function liftPose(hand){ // posture qui permet aux mains d'atteindre « hand »
+  const hy=clamp(0.45+(hand[1]-0.2)*1.1,0.45,H0J);let lean=0.05;
+  for(;lean<1.15;lean+=0.02){const sh=[HIPX+TR*Math.sin(lean),hy+TR*Math.cos(lean)];if(Math.hypot(hand[0]-sh[0],hand[1]-sh[1])<=UA+FA-0.02)break;}
+  return{hip:[HIPX,hy],lean};}
+function liftScene(st){const o=S.C,k=cam.k,sc=L.sc,p=T(),bw=0.4+0.003*o.m,bh=0.28+0.003*o.m,BX0=0.22,sx0=BX0+bw/2+0.03,BXs=sx0+bw/2+0.04,sx1=sx0+(L.mob?0.62:0.95);
+  let g=ctx.createLinearGradient(0,0,0,Y(0));g.addColorStop(0,'#e4e8ec');g.addColorStop(1,'#cfd6dd');ctx.fillStyle=g;ctx.fillRect(sc.x,sc.y,sc.w,sc.h);
+  ctx.strokeStyle='rgba(120,130,145,.18)';ctx.lineWidth=1;for(let y=0.4;y<6;y+=0.4){ctx.beginPath();ctx.moveTo(sc.x,Y(y));ctx.lineTo(sc.x+sc.w,Y(y));ctx.stroke();}
+  g=ctx.createLinearGradient(0,Y(0),0,sc.h);g.addColorStop(0,'#9aa1a9');g.addColorStop(1,'#727982');ctx.fillStyle=g;ctx.fillRect(sc.x,Y(0),sc.w,sc.h-Y(0));
+  ctx.fillStyle='#f2c230';ctx.fillRect(sc.x,Y(0)+0.22*k,sc.w,0.05*k);
+  // étagère métallique (vue de côté) : montants bleus, tablettes orange
+  ctx.fillStyle='#4a6fa0';[sx0,sx1].forEach(x=>{ctx.fillRect(X(x)-0.025*k,Y(2.3),0.05*k,Y(0)-Y(2.3));});
+  const shelf=y=>{g=ctx.createLinearGradient(0,Y(y),0,Y(y-0.05));g.addColorStop(0,'#f0a23a');g.addColorStop(1,'#c47b18');ctx.fillStyle=g;ctx.fillRect(X(sx0)-0.04*k,Y(y),(sx1-sx0+0.08)*k,0.05*k);ctx.fillStyle='rgba(0,0,0,.15)';ctx.fillRect(X(sx0),Y(y-0.05),(sx1-sx0)*k,0.03*k);};
+  [0.1,2.25].forEach(shelf);
+  const carton=(x,y,w,h,c)=>{ctx.fillStyle=c;rr(X(x),Y(y+h),w*k,h*k,3);ctx.fill();ctx.fillStyle='rgba(255,255,255,.18)';ctx.fillRect(X(x)+w*k*0.42,Y(y+h),w*k*0.16,h*k);};
+  carton(sx1-0.45,2.25,0.38,0.3,'#c79a63');carton(sx1-0.45,0.1,0.38,0.26,'#b4874f');
+  shelf(o.h);
+  if(!noLab){ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(X(sx1)+0.12*k,Y(o.h)+0.025*k,8,0,7);ctx.fill();ctx.strokeStyle=GREEN;ctx.lineWidth=2.5;ctx.stroke();}
+  // la caisse monte (Δt) devant l'étagère, puis glisse dessus (ce glissement horizontal ne change pas Ep)
+  const tp=t-p.pre-p.eff,ph=t<p.pre?'pre':tp<0?'eff':'post',yb=st.y,bx=ph==='post'?lerp(BX0,BXs,ease(tp/0.6)):BX0;
+  const grip=[bx-bw/2-0.01,yb+bh*0.45],rest=[HIPX+0.12,0.32+H0J-0.9];
+  let hand,on=true;
+  if(ph==='pre'){const u=ease(t/p.pre);hand=[lerp(rest[0]+0.25,grip[0],u),lerp(rest[1]+0.55,grip[1],u)];on=t>p.pre*0.9;}
+  else if(ph==='eff')hand=grip;
+  else if(tp<0.75)hand=grip;
+  else{const u=ease((tp-0.75)/0.7);hand=[lerp(grip[0],rest[0]+0.25,u),lerp(grip[1],rest[1]+0.55,u)];on=false;}
+  const pose=liftPose(hand);
+  // caisse en carton
+  const X0=X(bx-bw/2),Y0=Y(yb+bh);ctx.fillStyle='rgba(0,0,0,.18)';ctx.fillRect(X0+4,Y0+4,bw*k,bh*k);
+  g=ctx.createLinearGradient(X0,Y0,X0+bw*k,Y0+bh*k);g.addColorStop(0,'#e8bb80');g.addColorStop(1,'#b8864d');ctx.fillStyle=g;rr(X0,Y0,bw*k,bh*k,3);ctx.fill();
+  ctx.fillStyle='#d9a868';ctx.fillRect(X0+bw*k*0.42,Y0,bw*k*0.16,bh*k);ctx.strokeStyle='rgba(90,60,30,.4)';ctx.lineWidth=1;ctx.strokeRect(X0,Y0,bw*k,bh*k);
+  if(!noLab){ctx.fillStyle='#5a3a1a';ctx.font=F(800,Math.max(10,0.085*k));ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(fr(o.m,0)+' kg',X0+bw*k*0.5,Y0+bh*k*0.55);}
+  const P=person({hip:pose.hip,lean:pose.lean,dir:1,feet:[[HIPX-0.12,ANK],[HIPX+0.06,ANK]],hands:[[hand[0]-0.03,hand[1]+0.03],hand],m:70,ground:0});
+  // hauteur gagnée par la caisse
+  if(!noLab){const ax=X(sx1)+(L.mob?0.24:0.34)*k;ctx.strokeStyle=GREEN_D;ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(X(BX0+bw/2),Y(0));ctx.lineTo(ax+8,Y(0));ctx.stroke();ctx.setLineDash([]);
+    arrow(ax,Y(0),ax,Y(o.h),GREEN_D,2.5);if(L.mob)tag('h = '+fr(o.h,2)+' m',ax+6,Y(o.h)-32,GREEN_D,F(800,11.5),'right');else tag('h = '+fr(o.h,2)+' m',ax+8,Y(o.h/2),GREEN_D,F(800,13),'left');
+    if(ph==='eff'&&yb<o.h-0.005)arrow(X0+bw*k*0.5,Y0-6,X0+bw*k*0.5,Y0-6-26,BLUE,3);}
+  return P;}
+
+// ---------- icônes des repères ----------
+function icon(kind,x,y,s,col){ctx.save();ctx.translate(x,y);ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=Math.max(1.4,s*0.09);ctx.lineCap='round';
+  if(kind==='bulb'){ctx.beginPath();ctx.arc(0,-s*0.15,s*0.32,0,7);ctx.stroke();ctx.fillRect(-s*0.14,s*0.17,s*0.28,s*0.2);ctx.beginPath();ctx.moveTo(-s*0.1,-s*0.1);ctx.lineTo(0,s*0.05);ctx.lineTo(s*0.1,-s*0.1);ctx.stroke();}
+  else if(kind==='bike'){ctx.beginPath();ctx.arc(-s*0.3,s*0.15,s*0.22,0,7);ctx.arc(s*0.3+s*0.22,s*0.15,0,0,7);ctx.stroke();ctx.beginPath();ctx.arc(s*0.3,s*0.15,s*0.22,0,7);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-s*0.3,s*0.15);ctx.lineTo(-s*0.05,-s*0.18);ctx.lineTo(s*0.22,-s*0.18);ctx.lineTo(s*0.3,s*0.15);ctx.moveTo(-s*0.05,-s*0.18);ctx.lineTo(0,s*0.15);ctx.lineTo(s*0.22,-s*0.18);ctx.stroke();}
+  else{ctx.beginPath();ctx.arc(s*0.12,-s*0.38,s*0.1,0,7);ctx.fill();ctx.beginPath();ctx.moveTo(s*0.06,-s*0.25);ctx.lineTo(-s*0.06,s*0.05);ctx.lineTo(s*0.2,s*0.18);ctx.lineTo(s*0.12,s*0.42);
+    ctx.moveTo(-s*0.06,s*0.05);ctx.lineTo(-s*0.3,s*0.3);ctx.moveTo(s*0.04,-s*0.18);ctx.lineTo(s*0.3,-s*0.05);ctx.moveTo(s*0.04,-s*0.18);ctx.lineTo(-s*0.25,-s*0.12);ctx.stroke();}
+  ctx.restore();}
+
+// ---------- panneau : énergie, puissance, muscles ----------
+function panel(st){const p=L.pn,mob=L.mob,o=S[mode],Wt=work(),P=pow(),Em=Wt/ETA,done=st.frac>=0.999;
+  ctx.fillStyle='#f7f9fb';rr(p.x,p.y,p.w,p.h,12);ctx.fill();ctx.strokeStyle='#dde3ea';ctx.lineWidth=1;ctx.stroke();
+  const fs=mob?11.5:Math.max(11.5,Math.min(14,p.w/29)),lh=mob?fs*1.65:Math.max(fs*1.65,Math.min(fs*1.95,p.h/26)),x=p.x+12,xr=p.x+p.w-12;let y=p.y+lh*0.8;
+  const line=(s,c,wt)=>{ctx.font=F(wt||700,fs);ctx.fillStyle=c||INK;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(s,x,y);y+=lh;};
+  const head=(s,c)=>{ctx.font=F(800,fs+0.5);ctx.fillStyle=c;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText(s,x,y);y+=lh*0.95;};
+  // 1. énergie
+  head(mode==='E'?'1. Énergie gagnée en montant':mode==='S'?'1. Travail des jambes pendant la poussée':'1. Énergie gagnée par la caisse',GREEN_D);
+  if(mode==='S'){line('v₀ = √(2gh) = '+fr(v0(),2)+' m/s ; flexion s = v₀·Δt/2 = '+fr(sJ(),2)+' m',MUTED,600);line('W = m·g·(s + h) = '+fk(Wt,0)+' J',GREEN_D,800);}
+  else line((mode==='E'?'Ep = m·g·h = ':'Ep = M·g·h = ')+fr(o.m,0)+' × 9,81 × '+fr(o.h,mode==='C'?2:1)+' = '+fk(Wt,0)+' J',GREEN_D,800);
+  // barre de progression de l'énergie
+  const bw=p.w-24,bh=Math.max(10,fs*0.9);ctx.fillStyle='#e3e8ee';rr(x,y-bh/2,bw,bh,bh/2);ctx.fill();ctx.fillStyle=GREEN;rr(x,y-bh/2,Math.max(bh,bw*st.frac),bh,bh/2);ctx.fill();
+  ctx.font=F(800,fs-1.5);ctx.fillStyle=st.frac>0.55?'#fff':GREEN_D;ctx.textAlign=st.frac>0.55?'right':'left';ctx.textBaseline='middle';ctx.fillText(fk(Wt*st.frac,0)+' J',st.frac>0.55?x+bw*st.frac-8:x+Math.max(bh,bw*st.frac)+6,y+0.5);y+=lh*1.15;
+  // 2. puissance (échelle logarithmique 10 W → 10 kW)
+  head('2. Puissance moyenne pendant l’effort',OR_D);
+  line('P = '+(mode==='S'?'W':'Ep')+'/Δt = '+fk(Wt,0)+' J / '+fr(o.dt,mode==='E'?1:2)+' s = '+fk(P,0)+' W',OR_D,800);
+  const gx=x+6,gw=bw-12,gy=y+(mob?14:18),lx=v=>gx+gw*clamp((Math.log10(v)-1)/3,0,1);
+  let g=ctx.createLinearGradient(gx,0,gx+gw,0);g.addColorStop(0,'#fbe9c8');g.addColorStop(1,'#f1b45a');ctx.fillStyle=g;rr(gx,gy-6,gw,12,6);ctx.fill();
+  ctx.font=F(700,fs-2.5);ctx.fillStyle=MUTED;ctx.textAlign='center';ctx.textBaseline='top';[10,100,1000,10000].forEach(v=>{const xx=lx(v);ctx.fillRect(xx-0.5,gy+6,1,5);ctx.fillText(v>=1000?fk(v,0).replace(' 000',' k')+'W':v+' W',xx,gy+12);});
+  REF.forEach(([v,lab,ic],i)=>{const xx=lx(v),yy=gy-(mob?20:24);icon(ic,xx,yy,mob?15:19,'#5f6b7a');ctx.fillStyle='#5f6b7a';ctx.fillRect(xx-0.75,gy-8,1.5,8);});
+  const xp=lx(P);ctx.fillStyle=OR_D;ctx.beginPath();ctx.moveTo(xp,gy+7);ctx.lineTo(xp-8,gy+19);ctx.lineTo(xp+8,gy+19);ctx.closePath();ctx.fill();ctx.beginPath();ctx.arc(xp,gy,7,0,7);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+  y=gy+(mob?34:40);
+  {ctx.font=F(700,fs-2);ctx.textAlign='left';ctx.textBaseline='middle';let lx2=x;REF.forEach(([v,lab,ic])=>{icon(ic,lx2+7,y,mob?12:14,'#5f6b7a');ctx.fillStyle=MUTED;ctx.fillText(lab,lx2+17,y);lx2+=ctx.measureText(lab).width+(mob?26:30);});y+=lh;}
+  const near=REF.reduce((b,r)=>Math.abs(Math.log(P/r[0]))<Math.abs(Math.log(P/b[0]))?r:b);
+  line('soit '+fr(P/near[0],P/near[0]<10?1:0)+' × '+(near[2]==='bulb'?'une ampoule de 60 W':near[2]==='bike'?'un cycliste (≈ 200 W)':'un sprint (≈ 1 500 W)'),MUTED,600);
+  y+=lh*0.2;
+  // 3. muscles : rendement 25 %
+  head('3. Ce que dépensent tes muscles (rendement ≈ 25 %)',VIO);
+  line('E = '+(mode==='S'?'W':'Ep')+'/0,25 = '+fk(Em,0)+' J = '+fr(Em/KCAL,Em/KCAL<10?2:1)+' kcal',VIO,800);
+  const hb=Math.max(12,fs);ctx.fillStyle=GREEN;rr(x,y-hb/2,bw*0.25,hb,4);ctx.fill();ctx.fillStyle='#f0a23a';rr(x+bw*0.25+2,y-hb/2,bw*0.75-2,hb,4);ctx.fill();
+  ctx.font=F(800,fs-2);ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('25 % utile',x+bw*0.125,y+0.5);ctx.fillText('75 % en chaleur : '+fk(Em*0.75,0)+' J',x+bw*0.25+(bw*0.75)/2,y+0.5);y+=lh*1.1;
+  line('puissance des muscles : P/0,25 = '+fk(P/ETA,0)+' W',MUTED,600);
+  const nb=100/(Em/KCAL);line('100 kcal (≈ une banane) : '+(nb<1.05?'moins d’une fois':'à refaire '+fk(nb,nb<10?1:0)+' fois'),MUTED,600);
+  // chronomètre
+  const ty=Math.min(p.y+p.h-lh*0.9,y+lh*0.3);ctx.font=F(800,fs+1);ctx.textAlign='left';ctx.fillStyle=INK;ctx.textBaseline='middle';
+  ctx.fillText('⏱ effort : '+fr(st.te,mode==='E'?1:2)+' s / '+fr(o.dt,mode==='E'?1:2)+' s'+(done?'  ✓':''),x,ty);
+  // graphique W(t) : la pente est la puissance
+  const gy0=ty+lh*0.9,gh=p.y+p.h-gy0-12;if(gh<110)return;
+  const ax0=x+34,ax1=xr-10,ay1=gy0+lh*0.9,ay0=p.y+p.h-28,tx2=v=>ax0+(ax1-ax0)*v/o.dt,wy=v=>ay0-(ay0-ay1)*v/(Wt*1.08);
+  ctx.fillStyle='#fff';rr(x-4,gy0-4,bw+8,p.y+p.h-gy0-6,8);ctx.fill();
+  ctx.font=F(800,fs);ctx.fillStyle=INK;ctx.textAlign='left';ctx.fillText((mode==='S'?'W':'Ep')+'(t) gagnée : la pente est la puissance',x+4,gy0+lh*0.35);
+  ctx.strokeStyle='#9aa4b0';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(ax0,ay1-4);ctx.lineTo(ax0,ay0);ctx.lineTo(ax1,ay0);ctx.stroke();
+  ctx.font=F(600,fs-2);ctx.fillStyle=MUTED;ctx.textAlign='right';ctx.textBaseline='middle';ctx.fillText(fk(Wt,0)+' J',ax0-4,wy(Wt));ctx.fillText('0',ax0-4,ay0);
+  ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText(fr(o.dt,mode==='E'?1:2)+' s',ax1,ay0+4);ctx.fillText('t',(ax0+ax1)/2,ay0+4);
+  ctx.setLineDash([5,4]);ctx.strokeStyle=OR;ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(ax0,ay0);ctx.lineTo(ax1,wy(Wt));ctx.stroke();ctx.setLineDash([]);
+  ctx.strokeStyle=GREEN_D;ctx.lineWidth=3;ctx.beginPath();const N=80;for(let i=0;i<=N;i++){const tt=st.te*i/N;const X2=tx2(tt),Y2=wy(workAt(tt));i?ctx.lineTo(X2,Y2):ctx.moveTo(X2,Y2);}ctx.stroke();
+  if(st.te>0){ctx.fillStyle=GREEN_D;ctx.beginPath();ctx.arc(tx2(st.te),wy(workAt(st.te)),4.5,0,7);ctx.fill();}
+  ctx.font=F(800,fs-1);ctx.fillStyle=OR_D;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('pente moyenne = '+fk(P,0)+' W',ax0+8,ay1+4);}
+
+// ---------- dessin ----------
+function draw(){size();layout();ctx.clearRect(0,0,W,H);const st=state(),o=S[mode],sc=L.sc;
+  ctx.save();ctx.beginPath();rr(sc.x,sc.y,sc.w,sc.h,L.mob?0:10);ctx.clip();
+  if(mode==='E'){const {n,r}=stairs(),q=st.frac*n;cam.k=sc.h/(L.mob?4.3:5.4);const tx=(q-0.5)*RUN+(L.mob?0.6:0.9),ty=q*r+0.9;if(!drag||drag.k!=='char'){cam.x=tx;cam.y=ty;}stairScene(st);}
+  else if(mode==='S'){cam.k=Math.min(sc.h*0.8/(H0J+o.h+1.0),sc.w/(L.mob?2.8:3.0));cam.x=L.mob?0.15:-0.1;cam.y=0.36*sc.h/cam.k;jumpScene(st);}
+  else{cam.k=Math.min(sc.h*0.84/2.75,sc.w/(L.mob?2.75:3.0));cam.x=L.mob?0.38:0.25;cam.y=0.36*sc.h/cam.k;liftScene(st);}
+  // bandeau
+  const ttl=mode==='E'?'Monter '+fr(o.h,1)+' m de marches en '+fr(o.dt,1)+' s':mode==='S'?'Sauter de '+fr(o.h*100,0)+' cm (poussée de '+fr(o.dt*1000,0)+' ms)':'Poser '+fr(o.m,0)+' kg à '+fr(o.h,2)+' m en '+fr(o.dt,1)+' s';
+  tag(ttl,sc.x+12,sc.y+18,'#fff',F(800,L.mob?12:14),'left','rgba(19,35,58,.82)');
+  if(mode==='S')tag('ralenti ×'+SLOWJ,sc.x+12,sc.y+44,'#fff',F(700,L.mob?11:12),'left','rgba(19,35,58,.55)');
+  if(paused)tag('⏸ pause',sc.x+sc.w-12,sc.y+sc.h-16,'#fff',F(800,12),'right','rgba(19,35,58,.7)');
+  ctx.restore();panel(st);}
+
+// ---------- réglages ----------
+const RG={E:{m:[40,120,1],h:[3,12,0.5],dt:[4,60,0.5]},S:{m:[40,120,1],h:[0.1,0.8,0.01],dt:[0.1,0.7,0.01]},C:{m:[5,50,1],h:[0.3,1.8,0.05],dt:[0.5,5,0.1]}};
+function fixJump(){const o=S.S,v=v0(),lo=2*0.12/v,hi=2*0.5/v;o.dt=clamp(o.dt,Math.max(0.1,lo),Math.min(0.7,hi));}
+function syncSliders(){const r=RG[mode],o=S[mode];[['sM','m'],['sH','h'],['sT','dt']].forEach(([id,kk])=>{const e=$(id);e.min=r[kk][0];e.max=r[kk][1];e.step=r[kk][2];e.value=o[kk];});
+  $('lM').innerHTML=mode==='C'?'M &nbsp;masse de la caisse':'m &nbsp;ta masse';$('lH').innerHTML=mode==='E'?'h &nbsp;hauteur à monter':mode==='S'?'h &nbsp;hauteur du saut (centre de masse)':'h &nbsp;hauteur de l’étagère';
+  $('lT').innerHTML=mode==='E'?'Δt &nbsp;durée de la montée':mode==='S'?'Δt &nbsp;durée de la poussée des jambes':'Δt &nbsp;durée du levage';
+  $('hint').textContent=mode==='E'?'Astuce : attrape le personnage et fais-le monter ou descendre les marches à la main.':mode==='S'?'Astuce : attrape le point vert « sommet » pour changer la hauteur du saut ; attrape le sauteur pour avancer image par image.':'Astuce : attrape l’étagère orange (point vert) pour la monter ou la descendre ; attrape la caisse pour la lever à la main.';}
+function upd(){const o=S[mode];$('vM').textContent=fr(o.m,0)+' kg';$('vH').textContent=mode==='S'?fr(o.h*100,0)+' cm':fr(o.h,mode==='C'?2:1)+' m';$('vT').textContent=mode==='S'?fr(o.dt*1000,0)+' ms':fr(o.dt,1)+' s';
+  const Wt=work(),P=pow();
+  $('fml').innerHTML=(mode==='S'?'Pendant la poussée, tes jambes fournissent un travail <b style="color:#0F6E56">W = m·g·(s + h)</b> : de quoi remonter ton centre de masse de la flexion s, puis lui donner l’énergie cinétique ½·m·v₀² = m·g·h qui le fera monter de h en l’air. ':'Monter une masse m d’une hauteur h demande au moins <b style="color:#0F6E56">Ep = m·g·h</b>. ')+
+   'La <b style="color:#9a5f0f">puissance</b> dit à quelle vitesse cette énergie est fournie : <b style="color:#9a5f0f">P = W/Δt</b>, en watts (1 W = 1 J/s). Même énergie en deux fois moins de temps : deux fois plus de watts. '+
+   'Tes muscles ont un <b style="color:#534AB7">rendement ≈ 25 %</b> : pour 1 J gagné, ils consomment environ 4 J de nourriture, et les 3 autres te réchauffent.';
+  $('info').innerHTML=mode==='E'?'Escalier de '+stairs().n+' marches de '+fr(stairs().r*100,1)+' cm. On ne compte que l’énergie potentielle gagnée : m·g·h = '+fk(Wt,0)+' J, à vitesse constante (Ec ne change pas). '+
+     'Puissance moyenne '+fk(P,0)+' W ; tes muscles consomment environ '+fk(P/ETA,0)+' W pendant la montée. 1 kcal = 4 184 J. En vrai, marcher coûte aussi de l’énergie même à plat : la dépense réelle est un peu plus grande.'
+   :mode==='S'?'Modèle : pendant la poussée (Δt = '+fr(o.dt*1000,0)+' ms), la force des jambes est constante ; le centre de masse part de la position accroupie (−'+fr(sJ(),2)+' m) et quitte le sol à la hauteur « debout » avec v₀ = '+fr(v0(),2)+' m/s. '+
+     'Accélération a = v₀/Δt = '+fr(v0()/o.dt,1)+' m/s² ; force du sol F = m·(g + a) = '+fk(o.m*(G+v0()/o.dt),0)+' N ; puissance au moment de décoller F·v₀ = '+fk(o.m*(G+v0()/o.dt)*v0(),0)+' W (deux fois la moyenne). La durée de poussée est limitée pour que la flexion reste entre 12 et 50 cm.'
+   :'On ne compte que l’énergie gagnée par la caisse : Ep = M·g·h = '+fk(Wt,0)+' J, puissance moyenne '+fk(P,0)+' W. En vrai, ton propre buste descend et remonte à chaque levage : tes muscles dépensent bien plus que cela. Plie les genoux, pas le dos !';}
+function setMode(m){mode=m;['mE','mS','mC'].forEach(i=>$(i).classList.toggle('on',i==='m'+m));syncSliders();upd();t=0;hold=0;}
+$('mE').onclick=()=>setMode('E');$('mS').onclick=()=>setMode('S');$('mC').onclick=()=>setMode('C');
+$('sM').oninput=e=>{S[mode].m=+e.target.value;upd();};
+$('sH').oninput=e=>{S[mode].h=+e.target.value;if(mode==='S'){fixJump();$('sT').value=S.S.dt;}upd();t=Math.min(t,T().pre);};
+$('sT').oninput=e=>{S[mode].dt=+e.target.value;if(mode==='S'){fixJump();e.target.value=S.S.dt;}upd();t=Math.min(t,T().pre);};
+$('pp').onclick=()=>{paused=!paused;$('pp').textContent=paused?'▶ Lecture':'⏸ Pause';};
+$('re').onclick=()=>{t=0;hold=0;if(paused)$('pp').click();};
+$('lab').onclick=()=>{noLab=!noLab;$('lab').classList.toggle('on',noLab);};
+// ---------- souris ----------
+function pos(e){const b=cv.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top];}
+const inv=(sx,sy)=>[(sx-L.sc.x-L.sc.w*0.5)/cam.k+cam.x,cam.y-(sy-L.sc.y-L.sc.h*0.5)/cam.k];
+let lastP=null;
+function hit(x,y){if(!L.sc||x>L.sc.x+L.sc.w||y>L.sc.y+L.sc.h)return null;const w=inv(x,y),st=state(),o=S[mode];
+  if(mode==='S'&&Math.hypot(w[0]+0.7,w[1]-(H0J+o.h))*cam.k<16)return{k:'hJ'};
+  if(mode==='C'){const bw=0.4+0.003*o.m,bh=0.28+0.003*o.m,sx0=0.22+bw/2+0.03,sx1=sx0+(L.mob?0.62:0.95);if(w[0]>sx0-0.05&&w[0]<sx1+0.25&&Math.abs(w[1]-o.h)*cam.k<14)return{k:'shelf'};
+    if(Math.abs(w[0]-0.22)<bw/2&&w[1]>st.y&&w[1]<st.y+bh)return{k:'box'};}
+  if(lastP&&Math.abs(w[0]-lastP.hip[0])<0.45&&w[1]>lastP.hip[1]-1.0&&w[1]<lastP.hd[1]+0.2)return{k:'char'};return null;}
+// avance « à la main » : on cherche l'instant dont la hauteur colle au pointeur
+function scrubTo(yw){const p=T(),o=S[mode];let best=t,bd=1e9;const t0=mode==='S'?0:p.pre,t1=mode==='S'?p.pre+o.dt+p.fly/2:p.pre+p.eff;
+  for(let i=0;i<=240;i++){const tt=t0+(t1-t0)*i/240,sv=t;t=tt;const s=state();t=sv;const yy=mode==='S'?H0J+s.y:mode==='E'?s.y+0.9:s.y+0.15;const d=Math.abs(yy-yw);if(d<bd){bd=d;best=tt;}}t=best;hold=0;}
+cv.addEventListener('pointerdown',e=>{const [x,y]=pos(e),h=hit(x,y);if(!h)return;cv.setPointerCapture(e.pointerId);drag=h;if(!paused)$('pp').click();if(h.k==='char'||h.k==='box')scrubTo(inv(x,y)[1]);});
+cv.addEventListener('pointermove',e=>{const [x,y]=pos(e);if(!drag){const h=hit(x,y);cv.style.cursor=h?(h.k==='char'||h.k==='box'?'grab':'ns-resize'):'default';return;}
+  const w=inv(x,y),o=S[mode],r=RG[mode];
+  if(drag.k==='hJ'){o.h=clamp(Math.round((w[1]-H0J)*100)/100,r.h[0],r.h[1]);fixJump();syncSliders();upd();t=T().pre+o.dt+v0()/G;}
+  else if(drag.k==='shelf'){o.h=clamp(Math.round(w[1]*20)/20,r.h[0],r.h[1]);syncSliders();upd();t=T().pre+T().eff;}
+  else scrubTo(w[1]);});
+const up=()=>{if(drag&&(drag.k==='hJ'||drag.k==='shelf')){t=0;if(paused)$('pp').click();}drag=null;};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+// ---------- boucle ----------
+let last=null;
+function loop(ts){if(last===null)last=ts;const dt=Math.min(0.05,(ts-last)/1000);last=ts;
+  if(!paused&&!drag){t+=dt/(mode==='S'?SLOWJ:1);if(t>tTot()){t=0;}}
+  draw();requestAnimationFrame(loop);}
+// mémorise le personnage pour la souris
+const _person=person;person=function(o){const r=_person(o);lastP=r;return r;};
+window.__pc={scr:(x,y)=>[X(x),Y(y)],get:()=>({mode,t,S:JSON.parse(JSON.stringify(S)),W:work(),P:pow(),v0:v0(),s:sJ(),st:state(),stairs:stairs()}),set:o=>{if(o.mode)setMode(o.mode);if(o.m!=null)S[mode].m=o.m;if(o.h!=null)S[mode].h=o.h;if(o.dt!=null)S[mode].dt=o.dt;if(mode==='S')fixJump();syncSliders();upd();if(o.t!=null){t=o.t;paused=true;$('pp').textContent='▶ Lecture';}},T,tTot};
+syncSliders();upd();requestAnimationFrame(loop);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Travail, énergie et puissance<span>8 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Travil/"><i>01</i>Travail d'une force</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Travail-gravite/"><i>02</i>Travail de la gravité</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/-n-rgies/"><i>03</i>Énergies</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/energie-exemples/"><i>04</i>Énergie : exemples</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/energie_ressort/"><i>05</i>Énergie d'un ressort</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-puissance-corps/"><i>06</i>Monter un escalier, sauter : énergie et puissance du corps</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-bilan-travaux/"><i>07</i>Le théorème de l’énergie cinétique, force par force</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-diagramme-energie/"><i>08</i>Lire un diagramme d’énergie potentielle</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

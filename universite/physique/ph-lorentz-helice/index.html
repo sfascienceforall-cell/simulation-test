@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cercle, hélice et aurores polaires · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH11">Magnétisme</a>›<b>Cercle, hélice et aurores polaires</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Magnétisme</span><span class="sfa-chip free">Gratuit</span></div><h1>Cercle, hélice et aurores polaires</h1><p>Dans un tube à faisceau placé entre deux bobines, tourne le canon : à 90° les électrons décrivent un cercle, sinon une hélice de rayon r = mv⊥/(qB) et de pas p = v∥·T. Un second onglet montre des particules chargées (ici un proton) qui s’enroulent autour des lignes du champ terrestre jusqu’aux pôles et allument les aurores.</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:72vh;min-height:580px;cursor:grab;touch-action:none" aria-label="Onglet 1 : un tube à faisceau d'électrons entre deux grandes bobines de Helmholtz ; le faisceau lumineux décrit un cercle ou une hélice selon l'angle entre la vitesse et le champ B. Onglet 2 : la Terre en 3D avec les lignes de son champ magnétique ; des particules chargées (ici des protons) s'enroulent autour des lignes jusqu'aux pôles et allument des aurores"></canvas>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill">Scène</span>
+  <button class="btn on" id="tA">Tube à faisceau : cercle ou hélice</button>
+  <button class="btn" id="tB">Aurores polaires</button>
+</div>
+<div class="row" data-tab="A">
+  <span class="pill" style="min-width:175px;color:#0F6E56">α &nbsp;angle entre v et B</span>
+  <input type="range" id="rA" min="0" max="90" step="1" value="80" style="accent-color:#1D9E75;">
+  <span class="val" id="vA" style="color:#0F6E56"></span>
+</div>
+<div class="row" data-tab="A">
+  <span class="pill" style="min-width:175px;color:#185fa5">B &nbsp;champ des bobines</span>
+  <input type="range" id="rB" min="0.4" max="3" step="0.05" value="1" style="accent-color:#378ADD;">
+  <span class="val" id="vB" style="color:#185fa5"></span>
+</div>
+<div class="row" data-tab="A">
+  <span class="pill" style="min-width:175px;color:#a32d2d">U &nbsp;tension du canon</span>
+  <input type="range" id="rU" min="50" max="300" step="5" value="200" style="accent-color:#E24B4A;">
+  <span class="val" id="vU" style="color:#a32d2d"></span>
+</div>
+<div class="row" data-tab="A">
+  <span class="pill">Afficher</span>
+  <button class="btn on" id="bVec">Vecteurs v, v∥, v⊥, F</button>
+  <button class="btn on" id="bDim">Rayon r et pas p</button>
+  <button class="btn" id="b90">α = 90° (cercle)</button>
+</div>
+<div class="row" data-tab="B" style="display:none">
+  <span class="pill" style="min-width:175px;color:#185fa5">L &nbsp;ligne de champ</span>
+  <input type="range" id="rL" min="3" max="10" step="0.1" value="6" style="accent-color:#378ADD;">
+  <span class="val" id="vL" style="color:#185fa5"></span>
+</div>
+<div class="row" data-tab="B" style="display:none">
+  <span class="pill" style="min-width:175px;color:#0F6E56">α&#8320; &nbsp;angle à l’équateur</span>
+  <input type="range" id="rP" min="1" max="60" step="0.5" value="2" style="accent-color:#1D9E75;">
+  <span class="val" id="vP" style="color:#0F6E56"></span>
+</div>
+<div class="row">
+  <span class="pill">Vue</span>
+  <button class="btn on" id="v3">3D</button>
+  <button class="btn" id="vX">Le long de B</button>
+  <button class="btn" id="vS">De côté</button>
+  <button class="btn" id="pa">Pause</button>
+</div>
+<div class="row"><span class="hint" id="hint"></span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const cv=document.getElementById('cv'),$=id=>document.getElementById(id);let ctx=cv.getContext('2d');
+const INK='#2c3440',GREY='#7c8794',RED='#E24B4A',RED_D='#a32d2d',BLU='#185fa5',BLU_L='#378ADD',GRN='#0F6E56',GRN_L='#1D9E75',OR='#BA7517',OR_D='#9a5f0f',PUR='#7F77DD',PUR_D='#534AB7',GOLD='#f2b233';
+const fr=(v,d)=>{if(!isFinite(v))return '∞';return (Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d).replace('.',',').replace(/^-/,'−');};
+const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+function sci(v,d){if(v===0)return '0';const e=Math.floor(Math.log10(Math.abs(v))+1e-12);let m=v/Math.pow(10,e);if(Math.abs(+m.toFixed(d))>=10){m/=10;return sci(v,d);}if(e===0)return fr(m,d);return fr(m,d)+'·10'+String(e).split('').map(c=>SUP[c]).join('');}
+let W=0,H=0,dpr=1;
+function size(){const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.round(b.width)||800,h=Math.round(b.height)||560;if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);}
+const small=()=>W<620;
+function font(w,s){return w+' '+(small()?Math.round(s*0.88):s)+'px Mulish,system-ui,sans-serif';}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function tag(t,x,y,col,f,al){ctx.font=f||font(700,12.5);ctx.textAlign=al||'center';ctx.textBaseline='middle';const w=ctx.measureText(t).width,A=al||'center';const lo=A==='left'?4:A==='right'?w+4:w/2+4,hi=A==='left'?W-w-4:A==='right'?W-4:W-w/2-4;x=Math.max(lo,Math.min(hi,x));y=Math.max(9,Math.min(H-9,y));
+  ctx.lineWidth=3.5;ctx.strokeStyle='rgba(255,255,255,.94)';ctx.lineJoin='round';ctx.strokeText(t,x,y);ctx.fillStyle=col||INK;ctx.fillText(t,x,y);}
+function pill(t,x,y,col,f){ctx.font=f||font(800,12.5);const w=ctx.measureText(t).width+16,h=22;x=Math.max(w/2+4,Math.min(W-w/2-4,x));y=Math.max(h/2+4,Math.min(H-h/2-4,y));ctx.fillStyle='rgba(255,255,255,.94)';rr(x-w/2,y-h/2,w,h,7);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=1;ctx.stroke();ctx.fillStyle=col||INK;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t,x,y+0.5);return [x-w/2,y-h/2,w,h];}
+function arrow2(x1,y1,x2,y2,col,w){ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w||2;ctx.lineCap='round';const a=Math.atan2(y2-y1,x2-x1),h=7+(w||2)*1.7;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-Math.cos(a)*h*0.6,y2-Math.sin(a)*h*0.6);ctx.stroke();ctx.beginPath();ctx.moveTo(x2+Math.cos(a)*2,y2+Math.sin(a)*2);ctx.lineTo(x2-h*Math.cos(a-0.42),y2-h*Math.sin(a-0.42));ctx.lineTo(x2-h*Math.cos(a+0.42),y2-h*Math.sin(a+0.42));ctx.closePath();ctx.fill();}
+function shade(hex,k){const n=parseInt(hex.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255,f=v=>Math.max(0,Math.min(255,Math.round(v*k)));return`rgb(${f(r)},${f(g)},${f(b)})`;}
+function rgba(hex,a){const n=parseInt(hex.slice(1),16);return`rgba(${n>>16},${(n>>8)&255},${n&255},${a})`;}
+function mixc(h1,h2,u){const a=parseInt(h1.slice(1),16),b=parseInt(h2.slice(1),16),m=(s)=>Math.round(((a>>s)&255)*(1-u)+((b>>s)&255)*u);return'#'+((1<<24)+(m(16)<<16)+(m(8)<<8)+m(0)).toString(16).slice(1);}
+// ---------- 3D : projection en perspective faite à la main ----------
+let yaw=-0.5,pitch=0.5,zoom=1,C={cx:0,cy:0,f:1,Dc:1,ox:0,oy:0,oz:0,cyw:1,syw:0,cp:1,sp:0};
+function setCam(Dc,f,cx,cy,o){C={Dc,f,cx,cy,ox:o[0],oy:o[1],oz:o[2],cyw:Math.cos(yaw),syw:Math.sin(yaw),cp:Math.cos(pitch),sp:Math.sin(pitch)};}
+function pr(x,y,z){x-=C.ox;y-=C.oy;z-=C.oz;const xr=x*C.cyw-y*C.syw,yr=x*C.syw+y*C.cyw,dep=C.Dc+yr*C.cp-z*C.sp,k=C.f/Math.max(0.03,dep);return[C.cx+xr*k,C.cy-(z*C.cp+yr*C.sp)*k,dep,k];}
+const P3=p=>pr(p[0],p[1],p[2]);
+function poly(pts,fill,stroke,lw){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();}}
+function area(q){let a=0;for(let i=0;i<q.length;i++){const p=q[i],n=q[(i+1)%q.length];a+=p[0]*n[1]-n[0]*p[1];}return a;}
+const vsub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],vadd=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],vmul=(a,s)=>[a[0]*s,a[1]*s,a[2]*s],vdot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+  vcross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],vlen=a=>Math.hypot(a[0],a[1],a[2]),vnrm=a=>{const l=vlen(a)||1;return[a[0]/l,a[1]/l,a[2]/l];};
+const LIGHT=vnrm([-0.35,-0.55,0.76]);
+function lit(col,n,amb){const d=Math.max(0,vdot(n,LIGHT));return shade(col,(amb==null?0.52:amb)+0.62*d);}
+function face(P,col,n,alpha,stroke){const q=P.map(P3);if(area(q)>=0)return false;ctx.globalAlpha=alpha==null?1:alpha;poly(q,lit(col,n),stroke||'rgba(0,0,0,.16)',0.8);ctx.globalAlpha=1;return true;}
+function box(x0,x1,y0,y1,z0,z1,col,alpha){const V=[[x0,y0,z0],[x1,y0,z0],[x1,y1,z0],[x0,y1,z0],[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]];
+  [[[4,5,6,7],[0,0,1]],[[0,1,5,4],[0,-1,0]],[[1,2,6,5],[1,0,0]],[[2,3,7,6],[0,1,0]],[[3,0,4,7],[-1,0,0]],[[3,2,1,0],[0,0,-1]]].forEach(([ix,n])=>face(ix.map(i=>V[i]),col,n,alpha));}
+function basis(ax){const t=Math.abs(ax[2])<0.9?[0,0,1]:[1,0,0];const u=vnrm(vcross(ax,t)),v=vcross(ax,u);return[u,v];}
+// cylindre plein entre a et b (faces cachées retirées), cap = couleur des bouts
+function cyl(a,b,r,col,o){o=o||{};const ax=vnrm(vsub(b,a)),[u,v]=basis(ax),N=o.n||24,al=o.alpha==null?1:o.alpha,ring=(c,i)=>{const t=i/N*2*Math.PI;return vadd(c,vadd(vmul(u,r*Math.cos(t)),vmul(v,r*Math.sin(t))));};
+  ctx.globalAlpha=al;for(let i=0;i<N;i++){const t=(i+0.5)/N*2*Math.PI,n=vadd(vmul(u,Math.cos(t)),vmul(v,Math.sin(t))),q=[ring(a,i),ring(a,i+1),ring(b,i+1),ring(b,i)].map(P3);if(area(q)<0){ctx.beginPath();q.forEach((p,j)=>j?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();ctx.fillStyle=lit(col,n);ctx.fill();ctx.strokeStyle=ctx.fillStyle;ctx.lineWidth=0.6;ctx.stroke();}}
+  [[b,ax,false],[a,vmul(ax,-1),true]].forEach(([c,n,rev])=>{const q=[];for(let i=0;i<N;i++)q.push(P3(ring(c,rev?N-i:i)));if(area(q)<0)poly(q,lit(o.cap||col,n),'rgba(0,0,0,.18)',0.8);});ctx.globalAlpha=1;}
+function ball(x,y,z,r,col,glow){const p=pr(x,y,z),R=Math.max(1.2,r*p[3]);const g=ctx.createRadialGradient(p[0]-R*0.35,p[1]-R*0.4,R*0.1,p[0],p[1],R);g.addColorStop(0,glow?'#ffffff':shade(col,1.6));g.addColorStop(0.45,col);g.addColorStop(1,shade(col,0.45));ctx.fillStyle=g;ctx.beginPath();ctx.arc(p[0],p[1],R,0,7);ctx.fill();return p;}
+function line3(pts,col,w,dash){const q=pts.map(P3);ctx.strokeStyle=col;ctx.lineWidth=w||1.5;ctx.lineCap='round';ctx.lineJoin='round';if(dash)ctx.setLineDash(dash);ctx.beginPath();q.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();ctx.setLineDash([]);return q;}
+function arrow3(a,b,col,w){const p=P3(a),q=P3(b);arrow2(p[0],p[1],q[0],q[1],col,w);return q;}
+function shadowEl(x,y,z,rx,ry,al){const N=28,q=[];for(let i=0;i<N;i++){const t=i/N*2*Math.PI;q.push(pr(x+rx*Math.cos(t),y+ry*Math.sin(t),z));}poly(q,`rgba(30,20,10,${al})`);}
+function bg(c1,c2){const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,c1);g.addColorStop(1,c2);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
+function panel(x,y,w,h){ctx.save();ctx.shadowColor='rgba(20,30,50,.18)';ctx.shadowBlur=14;ctx.shadowOffsetY=3;ctx.fillStyle='rgba(255,255,255,.95)';rr(x,y,w,h,12);ctx.fill();ctx.restore();ctx.strokeStyle='#dfe5ec';ctx.lineWidth=1;rr(x,y,w,h,12);ctx.stroke();}
+function nice(x){const e=Math.pow(10,Math.floor(Math.log10(x))),m=x/e;return(m<1.5?1:m<3?2:m<7?5:10)*e;}
+// rotation de la vue à la souris (sauf si on attrape un objet)
+let drag=null,viewT=null;
+function posE(e){const b=cv.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top];}
+function orbit(dx,dy,pmin,pmax){yaw+=dx*0.008;pitch=Math.max(pmin,Math.min(pmax,pitch+dy*0.008));}
+
+// ---------- constantes ----------
+const QE=1.602176634e-19,MEL=9.1093837015e-31,MP=1.67262192e-27,B0E=3.12e-5;
+let tab='A',alpha=80,Bm=1.0,Uk=200,showVec=true,showDim=true,paused=false,t=0,Lsh=6,peq=2;
+// ---------- onglet A : physique du tube ----------
+const vel=()=>Math.sqrt(2*QE*Uk/MEL),vper=()=>vel()*Math.sin(alpha*Math.PI/180),vpar=()=>alpha>=90?0:vel()*Math.cos(alpha*Math.PI/180);
+const omg=()=>QE*Bm*1e-3/MEL,radius=()=>vper()/omg(),period=()=>2*Math.PI/omg(),pitchL=()=>vpar()*period();
+const RB=0.08,G=[-0.03,0,-0.056],RC=0.15;
+function helixPt(tt){const r=radius(),w=omg();return[G[0]+vpar()*tt,G[1]+r*Math.sin(w*tt),G[2]+r*(1-Math.cos(w*tt))];}
+function helixPts(){const T=period(),P=[];let hit=null;const N=Math.ceil(240*Math.max(1,Math.min(14,0.4/Math.max(0.01,pitchL()))));
+  const turns=alpha>=89.5?1:Math.min(14,(0.2/Math.max(1e-4,pitchL()))+1);
+  for(let i=0;i<=N;i++){const tt=T*turns*i/N,p=helixPt(tt);if(vlen(p)>RB-0.004){hit=p;break;}P.push(p);}return{P,hit,turns};}
+// ---------- caméra ----------
+let viewsA={v3:[-0.85,0.3,1],vX:[-Math.PI/2,0.02,1.1],vS:[0,0.05,1.05]},viewsB={v3:[-0.55,0.38,1],vX:[0,1.45,1],vS:[0,0.02,1]};
+yaw=-0.85;pitch=0.3;
+function cam(){const sm=small();if(tab==='A'){const Dc=(sm?0.36:0.46)/zoom,f=Math.min(W*(sm?1.0:0.75),H*0.95);setCam(Dc,f,W*0.5,H*(sm?0.47:0.52),[0.005,0,-0.01]);}
+  else{const Dc=(sm?9.5:10.5)/zoom,f=Math.min(W*(sm?1.0:0.8),H*0.95);setCam(Dc,f,W*0.5,H*0.5,[0,0,0]);}}
+// ---------- onglet A : décor ----------
+function coilRing(xc,half){// bobine de Helmholtz : tore de cuivre dessiné par segments
+  const N=72,c0=pr(0,0,0)[2];for(let i=0;i<N;i++){const a0=i/N*2*Math.PI,a1=(i+1)/N*2*Math.PI,am=(a0+a1)/2,pm=[xc,RC*Math.cos(am),RC*Math.sin(am)],q=P3(pm),back=q[2]>c0;
+    if((half==='back')!==back)continue;const p0=pr(xc,RC*Math.cos(a0),RC*Math.sin(a0)),p1=pr(xc,RC*Math.cos(a1),RC*Math.sin(a1)),n=[0,Math.cos(am),Math.sin(am)],w=Math.max(4,0.022*q[3]);
+    ctx.lineCap='round';ctx.strokeStyle=lit('#b8692c',n,0.45);ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(p0[0],p0[1]);ctx.lineTo(p1[0],p1[1]);ctx.stroke();
+    ctx.strokeStyle='rgba(255,220,170,.35)';ctx.lineWidth=w*0.25;ctx.beginPath();ctx.moveTo(p0[0],p0[1]-w*0.2);ctx.lineTo(p1[0],p1[1]-w*0.2);ctx.stroke();}}
+const OFF=document.createElement('canvas');
+function stand(){const zb=-0.215;
+  const q=[pr(-0.45,-0.35,zb),pr(0.45,-0.35,zb),pr(0.45,0.35,zb),pr(-0.45,0.35,zb)],g=ctx.createLinearGradient(0,Math.min(q[2][1],q[3][1]),0,Math.max(q[0][1],q[1][1]));g.addColorStop(0,'#c49a68');g.addColorStop(1,'#93653a');poly(q,g);
+  box(-0.45,0.45,-0.35,0.35,zb-0.03,zb,'#8a5c33');
+  shadowEl(0,0,zb+0.001,0.2,0.16,0.22);box(-0.13,0.13,-0.05,0.05,zb,zb+0.03,'#3e4a56');
+  [-1,1].forEach(s=>{box(s*0.075-0.012,s*0.075+0.012,-0.03,0.03,zb+0.03,-RC,'#4b5966');});
+  // douille du tube
+  cyl([0,0,zb+0.03],[0,0,-0.12],0.022,'#2f3a46',{n:18});}
+function bulbBack(){const c=pr(0,0,0),R=RB*c[3];const g=ctx.createRadialGradient(c[0],c[1],R*0.2,c[0],c[1],R);g.addColorStop(0,'rgba(150,175,210,.10)');g.addColorStop(0.85,'rgba(120,150,190,.18)');g.addColorStop(1,'rgba(90,120,160,.35)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(c[0],c[1],R,0,7);ctx.fill();
+  // col du tube
+  cyl([0,0,-0.12],[0,0,-RB+0.01],0.016,'#c3d2e2',{alpha:0.45,n:16});}
+function bulbFront(){const c=pr(0,0,0),R=RB*c[3];ctx.strokeStyle='rgba(80,110,150,.55)';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(c[0],c[1],R,0,7);ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.ellipse(c[0]-R*0.42,c[1]-R*0.45,R*0.22,R*0.11,-0.75,0,7);ctx.fill();ctx.fillStyle='rgba(255,255,255,.18)';ctx.beginPath();ctx.ellipse(c[0]+R*0.5,c[1]+R*0.5,R*0.1,R*0.05,-0.75,0,7);ctx.fill();}
+function gun(){const a=alpha*Math.PI/180,d=[Math.cos(a),Math.sin(a),0],base=vadd(G,vmul(d,-0.028));
+  cyl([G[0]-0.0,0,-RB+0.012],[base[0],base[1],G[2]-0.004],0.004,'#8b96a1',{n:10});
+  cyl(base,vadd(G,vmul(d,-0.002)),0.0085,'#5d6873',{n:16,cap:'#2a2f35'});
+  const p=P3(G);ctx.save();ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(p[0],p[1],0,p[0],p[1],10);g.addColorStop(0,'rgba(200,255,240,.9)');g.addColorStop(1,'rgba(80,255,200,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(p[0],p[1],10,0,7);ctx.fill();ctx.restore();}
+function beam(H){const q=H.P.map(P3);if(q.length<2)return;ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineCap='round';ctx.lineJoin='round';
+  [[9,'rgba(60,220,170,.10)'],[5,'rgba(80,240,190,.22)'],[2.2,'rgba(170,255,225,.85)']].forEach(([w,c])=>{ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();q.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();});
+  if(H.hit){const h=P3(H.hit),g=ctx.createRadialGradient(h[0],h[1],0,h[0],h[1],14);g.addColorStop(0,'rgba(190,255,220,.95)');g.addColorStop(1,'rgba(60,220,160,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(h[0],h[1],14,0,7);ctx.fill();}
+  ctx.restore();if(H.hit&&H.P.length<H.turns*120){const h=P3(H.hit);tag('le faisceau frappe le verre',h[0],h[1]-34,'#0b5a43',font(700,11.5));}}
+function fieldArrows(){for(const y of[-0.11,0,0.11])for(const z of[-0.11,0.11]){const a=pr(-0.2,y,z),b=pr(0.22,y,z);ctx.globalAlpha=0.3;arrow2(a[0],a[1],b[0],b[1],BLU_L,1.6);ctx.globalAlpha=1;}
+  const a=pr(0.17,0,0.125);tag('B = '+fr(Bm,2)+' mT',a[0],a[1]-12,BLU,font(800,12.5));}
+function electronVecs(H){if(!H.P.length)return;const T=period(),turns=H.turns,tt=((t*0.38)%1)*T*Math.min(turns,alpha>=89.5?1:turns);let p=helixPt(tt);if(vlen(p)>RB-0.004)p=H.P[Math.floor(H.P.length*0.3)];
+  const w=omg(),r=radius(),ph=Math.atan2(p[1]-G[1],(G[2]+r)-p[2]);// phase
+  const k=0.045/vel(),vp=[vpar()*k,vper()*k*Math.cos(w*tt),vper()*k*Math.sin(w*tt)],ctr=[p[0],G[1],G[2]+r],Fd=vnrm(vsub(ctr,p));
+  const e=ball(p[0],p[1],p[2],0.0045,'#3fd6a5',true);
+  if(showVec){const a1=arrow3(p,vadd(p,vp),GRN_L,3);tag('v',a1[0]+9,a1[1]-6,GRN,font(900,13));
+    if(alpha>2&&alpha<88){const a2=arrow3(p,vadd(p,[vp[0],0,0]),'#7aa3c9',2);tag('v∥',a2[0]+10,a2[1]+4,BLU,font(800,12));const a3=arrow3(p,vadd(p,[0,vp[1],vp[2]]),'#7fbf9f',2);tag('v⊥',a3[0]-10,a3[1]-10,GRN,font(800,12));}
+    if(r>1e-4){const a4=arrow3(p,vadd(p,vmul(Fd,0.028)),RED,3);tag('F',a4[0]+8,a4[1]+8,RED_D,font(900,13));}}
+  tag('e⁻',e[0]-12,e[1]+12,'#0b7a5a',font(800,11.5));}
+function dims(H){if(!showDim)return;const r=radius(),ax0=[G[0],G[1],G[2]+r];
+  // axe de l'hélice
+  const x1=Math.min(RB*0.9,G[0]+Math.max(0.02,pitchL()*Math.min(H.turns,2)));line3([ax0,[x1,ax0[1],ax0[2]]],'rgba(44,52,64,.45)',1.2,[4,4]);
+  // rayon
+  const q0=P3(ax0),q1=P3([ax0[0],ax0[1],ax0[2]+r]);ctx.strokeStyle=OR_D;ctx.lineWidth=1.8;ctx.setLineDash([3,3]);ctx.beginPath();ctx.moveTo(q0[0],q0[1]);ctx.lineTo(q1[0],q1[1]);ctx.stroke();ctx.setLineDash([]);
+  tag('r = '+fr(r*100,2)+' cm',Math.min(q0[0],q1[0])-8,(q0[1]+q1[1])/2,OR_D,font(800,12.5),'right');
+  // pas : entre deux passages au point bas
+  const p=pitchL();if(alpha<89.5&&p>0.004&&G[0]+p<RB){const a=P3([G[0],G[1],G[2]-0.014]),b=P3([G[0]+p,G[1],G[2]-0.014]);ctx.strokeStyle=PUR_D;ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();
+    [a,b].forEach(s=>{ctx.beginPath();ctx.moveTo(s[0],s[1]-5);ctx.lineTo(s[0],s[1]+5);ctx.stroke();});tag('pas p = '+fr(p*100,2)+' cm',(a[0]+b[0])/2,(a[1]+b[1])/2+15,PUR_D,font(800,12.5));}}
+function drawA(){bg('#202a36','#0f151d');
+  // la salle est dans la pénombre : le faisceau se voit mieux
+  const g=ctx.createRadialGradient(W/2,H*0.5,10,W/2,H*0.5,Math.max(W,H)*0.7);g.addColorStop(0,'rgba(80,110,140,.35)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  stand();const H_=helixPts();
+  const front=pr(1,0,0)[2]<pr(-1,0,0)[2];// la bobine x>0 est-elle devant ?
+  const cs=front?[-0.075,0.075]:[0.075,-0.075];
+  cs.forEach(x=>coilRing(x,'back'));fieldArrows();bulbBack();gun();beam(H_);dims(H_);electronVecs(H_);bulbFront();
+  // moitiés avant des bobines : dessinées à part puis posées en transparence, pour voir le faisceau au travers
+  if(OFF.width!==cv.width||OFF.height!==cv.height){OFF.width=cv.width;OFF.height=cv.height;}const main=ctx;ctx=OFF.getContext('2d');ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,OFF.width,OFF.height);ctx.setTransform(dpr,0,0,dpr,0,0);
+  cs.forEach(x=>coilRing(x,'front'));ctx=main;ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=0.62;ctx.drawImage(OFF,0,0);ctx.restore();
+  const lb=pr(0,-RC,-RC-0.02);tag('bobines de Helmholtz',lb[0],lb[1]+(small()?14:4),'#5a3a12',font(700,11.5));
+  ctx.save();ctx.font=font(800,small()?12:13);ctx.textAlign='left';ctx.textBaseline='top';ctx.fillStyle='rgba(255,255,255,.92)';
+  const L1=alpha>=89.5?'α = 90° : v ⟂ B → un cercle':(alpha<0.5?'α = 0° : v ∥ B → aucune force, ligne droite':'α = '+alpha+'° → une hélice d’axe parallèle à B');ctx.fillText(L1,12,12);
+  ctx.font=font(600,11.5);ctx.fillStyle='rgba(220,230,240,.85)';ctx.fillText('une tour dure T = '+fr(period()*1e9,1)+' ns : animation ralentie ~10⁸ fois',12,small()?30:32);ctx.restore();}
+// ---------- onglet B : la Terre et son champ ----------
+const RAD=Math.PI/180;
+const latA=L=>Math.acos(Math.sqrt(1/L));                        // pied de la ligne : L·cos²λ = 1
+const Bfac=l=>Math.sqrt(1+3*Math.sin(l)**2)/Math.cos(l)**6;     // B(λ)/B_eq le long d'une ligne
+function mirrorLat(a){const s2=Math.sin(a)**2;let lo=0,hi=Math.PI/2-1e-4;for(let i=0;i<80;i++){const m=(lo+hi)/2;if(Bfac(m)*s2<1)lo=m;else hi=m;}return lo;}
+const lossCone=L=>Math.asin(Math.sqrt(1/Bfac(latA(L))));
+function linePt(L,l,ph){const r=L*Math.cos(l)**2;return[r*Math.cos(l)*Math.cos(ph),r*Math.cos(l)*Math.sin(ph),r*Math.sin(l)];}
+function rnd(i){const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x);}
+let parts=[],flashes=[],seed=1,spin=0;
+function newPart(hi){const L=hi?Lsh:Lsh+(Math.random()-0.5)*1.2,a=hi?peq*RAD:(Math.random()<0.55?Math.random()*0.9*lossCone(L):lossCone(L)*(1.3+Math.random()*6));
+  return{L,ph:Math.random()*2*Math.PI,l:0,dir:Math.random()<0.5?1:-1,a,psi:Math.random()*6.28,hi,trail:[]};}
+function resetParts(){parts=[newPart(true)];for(let i=0;i<16;i++)parts.push(newPart(false));}
+function stepParts(dt){parts.forEach((p,i)=>{const lm=p.a>=lossCone(p.L)-1e-9?mirrorLat(p.a):latA(p.L)+0.05,Bmr=1/Math.sin(p.a)**2;
+  const sub=6;for(let k=0;k<sub;k++){const h=dt/sub,b=Bfac(p.l),vpar=Math.sqrt(Math.max(0.0025,1-b/Bmr)),ds=p.L*Math.cos(p.l)*Math.sqrt(1+3*Math.sin(p.l)**2);
+    p.l+=p.dir*4.2*vpar/ds*h;if(Math.abs(p.l)>=lm&&p.a>=lossCone(p.L)){p.l=Math.sign(p.l)*lm;p.dir*=-1;}
+    p.psi-=h*(5+3*Math.sqrt(b));p.ph-=h*0.03*(p.hi?1:1.4);}   // giration (sens des protons) et lente dérive vers l'ouest
+  if(Math.abs(p.l)>=latA(p.L)){flashes.push({l:Math.sign(p.l)*latA(p.L),ph:p.ph,L:p.L,t:0});parts[i]=newPart(p.hi);}
+  const P=partPos(parts[i]);parts[i].trail.push(P);if(parts[i].trail.length>(parts[i].hi?90:40))parts[i].trail.shift();});
+  flashes.forEach(f=>f.t+=dt);flashes=flashes.filter(f=>f.t<2.5);}
+function partPos(p){const c=linePt(p.L,p.l,p.ph),c2=linePt(p.L,p.l+0.002,p.ph),b=vnrm(vsub(c2,c)),[e1,e2]=basis(b),rho=0.32*Math.min(1.6,1/Math.sqrt(Bfac(p.l)))*(p.hi?1.3:1);
+  return vadd(c,vadd(vmul(e1,rho*Math.cos(p.psi)),vmul(e2,rho*Math.sin(p.psi))));}
+const LAND=[[50,10,14],[45,30,12],[60,60,16],[55,95,15],[35,105,10],[25,80,8],[10,20,13],[-5,25,14],[-20,30,10],[40,-100,16],[55,-110,13],[30,-90,9],[-10,-60,14],[-25,-60,10],[-25,135,12],[70,-40,8],[65,140,12],[20,45,8]];
+function hidden(P){const c=pr(0,0,0),q=P3(P),R=c[3];return q[2]>c[2]&&Math.hypot(q[0]-c[0],q[1]-c[1])<R*1.0;}
+function earth(){const c=pr(0,0,0),R=c[3];// atmosphère
+  const ga=ctx.createRadialGradient(c[0],c[1],R*0.95,c[0],c[1],R*1.12);ga.addColorStop(0,'rgba(120,180,255,.45)');ga.addColorStop(1,'rgba(120,180,255,0)');ctx.fillStyle=ga;ctx.beginPath();ctx.arc(c[0],c[1],R*1.12,0,7);ctx.fill();
+  const g=ctx.createRadialGradient(c[0]-R*0.35,c[1]-R*0.35,R*0.1,c[0],c[1],R);g.addColorStop(0,'#5fa7e6');g.addColorStop(0.6,'#2766a8');g.addColorStop(1,'#0e2d55');ctx.fillStyle=g;ctx.beginPath();ctx.arc(c[0],c[1],R,0,7);ctx.fill();
+  ctx.save();ctx.beginPath();ctx.arc(c[0],c[1],R,0,7);ctx.clip();
+  LAND.forEach(([la,lo,s])=>{const N=14,pts=[];let vis=true;for(let i=0;i<N;i++){const a=i/N*2*Math.PI,lat=(la+s*0.55*Math.sin(a)*(1+0.25*Math.sin(3*a+la)))*RAD,lon=(lo+s*Math.cos(a)/Math.max(0.3,Math.cos(la*RAD))*(1+0.2*Math.cos(2*a+lo)))*RAD+spin;
+    const P=[Math.cos(lat)*Math.cos(lon),Math.cos(lat)*Math.sin(lon),Math.sin(lat)],q=P3(P);if(q[2]>c[2]+0.15)vis=false;pts.push(q);}if(vis)poly(pts,'rgba(96,140,72,.85)');});
+  // calottes polaires
+  [1,-1].forEach(s=>{const pts=[];let vis=0;for(let i=0;i<24;i++){const lon=i/24*2*Math.PI,lat=s*72*RAD,P=[Math.cos(lat)*Math.cos(lon),Math.cos(lat)*Math.sin(lon),Math.sin(lat)],q=P3(P);if(q[2]<c[2])vis++;pts.push(q);}if(vis>3)poly(pts,'rgba(240,246,252,.85)');});
+  // nuit : le Soleil est du côté −x
+  const sd=P3([-3,0,0]),dx=sd[0]-c[0],dy=sd[1]-c[1],dl=Math.hypot(dx,dy)||1,gn=ctx.createLinearGradient(c[0]+dx/dl*R,c[1]+dy/dl*R,c[0]-dx/dl*R,c[1]-dy/dl*R);gn.addColorStop(0,'rgba(0,0,20,0)');gn.addColorStop(0.55,'rgba(0,0,20,.15)');gn.addColorStop(1,'rgba(0,0,25,.6)');ctx.fillStyle=gn;ctx.fillRect(c[0]-R,c[1]-R,2*R,2*R);ctx.restore();}
+function fieldLines(){[2.5,3.5,4.5,6,8].forEach((L,li)=>{for(let k=0;k<8;k++){const ph=k/8*2*Math.PI+0.2,la=latA(L);let prev=null;ctx.lineWidth=Math.abs(L-Lsh)<0.6?1.6:1;
+    for(let i=0;i<=60;i++){const l=-la+2*la*i/60,P=linePt(L,l,ph),q=P3(P);if(prev&&!hidden(P)){ctx.strokeStyle=`rgba(120,170,255,${Math.abs(L-Lsh)<0.6?0.5:0.22})`;ctx.beginPath();ctx.moveTo(prev[0],prev[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();}prev=q;}}});
+  // la ligne choisie, en évidence
+  const la=latA(Lsh);for(const ph of[parts[0]?parts[0].ph:0]){let prev=null;for(let i=0;i<=80;i++){const l=-la+2*la*i/80,P=linePt(Lsh,l,ph),q=P3(P);if(prev&&!hidden(P)){ctx.strokeStyle='rgba(140,200,255,.95)';ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(prev[0],prev[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();}prev=q;}}}
+function aurora(){const la=latA(Lsh);[1,-1].forEach(s=>{const N=72;for(let i=0;i<N;i++){const ph=i/N*2*Math.PI,lat=s*la,b0=[1.01*Math.cos(lat)*Math.cos(ph),1.01*Math.cos(lat)*Math.sin(ph),1.01*Math.sin(lat)],b1=vmul(b0,1.09);if(hidden(b0))continue;
+    let boost=0;flashes.forEach(f=>{if(Math.sign(f.l)===s){let d=Math.abs(((ph-f.ph)%(2*Math.PI)+3*Math.PI)%(2*Math.PI)-Math.PI);boost+=Math.max(0,1-d/0.5)*Math.max(0,1-f.t/2.5);}});
+    const a=0.18+0.12*Math.sin(t*3+i*0.7)+Math.min(0.7,boost*0.8),q0=P3(b0),q1=P3(b1);const g=ctx.createLinearGradient(q0[0],q0[1],q1[0],q1[1]);g.addColorStop(0,`rgba(90,255,150,${a})`);g.addColorStop(0.7,`rgba(120,255,170,${a*0.5})`);g.addColorStop(1,`rgba(255,80,120,${a*0.25})`);
+    ctx.strokeStyle=g;ctx.lineWidth=Math.max(2,0.05*q0[3]);ctx.beginPath();ctx.moveTo(q0[0],q0[1]);ctx.lineTo(q1[0],q1[1]);ctx.stroke();}});}
+function solarWind(){const s=P3([-30,0,0]);// le Soleil, loin à gauche
+  const sx=Math.max(-40,Math.min(W+40,s[0])),sy=Math.max(-40,Math.min(H+40,s[1]));const g=ctx.createRadialGradient(sx,sy,4,sx,sy,90);g.addColorStop(0,'rgba(255,250,210,1)');g.addColorStop(0.25,'rgba(255,210,90,.8)');g.addColorStop(1,'rgba(255,170,40,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(sx,sy,90,0,7);ctx.fill();
+  // particules du vent solaire, déviées autour de la magnétosphère
+  ctx.fillStyle='rgba(255,215,120,.85)';for(let i=0;i<140;i++){const u=((t*0.06+rnd(i))%1),x=-26+30*u,y0=(rnd(i+50)-0.5)*24,z0=(rnd(i+90)-0.5)*24,rr0=Math.hypot(y0,z0),mp=Math.max(0,11-0.5*Math.max(0,x+11)*0+0)*0;// flux
+    const bound=x>-11?Math.sqrt(Math.max(0,22*(x+11))):0,rr=rr0<bound?bound+0.3:rr0,ang=Math.atan2(z0,y0),P=[x,rr*Math.cos(ang),rr*Math.sin(ang)];if(hidden(P))continue;const q=P3(P);ctx.beginPath();ctx.arc(q[0],q[1],Math.max(1.2,0.06*q[3]),0,7);ctx.fill();}
+  // magnétopause (contour)
+  for(const ang of[Math.PI/2,-Math.PI/2,0,Math.PI]){const pts=[];for(let i=0;i<=30;i++){const x=-11+20*i/30,rr=Math.sqrt(22*(x+11));pts.push([x,rr*Math.cos(ang),rr*Math.sin(ang)]);}line3(pts,'rgba(255,200,120,.12)',1,[5,5]);}}
+function drawParts(){parts.forEach(p=>{const tr=p.trail;if(tr.length>1){ctx.lineWidth=p.hi?2.2:1.2;ctx.lineCap='round';for(let i=1;i<tr.length;i++){if(hidden(tr[i]))continue;const a=P3(tr[i-1]),b=P3(tr[i]);ctx.strokeStyle=`rgba(255,${p.hi?210:170},${p.hi?90:120},${(i/tr.length)*(p.hi?0.95:0.6)})`;ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}}
+  const P=tr[tr.length-1];if(!P||hidden(P))return;const q=P3(P);ctx.fillStyle=p.hi?'#ffe08a':'#ffc070';ctx.beginPath();ctx.arc(q[0],q[1],p.hi?4.5:2.6,0,7);ctx.fill();if(p.hi)tag('p⁺',q[0]+12,q[1]-10,'#ffd166',font(800,12));});}
+function drawB(){bg('#05080f','#0b1424');
+  for(let i=0;i<160;i++){const x=rnd(i)*W,y=rnd(i+300)*H;ctx.fillStyle=`rgba(255,255,255,${0.2+0.6*rnd(i+600)})`;ctx.fillRect(x,y,rnd(i+900)<0.1?2:1,rnd(i+900)<0.1?2:1);}
+  solarWind();
+  // ce qui est derrière la Terre est masqué par hidden()
+  earth();fieldLines();aurora();drawParts();
+  const sm=small();ctx.save();ctx.font=font(800,sm?12:13);ctx.textAlign='left';ctx.textBaseline='top';ctx.fillStyle='rgba(255,255,255,.92)';
+  ctx.fillText(sm?'Les protons s’enroulent autour de B':'Les protons s’enroulent autour des lignes de champ',12,12);ctx.font=font(600,11.5);ctx.fillStyle='rgba(210,225,245,.85)';ctx.fillText('aurore vers '+fr(latA(Lsh)/RAD,0)+'° de latitude magnétique'+(sm?'':' · rayons et vitesses très exagérés'),12,sm?30:32);if(sm)ctx.fillText('rayons et vitesses très exagérés',12,46);ctx.restore();
+  const s=P3([-30,0,0]);if(s[0]>-20&&s[0]<W+20)tag('Soleil',Math.max(30,Math.min(W-30,s[0])),Math.max(20,Math.min(H-20,s[1]+60)),'#ffd27a',font(800,12));}
+// ---------- dessin ----------
+function draw(){size();cam();ctx.clearRect(0,0,W,H);if(tab==='A')drawA();else drawB();}
+// ---------- textes ----------
+function upd(){$('vA').textContent=alpha+'°';$('vB').textContent=fr(Bm,2)+' mT';$('vU').textContent=Uk+' V';$('vL').textContent=fr(Lsh,1)+' R_T';$('vP').textContent=fr(peq,1)+'°';
+  if(tab==='A'){const v=vel(),T=period();
+    $('fml').innerHTML='La force de Lorentz <b>F = q·v×B</b> est toujours perpendiculaire à B. On décompose la vitesse : <b>v∥ = v·cos α</b> (le long de B) n’est pas touchée, <b>v⊥ = v·sin α</b> tourne en cercle de rayon <b>r = m·v⊥/(|q|·B)</b>, avec la période <b>T = 2πm/(|q|·B)</b> qui ne dépend pas de la vitesse. Les deux ensemble : une <b>hélice</b> de pas <b>p = v∥·T</b>.';
+    $('info').innerHTML='Électron accéléré par U = '+Uk+' V : v = √(2eU/m) = <b>'+sci(v,3)+' m/s</b> · v⊥ = '+sci(vper(),3)+' m/s · v∥ = '+sci(vpar(),3)+' m/s<br>'+
+      'r = m·v⊥/(e·B) = <b style="color:#9a5f0f">'+fr(radius()*100,2)+' cm</b> · T = 2πm/(e·B) = <b>'+fr(T*1e9,2)+' ns</b> (f = '+fr(1/T/1e6,1)+' MHz) · pas p = v∥·T = <b style="color:#534AB7">'+fr(pitchL()*100,2)+' cm</b>'+
+      (alpha>=89.5?' · v∥ = 0 : le faisceau reste dans un plan, c’est un cercle.':alpha<0.5?' · v⊥ = 0 : pas de force, le faisceau file tout droit le long de B.':'');
+    $('hint').textContent='Glisse pour tourner autour des bobines, molette pour zoomer. « Le long de B » : l’hélice se voit comme un cercle de rayon r. « De côté » : on lit le pas p. Le gaz du tube s’illumine là où passent les électrons.';}
+  else{const la=latA(Lsh),Beq=B0E/Lsh**3,Bat=B0E*Math.sqrt(1+3*Math.sin(la)**2),lc=lossCone(Lsh),a=peq*RAD,v=Math.sqrt(2*1e3*QE/MP),rho=MP*v*Math.sin(a)/(QE*Beq);
+    $('fml').innerHTML='Un proton du vent solaire capturé par le champ terrestre décompose sa vitesse comme dans le tube : il <b>tourne autour</b> d’une ligne de champ (v⊥) et <b>glisse le long</b> d’elle (v∥). Vers les pôles, B augmente : le cercle se resserre et le proton est renvoyé (effet miroir), sauf s’il arrive presque parallèle à la ligne : il atteint alors la haute atmosphère et l’excite, c’est l’<b>aurore polaire</b>. Les aurores les plus brillantes sont surtout dues à des électrons ; le mécanisme d’enroulement et de miroir est le même.';
+    $('info').innerHTML='Ligne L = '+fr(Lsh,1)+' (sommet à '+fr(Lsh,1)+' rayons terrestres) : elle touche le sol à la latitude magnétique <b>'+fr(la/RAD,1)+'°</b> (cos²λ = 1/L) · B au sommet = B₀/L³ = <b>'+fr(Beq*1e9,0)+' nT</b> · B au pied = <b>'+fr(Bat*1e6,1)+' µT</b><br>'+
+      'Seuls les protons d’angle α₀ &lt; <b>'+fr(lc/RAD,2)+'°</b> à l’équateur atteignent l’atmosphère (sin²α₀ = B<sub>sommet</sub>/B<sub>pied</sub>). Ton proton (α₀ = '+fr(peq,1)+'°) : '+
+      (a<lc?'<b style="color:#0F6E56">il descend jusqu’à l’atmosphère : aurore !</b>':'<b>il rebondit</b> à la latitude ±'+fr(mirrorLat(a)/RAD,1)+'° et fait l’aller-retour entre les deux hémisphères.')+
+      ' · Proton de 1 keV : rayon de giration au sommet m·v·sin α₀/(e·B) = <b>'+fr(rho/1e3,1)+' km</b>.';
+    $('hint').textContent='Glisse pour tourner autour de la Terre, molette pour zoomer. Baisse α₀ sous l’angle limite : ton proton (jaune) plonge vers le pôle et l’ovale auroral s’illumine (dans la réalité, ce sont surtout des électrons, guidés de la même façon). Augmente L : l’aurore se forme plus près du pôle.';}}
+function setTab(k){tab=k;$('tA').classList.toggle('on',k==='A');$('tB').classList.toggle('on',k==='B');document.querySelectorAll('[data-tab]').forEach(e=>e.style.display=e.dataset.tab===k?'':'none');
+  $('vX').textContent=k==='A'?'Le long de B':'Du dessus (pôle)';$('vS').textContent=k==='A'?'De côté':'Plan de l’équateur';const v=(k==='A'?viewsA:viewsB).v3;yaw=v[0];pitch=v[1];zoom=v[2];viewT=null;
+  ['v3','vX','vS'].forEach(i=>$(i).classList.toggle('on',i==='v3'));if(k==='B'&&!parts.length)resetParts();upd();}
+$('tA').onclick=()=>setTab('A');$('tB').onclick=()=>setTab('B');
+$('rA').oninput=e=>{alpha=+e.target.value;upd();};$('rB').oninput=e=>{Bm=+e.target.value;upd();};$('rU').oninput=e=>{Uk=+e.target.value;upd();};
+$('rL').oninput=e=>{Lsh=+e.target.value;resetParts();upd();};$('rP').oninput=e=>{peq=+e.target.value;parts[0]=newPart(true);upd();};
+$('bVec').onclick=()=>{showVec=!showVec;$('bVec').classList.toggle('on',showVec);};$('bDim').onclick=()=>{showDim=!showDim;$('bDim').classList.toggle('on',showDim);};
+$('b90').onclick=()=>{alpha=alpha===90?80:90;$('rA').value=alpha;$('b90').classList.toggle('on',alpha===90);upd();};
+$('pa').onclick=()=>{paused=!paused;$('pa').classList.toggle('on',paused);$('pa').textContent=paused?'Reprendre':'Pause';};
+function view(id){const v=(tab==='A'?viewsA:viewsB)[id];viewT=v.slice();['v3','vX','vS'].forEach(i=>$(i).classList.toggle('on',i===id));}
+['v3','vX','vS'].forEach(id=>$(id).onclick=()=>view(id));
+cv.addEventListener('pointerdown',e=>{drag=posE(e);cv.setPointerCapture(e.pointerId);viewT=null;['v3','vX','vS'].forEach(i=>$(i).classList.remove('on'));cv.style.cursor='grabbing';});
+cv.addEventListener('pointermove',e=>{if(!drag)return;const [x,y]=posE(e);orbit(x-drag[0],y-drag[1],-1.5,1.55);drag=[x,y];});
+cv.addEventListener('pointerup',()=>{drag=null;cv.style.cursor='grab';});
+cv.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(0.5,Math.min(3,zoom*Math.exp(-e.deltaY*0.001)));},{passive:false});
+let last=null;
+function frame(ts){if(last===null)last=ts;const dt=Math.min(0.05,(ts-last)/1000);last=ts;
+  if(viewT){yaw+=(viewT[0]-yaw)*0.12;pitch+=(viewT[1]-pitch)*0.12;zoom+=(viewT[2]-zoom)*0.12;if(Math.abs(viewT[0]-yaw)+Math.abs(viewT[1]-pitch)+Math.abs(viewT[2]-zoom)<1e-3)viewT=null;}
+  if(!paused){t+=dt;spin+=dt*0.05;if(tab==='B')stepParts(dt);}
+  draw();requestAnimationFrame(frame);}
+window.__sim={set:o=>{if(o.tab)setTab(o.tab);if(o.alpha!=null){alpha=o.alpha;$('rA').value=alpha;}if(o.B!=null){Bm=o.B;$('rB').value=Bm;}if(o.U!=null){Uk=o.U;$('rU').value=Uk;}
+    if(o.L!=null){Lsh=o.L;$('rL').value=Lsh;resetParts();}if(o.peq!=null){peq=o.peq;$('rP').value=peq;parts[0]=newPart(true);}if(o.view)view(o.view);upd();return window.__sim.get();},
+  get:()=>({v:vel(),vper:vper(),vpar:vpar(),r:radius(),T:period(),p:pitchL(),latA:latA(Lsh)/RAD,lc:lossCone(Lsh)/RAD,mir:mirrorLat(peq*RAD)/RAD,info:$('info').innerText})};
+resetParts();setTab('A');requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Magnétisme et forces électromagnétiques<span>13 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/regle-main-droite/"><i>01</i>Règle de la main droite</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/aimants-laplace/"><i>02</i>Aimants, courants et force de Laplace</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/forces-magn-tique-sur-fils-/"><i>03</i>Forces entre fils parallèles</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Cyclotron/"><i>04</i>Cyclotron</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/loi-de-lenz/"><i>05</i>Loi de Lenz : induction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/fils-paralleles-3d/"><i>06</i>Deux fils parallèles en 3D : champ et attraction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-loi-ampere/"><i>07</i>Loi d'Ampère : faire le tour des courants</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-rails-induction/"><i>08</i>La barre qui glisse sur des rails : e = B·L·v</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-spectrometre-masse/"><i>09</i>Spectromètre de masse avec sélecteur de vitesse</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-lorentz-helice/"><i>10</i>Cercle, hélice et aurores polaires</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-irm-principe/"><i>11</i>Le principe de l’IRM</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-foucault/"><i>12</i>Courants de Foucault : freiner et chauffer</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-auto-induction/"><i>13</i>Deux lampes : la bobine retarde le courant</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Le looping : la vitesse minimale au sommet · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH2">Dynamique</a>›<b>Le looping : la vitesse minimale au sommet</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Dynamique</span><span class="sfa-chip free">Gratuit</span></div><h1>Le looping : la vitesse minimale au sommet</h1><p>Un wagon avec un passager descend d’une tour et entre dans un looping. Règle la hauteur de départ et le rayon de la boucle : le poids P et la réaction du rail N sont dessinés en bas et en haut. Entre h = R et h = 2,5 R, N tombe à zéro avant le sommet et le wagon décroche. Fais tourner le manège à la souris.</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:clamp(620px,min(80vh,180vw),800px);cursor:grab;touch-action:none" aria-label="Montagnes russes en 3D : un wagon avec un passager descend d’une tour et entre dans un looping ; le poids P et la réaction du rail N sont dessinés en bas et en haut de la boucle ; si la hauteur de départ est trop faible, N tombe à zéro avant le sommet et le wagon décroche ; on fait tourner la vue à la souris"></canvas>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill" style="min-width:170px;color:#a32d2d">h &nbsp;hauteur de départ</span>
+  <input type="range" id="sH" min="4" max="40" step="0.5" value="24" style="accent-color:#d9534f;">
+  <span class="val" id="vH" style="color:#a32d2d"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:170px">R &nbsp;rayon de la boucle</span>
+  <input type="range" id="sR" min="5" max="12" step="0.5" value="8" style="accent-color:#5b6b7d;">
+  <span class="val" id="vR"></span>
+</div>
+<div class="row">
+  <span class="pill">Départ</span>
+  <button class="btn" id="h2">h = 2 R (insuffisant)</button>
+  <button class="btn" id="h25">h = 2,5 R (juste assez)</button>
+  <button class="btn" id="h3">h = 3 R</button>
+</div>
+<div class="row">
+  <button class="btn" id="pp">⏸ Pause</button>
+  <button class="btn" id="re">↺ Relancer le wagon</button>
+  <button class="btn" id="slow">Ralenti ×0,3</button>
+  <button class="btn on" id="gh">Forces en bas et en haut</button>
+  <button class="btn" id="lab">Masquer les écritures</button>
+</div>
+<div class="row">
+  <span class="pill">Vue</span>
+  <button class="btn on" id="v3">3D</button>
+  <button class="btn" id="vF">De face</button>
+  <button class="btn" id="vS">De biais, de haut</button>
+</div>
+<div class="row"><span class="hint">Astuce : glisse pour tourner autour du manège, molette pour zoomer ; attrape le sommet de la tour (point rouge) et monte-le ou descends-le pour changer h.</span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const $=id=>document.getElementById(id);
+const fr=(v,d)=>{const s=(Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d).replace('.',',');return s.replace(/^-/,'−');};
+const INK='#13233a',MUTED='#5f6b7a',RED='#d9534f',RED_D='#a32d2d',BLUE='#1f6fc2',BLUE_D='#185fa5',GRN='#0F6E56';
+const FS='700 12px Mulish,system-ui,sans-serif',FB='800 13px Mulish,system-ui,sans-serif';
+let W=0,H=0,dpr=1,noLab=false,yaw=-0.45,pitch=0.2,zoom=1,TG=[0,0,0],VP={},PN={},mob=false,viewT=null;
+function size(){const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.round(b.width)||800,h=Math.round(b.height)||620;if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);}
+// ---------- mini-moteur 3D fait main (projection en perspective, éclairage, tri du peintre) ----------
+const V3={s:(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],a:(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],m:(a,k)=>[a[0]*k,a[1]*k,a[2]*k],d:(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+  x:(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],n:a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return[a[0]/l,a[1]/l,a[2]/l];}};
+let C={},EXT=null;
+// cadrage automatique : la boîte qui contient le manège remplit la vue, quel que soit l'angle
+function cam(){const f=Math.min(VP.w,VP.h*1.6),cp=Math.cos(pitch),sp=Math.sin(pitch),cyw=Math.cos(yaw),syw=Math.sin(yaw),E=EXT;let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  for(const X of E.bx)for(const Y of E.by)for(const Z of E.bz){const x=X-TG[0],y=Y-TG[1],z=Z-TG[2],xr=x*cyw-y*syw,yr=x*syw+y*cyw,sy=z*cp+yr*sp;x0=Math.min(x0,xr);x1=Math.max(x1,xr);y0=Math.min(y0,sy);y1=Math.max(y1,sy);}
+  const Dc=f*Math.max((x1-x0)/(0.84*VP.w),(y1-y0)/(0.8*VP.h))*1.12/zoom,k0=f/Dc;
+  C={Dc,f,cx:VP.x+VP.w*0.5-(x0+x1)/2*k0,cy:VP.y+VP.h*0.52+(y0+y1)/2*k0,cyw,syw,cp,sp};C.pos=V3.a(TG,[-Dc*cp*syw,-Dc*cp*cyw,Dc*sp]);}
+function pr(p){const x=p[0]-TG[0],y=p[1]-TG[1],z=p[2]-TG[2],xr=x*C.cyw-y*C.syw,yr=x*C.syw+y*C.cyw,dep=C.Dc+yr*C.cp-z*C.sp,k=C.f/Math.max(0.05,dep);return[C.cx+xr*k,C.cy-(z*C.cp+yr*C.sp)*k,dep,k];}
+function mat(hex,sp,sh,amb){const n=parseInt(hex.slice(1),16);return{r:n>>16,g:(n>>8)&255,b:n&255,sp:sp==null?0.25:sp,sh:sh||18,amb:amb==null?0.4:amb};}
+const LT=V3.n([-0.45,-0.75,0.9]);
+function rgbk(m,k,s,al){const f=c=>Math.max(0,Math.min(255,Math.round(c*k*(1-s)+255*s)));return`rgba(${f(m.r)},${f(m.g)},${f(m.b)},${al==null?1:al})`;}
+function lit(m,n,P,al){const l=Math.max(0,V3.d(n,LT)),v=V3.n(V3.s(C.pos,P)),hh=V3.n(V3.a(LT,v)),s=m.sp*Math.pow(Math.max(0,V3.d(n,hh)),m.sh);return rgbk(m,m.amb+(1-m.amb)*l,s,al);}
+let Q=[];const push=(d,fn)=>Q.push([d,fn]);function flush(){Q.sort((a,b)=>b[0]-a[0]);for(const q of Q)q[1]();Q=[];}
+function path(P){ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();}
+function face(P3,m,o){o=o||{};let n=o.n||V3.n(V3.x(V3.s(P3[1],P3[0]),V3.s(P3[2],P3[0])));const c=V3.m(P3.reduce((s,p)=>V3.a(s,p),[0,0,0]),1/P3.length);
+  if(V3.d(n,V3.s(c,C.pos))>0){if(!o.two)return;n=V3.m(n,-1);}
+  const P=P3.map(pr);if(P.some(p=>p[2]<0.1))return;const d=(o.dz||0)+P.reduce((s,p)=>s+p[2],0)/P.length,col=lit(m,n,c,o.al);
+  const draw=()=>{path(P);ctx.fillStyle=col;ctx.fill();if(o.st){ctx.strokeStyle=o.st;ctx.lineWidth=o.lw||1;ctx.stroke();}else if(o.al==null){ctx.strokeStyle=col;ctx.lineWidth=0.7;ctx.stroke();}};
+  if(o.now)draw();else push(d,draw);}
+function basis(w){const u=V3.n(V3.x(w,Math.abs(w[2])<0.9?[0,0,1]:[1,0,0])),v=V3.x(w,u);return[u,v];}
+function cyl(a,b,r1,r2,m,o){o=o||{};const N=o.n||10,w=V3.n(V3.s(b,a)),[u,v]=basis(w),ring=(c,r,t)=>V3.a(c,V3.a(V3.m(u,Math.cos(t)*r),V3.m(v,Math.sin(t)*r)));
+  for(let i=0;i<N;i++){const t0=i/N*2*Math.PI,t1=(i+1)/N*2*Math.PI,tm=(t0+t1)/2,nn=V3.n(V3.a(V3.m(u,Math.cos(tm)),V3.m(v,Math.sin(tm))));face([ring(a,r1,t0),ring(a,r1,t1),ring(b,r2,t1),ring(b,r2,t0)],m,{n:nn,dz:o.dz,al:o.al});}}
+function sphere(c,r,m,o){o=o||{};const p=pr(c),R=Math.max(1,r*p[3]),hp=pr(V3.a(c,V3.m(V3.n(V3.a(LT,V3.n(V3.s(C.pos,c)))),r*0.55)));
+  push(p[2]+(o.dz||0),()=>{const g=ctx.createRadialGradient(hp[0],hp[1],R*0.05,p[0],p[1],R);g.addColorStop(0,rgbk(m,1.15,m.sp*0.9,o.al));g.addColorStop(0.45,rgbk(m,0.95,0,o.al));g.addColorStop(1,rgbk(m,m.amb*0.9,0,o.al));ctx.fillStyle=g;ctx.beginPath();ctx.arc(p[0],p[1],R,0,7);ctx.fill();});}
+// boîte orientée : centre c, axes unitaires (a, b, n) et demi-dimensions
+function obox(c,A,B,N,ha,hb,hn,m,o){const P=[];for(const sn of[-1,1])for(const sb of[-1,1])for(const sa of[-1,1])P.push(V3.a(c,V3.a(V3.m(A,sa*ha),V3.a(V3.m(B,sb*hb),V3.m(N,sn*hn)))));
+  [[[0,1,3,2],V3.m(N,-1)],[[4,6,7,5],N],[[0,4,5,1],V3.m(B,-1)],[[2,3,7,6],B],[[1,5,7,3],A],[[0,2,6,4],V3.m(A,-1)]].forEach(([ix,n])=>face(ix.map(i=>P[i]),m,Object.assign({n},o||{})));}
+function seg3(a,b,col,wm,o){o=o||{};const p=pr(a),q=pr(b);if(p[2]<0.1||q[2]<0.1)return;push((p[2]+q[2])/2+(o.dz||0),()=>{ctx.strokeStyle=col;ctx.lineWidth=Math.max(o.min||1,wm*(p[3]+q[3])/2);ctx.lineCap='round';ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();});}
+function arrow(x1,y1,x2,y2,col,w,halo){const L=Math.hypot(x2-x1,y2-y1);if(L<2)return;if(halo!==false)arrow(x1,y1,x2,y2,'rgba(255,255,255,.85)',(w||2)+3,false);ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=w||2;ctx.lineCap='round';const a=Math.atan2(y2-y1,x2-x1),hh=Math.min(L*0.6,8+(w||2)*1.6);
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-Math.cos(a)*hh*0.6,y2-Math.sin(a)*hh*0.6);ctx.stroke();ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-hh*Math.cos(a-0.42),y2-hh*Math.sin(a-0.42));ctx.lineTo(x2-hh*Math.cos(a+0.42),y2-hh*Math.sin(a+0.42));ctx.closePath();ctx.fill();}
+function tag(t,x,y,col,font,al){if(noLab)return;ctx.font=font||FS;ctx.textAlign=al||'center';ctx.textBaseline='middle';const w=ctx.measureText(t).width,A=al||'center',lo=A==='left'?VP.x+4:A==='right'?VP.x+w+4:VP.x+w/2+4,hi=A==='left'?VP.x+VP.w-w-4:A==='right'?VP.x+VP.w-4:VP.x+VP.w-w/2-4;
+  x=Math.max(lo,Math.min(hi,x));y=Math.max(VP.y+9,Math.min(VP.y+VP.h-9,y));ctx.lineWidth=3.5;ctx.strokeStyle='rgba(255,255,255,.92)';ctx.lineJoin='round';ctx.strokeText(t,x,y);ctx.fillStyle=col||INK;ctx.fillText(t,x,y);}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+
+// ---------- la piste (dans le plan x–z ; y = décalage latéral, seulement visuel) ----------
+// rampe en cosinus de la tour (hauteur h) jusqu'au sol, plat, boucle circulaire de rayon R (φ = 0 en bas), plat de sortie.
+const G=9.81;
+let h=24,R=8,TRK=null;
+function build(){const Lr=1.1*h+4,Xf=R+3,Xr=Xf+Lr,Xe=R+7,wL=2.4,S=[],X=[],Z=[],Y=[],F=[];let s=0,px=null,pz=null;
+  const add=(x,z,y,phi)=>{if(px!==null)s+=Math.hypot(x-px,z-pz);S.push(s);X.push(x);Z.push(z);Y.push(y);F.push(phi);px=x;pz=z;};
+  for(let i=0;i<=600;i++){const x=-Xr+Lr*i/600;add(x,h*(1+Math.cos(Math.PI*(x+Xr)/Lr))/2,0,-1);}
+  for(let i=1;i<=80;i++)add(-Xf+Xf*i/80,0,0,-1);
+  for(let i=1;i<=900;i++){const p=2*Math.PI*i/900;add(R*Math.sin(p),R*(1-Math.cos(p)),wL*(p/(2*Math.PI)),i<900?p:-1);}
+  for(let i=1;i<=120;i++)add(Xe*i/120,0,wL,-1);
+  // tangente, normale (vers le côté du wagon), courbure signée
+  const n=S.length,TX=[],TZ=[],K=[];for(let i=0;i<n;i++){const a=Math.max(0,i-1),b=Math.min(n-1,i+1),dx=X[b]-X[a],dz=Z[b]-Z[a],l=Math.hypot(dx,dz)||1;TX.push(dx/l);TZ.push(dz/l);}
+  for(let i=0;i<n;i++){const a=Math.max(0,i-1),b=Math.min(n-1,i+1);let d=Math.atan2(TZ[b],TX[b])-Math.atan2(TZ[a],TX[a]);while(d>Math.PI)d-=2*Math.PI;while(d<-Math.PI)d+=2*Math.PI;K.push(S[b]>S[a]?d/(S[b]-S[a]):0);}
+  for(let i=0;i<n;i++)if(F[i]>=0)K[i]=1/R;
+  TRK={S,X,Z,Y,F,TX,TZ,K,n,Lr,Xf,Xr,Xe,wL,len:s,sLoop0:S[681],sLoop1:S[681+899]};
+  EXT={bx:[-Xr-4.5,Xe+2],by:[-2.5,wL+2.5],bz:[0,Math.max(h+2.9,2*R+1)]};TG=[(-Xr+Xe)/2,wL/2,Math.max(h,2*R)*0.45];}
+function idx(s){const S=TRK.S;let lo=0,hi=S.length-1;if(s<=0)return[0,0];if(s>=S[hi])return[hi-1,1];while(hi-lo>1){const m=(lo+hi)>>1;if(S[m]<=s)lo=m;else hi=m;}return[lo,(s-S[lo])/(S[lo+1]-S[lo])];}
+function at(s){const [i,f]=idx(s),T=TRK,L=k=>T[k][i]+(T[k][i+1]-T[k][i])*f;const tx=L('TX'),tz=L('TZ'),l=Math.hypot(tx,tz)||1;
+  const phi=T.F[i]>=0&&T.F[i+1]>=0?T.F[i]+(T.F[i+1]-T.F[i])*f:(T.F[i]>=0&&f<0.5?T.F[i]:-1);return{x:L('X'),z:L('Z'),y:L('Y'),tx:tx/l,tz:tz/l,k:L('K'),phi};}
+// ---------- dynamique (sans frottement) ----------
+// le long du rail : s'' = −g·dz/ds ; la vitesse est recalée sur l'énergie : v² = 2g(h − z).
+// réaction du rail : N/(m·g) = n_z + v²·κ/g (n = normale côté wagon). Dans la boucle : N/P = 2h/R − 2 + 3·cos φ.
+let st={},slow=false,paused=false,showG=true;
+function restart(){let s0=0;while(s0<8&&at(s0).z>h-0.3)s0+=0.005;st={mode:'track',s:s0,s0,sd:Math.sqrt(2*G*(h-at(s0).z)),tm:0,fl:null};}
+function Nnow(p,v2){if(p.phi>=0)return 2*h/R-2+3*Math.cos(p.phi);return p.tx+v2*p.k/G;} // n = (−tz, tx) : n_z = tx
+function step(dt){if(st.mode==='track'){const n=Math.max(1,Math.ceil(dt/0.002)),hh=dt/n;
+    for(let k=0;k<n;k++){const p=at(st.s);st.sd+=-G*p.tz*hh;st.s+=st.sd*hh;const q=at(st.s),ve=Math.sqrt(Math.max(0,2*G*(h-q.z)));if(ve>0.4)st.sd=Math.sign(st.sd||1)*ve;
+      if(q.phi>=0&&Nnow(q,ve*ve)<0){// décrochage : le wagon quitte le rail
+        st.mode='flight';st.fl={x:q.x,z:q.z,y:q.y,vx:st.sd*q.tx,vz:st.sd*q.tz,t:0,phi:q.phi};st.det={phi:q.phi,z:q.z};return;}
+      if(st.s>=TRK.len-0.5){st.mode='end';st.tm=0;return;}
+      if(st.s<=st.s0&&st.sd<0){st.mode='end';st.tm=0;return;}}}
+  else if(st.mode==='flight'){const f=st.fl,n=Math.max(1,Math.ceil(dt/0.002)),hh=dt/n;for(let k=0;k<n;k++){f.vz-=G*hh;f.x+=f.vx*hh;f.z+=f.vz*hh;f.t+=hh;
+      if(f.t>0.08&&Math.hypot(f.x,f.z-R)>=R){const a=Math.atan2(f.x,R-f.z);f.x=R*Math.sin(a);f.z=R*(1-Math.cos(a));st.mode='crash';st.tm=0;st.crash={x:f.x,z:f.z,y:f.y};return;}
+      if(f.z<0){f.z=0;st.mode='crash';st.tm=0;st.crash={x:f.x,z:0,y:f.y};return;}}}
+  else{st.tm+=dt;if(st.tm>(st.mode==='crash'?2.2:1.2))restart();}}
+// ---------- dessin ----------
+const mGrass=mat('#7fb25e',0.05,8,0.55),mGrass2=mat('#7aad5a',0.05,8,0.55),mPath=mat('#d9c9a3',0.05,8,0.6),mSteel=mat('#c9d1d8',0.7,30,0.45),mSpine=mat('#2d63b8',0.4,20,0.45),mPost=mat('#e9edf2',0.4,20,0.5),
+  mCar=mat('#d9342b',0.55,26,0.42),mCar2=mat('#f4c542',0.5,22,0.45),mSkin=mat('#f0c2a0',0.15,12,0.5),mShirt=mat('#2e8b57',0.3,16,0.45),mHair=mat('#4a2c1a',0.3,20,0.4),mWood=mat('#a87a4d',0.15,10,0.5),
+  mTrunk=mat('#6b4a2b',0.1,8,0.5),mLeaf=mat('#4f8f3a',0.15,10,0.45),mRoof=mat('#3b6fb6',0.3,18,0.45);
+function sky(){const g=ctx.createLinearGradient(0,VP.y,0,VP.y+VP.h);g.addColorStop(0,'#86bde8');g.addColorStop(0.6,'#cfe8f8');g.addColorStop(1,'#eef7fd');ctx.fillStyle=g;ctx.fillRect(VP.x,VP.y,VP.w,VP.h);}
+function ground(){const x0=-TRK.Xr-14,x1=TRK.Xe+14,y0=-22,y1=26,nx=10,ny=6;
+  for(let i=0;i<nx;i++)for(let j=0;j<ny;j++){const a=x0+(x1-x0)*i/nx,b=x0+(x1-x0)*(i+1)/nx,c=y0+(y1-y0)*j/ny,d=y0+(y1-y0)*(j+1)/ny;face([[a,c,0],[b,c,0],[b,d,0],[a,d,0]],(i+j)%2?mGrass:mGrass2,{n:[0,0,1],now:true});}
+  face([[x0,-1.6,0.01],[x1,-1.6,0.01],[x1,1.6+TRK.wL,0.01],[x0,1.6+TRK.wL,0.01]],mPath,{n:[0,0,1],now:true});}
+function tree(x,y,s){cyl([x,y,0],[x,y,2.2*s],0.25*s,0.2*s,mTrunk,{n:6});sphere([x,y,3.2*s],1.5*s,mLeaf);sphere([x+0.6*s,y-0.4*s,2.7*s],1.0*s,mLeaf);}
+function station(){const x=-TRK.Xr,zt=h;// plate-forme au sommet de la tour
+  obox([x-1.6,TRK.wL*0,zt-0.25],[1,0,0],[0,1,0],[0,0,1],2.2,1.8,0.2,mWood);
+  [[-3.6,-1.6],[0.4,-1.6],[-3.6,1.6],[0.4,1.6]].forEach(([dx,dy])=>cyl([x+dx,dy,0],[x+dx,dy,zt-0.45],0.18,0.18,mPost,{n:6}));
+  for(let z=3;z<zt-0.5;z+=3){seg3([x-3.6,-1.6,z],[x+0.4,-1.6,z+1.5],'#b9c2cc',0.08);seg3([x-3.6,1.6,z],[x+0.4,1.6,z+1.5],'#b9c2cc',0.08);}
+  obox([x-1.6,0,zt+2.6],[1,0,0],[0,1,0],[0,0,1],2.4,2.0,0.12,mRoof);[[-3.7,-1.8],[0.5,-1.8],[-3.7,1.8],[0.5,1.8]].forEach(([dx,dy])=>cyl([x+dx,dy,zt-0.05],[x+dx,dy,zt+2.5],0.07,0.07,mPost,{n:5}));}
+function track(){const T=TRK,step=Math.max(1,Math.round(0.45/((T.S[T.n-1])/T.n)));let prev=null;const GA=0.8;
+  for(let i=0;i<T.n;i+=step){const tx=T.TX[i],tz=T.TZ[i],nn=[-tz,0,tx],P=[T.X[i],T.Y[i],T.Z[i]],sp=V3.a(P,V3.m(nn,-0.45)),L=[V3.a(P,[0,-GA,0]),V3.a(P,[0,GA,0])];
+    if(prev){seg3(prev.L[0],L[0],'#aab4bf',0.16,{min:1.2});seg3(prev.L[1],L[1],'#d5dbe2',0.16,{min:1.2});seg3(prev.sp,sp,'#2d63b8',0.36,{min:2,dz:0.05});}
+    if(i%(step*2)===0){seg3(L[0],sp,'#4b78c2',0.08,{dz:0.03});seg3(L[1],sp,'#4b78c2',0.08,{dz:0.03});}
+    prev={L,sp};}
+  // poteaux de soutien
+  for(let s=4;s<T.len;s+=6){const p=at(s);if(p.phi>=0&&!(p.phi<0.6||p.phi>2*Math.PI-0.6))continue;const top=[p.x+p.tz*0.45,p.y,p.z-p.tx*0.45];if(top[2]>0.6)cyl([top[0],top[1],0],top,0.16,0.14,mPost,{n:6});}
+  // pieds de la boucle (en A)
+  [[-1,Math.PI/2],[1,3*Math.PI/2]].forEach(([sg,ph])=>{const x=R*Math.sin(ph)*1.08,z=R*(1-Math.cos(ph)),y=TRK.wL*ph/(2*Math.PI);cyl([x,y-2.4,0],[x,y,z],0.22,0.18,mPost,{n:6});cyl([x,y+2.4,0],[x,y,z],0.22,0.18,mPost,{n:6});});}
+function wagon(p,al,crashA){// p : {x,y,z,tx,tz} ; le wagon est posé côté normale n = (−tz, tx)
+  const T=[p.tx,0,p.tz],N=[-p.tz,0,p.tx],B=[0,1,0],o=al!=null?{al}:{};const c=V3.a([p.x,p.y,p.z],V3.m(N,0.7));
+  obox(c,T,B,N,1.6,0.95,0.42,mCar,o);obox(V3.a(c,V3.m(T,1.4)),T,B,N,0.25,0.98,0.56,mCar2,o);
+  [[-1.05,-0.75],[1.05,-0.75],[-1.05,0.75],[1.05,0.75]].forEach(([a,b])=>sphere(V3.a(V3.a(c,V3.m(T,a)),V3.a(V3.m(B,b),V3.m(N,-0.46))),0.22,mat('#2c3440',0.3,16,0.4),o));
+  // passager : buste, tête, bras levés
+  const b0=V3.a(c,V3.m(N,0.35)),b1=V3.a(c,V3.m(N,1.25));cyl(b0,b1,0.34,0.28,mShirt,Object.assign({n:8},o));sphere(V3.a(c,V3.m(N,1.58)),0.3,mSkin,o);sphere(V3.a(V3.a(c,V3.m(N,1.66)),V3.m(T,-0.08)),0.28,mHair,Object.assign({dz:0.01},o));
+  [-1,1].forEach(sg=>{const sh=V3.a(b1,V3.m(B,sg*0.32)),hd=V3.a(V3.a(sh,V3.m(N,0.8)),V3.a(V3.m(B,sg*0.25),V3.m(T,0.12)));cyl(sh,hd,0.1,0.08,mShirt,Object.assign({n:6},o));sphere(hd,0.11,mSkin,o);});
+  return c;}
+function forceArrows(c,np,lab,al){// P vers le bas ; N selon la normale
+  // échelle commune ; réduite aux grands h pour que les flèches du bas et du haut de la boucle ne se touchent pas
+  const k=Math.min(0.16*R,(1.75*R-1.4)/(2+4*h/R-5>0?(1+2*h/R)+Math.max(1,2*h/R-5):1)),pp=pr(c),pb=pr(V3.a(c,[0,0,-k]));ctx.save();ctx.globalAlpha=al;arrow(pp[0],pp[1],pb[0],pb[1],RED,3.2);
+  if(np.N>0.02){const pn=pr(V3.a(c,V3.m(np.n,k*np.N)));arrow(pp[0],pp[1],pn[0],pn[1],BLUE,3.2);if(lab){const rt=pn[0]>pp[0],ny=rt&&Math.abs(pn[1]-(pb[1]-4))<17?pb[1]-4-17:pn[1];tag('N = '+fr(np.N,2)+' P',pn[0]+(rt?8:-8),ny,BLUE_D,FB,rt?'left':'right');}}
+  if(lab)tag('P',pb[0]+10,pb[1]-4,RED_D,FB,'left');ctx.restore();}
+function scene(){ctx.save();ctx.beginPath();ctx.rect(VP.x,VP.y,VP.w,VP.h);ctx.clip();sky();cam();ground();
+  [[-TRK.Xr-8,9,1.1],[-TRK.Xr*0.4,12,1.3],[TRK.Xe*0.6,-9,1.0],[TRK.Xe+4,10,1.2],[-TRK.Xr*0.7,-10,0.9],[3,14,1.2],[-R-6,-11,1.0]].forEach(t=>tree(...t));
+  station();track();
+  // fantômes en bas et en haut de la boucle
+  let gb=null,gt=null;
+  if(showG&&!noLab){gb=wagon({x:0,y:0.0,z:0,tx:1,tz:0},0.35);
+    if(h>=2.5*R-1e-9)gt=wagon({x:0,y:TRK.wL/2,z:2*R,tx:-1,tz:0},0.35);}
+  // le wagon
+  let c=null,np=null,v=0;
+  if(st.mode==='track'||st.mode==='end'){const p=at(st.s);v=Math.abs(st.sd);c=wagon(p);np={N:Nnow(p,v*v),n:[-p.tz,0,p.tx]};}
+  else{const f=st.mode==='flight'?st.fl:Object.assign({},st.fl,st.crash),sp=Math.hypot(f.vx,f.vz)||1;v=sp;c=wagon({x:f.x,y:f.y,z:f.z,tx:f.vx/sp,tz:f.vz/sp});np={N:0,n:[0,0,1]};}
+  flush();
+  // forces
+  if(!noLab){if(gb)forceArrows([0,0,0.7],{N:1+2*h/R,n:[0,0,1]},!mob,0.75);if(gt)forceArrows([0,TRK.wL/2,2*R-0.7],{N:2*h/R-5,n:[0,0,-1]},!mob,0.75);
+    const pl=st.mode==='track'?at(st.s):null,nearG=pl&&Math.abs(pl.x)<3&&(pl.z<2.5||(gt&&pl.z>2*R-2.5));forceArrows(c,np,!mob&&!nearG,1);}
+  // poignée : sommet de la tour
+  const ps=pr([-TRK.Xr,0,h]);ctx.fillStyle=RED;ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(ps[0],ps[1],7,0,7);ctx.fill();ctx.stroke();
+  if(!noLab){tag('h = '+fr(h,1)+' m',ps[0]-12,ps[1],RED_D,FB,'right');
+    if(st.mode==='crash'||st.mode==='flight'){const pd=pr([R*Math.sin(st.det.phi),TRK.wL*st.det.phi/(2*Math.PI),st.det.z]);ctx.strokeStyle=RED_D;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(pd[0],pd[1],10,0,7);ctx.stroke();tag('N = 0 : le wagon décroche !',pd[0],pd[1]-22,RED_D,FB);}
+    if(st.mode==='crash'){const pc=pr([st.crash.x,st.crash.y,st.crash.z]);const a=Math.min(1,st.tm*3);ctx.fillStyle=`rgba(217,83,79,${0.35*(1-a*0.5)})`;ctx.beginPath();ctx.arc(pc[0],pc[1],18+st.tm*20,0,7);ctx.fill();}
+    // valeurs instantanées
+    const lines=[['v = '+fr(v,1)+' m/s',GRN],[st.mode==='flight'||st.mode==='crash'?'N = 0 (en l’air)':'N = '+fr(np.N,2)+' P',BLUE_D]];
+    const p=st.mode==='track'?at(st.s):null;if(p&&p.phi>=0)lines.push(['dans la boucle : φ = '+fr(p.phi*180/Math.PI,0)+'°',MUTED]);
+    const fs=mob?11.5:13;ctx.font=`800 ${fs}px Mulish,system-ui,sans-serif`;let w=0;lines.forEach(l=>w=Math.max(w,ctx.measureText(l[0]).width));rr(VP.x+8,VP.y+8,w+18,lines.length*(fs+7)+10,8);ctx.fillStyle='rgba(255,255,255,.9)';ctx.fill();
+    ctx.textAlign='left';ctx.textBaseline='middle';lines.forEach((l,i)=>{ctx.fillStyle=l[1];ctx.fillText(l[0],VP.x+17,VP.y+13+(fs+7)*(i+0.5));});
+    if(slow)tag('ralenti ×0,3',VP.x+VP.w-10,VP.y+16,INK,FB,'right');}
+  ctx.restore();}
+// ---------- panneau : N/P le long de la boucle ----------
+function chart(){const P=PN;rr(P.x,P.y,P.w,P.h,10);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='rgba(19,35,58,.16)';ctx.lineWidth=1;ctx.stroke();
+  const fs=mob?11:13,lh=mob?16:21,x=P.x+(mob?10:14);let y=P.y+(mob?16:22);const TW=mob?P.w-18:P.w*0.42-14;const r=h/R,ok=r>=2.5-1e-9,vb=Math.sqrt(2*G*h);
+  ctx.font=`800 ${mob?12:13.5}px Mulish,system-ui,sans-serif`;ctx.fillStyle=INK;ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillText('Dans la boucle',x,y);y+=lh+2;
+  const L=[['h = '+fr(h,1)+' m = '+fr(r,2)+' R',RED_D],['minimum : h = 2,5 R = '+fr(2.5*R,1)+' m',MUTED],['en bas : v = '+fr(vb,1)+' m/s, N = '+fr(1+2*r,2)+' P',BLUE_D]];
+  if(ok)L.push(['en haut : v = '+fr(Math.sqrt(2*G*(h-2*R)),1)+' m/s, N = '+fr(2*r-5,2)+' P',BLUE_D]);
+  else if(r>1){const cphi=(2-2*r)/3,ph=Math.acos(cphi)*180/Math.PI;L.push(['N = 0 à φ = '+fr(ph,1)+'° : il décroche',RED_D]);L.push(['à '+fr(R/3+2*h/3,1)+' m du sol (sommet : '+fr(2*R,1)+' m)',RED_D]);}
+  else L.push(['h ≤ R : il remonte jusqu’à h et redescend',MUTED]);
+  L.forEach(l=>{ctx.font=`700 ${fs}px Mulish,system-ui,sans-serif`;ctx.fillStyle=l[1];let t=l[0];while(ctx.measureText(t).width>TW&&t.length>6)t=t.slice(0,-2);ctx.fillText(t,x,y);y+=lh;});
+  // graphique N/P en fonction de φ
+  const g=mob?{x0:P.x+30,x1:P.x+P.w-10,y0:y+8,y1:P.y+P.h-20}:{x0:P.x+P.w*0.44+30,x1:P.x+P.w-14,y0:P.y+26,y1:P.y+P.h-22};if(g.y1-g.y0<50)return;const top=Math.max(8,1+2*r+0.5),bot=Math.min(-1,2*r-5-0.5);
+  const X=ph=>g.x0+ph/360*(g.x1-g.x0),Y=n=>g.y1-(n-bot)/(top-bot)*(g.y1-g.y0);
+  ctx.fillStyle='rgba(217,83,79,.08)';ctx.fillRect(g.x0,Y(0),g.x1-g.x0,Y(bot)-Y(0));
+  ctx.strokeStyle='#e3e7ed';ctx.lineWidth=1;[90,180,270,360].forEach(a=>{ctx.beginPath();ctx.moveTo(X(a),g.y0);ctx.lineTo(X(a),g.y1);ctx.stroke();});
+  ctx.strokeStyle='#8a95a3';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(g.x0,Y(0));ctx.lineTo(g.x1,Y(0));ctx.moveTo(g.x0,g.y0);ctx.lineTo(g.x0,g.y1);ctx.stroke();
+  ctx.font='600 10.5px Mulish,system-ui,sans-serif';ctx.fillStyle=MUTED;ctx.textAlign='right';ctx.textBaseline='middle';const stp=top>10?4:2;for(let n=Math.ceil(bot/stp)*stp;n<=top;n+=stp)ctx.fillText(fr(n,0),g.x0-4,Y(n));
+  ctx.textAlign='center';ctx.textBaseline='top';[0,90,180,270,360].forEach(a=>ctx.fillText(a+'°',X(a),g.y1+3));ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillStyle=BLUE_D;ctx.font=`800 ${mob?10.5:11.5}px Mulish,system-ui,sans-serif`;ctx.fillText('N / P selon φ',g.x0+4,g.y0-1);
+  ctx.fillStyle=RED_D;ctx.font='700 10px Mulish,system-ui,sans-serif';ctx.textAlign='right';ctx.fillText('N < 0 : impossible',g.x1-2,Y(bot)-2);
+  // courbe : pleine tant que N ≥ 0, pointillée au-delà (le wagon n'y est plus)
+  const phd=r<2.5&&r>1?Math.acos((2-2*r)/3)*180/Math.PI:400,ph2=r<=1?Math.acos(1-r)*180/Math.PI:400;
+  for(const [a0,a1,dash,col] of [[0,Math.min(phd,ph2,360),null,BLUE],[Math.min(phd,ph2,360),360,[4,4],'rgba(31,111,194,.45)']]){if(a1<=a0)continue;ctx.strokeStyle=col;ctx.lineWidth=2.4;ctx.setLineDash(dash||[]);ctx.beginPath();for(let a=a0;a<=a1+1e-6;a+=2){const n=2*r-2+3*Math.cos(a*Math.PI/180);a===a0?ctx.moveTo(X(a),Y(n)):ctx.lineTo(X(a),Y(n));}ctx.stroke();ctx.setLineDash([]);}
+  if(phd<360){ctx.fillStyle=RED_D;ctx.beginPath();ctx.arc(X(phd),Y(0),4.5,0,7);ctx.fill();}
+  const p=st.mode==='track'?at(st.s):null;if(p&&p.phi>=0){const a=p.phi*180/Math.PI,n=Nnow(p,0);ctx.fillStyle=BLUE;ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(X(a),Y(n),5,0,7);ctx.fill();ctx.stroke();}}
+function layout(){mob=W<720;const vh=Math.round(H*(mob?0.6:0.68));VP={x:0,y:0,w:W,h:vh};PN={x:6,y:vh+6,w:W-12,h:H-vh-12};}
+function stepView(){if(viewT){yaw+=(viewT[0]-yaw)*0.12;pitch+=(viewT[1]-pitch)*0.12;zoom+=(viewT[2]-zoom)*0.12;if(Math.abs(viewT[0]-yaw)+Math.abs(viewT[1]-pitch)+Math.abs(viewT[2]-zoom)<1e-3)viewT=null;}}
+function draw(){size();layout();ctx.clearRect(0,0,W,H);scene();chart();}
+// ---------- textes ----------
+function upd(){const r=h/R;$('vH').textContent=fr(h,1)+' m ('+fr(r,2)+' R)';$('vR').textContent=fr(R,1)+' m';$('sH').value=h;$('sR').value=R;
+  $('fml').innerHTML='Sans frottement, l’énergie se conserve : <b>v² = 2g·(h − z)</b>. Dans la boucle, la résultante doit être centripète : '+
+   '<b style="color:#1f6fc2">N</b> − <b style="color:#d9534f">P</b>·cos φ = m·v²/R (φ mesuré depuis le bas), d’où <b>N/P = 2h/R − 2 + 3·cos φ</b>. '+
+   'En bas, N = (1 + 2h/R)·P = <b style="color:#185fa5">'+fr(1+2*r,2)+' P</b>. En haut, N = (2h/R − 5)·P : il faut <b>h ≥ 2,5 R</b> pour que N reste positive, c’est-à-dire v<sub>haut</sub> ≥ √(g·R) = '+fr(Math.sqrt(G*R),1)+' m/s.';
+  let inf='';
+  if(r>=2.5)inf+='Ici h = '+fr(r,2)+' R : le wagon passe. En haut, v = √(2g(h − 2R)) = '+fr(Math.sqrt(2*G*(h-2*R)),2)+' m/s et N = '+fr(2*r-5,2)+' P'+(r<2.5+1e-6?' : N s’annule pile au sommet, le passager s’y sent en apesanteur.':'.')+' ';
+  else if(r>1){const c=(2-2*r)/3;inf+='Ici h = '+fr(r,2)+' R < 2,5 R : N s’annule pour cos φ = (2 − 2h/R)/3, soit φ = '+fr(Math.acos(c)*180/Math.PI,1)+'°, à '+fr(R/3+2*h/3,2)+' m du sol. Le rail ne peut que pousser : le wagon quitte le rail et suit une parabole (chute libre) à l’intérieur de la boucle. ';}
+  else inf+='Ici h ≤ R : le wagon monte dans la boucle jusqu’à la hauteur h (v = 0, N = (1 − h/R)·P = '+fr(1-r,2)+' P) puis redescend, sans jamais décrocher. ';
+  inf+='En bas de la boucle, le passager se sent '+fr(1+2*r,1)+' fois plus lourd. Ici le wagon est seulement posé sur le rail : les vrais wagons ont aussi des roues sous le rail qui les empêchent de décrocher, et leurs boucles ne sont pas circulaires (plus serrées en haut) pour limiter N en bas. Frottements négligés ; g = 9,81 m/s².';
+  $('info').innerHTML=inf;}
+function setH(v){h=Math.max(4,Math.min(40,Math.round(v*2)/2));build();upd();restart();}
+function setR(v){R=Math.max(5,Math.min(12,Math.round(v*2)/2));build();upd();restart();}
+$('sH').oninput=e=>setH(+e.target.value);$('sR').oninput=e=>setR(+e.target.value);
+$('h2').onclick=()=>setH(2*R);$('h25').onclick=()=>setH(2.5*R);$('h3').onclick=()=>setH(3*R);
+$('pp').onclick=()=>{paused=!paused;$('pp').textContent=paused?'▶ Reprendre':'⏸ Pause';$('pp').classList.toggle('on',paused);};
+$('re').onclick=()=>{restart();if(paused)$('pp').click();};
+$('slow').onclick=()=>{slow=!slow;$('slow').classList.toggle('on',slow);};
+$('gh').onclick=()=>{showG=!showG;$('gh').classList.toggle('on',showG);};
+$('lab').onclick=()=>{noLab=!noLab;$('lab').classList.toggle('on',noLab);};
+const vb=id=>['v3','vF','vS'].forEach(i=>$(i).classList.toggle('on',i===id));
+$('v3').onclick=()=>{viewT=mob?[-0.95,0.32,1]:[-0.45,0.2,1];vb('v3');};$('vF').onclick=()=>{viewT=[0,0.02,1];vb('vF');};$('vS').onclick=()=>{viewT=[-0.9,0.75,1];vb('vS');};
+// ---------- souris ----------
+let drag=null;
+function pos(e){const b=cv.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top];}
+cv.addEventListener('pointerdown',e=>{const [x,y]=pos(e);if(x<VP.x||x>VP.x+VP.w||y<VP.y||y>VP.y+VP.h)return;cv.setPointerCapture(e.pointerId);const ps=pr([-TRK.Xr,0,h]);
+  if(Math.hypot(x-ps[0],y-ps[1])<22){drag={k:'h',y0:y,h0:h,ppm:ps[3]*Math.cos(pitch),E:Object.assign({},EXT),TG:TG.slice()};}else{drag={k:'v',x,y};viewT=null;vb('');}cv.style.cursor='grabbing';});
+cv.addEventListener('pointermove',e=>{const [x,y]=pos(e);if(!drag){const ps=TRK?pr([-TRK.Xr,0,h]):[0,0];cv.style.cursor=Math.hypot(x-ps[0],y-ps[1])<22?'ns-resize':'grab';return;}
+  if(drag.k==='v'){yaw+=(x-drag.x)*0.008;pitch=Math.max(-0.05,Math.min(1.35,pitch+(y-drag.y)*0.006));drag.x=x;drag.y=y;}
+  else{const nh=drag.h0+(drag.y0-y)/Math.max(1,drag.ppm);if(Math.round(nh*2)/2!==h){setH(nh);EXT=drag.E;TG=drag.TG;}}});
+const up=()=>{if(drag&&drag.k==='h')build();drag=null;cv.style.cursor='grab';};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+cv.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(0.7,Math.min(2.6,zoom*Math.exp(-e.deltaY*0.001)));},{passive:false});
+// ---------- boucle ----------
+let last=null;
+function loop(ts){if(last===null)last=ts;const dt=Math.min(0.04,(ts-last)/1000);last=ts;stepView();if(!paused)step(dt*(slow?0.3:1));draw();requestAnimationFrame(loop);}
+window.__lp={get:()=>{const r=h/R;return{h,R,r,vBas:Math.sqrt(2*G*h),NBas:1+2*r,vHaut:r>=2.5?Math.sqrt(2*G*(h-2*R)):null,NHaut:r>=2.5?2*r-5:null,phiDec:(r<2.5&&r>1)?Math.acos((2-2*r)/3)*180/Math.PI:null,zDec:(r<2.5&&r>1)?R/3+2*h/3:null,mode:st.mode,det:st.det?{phi:st.det.phi*180/Math.PI,z:st.det.z}:null};},
+  set:o=>{if(o.R!=null)R=o.R;if(o.h!=null)h=o.h;build();upd();restart();if(o.yaw!=null){yaw=o.yaw;pitch=o.pitch;}},run:(T)=>{restart();let t=0;while(t<T&&st.mode!=='crash'&&st.mode!=='end'){step(0.01);t+=0.01;}return{t,mode:st.mode,s:st.s,det:st.det?{phi:st.det.phi*180/Math.PI,z:st.det.z}:null};},freeze:(T)=>{restart();let t=0;while(t<T){step(0.005);t+=0.005;}paused=true;return st.mode;}};
+size();if(W<720){yaw=-0.95;pitch=0.32;}build();upd();restart();requestAnimationFrame(loop);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Dynamique : forces et lois de Newton<span>14 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/diagramme-forces/"><i>01</i>Diagramme de forces et 2ᵉ loi</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/inertie/"><i>02</i>1re loi : le principe d'inertie</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/referentiels-inertiels/"><i>03</i>Équivalence des référentiels inertiels</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/chariot-poulie/"><i>04</i>2e loi : F = m·a</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ascenseur/"><i>05</i>Poids apparent dans un ascenseur</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/action-reaction/"><i>06</i>Action et réaction</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/action-reaction-exemples/"><i>07</i>Action-réaction : la fusée et d'autres exemples</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/plan_incline/"><i>08</i>Plan incliné</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/frottement-coef/"><i>09</i>Coefficient de frottement</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/tourniquet/"><i>10</i>Forces sur un tourniquet</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/rotation-roulement/"><i>11</i>Rotation : moment d'inertie et roulement</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-rotation-sigma-m/"><i>12</i>Faire tourner : ΣM = I·α</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-patineuse/"><i>13</i>La patineuse qui rentre les bras</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-looping/"><i>14</i>Le looping : la vitesse minimale au sommet</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

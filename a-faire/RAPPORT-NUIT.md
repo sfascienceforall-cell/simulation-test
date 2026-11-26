@@ -21,16 +21,10 @@ Les `id` de physique suivent la liste des canevas : `avant-bras-biceps` → `ph-
 
 ## Vague P1 (26 simulations + 4 pages refaites)
 
-| Lot | État | Publié | Remarques |
-|---|---|---|---|
-| p1-magn | rendu (Ampère, rails, refonte regle-main-droite) ; relecture + vérification en cours | – | |
-| p1-rot | rendu ; corrections du relecteur faites (patineuse : bras repliés à l'horizontale) ; attente du vérificateur | – | |
-| p1-flu-opt | rendu ; corrections du relecteur en cours (Pascal passe à des valeurs de presse) | – | |
-| p1-thermo | rendu ; corrections du relecteur en cours ; vérification en cours | – | |
-| p1-chimie | en cours (renommage ch-… ; question sur une suppression signalée) | – | |
-| p1-orga1 | rendu ; relecture + vérification en cours | – | |
-| p1-orga2 | rendu ; relecture + vérification en cours (NO₂⁺ dessiné coudé à corriger) | – | |
-| lycee | accepté (21 cours à 0 erreur, captures relues) | 26/11, commit 05584fb | noms affichés seulement + audit ; contenu encore FWB |
+**Publié le 26/11 vers 02:00** (commits 4255965, 4dc980a, 8159b1b) : les 26 nouvelles simulations et les 4 pages refaites.
+- Relecture scientifique : 16 pages de physique (11 OK, 6 erreurs de texte corrigées) et 14 de chimie (4 erreurs corrigées : NO₂ dans le nitrobenzène, de Broglie 3·10³², furanose, diazépam). Aucun calcul faux.
+- Vérification : 24 acceptées, 6 refusées puis corrigées (étiquettes qui se chevauchaient : biceps, ΣM = Iα, entropie, tension de cycle, polarimètre ; perfusion qui restait blanche si le canevas démarrait à 0 px).
+- Tests : chimie 78 pages, 0 erreur ; physique, 0 erreur sur les pages touchées.
 
 ## Décisions prises sans Enzo
 
@@ -50,7 +44,7 @@ L'audit complet est dans `audit/lycee-programme.md`. Sur les 160 chapitres : 88 
 
 ## Valeurs par défaut changées et reels à refilmer
 
-Pas encore en ligne : ces changements prendront effet à la publication de chaque lot.
+En ligne depuis le 26/11 :
 - `rotation-roulement` : vue 3D, la course part toute seule et recommence en boucle (avant : il fallait cliquer). Toute vidéo est à refaire.
 - `pascal` : page entièrement nouvelle, avec le pompage automatique. Valeurs par défaut prévues : F₁ = 100 N, r₁ = 1 cm, r₂ = 15 cm (avant : 20 N, 5 cm, 15 cm). Toute vidéo est à refaire.
 - `diagramme-pv` : la transformation tourne en boucle, et le bouton « Rejouer » devient « Arrêter l'animation ». Les valeurs par défaut restent les mêmes. Toute vidéo est à refaire.

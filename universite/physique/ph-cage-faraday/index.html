@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La cage de Faraday · SFA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700;800&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style id="sfa-blocus-css">
+.sfa-blocus{background:#f6f7f9;border-bottom:1px solid #e3e7ed;font:600 13px/1.3 Mulish,system-ui,sans-serif;color:#5f6b7a}
+.sfa-blocus .in{max-width:1240px;margin:0 auto;padding:7px 16px;display:flex;align-items:center;gap:10px}
+.sfa-blocus .cd b{color:#13233a;font-weight:800}
+.sfa-blocus a{color:#185fa5;font-weight:800;text-decoration:none}.sfa-blocus a:hover{text-decoration:underline}
+.sfa-blocus-side{background:#fff8e1;border:1px solid #f1d98c;border-radius:12px;padding:14px 16px;margin-bottom:14px;font:600 13px/1.45 Mulish,system-ui,sans-serif;color:#5a4300}
+.sfa-blocus-side small{display:block;font:800 10px Mulish,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.sfa-blocus-side b{display:block;font:800 26px/1.1 Mulish,system-ui,sans-serif;color:#13233a;margin-bottom:4px}
+.sfa-blocus-side .bar{height:6px;background:#f1e3b4;border-radius:99px;margin:8px 0 10px;overflow:hidden}.sfa-blocus-side .bar i{display:block;height:100%;background:#BA7517;border-radius:99px}
+.sfa-blocus-side a{display:inline-block;background:#13233a;color:#fff;border-radius:7px;padding:7px 11px;font-weight:800;text-decoration:none}
+</style><link rel="stylesheet" href="../../../kit/sfa-nav.css"><link rel="stylesheet" href="../../../kit/sfa-shell.css"></head>
+<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#cv{display:block;touch-action:none;cursor:crosshair}
+.hint{font:500 .82rem var(--f-ui);color:var(--muted)}
+.val{white-space:nowrap}
+#defiBox input{font:700 1rem var(--f-ui);width:7.5em;padding:7px 9px;border:1px solid var(--line2);border-radius:8px;color:var(--ink);background:#fff}
+#defiBox .q{font-weight:800}
+#defiBox .line{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+#dfb{margin-top:6px;font-weight:700}
+</style>
+<style id="sfa-kit">
+/* Kit SFA v2 — calqué sur la maquette des capsules gratuites : fond blanc, cartes à bord fin, encre bleu nuit,
+   bouton d'action vert, jaune réservé à « gratuit » et à la prépa. Mise en page : contenu + colonne latérale. */
+:root{--bg:#f6f7f9;--paper:#ffffff;--ink:#0f1b2d;--ink2:#2c3a4e;--muted:#5f6b7a;--faint:#8a95a3;--line:#e3e7ed;--line2:#d3d9e2;
+  --navy:#13233a;--navy2:#1d3354;--chip:#e9effb;--chip-ink:#24428a;--yellow:#f4c542;--yellow-ink:#5a4300;--green:#2e6b55;--green-h:#255a47;
+  --blue:#1e3f8f;--sel:#eef3fd;--rule:var(--line);--rule2:var(--line2);--press:#eef1f5;--gold:#f4c542;--gold-ink:#7a5b00;
+  --f-ui:"Mulish",system-ui,-apple-system,"Segoe UI",sans-serif;--f-math:"STIX Two Text","Cambria Math",serif;
+  --f-num:"JetBrains Mono",ui-monospace,monospace;color-scheme:light}
+html{background:var(--bg)}
+body{background:var(--bg)!important;color:var(--ink);font-family:var(--f-ui)!important;font-size:15px;line-height:1.5;margin:0!important;padding:0!important;max-width:none!important}
+a{color:inherit}
+/* barre du haut */
+.sfa-top{background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.sfa-top .in{max-width:1240px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:22px}
+.sfa-logo{display:flex;align-items:center;gap:9px;font:800 15px var(--f-ui);color:var(--ink);text-decoration:none;white-space:nowrap}
+.sfa-logo i{width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;display:grid;place-items:center;font:800 10px var(--f-ui);font-style:normal;letter-spacing:.02em}
+.sfa-nav{display:flex;gap:18px;font:600 13px var(--f-ui);color:var(--muted)}
+.sfa-nav a{text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.sfa-nav a.on{color:var(--ink);border-bottom-color:var(--ink)}
+.sfa-cta{margin-left:auto;background:var(--green);color:#fff;font:700 13px var(--f-ui);padding:9px 14px;border-radius:7px;text-decoration:none;white-space:nowrap}
+.sfa-cta:hover{background:var(--green-h)}
+@media (max-width:720px){.sfa-top .in{flex-wrap:wrap;row-gap:6px;padding-bottom:6px}.sfa-nav{order:3;flex:1 0 100%;gap:12px;overflow-x:auto;white-space:nowrap;scrollbar-width:none;font-size:13px;letter-spacing:-.01em;border-top:1px solid var(--line);padding-top:6px}.sfa-nav::-webkit-scrollbar{display:none}.sfa-nav a{padding:6px 0;flex:none}.sfa-cta{padding:8px 11px;font-size:12px}}
+/* page */
+.sfa-page{max-width:1240px;margin:0 auto;padding:14px 16px 36px}
+.sfa-crumbs{font:500 12px var(--f-ui);color:var(--muted);margin:2px 0 14px;display:flex;flex-wrap:wrap;gap:6px}
+.sfa-crumbs a{text-decoration:underline;text-underline-offset:2px;text-decoration-color:var(--line2)}
+.sfa-crumbs b{color:var(--ink);font-weight:700}
+.sfa-grid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;align-items:start}
+@media (max-width:980px){.sfa-grid{grid-template-columns:minmax(0,1fr)}}
+.sfa-titlecard{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 20px;margin-bottom:14px}
+.sfa-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.sfa-chip{font:700 11px var(--f-ui);padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--chip-ink)}
+.sfa-chip.free{background:var(--yellow);color:var(--yellow-ink)}
+.sfa-chip.hp{background:#f1eef9;color:#5a3fa0}
+.sfa-titlecard h1{font:800 clamp(1.5rem,2.6vw,2rem)/1.15 var(--f-ui);letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sfa-titlecard p{margin:6px 0 0;color:var(--muted);max-width:70ch}
+.sfa-sim{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+/* zone de simulation : le canevas et les scènes 3D prennent le style « lecteur » de la maquette */
+.sfa-sim canvas{background:#fff;border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none}
+.sfa-stage,.door-stage,.t-stage{border:1px solid var(--line)!important;border-radius:10px!important;box-shadow:none!important}
+.sfa-stage canvas,.door-stage canvas,.t-stage canvas{border:0!important;border-radius:0!important}
+/* contrôles */
+.row{gap:12px!important;margin:10px 0!important}
+.pill,.lbl,.tag{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:700 .86rem var(--f-ui)!important;color:var(--ink2)}
+.pill{white-space:normal!important}
+.row input[type=range]{flex:1;min-width:110px}
+@media (max-width:520px){.row,div:has(>input[type=range]){flex-wrap:wrap!important}
+  .row>.pill:first-child,div:has(>input[type=range])>.pill:first-child{min-width:0!important;flex:1 1 100%}
+  input[type=range]{min-width:0!important}.val{min-width:0!important}}
+.val{background:none!important;border:0!important;border-radius:0!important;padding:0!important;font:800 .92rem var(--f-ui)!important;font-variant-numeric:tabular-nums;text-align:right;color:var(--ink);white-space:nowrap}
+.btn{background:var(--paper)!important;border:1px solid var(--line2)!important;border-radius:8px!important;color:var(--ink)!important;
+  font:800 .82rem var(--f-ui)!important;letter-spacing:.005em;padding:8px 14px!important;transition:background .15s,border-color .15s;cursor:pointer}
+.btn:active{transform:translateY(1px)}
+.btn:hover{background:var(--press)!important;border-color:var(--faint)!important}
+.btn.on{background:var(--navy)!important;border-color:var(--navy)!important;color:#fff!important;box-shadow:none}
+.fml{background:var(--sel)!important;border:0!important;border-left:4px solid var(--navy)!important;border-radius:10px!important;font:600 1rem/1.75 var(--f-ui)!important;color:var(--ink);padding:12px 16px!important;margin:12px 0!important}
+.fml b,.fml strong{font-weight:800}
+.fml sub,.fml sup,.info sub,.info sup{font-size:.72em}
+.info{background:var(--bg)!important;border:1px solid var(--line)!important;border-radius:10px!important;font:600 .86rem/1.8 var(--f-ui)!important;font-variant-numeric:tabular-nums;color:var(--muted)!important;padding:10px 14px!important}
+.info b,.info strong{font-weight:800}
+select{font:600 .86rem var(--f-ui)!important;border:1px solid var(--line2)!important;border-radius:7px!important;background:var(--paper)!important;color:var(--ink)!important;padding:6px 8px!important}
+input[type=range]{-webkit-appearance:none;appearance:none;height:24px;background:linear-gradient(var(--line),var(--line)) center/100% 4px no-repeat;cursor:pointer;--pc:var(--blue)}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;border-radius:2px}
+input[type=range]::-moz-range-track{height:4px;background:transparent}
+input[type=range]::-moz-range-progress{height:4px;background:var(--pc);border-radius:2px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--pc);margin-top:-6px;box-shadow:0 1px 3px rgba(15,27,45,.25)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--pc);box-shadow:0 1px 3px rgba(15,27,45,.25)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+/* colonne latérale */
+.sfa-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sfa-list{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px}
+.sfa-list h2{font:800 13px var(--f-ui);margin:2px 4px 8px;display:flex;justify-content:space-between;gap:8px}
+.sfa-list h2 span{font-weight:600;color:var(--muted)}
+.sfa-list ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.sfa-list a{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline;padding:7px 8px;border-radius:8px;text-decoration:none;font:600 13px/1.35 var(--f-ui);color:var(--ink2)}
+.sfa-list a:hover{background:var(--press)}
+.sfa-list a.on{background:var(--sel);color:var(--chip-ink)}
+.sfa-list a i{font:800 11px var(--f-ui);font-style:normal;color:var(--faint)}
+.sfa-promo{background:var(--navy);color:#fff;border-radius:12px;padding:16px}
+.sfa-promo small{display:block;font:800 10px var(--f-ui);letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:6px}
+.sfa-promo b{display:block;font:800 16px/1.3 var(--f-ui);margin-bottom:12px}
+.sfa-promo a{display:inline-block;background:var(--yellow);color:var(--yellow-ink);font:800 12px var(--f-ui);padding:8px 12px;border-radius:7px;text-decoration:none}
+.sfa-foot{max-width:1240px;margin:0 auto;padding:16px;border-top:1px solid var(--line);font-size:.78rem;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<script>
+/* Curseurs : la couleur du curseur reprend celle de son accent-color d'origine ; remplissage gauche en couleur. */
+addEventListener('DOMContentLoaded',()=>{
+/* Curseurs : couleur reprise de accent-color, remplissage à gauche. Resynchronisé en continu pour suivre
+   les curseurs créés ou déplacés par la simulation elle-même. */
+const fill=r=>{if(!r.dataset.sfa){r.dataset.sfa=1;const c=r.style.accentColor||getComputedStyle(r).accentColor;
+    if(c&&c!=='auto')r.style.setProperty('--pc',c);}
+  const v=r.value+'|'+r.min+'|'+r.max;if(r._sv===v)return;r._sv=v;
+  const p=(r.value-r.min)/(r.max-r.min)*100;
+  r.style.background=`linear-gradient(to right,var(--pc) ${p}%,var(--rule2) ${p}%) center/100% 2px no-repeat`;};
+const all=()=>document.querySelectorAll('input[type=range]').forEach(fill);
+all();document.addEventListener('input',e=>{if(e.target.matches&&e.target.matches('input[type=range]'))fill(e.target);});
+setInterval(all,150);
+/* Contrôles écrits en style en ligne (sans classe) : on leur donne les classes du kit. */
+const st=e=>(e.getAttribute('style')||'').replace(/\s/g,'').toLowerCase();
+const isPill=e=>/border-radius:(1[6-9]|20|99)px/.test(st(e));
+document.querySelectorAll('span').forEach(sp=>{if(sp.classList.length||!isPill(sp))return;
+  const n=sp.nextElementSibling,pv=sp.previousElementSibling;
+  if(n&&n.matches('input[type=range],select,button'))sp.classList.add('pill');
+  else if(pv&&pv.matches('input[type=range],select'))sp.classList.add('val');
+  else sp.classList.add('pill');});
+document.querySelectorAll('div').forEach(d=>{if(d.classList.length)return;const s=st(d);
+  if(/border-radius:(1[6-9]|20)px/.test(s)&&/monospace/.test(s))d.classList.add(d.id==='fml'?'fml':'info');
+  else if(d.querySelector(':scope>canvas')&&/border-radius:1[0-4]px/.test(s))d.classList.add('sfa-stage');});
+const tag=b=>{const s=st(b);b.classList.toggle('on',/#185fa5|rgb\(24,95,165\)/.test(s)&&!/#fff[;f]|#ffffff|rgb\(255,255,255\)/.test(s.match(/background:[^;]+/)?.[0]||''));};
+document.querySelectorAll('button:not(.btn)').forEach(b=>{b.classList.add('btn','sfa-n');tag(b);});
+new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classList.contains('sfa-n'))tag(m.target);}))
+  .observe(document.body,{subtree:true,attributes:true,attributeFilter:['style']});
+});
+</script>
+<header class="sfa-top"><div class="in">
+  <a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a>
+  <nav class="sfa-nav"><a href="https://sciencesforall.be">SFA</a><a class="on" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">Exercices</a><a href="https://sfascienceforall-cell.github.io/simulation-test/chimie/">Chimie</a><a href="https://sciencesforall.be/concours">Prépa concours médecine</a></nav>
+  <a class="sfa-cta" href="https://sciencesforall.be/concours">Prépa concours médecine</a></div></header>
+<div class="sfa-blocus" id="sfaBlocus"><div class="in"><span class="cd">Blocus dans <b><span data-bl="w">7</span> <span data-bl="u">semaines</span></b></span><span aria-hidden="true">·</span><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/exercices/">M'entraîner →</a></div></div>
+<div class="sfa-page">
+<nav class="sfa-crumbs" aria-label="Fil d'Ariane"><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/">Simulations</a>›<a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/#PH8">Électrostatique</a>›<b>La cage de Faraday</b></nav>
+<div class="sfa-grid"><main style="min-width:0">
+<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Électrostatique</span><span class="sfa-chip free">Gratuit</span></div><h1>La cage de Faraday</h1><p>Dans le hall d’un musée, une personne se tient dans une cage métallique reliée à la terre. Approche la sphère du Van de Graaff : elle se charge, puis une étincelle frappe la cage. Les lignes de champ, calculées, s’arrêtent sur le grillage et la personne ne sent rien. Ouvre la porte : le champ entre et ses cheveux se dressent.</p></div>
+<section class="sfa-sim">
+
+<canvas id="cv" style="width:100%;height:76vh;min-height:640px;cursor:grab;touch-action:none" aria-label="Dans le hall d’un musée des sciences, une personne se tient dans une cage en grillage métallique reliée à la terre ; à côté, un générateur de Van de Graaff charge sa grosse sphère ; des étincelles frappent la cage ; les lignes de champ s’arrêtent sur le grillage et le champ reste nul à l’intérieur ; on peut ouvrir la porte de la cage"></canvas>
+
+<div class="fml" id="fml"></div>
+
+<div class="row">
+  <span class="pill">Porte de la cage</span>
+  <button class="btn on" id="dC">Fermée</button>
+  <button class="btn" id="dO">Ouverte</button>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:170px;color:#0F6E56">s &nbsp;distance sphère–cage</span>
+  <input type="range" id="sS" min="5" max="100" step="1" value="12" style="accent-color:#1D9E75;">
+  <span class="val" id="vS" style="color:#0F6E56"></span>
+</div>
+<div class="row">
+  <span class="pill" style="min-width:170px;color:#a32d2d">V<sub>max</sub> &nbsp;tension maximale</span>
+  <input type="range" id="sV" min="100" max="400" step="10" value="300" style="accent-color:#E24B4A;">
+  <span class="val" id="vV" style="color:#a32d2d"></span>
+</div>
+<div class="row">
+  <span class="pill">Afficher</span>
+  <button class="btn on" id="bL">Lignes de champ</button>
+  <button class="btn" id="bM">Carte de l’intensité du champ</button>
+  <button class="btn" id="v3">Vue de départ</button>
+  <button class="btn" id="vF">De face</button>
+</div>
+<div class="row"><span class="hint">Attrape le générateur et approche-le de la cage ; un clic sur la porte l’ouvre ou la ferme. Glisse ailleurs pour tourner autour de la scène, molette pour zoomer, et passe la souris dans le plan des lignes pour lire le champ. Sphère de 40 cm de diamètre, cage de 1,1 m × 1,2 m × 2 m reliée à la terre.</span></div>
+
+<div class="info" id="info"></div>
+
+<script>
+(function(){
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),$=id=>document.getElementById(id);
+const INK='#2c3440',RED='#E24B4A',RED_D='#a32d2d',NAVY='#1e3f8f',GRN='#0F6E56',GREY='#6f7a86',PUR='#534AB7',FLC='#d0452f';
+const EPS=8.854e-12,RS=0.20,ZS=1.5,EBD=3e6,IB=4e-6,CS=4*Math.PI*EPS*RS;  // sphère, claquage de l'air, courant de la courroie, capacité
+const CX0=0,CX1=1.1,CY=0.6,CZ=2.0,DOORW=0.35,DOORH=1.8,XP=0.62;            // cage, porte, personne
+const fr=(v,d)=>(Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d).replace('.',',').replace(/^-/,'−');
+function fSI(v,u){const a=Math.abs(v),P3=[[1e-12,'p'],[1e-9,'n'],[1e-6,'µ'],[1e-3,'m'],[1,''],[1e3,'k'],[1e6,'M']];let s=P3[0];P3.forEach(p=>{if(a>=p[0]*0.9995)s=p;});const x=v/s[0];return fr(x,Math.abs(x)>=99.95?0:Math.abs(x)>=9.995?1:2)+' '+s[1]+u;}
+let W=0,H=0,dpr=1;
+function size(){const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.round(b.width)||800,h=Math.round(b.height)||640;if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);}
+const small=()=>W<620;
+function font(w,s){return w+' '+(small()?Math.round(s*0.88):s)+'px Mulish,system-ui,sans-serif';}
+function tag(t,x,y,col,f,al){ctx.font=f||font(700,12);ctx.textAlign=al||'center';ctx.textBaseline='middle';const w=ctx.measureText(t).width,Al=al||'center';
+  const lo=Al==='left'?4:Al==='right'?w+4:w/2+4,hi=Al==='left'?W-w-4:Al==='right'?W-4:W-w/2-4;x=Math.max(lo,Math.min(hi,x));y=Math.max(9,Math.min(H-9,y));
+  ctx.lineWidth=3.5;ctx.strokeStyle='rgba(255,255,255,.93)';ctx.lineJoin='round';ctx.strokeText(t,x,y);ctx.fillStyle=col||INK;ctx.fillText(t,x,y);}
+function arrowHead(x,y,an,h,col){ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x+Math.cos(an)*h,y+Math.sin(an)*h);ctx.lineTo(x+Math.cos(an+2.5)*h,y+Math.sin(an+2.5)*h);ctx.lineTo(x+Math.cos(an-2.5)*h,y+Math.sin(an-2.5)*h);ctx.closePath();ctx.fill();}
+function poly(pts,fill,stroke,lw){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();}}
+function line(pts,col,w){ctx.strokeStyle=col;ctx.lineWidth=w||1;ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();}
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function rgb(c,k,al){const f=v=>Math.max(0,Math.min(255,Math.round(v)));return`rgba(${f(c[0]*k)},${f(c[1]*k)},${f(c[2]*k)},${al==null?1:al})`;}
+
+// =================== état ===================
+let s=0.12,Vmax=300e3,V=0,doorOpen=false,doorA=0,showL=true,showM=false,t=0,spark=null,sparkT=-1,lastSpark=null,trace=[],probe=null,hair=0,nSpark=0;
+const xs=()=>CX0-s-RS;                                   // centre de la sphère
+const Emax=(v,ss)=>v/ss*(0.8+0.94*ss/RS);                // champ maximal, formule approchée sphère–plan
+const Vspark=ss=>EBD/(0.8/ss+0.94/RS);
+
+// =================== champ : Laplace en coupe (plan y = 0) ===================
+const X0=-2.6,X1=2.4,ZT=3.0,HG=0.025,NX=Math.round((X1-X0)/HG)+1,NZ=Math.round(ZT/HG)+1;
+const Phi=new Float32Array(NX*NZ),FIX=new Uint8Array(NX*NZ),FV=new Float32Array(NX*NZ),EXg=new Float32Array(NX*NZ),EZg=new Float32Array(NX*NZ);
+let solved=false,iters=0,lines=[],gKey='';
+const id=(i,j)=>i+j*NX,gi=x=>Math.round((x-X0)/HG),gj=z=>Math.round(z/HG);
+function personNodes(set){// conducteur relié à la terre : jambes, buste, tête
+  const P=[[XP-0.1,XP+0.1,0,0.9],[XP-0.16,XP+0.16,0.9,1.45],[XP-0.05,XP+0.05,1.45,1.52]];P.forEach(([a,b,c,d])=>{for(let i=gi(a);i<=gi(b);i++)for(let j=gj(c);j<=gj(d);j++)set(i,j);});
+  const hc=[XP,1.62],hr=0.11;for(let i=gi(XP-hr);i<=gi(XP+hr);i++)for(let j=gj(1.62-hr);j<=gj(1.62+hr);j++){const x=X0+i*HG,z=j*HG;if(Math.hypot(x-hc[0],z-hc[1])<=hr)set(i,j);}}
+function buildMask(){FIX.fill(0);FV.fill(0);const set=(i,j,v)=>{if(i<0||j<0||i>=NX||j>=NZ)return;FIX[id(i,j)]=1;FV[id(i,j)]=v||0;};
+  for(let i=0;i<NX;i++){set(i,0);set(i,NZ-1);}for(let j=0;j<NZ;j++){set(0,j);set(NX-1,j);}
+  // cage : fils horizontaux coupés par le plan (tous les 10 cm) et toit
+  // cage : le grillage, à maille fine devant la cage, est traité comme une paroi conductrice continue (porte : ouverture)
+  for(let j=0;j<=gj(CZ);j++){const z=j*HG;if(!(doorOpen&&z<=DOORH+1e-6))set(gi(CX0),j);set(gi(CX1),j);}
+  for(let i=gi(CX0);i<=gi(CX1);i++)set(i,gj(CZ));
+  personNodes((i,j)=>set(i,j));
+  // socle du générateur (métal, à la terre)
+  const xc=xs();for(let i=gi(xc-0.25);i<=gi(xc+0.25);i++)for(let j=0;j<=gj(0.3);j++)set(i,j);
+  // sphère : potentiel 1 (on multiplie ensuite par V)
+  for(let i=gi(xc-RS)-1;i<=gi(xc+RS)+1;i++)for(let j=gj(ZS-RS)-1;j<=gj(ZS+RS)+1;j++){const x=X0+i*HG,z=j*HG;if(Math.hypot(x-xc,z-ZS)<=RS)set(i,j,1);}
+  for(let k=0;k<NX*NZ;k++)if(FIX[k])Phi[k]=FV[k];solved=false;iters=0;}
+function sor(n){const w=1.92;let md=0;for(let it=0;it<n;it++){md=0;for(let j=1;j<NZ-1;j++){let k=j*NX+1;for(let i=1;i<NX-1;i++,k++){if(FIX[k])continue;const v=0.25*(Phi[k-1]+Phi[k+1]+Phi[k-NX]+Phi[k+NX]),dv=v-Phi[k];Phi[k]+=w*dv;const a=dv<0?-dv:dv;if(a>md)md=a;}}iters++;}return md;}
+function grads(){for(let j=1;j<NZ-1;j++)for(let i=1;i<NX-1;i++){const k=id(i,j);EXg[k]=-(Phi[k+1]-Phi[k-1])/(2*HG);EZg[k]=-(Phi[k+NX]-Phi[k-NX])/(2*HG);}}
+function sample(A,x,z){const fx=(x-X0)/HG,fz=z/HG,i=Math.floor(fx),j=Math.floor(fz);if(i<1||j<1||i>=NX-2||j>=NZ-2)return 0;const u=fx-i,v=fz-j,k=id(i,j);
+  return A[k]*(1-u)*(1-v)+A[k+1]*u*(1-v)+A[k+NX]*(1-u)*v+A[k+NX+1]*u*v;}
+function Eunit(x,z){return[sample(EXg,x,z),sample(EZg,x,z)];}
+function fixedAt(x,z){const i=Math.round((x-X0)/HG),j=Math.round(z/HG);if(i<0||j<0||i>=NX||j>=NZ)return true;return FIX[id(i,j)]&&FV[id(i,j)]===0;}
+// lignes de champ : départs répartis selon le flux sur la sphère (densité des lignes ∝ E)
+function traceLines(){const xc=xs(),rs=RS+HG*1.6,N=360,fl=[];let tot=0;for(let k=0;k<N;k++){const a=k/N*2*Math.PI,x=xc+rs*Math.cos(a),z=ZS+rs*Math.sin(a),[ex,ez]=Eunit(x,z),f=Math.max(0,ex*Math.cos(a)+ez*Math.sin(a));tot+=f;fl.push(tot);}
+  const nl=small()?22:30,L=[];let k=0;for(let m=0;m<nl;m++){const target=(m+0.5)/nl*tot;while(k<N-1&&fl[k]<target)k++;const a=k/N*2*Math.PI;let x=xc+rs*Math.cos(a),z=ZS+rs*Math.sin(a);const pts=[[x,z]];
+    for(let st=0;st<900;st++){let [ex,ez]=Eunit(x,z),e=Math.hypot(ex,ez);if(e<1e-4)break;const h=0.012,mx=x+0.5*h*ex/e,mz=z+0.5*h*ez/e;[ex,ez]=Eunit(mx,mz);e=Math.hypot(ex,ez);if(e<1e-4)break;x+=h*ex/e;z+=h*ez/e;pts.push([x,z]);if(z<=HG*0.6||fixedAt(x,z)||x<X0+HG||x>X1-HG||z>ZT-HG)break;}
+    L.push(pts);}lines=L;}
+function stepSolver(){if(solved)return;const md=sor(small()?30:45);grads();if(md<2e-6||iters>2500){solved=true;}traceLines();}
+
+// =================== caméra ===================
+let yaw=0.32,pitch=0.16,zoom=1,viewT=null,GH=0,C={},placed=false;
+function cam(){if(!placed&&W>0){placed=true;if(small()){yaw=0.25;}}
+  GH=Math.round(small()?110:120);const sh=H-GH;const k=Math.min(W*0.95/(small()?2.4:2.9),sh*0.8/2.3)*zoom,Dc=6.5;
+  C={Dc,f:k*Dc,cx:W*0.5,cy:sh*(small()?0.56:0.54),xc:small()?0.0:-0.1,zc:1.08,cyw:Math.cos(yaw),syw:Math.sin(yaw),cp:Math.cos(pitch),sp:Math.sin(pitch)};}
+function pr(x,y,z){x-=C.xc;z-=C.zc;const xr=x*C.cyw-y*C.syw,yr=x*C.syw+y*C.cyw,dep=C.Dc+yr*C.cp-z*C.sp,k=C.f/Math.max(0.05,dep);return[C.cx+xr*k,C.cy-(z*C.cp+yr*C.sp)*k,dep,k];}
+function camPos(){return[C.xc-C.Dc*C.cp*C.syw,-C.Dc*C.cp*C.cyw,C.Dc*C.sp+C.zc];}
+function unprojY0(X,Y){const u=(X-C.cx)/C.f,v=(C.cy-Y)/C.f,a11=C.cyw-u*C.syw*C.cp,a12=u*C.sp,a21=C.syw*C.sp-v*C.syw*C.cp,a22=C.cp+v*C.sp,b1=u*C.Dc,b2=v*C.Dc,det=a11*a22-a12*a21;
+  if(Math.abs(det)<1e-9)return null;const xp=(b1*a22-a12*b2)/det,zp=(a11*b2-a21*b1)/det;return[xp+C.xc,zp+C.zc];}
+const LIGHT=(()=>{const v=[-0.4,-0.6,0.7],n=Math.hypot(...v);return v.map(x=>x/n);})();
+function lit(n){return Math.max(0,n[0]*LIGHT[0]+n[1]*LIGHT[1]+n[2]*LIGHT[2]);}
+function box(x0,x1,y0,y1,z0,z1,col,edge){const cp=camPos(),F=[
+  [[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1],[0,0,1]],[[x0,y0,z0],[x1,y0,z0],[x1,y0,z1],[x0,y0,z1],[0,-1,0]],[[x0,y1,z0],[x0,y1,z1],[x1,y1,z1],[x1,y1,z0],[0,1,0]],
+  [[x0,y0,z0],[x0,y0,z1],[x0,y1,z1],[x0,y1,z0],[-1,0,0]],[[x1,y0,z0],[x1,y1,z0],[x1,y1,z1],[x1,y0,z1],[1,0,0]]];
+  const c=[(x0+x1)/2,(y0+y1)/2,(z0+z1)/2],hf=[(x1-x0)/2,(y1-y0)/2,(z1-z0)/2];
+  F.forEach(f=>{const n=f[4],fc=[c[0]+n[0]*hf[0],c[1]+n[1]*hf[1],c[2]+n[2]*hf[2]];if(n[0]*(cp[0]-fc[0])+n[1]*(cp[1]-fc[1])+n[2]*(cp[2]-fc[2])<=0)return;
+    const Q=f.slice(0,4).map(v=>pr(...v)),l=0.62+0.5*lit(n);poly(Q,rgb(col,l),edge||rgb(col,l*0.78),1);});}
+function shadowEll(x,y,rx,ry,al){const pts=[];for(let i=0;i<28;i++){const a=i/28*2*Math.PI;pts.push(pr(x+rx*Math.cos(a),y+ry*Math.sin(a),0.002));}poly(pts,`rgba(10,15,25,${al})`);}
+
+// =================== décor : hall de musée ===================
+function hall(){const sh=H-GH;let g=ctx.createLinearGradient(0,0,0,sh);g.addColorStop(0,'#3b4656');g.addColorStop(1,'#56637a');ctx.fillStyle=g;ctx.fillRect(0,0,W,sh);
+  const WY=1.6,wq=[pr(-4,WY,0),pr(4,WY,0),pr(4,WY,3.4),pr(-4,WY,3.4)];g=ctx.createLinearGradient(0,wq[2][1],0,wq[0][1]);g.addColorStop(0,'#5a6a80');g.addColorStop(1,'#788aa2');poly(wq,g);
+  ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=2;for(let x=-4;x<=4;x+=0.8){const a=pr(x,WY,0),b=pr(x,WY,3.4);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
+  // panneau « haute tension »
+  const p0=pr(-1.75,WY-0.01,1.45),p1=pr(-0.95,WY-0.01,1.45),p2=pr(-0.95,WY-0.01,1.05),p3=pr(-1.75,WY-0.01,1.05);poly([p0,p1,p2,p3],'#f2c230','#3a2e05',1.5);
+  const pc=pr(-1.35,WY-0.01,1.25),fs=Math.max(8,Math.min(15,(p1[0]-p0[0])*0.11));ctx.font='900 '+fs+'px Mulish,system-ui,sans-serif';ctx.fillStyle='#1c1602';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('⚡ HAUTE TENSION',pc[0],pc[1]);
+  // sol ciré
+  const fq=[pr(-4,-3,0),pr(4,-3,0),pr(4,WY,0),pr(-4,WY,0)];g=ctx.createLinearGradient(0,Math.min(fq[2][1],fq[3][1]),0,Math.max(fq[0][1],fq[1][1]));g.addColorStop(0,'#8c8577');g.addColorStop(1,'#6b6457');poly(fq,g);
+  ctx.save();poly(fq);ctx.clip();ctx.strokeStyle='rgba(0,0,0,.14)';ctx.lineWidth=1;for(let y=-3;y<=WY;y+=0.5){const a=pr(-4,y,0),b=pr(4,y,0);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}
+  for(let x=-4;x<=4;x+=0.5){const a=pr(x,-3,0),b=pr(x,WY,0);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke();}ctx.restore();}
+
+// =================== générateur de Van de Graaff ===================
+function vdg(){const xc=xs(),sp=pr(xc,0,ZS),k=sp[3],r=RS*k;
+  shadowEll(xc+0.05,0.05,0.42,0.32,0.3);box(xc-0.25,xc+0.25,-0.25,0.25,0,0.3,[92,100,112]);
+  const sw=pr(xc-0.1,-0.251,0.18);ctx.fillStyle='#d23a32';ctx.beginPath();ctx.arc(sw[0],sw[1],Math.max(2.5,0.025*k),0,7);ctx.fill();
+  // colonne isolante transparente et courroie qui défile
+  const c0=pr(xc,0,0.3),c1=pr(xc,0,ZS-RS*0.85),cw=0.07*k;let g=ctx.createLinearGradient(c0[0]-cw,0,c0[0]+cw,0);g.addColorStop(0,'rgba(180,200,215,.55)');g.addColorStop(0.35,'rgba(245,250,255,.75)');g.addColorStop(1,'rgba(150,170,190,.6)');
+  ctx.fillStyle=g;ctx.fillRect(c0[0]-cw,c1[1],2*cw,c0[1]-c1[1]);ctx.strokeStyle='rgba(90,110,130,.6)';ctx.lineWidth=1;ctx.strokeRect(c0[0]-cw,c1[1],2*cw,c0[1]-c1[1]);
+  [-0.4,0.4].forEach((o,ii)=>{ctx.strokeStyle='#3a3226';ctx.lineWidth=Math.max(2,0.03*k);ctx.beginPath();ctx.moveTo(c0[0]+o*cw,c0[1]);ctx.lineTo(c1[0]+o*cw,c1[1]);ctx.stroke();
+    ctx.strokeStyle='rgba(255,220,160,.6)';ctx.lineWidth=1;ctx.setLineDash([4,8]);ctx.lineDashOffset=(ii?1:-1)*t*40;ctx.beginPath();ctx.moveTo(c0[0]+o*cw,c0[1]);ctx.lineTo(c1[0]+o*cw,c1[1]);ctx.stroke();ctx.setLineDash([]);});
+  // sphère métallique
+  const glow=V/Vspark(s);if(glow>0.6){const gg=ctx.createRadialGradient(sp[0],sp[1],r,sp[0],sp[1],r*1.5);gg.addColorStop(0,'rgba(170,190,255,'+(0.35*(glow-0.6))+')');gg.addColorStop(1,'rgba(170,190,255,0)');ctx.fillStyle=gg;ctx.beginPath();ctx.arc(sp[0],sp[1],r*1.5,0,7);ctx.fill();}
+  g=ctx.createRadialGradient(sp[0]-r*0.4,sp[1]-r*0.45,r*0.08,sp[0],sp[1],r);g.addColorStop(0,'#ffffff');g.addColorStop(0.25,'#dfe5ec');g.addColorStop(0.7,'#8b97a6');g.addColorStop(1,'#4c5664');
+  ctx.fillStyle=g;ctx.beginPath();ctx.arc(sp[0],sp[1],r,0,7);ctx.fill();ctx.strokeStyle='rgba(40,50,60,.6)';ctx.lineWidth=1;ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,.35)';ctx.lineWidth=1.2;ctx.beginPath();ctx.ellipse(sp[0],sp[1]+r*0.55,r*0.82,r*0.18,0,0,Math.PI);ctx.stroke();
+  // charges + sur la sphère (leur nombre suit V)
+  const n=Math.round(14*V/300e3);for(let i=0;i<n;i++){const a=-Math.PI*0.95+i*(Math.PI*1.9)/Math.max(1,n-1)*1,rr2=r*0.78,px=sp[0]+Math.cos(a)*rr2,py=sp[1]+Math.sin(a)*rr2*0.85;
+    ctx.fillStyle='rgba(210,58,50,.9)';ctx.beginPath();ctx.arc(px,py,Math.max(2.4,r*0.07),0,7);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.2;const q=Math.max(1.4,r*0.04);ctx.beginPath();ctx.moveTo(px-q,py);ctx.lineTo(px+q,py);ctx.moveTo(px,py-q);ctx.lineTo(px,py+q);ctx.stroke();}
+  return sp;}
+
+// =================== la cage ===================
+const MESH=0.1;
+function faceMesh(P,Q,R,nu,nv,col,w,skip){// quadrillage d'une face P(u=0,v=0) Q(u=1) R(v=1)
+  ctx.strokeStyle=col;ctx.lineWidth=w;ctx.beginPath();
+  for(let i=0;i<=nu;i++){const u=i/nu;for(let j=0;j<nv;j++){const v0=j/nv,v1=(j+1)/nv,pa=[P[0]+(Q[0]-P[0])*u+(R[0]-P[0])*v0,P[1]+(Q[1]-P[1])*u+(R[1]-P[1])*v0,P[2]+(Q[2]-P[2])*u+(R[2]-P[2])*v0],pb=[P[0]+(Q[0]-P[0])*u+(R[0]-P[0])*v1,P[1]+(Q[1]-P[1])*u+(R[1]-P[1])*v1,P[2]+(Q[2]-P[2])*u+(R[2]-P[2])*v1];
+    if(skip&&skip(pa,pb))continue;const a=pr(...pa),b=pr(...pb);ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);}}
+  for(let j=0;j<=nv;j++){const v=j/nv;for(let i=0;i<nu;i++){const u0=i/nu,u1=(i+1)/nu,pa=[P[0]+(Q[0]-P[0])*u0+(R[0]-P[0])*v,P[1]+(Q[1]-P[1])*u0+(R[1]-P[1])*v,P[2]+(Q[2]-P[2])*u0+(R[2]-P[2])*v],pb=[P[0]+(Q[0]-P[0])*u1+(R[0]-P[0])*v,P[1]+(Q[1]-P[1])*u1+(R[1]-P[1])*v,P[2]+(Q[2]-P[2])*u1+(R[2]-P[2])*v];
+    if(skip&&skip(pa,pb))continue;const a=pr(...pa),b=pr(...pb);ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);}}ctx.stroke();}
+function tube(a,b,w,col){const p=pr(...a),q=pr(...b),k=(p[3]+q[3])/2,lw=Math.max(2,w*k);[[1,0.62],[0.6,1.0],[0.25,1.4]].forEach(([f,sh],i)=>{ctx.strokeStyle=rgb(col,sh);ctx.lineWidth=lw*f;ctx.lineCap='round';const o=i?-(1-f)*lw*0.4:0;ctx.beginPath();ctx.moveTo(p[0]+o,p[1]+o);ctx.lineTo(q[0]+o,q[1]+o);ctx.stroke();});}
+const inDoor=(p)=>p[0]<CX0+1e-6&&Math.abs(p[1])<DOORW+1e-6&&p[2]<DOORH+1e-6;
+function cageFaces(){return[
+  {n:[-1,0,0],c:[CX0,0,CZ/2],P:[CX0,-CY,0],Q:[CX0,CY,0],R:[CX0,-CY,CZ],nu:12,nv:20,door:true},{n:[1,0,0],c:[CX1,0,CZ/2],P:[CX1,-CY,0],Q:[CX1,CY,0],R:[CX1,-CY,CZ],nu:12,nv:20},
+  {n:[0,-1,0],c:[(CX0+CX1)/2,-CY,CZ/2],P:[CX0,-CY,0],Q:[CX1,-CY,0],R:[CX0,-CY,CZ],nu:11,nv:20},{n:[0,1,0],c:[(CX0+CX1)/2,CY,CZ/2],P:[CX0,CY,0],Q:[CX1,CY,0],R:[CX0,CY,CZ],nu:11,nv:20},
+  {n:[0,0,1],c:[(CX0+CX1)/2,0,CZ],P:[CX0,-CY,CZ],Q:[CX1,-CY,CZ],R:[CX0,CY,CZ],nu:11,nv:12}];}
+function cagePart(front){const cp=camPos(),col='rgba(70,78,88,'+(front?0.75:0.55)+')';
+  cageFaces().forEach(F=>{const vis=F.n[0]*(cp[0]-F.c[0])+F.n[1]*(cp[1]-F.c[1])+F.n[2]*(cp[2]-F.c[2])>0;if(vis!==front)return;
+    if(!front){poly([pr(...F.P),pr(...[F.Q[0],F.Q[1],F.Q[2]]),pr(F.Q[0]+F.R[0]-F.P[0],F.Q[1]+F.R[1]-F.P[1],F.Q[2]+F.R[2]-F.P[2]),pr(...F.R)],'rgba(40,48,60,.10)');}
+    faceMesh(F.P,F.Q,F.R,F.nu,F.nv,col,front?1.1:0.9,F.door?(a,b)=>inDoor(a)&&inDoor(b):null);});
+  // cadre en tubes
+  if(front){const E=[[[CX0,-CY,0],[CX0,-CY,CZ]],[[CX1,-CY,0],[CX1,-CY,CZ]],[[CX0,CY,0],[CX0,CY,CZ]],[[CX1,CY,0],[CX1,CY,CZ]],[[CX0,-CY,CZ],[CX1,-CY,CZ]],[[CX0,CY,CZ],[CX1,CY,CZ]],[[CX0,-CY,CZ],[CX0,CY,CZ]],[[CX1,-CY,CZ],[CX1,CY,CZ]],
+      [[CX0,-CY,0.01],[CX1,-CY,0.01]],[[CX0,CY,0.01],[CX1,CY,0.01]],[[CX0,-CY,0.01],[CX0,CY,0.01]],[[CX1,-CY,0.01],[CX1,CY,0.01]],[[CX0,-DOORW,0],[CX0,-DOORW,DOORH]],[[CX0,DOORW,0],[CX0,DOORW,DOORH]],[[CX0,-DOORW,DOORH],[CX0,DOORW,DOORH]]];
+    E.forEach(([a,b])=>tube(a,b,0.025,[120,128,138]));}}
+function door(){// battant grillagé, charnière en y = +DOORW, s'ouvre vers l'intérieur de la cage (le long de la paroi du fond)
+  const an=doorA*1.45,L=2*DOORW,h=[CX0,DOORW],e=[h[0]+Math.sin(an)*L,h[1]-Math.cos(an)*L],P=[h[0],h[1],0],Q=[e[0],e[1],0],R=[h[0],h[1],DOORH];
+  faceMesh(P,Q,R,7,18,'rgba(70,78,88,.8)',1.1);[[P,Q],[R,[e[0],e[1],DOORH]],[P,R],[Q,[e[0],e[1],DOORH]]].forEach(([a,b])=>tube(a,b,0.02,[150,120,60]));
+  const hd=pr(e[0]+Math.cos(an)*0.0,e[1]+0.06*Math.cos(an),1.0);ctx.fillStyle='#e2b23a';ctx.beginPath();ctx.arc(hd[0],hd[1],Math.max(2.5,0.02*hd[3]),0,7);ctx.fill();}
+function ground(){const a=[CX1,CY*0.6,0.02],b=[CX1+0.35,CY*0.6,0.0];const p=pr(...a),q=pr(...b);ctx.strokeStyle='#2f8f3a';ctx.lineWidth=Math.max(2,0.012*p[3]);ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(q[0],q[1]);ctx.stroke();
+  ctx.strokeStyle='#e8d23a';ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([]);const g=pr(CX1+0.38,CY*0.6,0);ctx.fillStyle='#585f66';ctx.fillRect(g[0]-6,g[1]-3,12,6);
+  if(!small())tag('liaison à la terre',q[0]+8,q[1]+14,'#1f5f2a',font(800,11),'left');}
+
+// =================== la personne dans la cage ===================
+function person(){const base=pr(XP,0,0),s_=base[3],M=(x,z)=>[base[0]+x*s_,base[1]-z*s_];
+  const SK='#f0c4a0',SKD='#d39c76',limb=(pts,w,col)=>{ctx.strokeStyle=col;ctx.lineWidth=w*s_;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();pts.forEach((p,i)=>{const q=M(p[0],p[1]);i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);});ctx.stroke();};
+  ctx.fillStyle='rgba(10,15,25,.25)';ctx.beginPath();ctx.ellipse(base[0],base[1],0.28*s_,0.04*s_,0,0,7);ctx.fill();
+  limb([[0.03,0.92],[0.05,0.48],[0.05,0.07]],0.1,'#28354f');limb([[-0.03,0.92],[-0.06,0.48],[-0.05,0.07]],0.105,'#33446a');
+  [[0.05,'#3c2f28'],[-0.05,'#4a3a30']].forEach(([x,c])=>{const a=M(x-0.13,0.07),b=M(x+0.05,0);ctx.fillStyle=c;rr(a[0],a[1],b[0]-a[0],b[1]-a[1],0.025*s_);ctx.fill();});
+  limb([[0.04,1.4],[0.08,1.13],[0.07,0.9]],0.075,'#1f8a73');limb([[0.07,0.9],[0.07,0.86]],0.06,SKD);
+  const t0=M(-0.15,0.86),t1=M(0.15,1.45);let g=ctx.createLinearGradient(t0[0],0,t1[0],0);g.addColorStop(0,'#1f9e85');g.addColorStop(0.6,'#36c2a4');g.addColorStop(1,'#178069');ctx.fillStyle=g;
+  ctx.beginPath();[[-0.15,0.86],[0.15,0.86],[0.16,1.2],[0.12,1.45],[-0.11,1.46],[-0.15,1.2]].forEach((p,i)=>{const q=M(p[0],p[1]);i?ctx.lineTo(q[0],q[1]):ctx.moveTo(q[0],q[1]);});ctx.closePath();ctx.fill();
+  limb([[0.0,1.47],[-0.01,1.54]],0.075,SKD);
+  // cheveux : ils se dressent quand le champ atteint la tête
+  const hc=M(-0.01,1.63),r=0.1*s_;ctx.strokeStyle='#4a2e1c';ctx.lineCap='round';for(let i=0;i<17;i++){const a0=Math.PI*(1.0+1.0*i/16),b2=[hc[0]+Math.cos(a0)*r*0.85,hc[1]+Math.sin(a0)*r*0.85],len=r*(0.3+1.0*hair)+Math.sin(t*23+i*1.7)*hair*r*0.07;
+    ctx.lineWidth=Math.max(1.4,0.02*s_);ctx.beginPath();ctx.moveTo(b2[0],b2[1]);ctx.lineTo(b2[0]+Math.cos(a0)*len,b2[1]+Math.sin(a0)*len);ctx.stroke();}
+  g=ctx.createRadialGradient(hc[0]-r*0.35,hc[1]-r*0.3,r*0.2,hc[0],hc[1],r);g.addColorStop(0,'#f7d7bb');g.addColorStop(1,SKD);ctx.fillStyle=g;ctx.beginPath();ctx.arc(hc[0],hc[1],r,0,7);ctx.fill();
+  ctx.fillStyle='#4a2e1c';ctx.beginPath();ctx.arc(hc[0]+r*0.12,hc[1]-r*0.15,r*0.97,Math.PI*1.08,Math.PI*2.2);ctx.closePath();ctx.fill();
+  const n=M(-0.11,1.625);ctx.fillStyle=SKD;ctx.beginPath();ctx.moveTo(n[0],n[1]-0.02*s_);ctx.lineTo(n[0]-0.025*s_,n[1]+0.012*s_);ctx.lineTo(n[0],n[1]+0.016*s_);ctx.fill();
+  const ey=M(-0.07,1.65);ctx.fillStyle='#2c3440';ctx.beginPath();ctx.arc(ey[0],ey[1],Math.max(1.1,0.011*s_),0,7);ctx.fill();
+  const mo=M(-0.085,1.585);ctx.strokeStyle='#9a5440';ctx.lineWidth=Math.max(1,0.008*s_);ctx.beginPath();ctx.arc(mo[0]+0.012*s_,mo[1]-0.012*s_,0.02*s_,Math.PI*0.55,Math.PI*1.0);ctx.stroke();
+  // bras levé, la paume vers le grillage
+  limb([[-0.03,1.4],[-0.2,1.3],[-0.3,1.52]],0.075,'#1f9e85');limb([[-0.28,1.47],[-0.33,1.6]],0.06,SK);
+  const hd=M(-0.34,1.63);ctx.fillStyle=SK;ctx.beginPath();ctx.ellipse(hd[0],hd[1],0.035*s_,0.05*s_,-0.3,0,7);ctx.fill();}
+
+// =================== champ dessiné ===================
+function drawLines(){if(!showL||!lines.length||V<1)return;const al=Math.min(1,0.25+V/Vspark(s));ctx.lineJoin='round';ctx.lineCap='round';
+  lines.forEach(L=>{const P=L.map(([x,z])=>pr(x,0,z));ctx.globalAlpha=al;ctx.strokeStyle='rgba(255,255,255,.55)';ctx.lineWidth=3.2;ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();
+    ctx.strokeStyle=FLC;ctx.lineWidth=1.6;ctx.stroke();let acc=0;for(let i=1;i<P.length;i++){acc+=Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]);if(acc>70){acc=0;arrowHead(P[i][0],P[i][1],Math.atan2(P[i][1]-P[i-1][1],P[i][0]-P[i-1][0]),6,FLC);}}
+    const lz=L[L.length-1];if(lz[0]>X0+0.1&&lz[0]<X1-0.1&&lz[1]<ZT-0.1){const e=P[P.length-1];ctx.fillStyle='#2a62d6';ctx.beginPath();ctx.arc(e[0],e[1],2.4,0,7);ctx.fill();}ctx.globalAlpha=1;});}
+// carte de |E| sur le plan de coupe (tuiles affines)
+const NMX=160,NMZ=120,offm=document.createElement('canvas');offm.width=NMX;offm.height=NMZ;const octx=offm.getContext('2d'),img=octx.createImageData(NMX,NMZ);let mKey='';
+const CM=[[0,[250,250,252]],[0.25,[255,230,180]],[0.5,[250,170,90]],[0.75,[225,85,50]],[1,[120,20,30]]];
+function cmap(v){for(let i=1;i<CM.length;i++)if(v<=CM[i][0]){const [a,ca]=CM[i-1],[b,cb]=CM[i],u=(v-a)/(b-a);return[ca[0]+(cb[0]-ca[0])*u,ca[1]+(cb[1]-ca[1])*u,ca[2]+(cb[2]-ca[2])*u];}return CM[CM.length-1][1];}
+const MX0=-1.4,MX1=1.4,MZ1=2.4;
+function buildMap(){const key=iters+'|'+s+'|'+doorOpen;if(key===mKey)return;mKey=key;const d=img.data;
+  for(let j=0;j<NMZ;j++){const z=MZ1-(j+0.5)/NMZ*MZ1;for(let i=0;i<NMX;i++){const x=MX0+(i+0.5)/NMX*(MX1-MX0),[ex,ez]=Eunit(x,z),e=Math.hypot(ex,ez),v=Math.max(0,Math.min(1,Math.log10(e/0.01+1e-9)/2.6)),c=cmap(v),p=(i+j*NMX)*4;
+    d[p]=c[0];d[p+1]=c[1];d[p+2]=c[2];d[p+3]=170;}}octx.putImageData(img,0,0);}
+function drawMap(){if(!showM)return;buildMap();const TX=16,TZ=12,tw=NMX/TX,th=NMZ/TZ;
+  for(let j=0;j<TZ;j++)for(let i=0;i<TX;i++){const x0=MX0+i*(MX1-MX0)/TX,z0=MZ1-j*MZ1/TZ,p00=pr(x0,0,z0),p10=pr(x0+(MX1-MX0)/TX,0,z0),p01=pr(x0,0,z0-MZ1/TZ);
+    const a=(p10[0]-p00[0])/tw,b=(p10[1]-p00[1])/tw,c=(p01[0]-p00[0])/th,d=(p01[1]-p00[1])/th;ctx.save();ctx.setTransform(a*dpr,b*dpr,c*dpr,d*dpr,p00[0]*dpr,p00[1]*dpr);ctx.drawImage(offm,i*tw,j*th,tw,th,-0.3,-0.3,tw+0.6,th+0.6);ctx.restore();}}
+function drawSpark(){if(sparkT<=0||!spark)return;const al=Math.min(1,sparkT*4),a=pr(...spark.a),b=pr(...spark.b);ctx.save();ctx.fillStyle='rgba(225,235,255,'+(0.28*al)+')';ctx.fillRect(0,0,W,H-GH);ctx.globalAlpha=al;
+  const path=()=>{ctx.beginPath();ctx.moveTo(a[0],a[1]);for(let i=1;i<9;i++){const u=i/9;ctx.lineTo(a[0]+(b[0]-a[0])*u+spark.j[i]*0.6,a[1]+(b[1]-a[1])*u+spark.j[i+9]*0.5);}ctx.lineTo(b[0],b[1]);};
+  [[14,'rgba(120,160,255,.35)'],[6,'rgba(180,205,255,.85)'],[2.6,'#ffffff']].forEach(([w,c])=>{ctx.strokeStyle=c;ctx.lineWidth=w;ctx.lineJoin='round';path();ctx.stroke();});
+  const gl=ctx.createRadialGradient(b[0],b[1],1,b[0],b[1],40);gl.addColorStop(0,'rgba(255,255,255,.9)');gl.addColorStop(1,'rgba(170,200,255,0)');ctx.fillStyle=gl;ctx.beginPath();ctx.arc(b[0],b[1],40,0,7);ctx.fill();ctx.restore();}
+
+// =================== courbe V(t) ===================
+function vGraph(){const y0=H-GH;ctx.fillStyle='#fff';ctx.fillRect(0,y0,W,GH);ctx.strokeStyle='#d3d9e2';ctx.beginPath();ctx.moveTo(0,y0+0.5);ctx.lineTo(W,y0+0.5);ctx.stroke();
+  const x0=small()?40:52,w=W-x0-(small()?14:24),gy=y0+28,h=GH-44,Y=v=>gy+h-v/400e3*h;
+  ctx.strokeStyle='#c2cad4';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x0,gy);ctx.lineTo(x0,gy+h);ctx.lineTo(x0+w,gy+h);ctx.stroke();
+  ctx.font=font(600,10);ctx.fillStyle=GREY;ctx.textAlign='right';ctx.textBaseline='middle';[0,200,400].forEach(v=>ctx.fillText(String(v),x0-4,Y(v*1e3)));
+  const vs=Vspark(s);if(vs<400e3){ctx.setLineDash([5,4]);ctx.strokeStyle=RED_D;ctx.beginPath();ctx.moveTo(x0,Y(vs));ctx.lineTo(x0+w,Y(vs));ctx.stroke();ctx.setLineDash([]);ctx.font=font(700,10.5);ctx.fillStyle=RED_D;ctx.textAlign='right';ctx.fillText('seuil d’étincelle '+fr(vs/1e3,0)+' kV',x0+w-2,Y(vs)-8);}
+  ctx.strokeStyle='#2f55d4';ctx.lineWidth=2.2;ctx.beginPath();trace.forEach((v,i)=>{const x=x0+w*i/299;i?ctx.lineTo(x,Y(v)):ctx.moveTo(x,Y(v));});ctx.stroke();
+  ctx.font=font(800,11.5);ctx.textAlign='left';ctx.fillStyle='#2f55d4';ctx.fillText(small()?'tension V de la sphère (kV)':'tension de la sphère V (kV) : la courroie la charge, l’étincelle la décharge',x0+2,y0+14);}
+
+// =================== dessin ===================
+function headField(){const[ex,ez]=Eunit(XP-0.2,1.62);return Math.hypot(ex,ez)*V;}
+function outField(){const[ex,ez]=Eunit(CX0-0.06,1.62);return Math.hypot(ex,ez)*V;}
+function draw(){size();cam();ctx.clearRect(0,0,W,H);const sh=H-GH;ctx.save();ctx.beginPath();ctx.rect(0,0,W,sh);ctx.clip();
+  hall();shadowEll((CX0+CX1)/2,0,0.75,0.75,0.18);
+  const cp=camPos(),vdgFirst=pr(xs(),0,0)[2]>pr((CX0+CX1)/2,0,0)[2];
+  if(vdgFirst)vdg();
+  cagePart(false);drawMap();ground();
+  const an=doorA*1.45,dc=[CX0+Math.sin(an)*DOORW,DOORW-Math.cos(an)*DOORW],doorBehind=pr(dc[0],dc[1],1)[2]>pr(XP,0,1)[2];
+  if(doorBehind)door();person();drawLines();if(!doorBehind)door();cagePart(true);
+  if(!vdgFirst)vdg();drawSpark();
+  // étiquettes
+  const sp=pr(xs(),0,ZS+RS);tag('V = '+fr(V/1e3,0)+' kV',sp[0],sp[1]-14,RED_D,font(800,13));
+  const gap0=pr(xs()+RS,0,ZS-RS-0.06),gap1=pr(CX0,0,ZS-RS-0.06);ctx.strokeStyle=GRN;ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(gap0[0],gap0[1]);ctx.lineTo(gap1[0],gap1[1]);ctx.stroke();
+  [gap0,gap1].forEach(p=>{ctx.beginPath();ctx.moveTo(p[0],p[1]-5);ctx.lineTo(p[0],p[1]+5);ctx.stroke();});tag('s = '+fr(s*100,0)+' cm',(gap0[0]+gap1[0])/2,gap0[1]+12,GRN,font(800,11.5));
+  const ehead=headField(),eo=outField(),ratio=eo>0?ehead/eo:0,hp=pr(XP,0,2.12);
+  tag(doorOpen?'devant le visage : E ≈ '+fSI(ehead,'V/m'):'dans la cage : E = 0',hp[0],hp[1]-6,doorOpen?RED_D:GRN,font(800,12.5));
+  if(probe&&!probe.off){const [ex,ez]=Eunit(probe[0],probe[1]),e=Math.hypot(ex,ez)*V,p=pr(probe[0],0,probe[1]);ctx.fillStyle=PUR;ctx.beginPath();ctx.arc(p[0],p[1],4,0,7);ctx.fill();
+    if(e>1){const L=26,an=Math.atan2(-ez,ex);ctx.strokeStyle=PUR;ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(p[0],p[1]);ctx.lineTo(p[0]+Math.cos(an)*L,p[1]+Math.sin(an)*L);ctx.stroke();arrowHead(p[0]+Math.cos(an)*L,p[1]+Math.sin(an)*L,an,7,PUR);}
+    tag('E ≈ '+(e<1?'0':fSI(e,'V/m')),p[0]+10,p[1]-16,PUR,font(800,12),'left');}
+  // panneau
+  const em=Emax(V,s),lns=[['Sphère : V = '+fr(V/1e3,0)+' kV · Q ≈ C·V (C de la sphère seule) = '+fSI(CS*V,'C'),RED_D],['champ maximal près de la sphère ≈ '+fr(em/1e6,2)+' MV/m (l’air claque à 3 MV/m)',em>EBD*0.9?RED_D:INK],
+    [doorOpen?'porte ouverte : dans la cage, E ≈ '+fr(ratio*100,0)+' % du champ devant la cage':'cage fermée : E = 0 à l’intérieur',doorOpen?RED_D:GRN]];
+  ctx.font=font(800,12.5);let bw=0;lns.forEach(l=>bw=Math.max(bw,ctx.measureText(l[0]).width));bw=Math.min(W-16,bw+22);const lh=small()?17:19;
+  ctx.fillStyle='rgba(255,255,255,.93)';rr(8,8,bw,lh*lns.length+10,8);ctx.fill();
+  lns.forEach((l,i)=>{ctx.textAlign='left';ctx.textBaseline='middle';ctx.fillStyle=l[1];let f=12.5;ctx.font=font(800,f);while(ctx.measureText(l[0]).width>bw-18&&f>8){f-=0.5;ctx.font=font(800,f);}ctx.fillText(l[0],18,8+lh*0.5+5+i*lh);});
+  if(showM&&!small()){const lx=W-200,ly=8+lh*lns.length+20;const g=ctx.createLinearGradient(lx,0,lx+150,0);CM.forEach(([u,c])=>g.addColorStop(u,`rgb(${c[0]},${c[1]},${c[2]})`));ctx.fillStyle=g;ctx.fillRect(lx,ly,150,10);tag('|E| faible',lx,ly+20,INK,font(700,10.5),'left');tag('intense',lx+150,ly+20,INK,font(700,10.5),'right');}
+  if(!solved)tag('calcul du champ…',W-12,sh-14,GREY,font(700,11),'right');
+  ctx.restore();vGraph();}
+
+// =================== textes ===================
+$('fml').innerHTML='Dans un conducteur à l’équilibre, le champ est nul : les charges libres se déplacent jusqu’à l’annuler. Une cage métallique fermée (même en grillage, si la maille est petite) se comporte de même : les charges induites se placent <b>sur sa face extérieure</b>, les lignes de champ <b>s’arrêtent sur le grillage</b> et <b>E = 0 à l’intérieur</b>, quelle que soit la tension dehors. C’est la <b>cage de Faraday</b>. La sphère du générateur, de capacité <b>C = 4πε₀r</b>, se charge jusqu’à ce que le champ près d’elle atteigne environ 3 MV/m : l’air devient conducteur et une étincelle frappe la cage.';
+function info(){const vs=Vspark(s),hf=headField(),eo=outField();let t2='Sphère de r = '+fr(RS*100,0)+' cm : <b>C = 4πε₀r = '+fSI(CS,'F')+'</b>. Seule, à V, elle porterait Q = CV et un champ V/r à sa surface ; près de la cage, le champ se concentre du côté du grillage. Formule approchée sphère–plan : <b>E<sub>max</sub> ≈ (V/s)·(0,8 + 0,94·s/r)</b>. À s = '+fr(s*100,0)+' cm, l’étincelle part quand V atteint <b>'+fr(vs/1e3,0)+' kV</b>';
+  t2+=vs<=Vmax?' : la sphère se décharge d’un coup, en libérant <b>au moins ½CV² ≈ '+fSI(0.5*CS*vs*vs,'J')+'</b> ; la courroie (≈ 4 µA) la recharge en '+fr(vs*CS/IB,1)+' s.':', plus que V<sub>max</sub> = '+fr(Vmax/1e3,0)+' kV : pas d’étincelle, approche la sphère.';
+  t2+=doorOpen?' <b style="color:#a32d2d">Porte ouverte</b> : les lignes de champ entrent par l’ouverture et atteignent la personne, dont les cheveux se dressent ; devant son visage, E ≈ '+fSI(hf,'V/m')+' ('+fr(eo>0?hf/eo*100:0,0)+' % du champ devant la cage).':' <b style="color:#0F6E56">Porte fermée</b> : aucune ligne n’entre, la personne ne sent rien, même quand l’étincelle frappe la cage ; le courant de l’étincelle passe par le grillage et la liaison à la terre.';
+  t2+=' Le champ dessiné est calculé dans le plan vertical qui passe par la sphère et la cage (calcul en coupe, deux dimensions) : les valeurs à l’intérieur sont indicatives.';$('info').innerHTML=t2;}
+function upd(){$('dC').classList.toggle('on',!doorOpen);$('dO').classList.toggle('on',doorOpen);$('sS').value=Math.round(s*100);$('vS').textContent=fr(s*100,0)+' cm';$('vV').textContent=fr(Vmax/1e3,0)+' kV';
+  $('bL').classList.toggle('on',showL);$('bM').classList.toggle('on',showM);}
+function setDoor(o){if(o===doorOpen)return;doorOpen=o;buildMask();upd();info();}
+$('dC').onclick=()=>setDoor(false);$('dO').onclick=()=>setDoor(true);
+let sT=null;$('sS').oninput=e=>{s=+e.target.value/100;buildMask();upd();info();};
+$('sV').oninput=e=>{Vmax=+e.target.value*1e3;upd();info();};
+$('bL').onclick=()=>{showL=!showL;upd();};$('bM').onclick=()=>{showM=!showM;mKey='';upd();};
+$('v3').onclick=()=>{viewT=small()?[0.25,0.16,1]:[0.32,0.16,1];};$('vF').onclick=()=>{viewT=[0,0.02,1];};
+function pos(e){const b=cv.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top];}
+function onVdg(x,y){const xc=xs(),sp=pr(xc,0,ZS),b0=pr(xc,0,0),k=sp[3];return Math.hypot(x-sp[0],y-sp[1])<RS*k*1.1||(Math.abs(x-b0[0])<0.3*k&&y<b0[1]+8&&y>sp[1]);}
+function onDoor(x,y){const p=unprojY0(x,y);if(!p)return false;const a=pr(CX0,-DOORW,0),b=pr(CX0,DOORW,DOORH),xa=Math.min(a[0],b[0])-6,xb=Math.max(a[0],b[0])+6,ya=Math.min(a[1],b[1]),yb=Math.max(a[1],b[1]);return x>xa&&x<xb&&y>ya&&y<yb&&!onVdg(x,y);}
+let drag=null,dragV=false,moved=0,x0d=0,s0d=0;
+cv.addEventListener('pointerdown',e=>{const [x,y]=pos(e);if(y>H-GH)return;cv.setPointerCapture(e.pointerId);drag=[x,y];moved=0;dragV=onVdg(x,y);x0d=x;s0d=s;cv.style.cursor=dragV?'ew-resize':'grabbing';});
+cv.addEventListener('pointermove',e=>{const [x,y]=pos(e);if(drag){moved+=Math.hypot(x-drag[0],y-drag[1]);
+    if(dragV){const k=pr(xs(),0,ZS)[3]*C.cyw;const ns=Math.max(0.05,Math.min(1.0,s0d-(x-x0d)/Math.max(30,k)));if(Math.abs(ns-s)>0.004){s=Math.round(ns*100)/100;buildMask();upd();info();}}
+    else{yaw=Math.max(-0.9,Math.min(0.95,yaw+(x-drag[0])*0.006));pitch=Math.max(0.0,Math.min(0.75,pitch+(y-drag[1])*0.005));viewT=null;}drag=[x,y];}
+  else{cv.style.cursor=y<H-GH&&onVdg(x,y)?'ew-resize':(y<H-GH&&onDoor(x,y)?'pointer':'grab');const p=y<H-GH?unprojY0(x,y):null;probe=p&&p[0]>X0+0.1&&p[0]<X1-0.1&&p[1]>0.02&&p[1]<ZT-0.1?p:null;}});
+cv.addEventListener('pointerup',e=>{const [x,y]=pos(e);if(drag&&!dragV&&moved<5&&onDoor(x,y))setDoor(!doorOpen);drag=null;dragV=false;cv.style.cursor='grab';});
+cv.addEventListener('pointerleave',()=>{probe=null;});
+cv.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(0.7,Math.min(2.2,zoom*Math.exp(-e.deltaY*0.001)));},{passive:false});
+
+// =================== boucle ===================
+let last=null,ui=0,tb=0;
+function frame(ts){if(last===null)last=ts;const dt=Math.min(0.05,(ts-last)/1000);last=ts;t+=dt;
+  if(viewT){yaw+=(viewT[0]-yaw)*0.12;pitch+=(viewT[1]-pitch)*0.12;zoom+=(viewT[2]-zoom)*0.12;if(Math.abs(viewT[0]-yaw)+Math.abs(viewT[1]-pitch)+Math.abs(viewT[2]-zoom)<1e-3)viewT=null;}
+  doorA+=((doorOpen?1:0)-doorA)*Math.min(1,dt*4);
+  stepSolver();
+  // la courroie charge la sphère : dV/dt = I/C, jusqu'à Vmax
+  V=Math.min(Vmax,V+IB/CS*dt);
+  if(V>=Vspark(s)&&sparkT<-0.05){const xc=xs(),jit=[];for(let i=0;i<20;i++)jit.push((Math.random()-0.5)*22);
+    const tz=Math.max(0.3,Math.min(CZ-0.1,ZS+(Math.random()-0.5)*0.25)),ty=doorOpen&&tz<DOORH?-DOORW:(Math.random()-0.5)*0.5;
+    spark={a:[xc+RS*0.98,0,ZS+(tz-ZS)*0.3],b:[CX0,ty,tz],j:jit,V};sparkT=0.32;lastSpark=V;nSpark++;V=0.02*V;info();}
+  sparkT-=dt;
+  const target=doorOpen?Math.min(1,headField()/120e3):0;hair+=(target-hair)*Math.min(1,dt*3);
+  tb+=dt;if(tb>1/30){tb=0;trace.push(V);if(trace.length>300)trace.shift();}
+  ui+=dt;if(ui>0.3){ui=0;info();}
+  draw();requestAnimationFrame(frame);}
+window.__cage={set:o=>{if(o.s!=null)s=o.s;if(o.Vmax!=null)Vmax=o.Vmax;if(o.door!=null)doorOpen=o.door;if(o.V!=null)V=o.V;if(o.map!=null)showM=o.map;buildMask();for(let k=0;k<6000&&!solved;k+=45){const md=sor(45);if(md<2e-6)solved=true;}grads();traceLines();upd();info();
+    return{iters,solved,V,Vspark:Vspark(s),Emax:Emax(V,s),C:CS,Q:CS*V,headUnit:Math.hypot(...Eunit(XP-0.2,1.62)),outUnit:Math.hypot(...Eunit(CX0-0.06,1.62)),nLines:lines.length};},
+  unit:(x,z)=>Eunit(x,z),phi:(x,z)=>sample(Phi,x,z),st:()=>({V,nSpark,lastSpark,solved,iters,hair})};
+for(let i=0;i<300;i++)trace.push(0);
+buildMask();upd();info();requestAnimationFrame(frame);
+})();
+</script>
+</section></main>
+<aside class="sfa-side">
+<div class="sfa-blocus-side"><small>Compte à rebours</small><b>J−<span data-bl="d">48</span></b>Ton blocus démarre le lundi 14 décembre.<div class="bar"><i data-bl="bar" style="width:50%"></i></div><a href="https://sciencesforall.be">Découvrir SFA</a></div>
+  <div class="sfa-list"><h2>Électrostatique : charges et champs<span>16 simulations</span></h2><ol><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/forces-l-ctrostatique-/"><i>01</i>Forces électrostatiques</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/champ-l-ctrostatique-/"><i>02</i>Champ électrostatique</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/potentiel-carte/"><i>03</i>Potentiel électrique : carte et équipotentielles</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/potentiel-travail/"><i>04</i>Travail et différence de potentiel</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/potentiel-electronvolt/"><i>05</i>Accélérer une charge : l'électronvolt</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/charge-champ-uniforme/"><i>06</i>Une charge entre deux plaques</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/Conducteur/"><i>07</i>Conducteur</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/el-champ-distributions/"><i>08</i>Du point au continu : fil, anneau, disque</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/el-dipole-couple/"><i>09</i>Un dipôle dans un champ : couple et énergie</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/el-gauss-flux-ferme/"><i>10</i>Flux à travers une surface fermée</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/el-gauss-distributions/"><i>11</i>Gauss appliqué : E(r) de la boule, du fil, du plan</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/el-influence-totale/"><i>12</i>Une charge dans une coquille métallique</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/el-condensateur-dielectrique/"><i>13</i>Glisser une lame de verre entre les armatures</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/el-polarisation-milieu/"><i>14</i>Dans la matière polarisée</a></li><li><a href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-condensateur-plan/"><i>15</i>Condensateur plan : écarte les armatures</a></li><li><a class="on" aria-current="page" href="https://sfascienceforall-cell.github.io/simulation-test/universite/physique/ph-cage-faraday/"><i>16</i>La cage de Faraday</a></li></ol></div>
+  <div class="sfa-promo"><small>Envie d'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="https://sciencesforall.be/concours">Voir la prépa concours médecine</a></div>
+</aside></div></div>
+<footer class="sfa-foot">Science For All · simulations interactives de physique</footer>
+<script>(function(){var s=new Date(2026,11,14),n=new Date();n.setHours(0,0,0,0);var d=Math.round((s-n)/864e5),w=Math.ceil(d/7);document.querySelectorAll('[data-bl=w]').forEach(function(e){e.textContent=d>13?w:d;});document.querySelectorAll('[data-bl=u]').forEach(function(e){e.textContent=d>13?'semaines':(d>1?'jours':'jour');});document.querySelectorAll('[data-bl=d]').forEach(function(e){e.textContent=d;});document.querySelectorAll('[data-bl=bar]').forEach(function(e){e.style.width=Math.max(0,Math.min(100,(1-d/98)*100)).toFixed(0)+'%';});if(d<0){document.querySelectorAll('#sfaBlocus,.sfa-blocus-side').forEach(function(e){e.remove();});}})();</script><script src="../phys-meta.js"></script><script src="../../../kit/sfa-shell.js"></script><script src="../../../kit/sfa-nav.js"></script></body>
+</html>

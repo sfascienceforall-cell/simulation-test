@@ -5,6 +5,7 @@ Le plus récent est en haut de chaque section.
 
 ## 1. Décisions d'Enzo en attente (ne rien changer avant sa réponse)
 
+- **Maths (26/11)** : noms des nouveaux chapitres c12 « Fondements : ensembles, preuves, nombres réels » et c13 « Suites et séries » ; titre de `ma-integrale-impropre` (proposé : « Une surface infinie peut avoir une aire finie »).
 - **Valeurs par défaut changées le 21/11.** Elles changent ce qu'on voit dans les reels :
   - rotor (`p5-c06-rotor`) : 32 tr/min au lieu de 25 ;
   - fibre optique (`p4-c09-fibre`) : indice de gaine 1,32 au lieu de 1,44 ;
@@ -21,6 +22,9 @@ Le plus récent est en haut de chaque section.
 
 ## 2. À faire
 
+0bis. **Maths BA1 d'après les cours M00–M14 d'Enzo** (26/11) : P1 fait et en ligne (13 simulations, nouveaux chapitres c12 Fondements et c13 Suites et séries avec théorie et 18 exercices chacun).
+   Reste P2 et P3 (34 simulations), propositions dans `work/maths/ecarts-maths.json` (hors dépôt). Même processus : 4 vérificateurs (contenu, affichage, robustesse, pédagogie) puis correcteur.
+   À valider par Enzo : noms de c12/c13, titre de `ma-integrale-impropre`, d'Alembert et Σ1/iᵖ en complément dans c13.
 0. **Les 204 simulations manquantes par rapport aux canevas SFA et au cours de physique quantique** (analyse du 25/11) :
    liste détaillée dans `a-faire/canevas/`, méthode dans `a-faire/CONSIGNE-NUIT.md`. Ordre : P1, P2, P3, puis la quantique.
    La loi d'Ampère (point 1 ci-dessous) en fait partie (`ph-loi-ampere`, P1).

@@ -21,6 +21,8 @@ var SFA_KIT = ((document.currentScript && document.currentScript.src) || "").rep
 window.SFA_COURSE = function () {
   "use strict";
   var S = window.SFA, M = S.meta;
+  /* M.visuels : cours fait seulement de simulations (ni théorie ni exercices : rien de ce qui en parle n'est affiché) */
+  var V = !!M.visuels;
   var L = "ABCDEF";
   function esc(t) { return String(t == null ? "" : t).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
   function strip(t) { return String(t || "").replace(/<[^>]+>/g, ""); }
@@ -103,15 +105,15 @@ window.SFA_COURSE = function () {
     '<div class="sfa-page"><nav class="sfa-crumbs" aria-label="Fil d\'Ariane">' + crumbs + "›<b>" + esc(M.court || M.titre) + "</b></nav>" +
     '<div class="sfa-grid"><main style="min-width:0">' +
     '<div class="sfa-titlecard crs-hero"><div class="crs-hero-l"><div class="sfa-chips"><span class="sfa-chip">' + esc(M.kicker || "") + '</span><span class="sfa-chip free">Gratuit</span></div><h1>' + esc(M.titre) + "</h1><p>" + (M.intro || "") + '</p>' +
-    '<div class="crs-stats"><div><b>' + CH.length + "</b>chapitres</div><div><b>" + ALL.length + "</b>simulations</div><div><b>" + nEx + '</b>exercices et QCM</div></div>' +
+    '<div class="crs-stats"><div><b>' + CH.length + "</b>chapitres</div><div><b>" + ALL.length + "</b>simulations</div>" + (V ? "" : "<div><b>" + nEx + '</b>exercices et QCM</div>') + '</div>' +
     '<div class="crs-search"><input id="q" type="search" placeholder="Rechercher une notion, une simulation…" aria-label="Rechercher"></div></div>' +
     (feat ? '<a class="crs-feat" href="' + feat.href + '"><small>À essayer en premier</small><img src="' + feat.img + '" alt=""><b>' + esc(feat.titre) + "</b></a>" : "") + "</div>" +
     '<section class="sfa-sim"><div class="sfa-ex">' +
     '<nav class="ch-tabs" id="chTabs" aria-label="Chapitre" hidden></nav>' +
-    '<div id="vHome"><p class="sub">Choisis un chapitre. Chaque chapitre contient ses <b>simulations</b>, un <b>rappel théorique</b> avec schéma animé et ses <b>exercices</b> de difficulté croissante (★ → ★★★★★).</p><div class="grid" id="homeGrid"></div></div>' +
+    '<div id="vHome"><p class="sub">' + (V ? "Choisis un chapitre pour voir ses <b>simulations</b> : chacune s'ouvre sur sa propre page, et tu peux la manipuler." : "Choisis un chapitre. Chaque chapitre contient ses <b>simulations</b>, un <b>rappel théorique</b> avec schéma animé et ses <b>exercices</b> de difficulté croissante (★ → ★★★★★).") + '</p><div class="grid" id="homeGrid"></div></div>' +
     '<div id="vSearch" style="display:none"><div class="row"><button class="btn" onclick="goHome()">☰ Tous les chapitres</button></div><h1 id="sTitle"></h1><div class="sgrid" id="sGrid"></div></div>' +
     '<div id="vChap" style="display:none"><span id="chNum" hidden></span><h1 id="chTitle"></h1><p class="sub" id="chRes"></p>' +
-    '<div class="bigrow three"><div class="bigbtn sim" onclick="openSims()"><span class="bi">▶</span>Simulations<small id="chSimN"></small></div><div class="bigbtn" onclick="openTheo()"><span class="bi">∑</span>Théorie<small>rappel de notions + schéma animé</small></div><div class="bigbtn" onclick="openList()"><span class="bi">★</span>Exercices<small id="chExN"></small></div></div>' +
+    (V ? '<span id="chSimN" hidden></span><span id="chExN" hidden></span>' : '<div class="bigrow three"><div class="bigbtn sim" onclick="openSims()"><span class="bi">▶</span>Simulations<small id="chSimN"></small></div><div class="bigbtn" onclick="openTheo()"><span class="bi">∑</span>Théorie<small>rappel de notions + schéma animé</small></div><div class="bigbtn" onclick="openList()"><span class="bi">★</span>Exercices<small id="chExN"></small></div></div>') +
     '<div id="chPeek"></div></div>' +
     '<div id="vSims" style="display:none"><h1 id="smTitle"></h1><div class="sgrid" id="smGrid"></div></div>' +
     '<div id="vTheo" style="display:none"><h1 id="thTitle"></h1><canvas id="cvT"></canvas><div id="thCtl"></div><div id="thBody"></div></div>' +
@@ -121,14 +123,14 @@ window.SFA_COURSE = function () {
     '<div class="row" id="rowSl" style="display:none;"><span class="pill" id="slLab" style="color:#BA7517;border-color:#f5c88f;"></span><input type="range" id="sl" style="accent-color:#BA7517;max-width:280px;"><span class="val" id="slV" style="color:#BA7517;border-color:#f5c88f;"></span></div>' +
     '<div class="info" id="info"></div></div>' +
     "</div></section></main>" +
-    '<aside class="sfa-side"><div class="sfa-list"><h2>Chapitres<span>' + nEx + ' exercices</span></h2><ol id="sideList"></ol></div>' +
-    '<div class="sfa-promo"><small>Envie d\'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="' + (M.prepa || "https://sciencesforall.be/concours") + '">Voir la prépa concours médecine</a></div></aside></div></div>' +
-    '<footer class="sfa-foot">Science For All · ' + esc(M.pied || "simulations, théorie et exercices") + "</footer>";
+    '<aside class="sfa-side"><div class="sfa-list"><h2>Chapitres<span>' + (V ? ALL.length + " simulations" : nEx + " exercices") + '</span></h2><ol id="sideList"></ol></div>' +
+    '<div class="sfa-promo"><small>Envie d\'aller plus loin ?</small><b>' + (V ? "La prépa concours médecine SFA : le cours complet, la préparation aux examens et le suivi." : "La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.") + '</b><a href="' + (M.prepa || "https://sciencesforall.be/concours") + '">Voir la prépa concours médecine</a></div></aside></div></div>' +
+    '<footer class="sfa-foot">Science For All · ' + esc(M.pied || (V ? "simulations interactives" : "simulations, théorie et exercices")) + "</footer>";
 
   document.body.classList.add("m-" + (M.matiere || "maths"));
   if (window.SFANAV) window.SFANAV.mount();
   var side = document.getElementById("sideList");
-  CH.forEach(function (c, i) { var li = document.createElement("li"); li.innerHTML = '<a href="#c=' + i + '" data-c="' + i + '"><i>' + String(i + 1).padStart(2, "0") + "</i>" + esc(c.t) + "<em>" + c.sims.length + " · " + c.ex.length + "</em></a>"; side.appendChild(li); });
+  CH.forEach(function (c, i) { var li = document.createElement("li"); li.innerHTML = '<a href="#c=' + i + '" data-c="' + i + '"><i>' + String(i + 1).padStart(2, "0") + "</i>" + esc(c.t) + "<em>" + c.sims.length + (V ? "" : " · " + c.ex.length) + "</em></a>"; side.appendChild(li); });
   function hl() { var m = /c=(\d+)/.exec(location.hash), c = m ? m[1] : null; document.querySelectorAll(".sfa-list a[data-c]").forEach(function (a) { a.classList.toggle("on", a.dataset.c === c); }); }
   addEventListener("hashchange", hl);
 
@@ -141,7 +143,7 @@ window.SFA_COURSE = function () {
     function b(k, lab, fn, n) { return '<button type="button" class="ct' + (cur === k ? " on" : "") + '" onclick="' + fn + '">' + lab + (n != null ? "<em>" + n + "</em>" : "") + "</button>"; }
     t.innerHTML = '<button type="button" class="ct-nav" onclick="openChap(' + (ci - 1) + ')"' + (ci ? "" : " disabled") + ' title="Chapitre précédent" aria-label="Chapitre précédent">‹</button>' +
       '<button type="button" class="ct-ch" onclick="goHome()" title="Tous les chapitres"><small>Chapitre ' + (ci + 1) + " / " + CH.length + "</small><b>" + esc(c.t) + "</b></button>" +
-      '<div class="ct-seg">' + b("o", "Aperçu", "openChap(ci)") + b("s", "Simulations", "openSims()", c.sims.length) + (th ? b("t", "Théorie", "openTheo()") : "") + b("e", "Exercices", "openList()", c.ex.length) + "</div>" +
+      '<div class="ct-seg">' + b("o", "Aperçu", "openChap(ci)") + b("s", "Simulations", "openSims()", c.sims.length) + (th && !V ? b("t", "Théorie", "openTheo()") : "") + (V ? "" : b("e", "Exercices", "openList()", c.ex.length)) + "</div>" +
       '<button type="button" class="ct-nav" onclick="openChap(' + (ci + 1) + ')"' + (ci < CH.length - 1 ? "" : " disabled") + ' title="Chapitre suivant" aria-label="Chapitre suivant">›</button>';
     t.hidden = false;
   }
@@ -158,7 +160,7 @@ window.SFA_COURSE = function () {
     document.getElementById("chRes").innerHTML = c.resume + (c.attendus ? '<br><span class="att"><b>Au programme :</b> ' + c.attendus + "</span>" : "");
     document.getElementById("chSimN").textContent = c.sims.length ? c.sims.length + " simulation" + (c.sims.length > 1 ? "s" : "") + " à manipuler" : "bientôt";
     document.getElementById("chExN").textContent = c.ex.length + " exercices, du plus simple à l'examen";
-    document.getElementById("chPeek").innerHTML = c.sims.length ? '<h3 class="peek">Les simulations du chapitre</h3><div class="sgrid">' + c.sims.slice(0, 6).map(function (s) { return simCard(s); }).join("") + "</div>" : "";
+    document.getElementById("chPeek").innerHTML = c.sims.length ? '<h3 class="peek">Les simulations du chapitre</h3><div class="sgrid">' + c.sims.slice(0, V ? c.sims.length : 6).map(function (s) { return simCard(s); }).join("") + "</div>" : "";
     show("vChap"); setHash("c=" + i);
   };
   window.openSims = function () { var c = CH[ci]; view = "sims"; document.getElementById("smTitle").textContent = c.t + " — simulations"; document.getElementById("smGrid").innerHTML = c.sims.map(function (s) { return simCard(s); }).join("") || '<p class="sub">Pas encore de simulation pour ce chapitre.</p>'; show("vSims"); setHash("c=" + ci + "&v=sims"); };
@@ -245,7 +247,7 @@ window.SFA_COURSE = function () {
       var cap = document.createElement("div"); cap.className = "chcap";
       cap.innerHTML = "<small>Chapitre " + (i + 1) + "</small><b>" + esc(c.t) + '</b><span class="meta">' +
         (c.sims.length ? '<span class="ns">' + c.sims.length + " simulation" + (c.sims.length > 1 ? "s" : "") + "</span>" : "") +
-        (c.ex.length ? '<span class="ne">' + ((c.sub || c.th) ? "théorie + " : "") + c.ex.length + " exercice" + (c.ex.length > 1 ? "s" : "") + "</span>" : "") + "</span>";
+        (c.ex.length && !V ? '<span class="ne">' + ((c.sub || c.th) ? "théorie + " : "") + c.ex.length + " exercice" + (c.ex.length > 1 ? "s" : "") + "</span>" : "") + "</span>";
       a.appendChild(cap);
       a.onclick = function (ev) { ev.preventDefault(); openChap(i); }; g.appendChild(a);
     });
@@ -300,7 +302,7 @@ window.SFA_COURSE = function () {
     var sims = ALL.filter(function (s) { return norm(s.titre + " " + s.resume + " " + CH[byId[s.ch]].t).indexOf(n) >= 0; });
     var chs = CH.map(function (c, i) { return [c, i]; }).filter(function (p) { return norm(p[0].t + " " + p[0].resume + " " + p[0].attendus).indexOf(n) >= 0; });
     document.getElementById("sTitle").textContent = sims.length + " simulation" + (sims.length > 1 ? "s" : "") + " et " + chs.length + " chapitre" + (chs.length > 1 ? "s" : "") + " pour « " + v + " »";
-    document.getElementById("sGrid").innerHTML = chs.map(function (p) { return '<a class="scard chlink" href="#c=' + p[1] + '"><div><small>Chapitre ' + (p[1] + 1) + "</small><b>" + esc(p[0].t) + "</b><span>Simulations, théorie et exercices →</span></div></a>"; }).join("") + sims.map(function (s) { return simCard(s, true); }).join("");
+    document.getElementById("sGrid").innerHTML = chs.map(function (p) { return '<a class="scard chlink" href="#c=' + p[1] + '"><div><small>Chapitre ' + (p[1] + 1) + "</small><b>" + esc(p[0].t) + "</b><span>" + (V ? "Simulations du chapitre →" : "Simulations, théorie et exercices →") + "</span></div></a>"; }).join("") + sims.map(function (s) { return simCard(s, true); }).join("");
     show("vSearch");
   }
 
@@ -336,13 +338,15 @@ window.SFA_COURSE = function () {
     try {
       if (qq.q) { q.value = qq.q; doSearch(qq.q); }
       else if (isNaN(c) || c < 0 || c >= CH.length) goHome();
+      else if (V) { ci = c; if (qq.v === "theo" || qq.v === "list" || !isNaN(e)) openSims(); else openChap(c); }
       else { ci = c; if (!isNaN(e) && e >= 0 && e < CH[c].ex.length) openEx(e); else if (qq.v === "theo") openTheo(isNaN(t) ? 0 : t); else if (qq.v === "list") openList(); else if (qq.v === "sims") openSims(); else openChap(c); }
     } finally { routing = false; }
     curHash = location.hash;
   }
   window.addEventListener("hashchange", route); window.addEventListener("popstate", route);
+  if (V) { window.openTheo = window.openList = function () { openSims(); }; window.openEx = function () { openSims(); }; }
   buildHome(); route(); loop();
   /* progression de l'étudiant (kit/sfa-progress.js), chargée depuis le dossier de ce script */
-  if (SFA_KIT && !window.SFAPROG) { var sp = document.createElement("script"); sp.src = SFA_KIT + "sfa-progress.js"; document.head.appendChild(sp); }
+  if (SFA_KIT && !window.SFAPROG && !V) { var sp = document.createElement("script"); sp.src = SFA_KIT + "sfa-progress.js"; document.head.appendChild(sp); }
 };
 document.addEventListener("DOMContentLoaded", function () { window.SFA_COURSE(); });

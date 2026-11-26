@@ -25,9 +25,9 @@ function strip(o) {
   var d = document.createElement("div"); d.className = "sh-strip";
   d.innerHTML = '<div class="sh-l"><small>' + esc(o.cours) + " · Chapitre " + (o.ci + 1) + " / " + o.n + "</small><b>" + esc(o.titre) + "</b>" +
     '<div class="sh-prog"><div class="sh-dots">' + dots + '</div><span class="sh-cnt">' + nSeen + " sur " + o.sims.length + " ouverte" + (nSeen > 1 ? "s" : "") + "</span></div></div>" +
-    '<nav class="sh-tabs" aria-label="Parties du chapitre"><a class="on" aria-current="page">Simulations</a>' +
+    (o.visuels ? "" : '<nav class="sh-tabs" aria-label="Parties du chapitre"><a class="on" aria-current="page">Simulations</a>' +
     '<a href="' + esc(o.theo || "#") + '"' + (o.theo ? "" : ' class="dis"') + ">Théorie</a>" +
-    '<a href="' + esc(o.exos || "#") + '"' + (o.exos ? "" : ' class="dis"') + ">Exercices" + (o.ex ? ' <span class="sh-exn">' + o.ex.ok + (o.ex.n ? "/" + o.ex.n : "") + " ✓</span>" : "") + "</a></nav>";
+    '<a href="' + esc(o.exos || "#") + '"' + (o.exos ? "" : ' class="dis"') + ">Exercices" + (o.ex ? ' <span class="sh-exn">' + o.ex.ok + (o.ex.n ? "/" + o.ex.n : "") + " ✓</span>" : "") + "</a></nav>");
   main.insertBefore(d, main.firstChild);
 }
 
@@ -124,7 +124,7 @@ function engine(o) {
   var pr = load(), last = {}, exs = null; (pr.attempts || []).forEach(function (a) { if (a.c === cid && a.ch === o.ci) last[a.k] = a; });
   var okN = 0, tN = 0; Object.keys(last).forEach(function (kk) { tN++; if (last[kk].ok) okN++; });
   var cn = pr.courses && pr.courses[cid] && pr.courses[cid].chN; if (tN) exs = { ok: okN, n: cn ? cn[o.ci] : 0 };
-  strip({ cours: o.cours, ci: o.ci, n: o.n, titre: o.titre, cur: o.cur, sims: o.sims, theo: o.theo, exos: o.exos, ex: exs });
+  strip({ cours: o.cours, ci: o.ci, n: o.n, titre: o.titre, cur: o.cur, sims: o.sims, theo: o.theo, exos: o.exos, ex: exs, visuels: o.visuels });
   tools(o.host || $(".simhost"));
   marks();
 }

@@ -158,222 +158,236 @@ new MutationObserver(ms=>ms.forEach(m=>{if(m.target.classList&&m.target.classLis
 <div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">Physique · Magnétisme</span><span class="sfa-chip free">Gratuit</span></div><h1>Règle de la main droite</h1><p>Orientation du produit vectoriel en 3D</p></div>
 <section class="sfa-sim">
 
-<canvas id="cv" style="width:100%;height:72vh;min-height:560px;cursor:grab;touch-action:none" aria-label="Une main droite en 3D : les doigts partent du premier vecteur et s'enroulent vers le second, le pouce donne le sens du produit vectoriel ; on fait tourner la vue et on attrape la pointe du second vecteur pour changer l'angle"></canvas>
 
-<div class="fml" id="fml"></div>
+
+<div id="cvwrap"><div id="fallback">Impossible de charger la librairie 3D (Three.js). Vérifie la connexion internet — sur GitHub Pages cela fonctionnera.</div></div>
+<div class="fml"><b style="color:#7F77DD">ā×b̄</b> — les doigts pointent selon <b style="color:#E24B4A">ā</b> et s'enroulent vers <b style="color:#378ADD">b̄</b> ; le <b>pouce</b> donne <b style="color:#7F77DD">ā×b̄</b>. ‖ā×b̄‖ = ‖ā‖·‖b̄‖·sinθ (aire du parallélogramme)</div>
 
 <div class="row">
-  <span class="pill">Situation</span>
-  <button class="btn on" id="cV">Produit vectoriel a × b</button>
-  <button class="btn" id="cQ">Charge dans B : F = q·v × B</button>
-  <button class="btn" id="cI">Fil dans B : F = I·L × B</button>
-  <button class="btn" id="cW">Champ autour d’un fil</button>
+  <span class="pill" style="color:#BA7517;border-color:#f5c88f;">angle θ (ā, b̄)</span>
+  <input type="range" id="th" min="10" max="170" value="70" step="1" style="accent-color:#BA7517;max-width:200px;">
+  <span class="val" id="thv" style="color:#BA7517;border-color:#f5c88f;">70°</span>
+  <button class="btn on" id="bAnim" onclick="animOn=!animOn;this.className=animOn?'btn on':'btn';">Fermer les doigts</button>
+  <button class="btn" id="bMode" onclick="toggleDrag()">Tourner : la vue</button>
+  <span style="display:inline-flex;align-items:center;gap:inherit;"><span class="pill">Zoom</span>
+  <button class="btn" onclick="zoomCam(1/1.15)">−</button>
+  <button class="btn" onclick="zoomCam(1.15)">＋</button></span>
 </div>
-<div class="row" id="rowT">
-  <span class="pill" style="min-width:150px;color:#9a5f0f">θ &nbsp;angle entre les vecteurs</span>
-  <input type="range" id="th" min="5" max="175" step="1" value="70" style="accent-color:#BA7517;">
-  <span class="val" id="thv" style="color:#9a5f0f"></span>
-</div>
-<div class="row">
-  <span class="pill" style="min-width:150px;color:#a32d2d" id="pA">|a| &nbsp;premier vecteur</span>
-  <input type="range" id="sA" min="0.5" max="3" step="0.1" value="2" style="accent-color:#E24B4A;">
-  <span class="val" id="vA" style="color:#a32d2d"></span>
-</div>
-<div class="row" id="rowB">
-  <span class="pill" style="min-width:150px;color:#185fa5" id="pB">|b| &nbsp;second vecteur</span>
-  <input type="range" id="sB" min="0.5" max="3" step="0.1" value="1.5" style="accent-color:#378ADD;">
-  <span class="val" id="vB" style="color:#185fa5"></span>
-</div>
-<div class="row">
-  <button class="btn" id="sw">Échanger l’ordre (b × a)</button>
-  <button class="btn" id="qs" style="display:none">Charge négative (électron)</button>
-  <button class="btn on" id="an">Fermer les doigts en boucle</button>
-  <button class="btn on" id="pl">Parallélogramme</button>
-</div>
-<div class="row">
-  <span class="pill">Vue</span>
-  <button class="btn on" id="v3">3D</button>
-  <button class="btn" id="vT">De dessus</button>
-  <button class="btn" id="vF">De face</button>
-</div>
-<div class="row"><span class="hint" id="hint"></span></div>
+<div class="info" id="info">🖱 glisse pour tourner autour, molette pour zoomer.</div>
 
-<div class="info" id="info"></div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
+let animOn=true,thDeg=70,dragMode='camera';
+document.getElementById('th').addEventListener('input',e=>{thDeg=+e.target.value;document.getElementById('thv').textContent=thDeg+'°';});
+let camR=5.6,camTheta=0.62,camPhi=1.12,zoomCam=f=>{camR=Math.max(3,Math.min(11,camR*f));};
+function toggleDrag(){dragMode=dragMode==='camera'?'hand':'camera';const b=document.getElementById('bMode');
+  b.textContent=dragMode==='hand'?'Tourner : la main':'Tourner : la vue';b.className=dragMode==='hand'?'btn on':'btn';}
+
 (function(){
-const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
-const $=id=>document.getElementById(id);
-const INK='#2c3440',RED='#E24B4A',RED_D='#a32d2d',BLU='#378ADD',BLU_D='#185fa5',PUR='#7F77DD',PUR_D='#534AB7',GRN='#1D9E75',GRN_D='#0F6E56',OR='#BA7517',OR_D='#9a5f0f',GREY='#7c8794';
-const fr=(v,d)=>(Math.abs(v)<0.5*Math.pow(10,-d)?0:v).toFixed(d).replace('.',',').replace(/^-/,'−');
-const MU=4e-7*Math.PI,QE=1.602e-19;
-let W=0,H=0,dpr=1;
-function size(){const b=cv.getBoundingClientRect();dpr=window.devicePixelRatio||1;const w=Math.round(b.width)||800,h=Math.round(b.height)||560;if(w!==W||h!==H||cv.width!==Math.round(w*dpr)){W=w;H=h;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);}
-const small=()=>W<620;
-function font(w,s){return w+' '+(small()?Math.round(s*0.86):s)+'px Mulish,system-ui,sans-serif';}
-function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
-function pill(t,x,y,col){ctx.font=font(800,13);const w=ctx.measureText(t).width+16,h=23;x=Math.max(w/2+4,Math.min(W-w/2-4,x));y=Math.max(h/2+4,Math.min(H-h/2-4,y));ctx.fillStyle='rgba(255,255,255,.94)';rr(x-w/2,y-h/2,w,h,7);ctx.fill();ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=1;ctx.stroke();ctx.fillStyle=col;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t,x,y+0.5);}
-function shade(hex,k){const n=parseInt(hex.slice(1),16),r=n>>16,g=(n>>8)&255,b=n&255,f=v=>Math.max(0,Math.min(255,Math.round(v*k)));return`rgb(${f(r)},${f(g)},${f(b)})`;}
-// petits outils vectoriels
-const add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],mul=(a,k)=>[a[0]*k,a[1]*k,a[2]*k],dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
-  crs=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],nrm=a=>{const l=Math.hypot(...a)||1;return mul(a,1/l);};
+if(typeof THREE==='undefined'){document.getElementById('fallback').style.display='flex';return;}
+const wrap=document.getElementById('cvwrap');
+const scene=new THREE.Scene();scene.background=new THREE.Color(0xffffff);
+const camera=new THREE.PerspectiveCamera(45,wrap.clientWidth/wrap.clientHeight,0.1,100);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(window.devicePixelRatio||1);
+renderer.setSize(wrap.clientWidth,wrap.clientHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;wrap.appendChild(renderer.domElement);
 
-// ---------- caméra ----------
-let yaw=-0.62,pitch=0.42,zoom=1.5,C={};const SC=1.9;
-function cam(){const Dc=2.0*SC/zoom,f=Math.min(W*(small()?1.32:0.92),H*1.05)*1.05;C={Dc,f,cx:W*(small()?0.38:0.5),cy:H*(small()?0.57:0.59),cyw:Math.cos(yaw),syw:Math.sin(yaw),cp:Math.cos(pitch),sp:Math.sin(pitch)};}
-function pr(p){const x=p[0],y=p[1],z=p[2]-0.1,xr=x*C.cyw-y*C.syw,yr=x*C.syw+y*C.cyw,dep=C.Dc+yr*C.cp-z*C.sp,k=C.f/Math.max(0.05,dep);return[C.cx+xr*k,C.cy-(z*C.cp+yr*C.sp)*k,dep,k];}
-function unproj(X,Y,z0){z0-=0.1;const a=(X-C.cx)/C.f,b=(C.cy-Y)/C.f,den=C.sp-b*C.cp;if(Math.abs(den)<1e-6)return null;const yr=(b*(C.Dc-z0*C.sp)-z0*C.cp)/den,dep=C.Dc+yr*C.cp-z0*C.sp;if(dep<=0)return null;const xr=a*dep;return[xr*C.cyw+yr*C.syw,-xr*C.syw+yr*C.cyw];}
-function poly(pts,fill,stroke,lw){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw||1;ctx.stroke();}}
-function hull(P){const p=P.map(q=>[q[0],q[1]]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]),cr=(o,a,b)=>(a[0]-o[0])*(b[1]-o[1])-(a[1]-o[1])*(b[0]-o[0]),lo=[],up=[];
-  for(const q of p){while(lo.length>=2&&cr(lo[lo.length-2],lo[lo.length-1],q)<=0)lo.pop();lo.push(q);}for(let i=p.length-1;i>=0;i--){const q=p[i];while(up.length>=2&&cr(up[up.length-2],up[up.length-1],q)<=0)up.pop();up.push(q);}return lo.slice(0,-1).concat(up.slice(0,-1));}
-function perp(d){const a=Math.abs(d[2])<0.9?[0,0,1]:[1,0,0],u=nrm(crs(d,a));return[u,crs(d,u)];}
+// éclairage doux : ciel/sol + lumière principale avec ombre légère + contre-jour
+scene.add(new THREE.HemisphereLight(0xffffff,0xe6ebf2,0.55));
+scene.add(new THREE.AmbientLight(0xffffff,0.18));
+const dl=new THREE.DirectionalLight(0xffffff,0.8);dl.position.set(2.5,6,3.5);dl.castShadow=true;
+dl.shadow.mapSize.set(1024,1024);dl.shadow.radius=6;dl.shadow.bias=-0.0008;
+Object.assign(dl.shadow.camera,{left:-3.5,right:3.5,top:3.5,bottom:-3.5,near:0.5,far:20});scene.add(dl);
+const dl2=new THREE.DirectionalLight(0xdfe9f7,0.3);dl2.position.set(-3,2,-3);scene.add(dl2);
 
-// ---------- éléments dessinés, triés par profondeur ----------
-let Q=[];
-// capsule de peau (phalange, paume) : contour, teinte, reflet
-function capsule(a,b,r,col,hi){const A=pr(a),B=pr(b);Q.push({d:(A[2]+B[2])/2,f:()=>{const w=Math.max(3,2*r*(A[3]+B[3])/2),an=Math.atan2(B[1]-A[1],B[0]-A[0])+Math.PI/2,ox=Math.cos(an),oy=Math.sin(an);
-  ctx.lineCap='round';ctx.strokeStyle=shade(col,0.66);ctx.lineWidth=w+2;ctx.beginPath();ctx.moveTo(A[0],A[1]);ctx.lineTo(B[0],B[1]);ctx.stroke();
-  ctx.strokeStyle=col;ctx.lineWidth=w;ctx.stroke();
-  const o=-w*0.2;ctx.strokeStyle=hi||shade(col,1.1);ctx.lineWidth=w*0.42;ctx.beginPath();ctx.moveTo(A[0]+ox*o,A[1]+oy*o);ctx.lineTo(B[0]+ox*o,B[1]+oy*o);ctx.stroke();}});}
-// flèche 3D : tige ronde + pointe conique
-function arrow3(o,v,col,r,lab,labCol,dash,side){const L=Math.hypot(...v);if(L<1e-6)return;const d=mul(v,1/L),h=Math.min(0.22,L*0.35),base=add(o,mul(d,L-h)),tip=add(o,v),[e1,e2]=perp(d),A=pr(o),B=pr(base),T=pr(tip);
-  Q.push({d:(A[2]+T[2])/2-0.02,f:()=>{const w=Math.max(2.5,2*r*(A[3]+B[3])/2);ctx.lineCap='round';
-    if(dash){ctx.setLineDash([8,6]);ctx.strokeStyle=col;ctx.lineWidth=w*0.6;ctx.beginPath();ctx.moveTo(A[0],A[1]);ctx.lineTo(B[0],B[1]);ctx.stroke();ctx.setLineDash([]);}
-    else{ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=w+3;ctx.beginPath();ctx.moveTo(A[0],A[1]);ctx.lineTo(B[0],B[1]);ctx.stroke();
-      [[1,0.7],[0.62,1],[0.25,1.35]].forEach(([k,s],i)=>{ctx.strokeStyle=shade(col,s);ctx.lineWidth=w*k;ctx.beginPath();ctx.moveTo(A[0],A[1]-(i?w*0.12:0));ctx.lineTo(B[0],B[1]-(i?w*0.12:0));ctx.stroke();});}
-    const P=[];for(let i=0;i<16;i++){const a=i/16*2*Math.PI;P.push(pr(add(base,add(mul(e1,Math.cos(a)*r*2.6),mul(e2,Math.sin(a)*r*2.6)))));}P.push(T);
-    const hp=hull(P);let mn=1e9,mx=-1e9;hp.forEach(p=>{mn=Math.min(mn,p[0]);mx=Math.max(mx,p[0]);});const g=ctx.createLinearGradient(mn,0,mx,0);g.addColorStop(0,shade(col,0.65));g.addColorStop(0.4,shade(col,1.3));g.addColorStop(1,shade(col,0.7));poly(hp,g,shade(col,0.55),1);}});
-  if(lab)labels.push(side?[lab,add(o,mul(v,0.8)),labCol||col,side]:[lab,add(tip,mul(d,0.16)),labCol||col]);}
-function ballQ(p,r,col,txt){const P=pr(p);Q.push({d:P[2],f:()=>{const R=Math.max(5,r*P[3]),g=ctx.createRadialGradient(P[0]-R*0.35,P[1]-R*0.4,R*0.1,P[0],P[1],R);g.addColorStop(0,'#fff');g.addColorStop(0.35,col);g.addColorStop(1,shade(col,0.45));ctx.fillStyle=g;ctx.beginPath();ctx.arc(P[0],P[1],R,0,7);ctx.fill();
-  if(txt){ctx.fillStyle='#fff';ctx.font='800 '+Math.round(R*1.3)+'px Mulish,system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,P[0],P[1]+1);}}});}
-function obox(c,e1,e2,e3,s1,s2,s3,col,txt){const V=[];[-1,1].forEach(a=>[-1,1].forEach(b=>[-1,1].forEach(g=>V.push(add(c,add(mul(e1,a*s1),add(mul(e2,b*s2),mul(e3,g*s3))))))));
-  const F=[[0,1,3,2],[4,6,7,5],[0,4,5,1],[2,3,7,6],[0,2,6,4],[1,5,7,3]],P=V.map(pr);
-  F.forEach((ix,k)=>{const q=ix.map(i=>P[i]),d=ix.reduce((s,i)=>s+P[i][2],0)/4;Q.push({d:d+0.01,f:()=>{let a=0;for(let i=0;i<4;i++){const p=q[i],n=q[(i+1)%4];a+=p[0]*n[1]-n[0]*p[1];}if(a>0)return;
-    poly(q,shade(col,[0.6,0.85,0.75,1.05,0.95,1.15][k]),'rgba(0,0,0,.2)',1);if(txt&&(k===0||k===1)){const m=q.reduce((s,p)=>[s[0]+p[0]/4,s[1]+p[1]/4],[0,0]);ctx.fillStyle='#fff';ctx.font=font(800,16);ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt,m[0],m[1]);}}});});}
-let labels=[];
+// sol grille
+const grid=new THREE.GridHelper(6,12,0xd3d9e2,0xe9edf2);grid.position.y=-1.6;scene.add(grid);
+const shadowFloor=new THREE.Mesh(new THREE.PlaneGeometry(12,12),new THREE.ShadowMaterial({opacity:0.10}));
+shadowFloor.rotation.x=-Math.PI/2;shadowFloor.position.y=-1.599;shadowFloor.receiveShadow=true;scene.add(shadowFloor);
 
-// ---------- état ----------
-let ctxt='V',th=70,A=2,Bm=1.5,swap=false,neg=false,anim=true,showP=true,t=0,curl=0;
-const SK='#eab48b';
-function vecs(){const r=th*Math.PI/180,a=[A,0,0],b=[Bm*Math.cos(r),Bm*Math.sin(r),0];return{a,b};}
-// la main : doigts qui partent selon u et s'enroulent vers v ; pouce selon w
-function hand(K,u,v,w,c,off){off=off==null?1:off;
-  const fz=[0.075,0.025,-0.025,-0.075],fl=[[0.2,0.14,0.11],[0.22,0.15,0.12],[0.21,0.145,0.115],[0.17,0.12,0.095]],fr_=[0.043,0.045,0.043,0.038];
-  const dirAt=ang=>add(mul(u,Math.cos(ang)),mul(v,Math.sin(ang)));
-  // avant-bras et paume (métacarpes)
-  const wrist=add(K,mul(u,-0.5));capsule(add(wrist,mul(u,-0.5)),wrist,0.085,SK);
-  fz.forEach((z,i)=>capsule(add(wrist,mul(w,z*0.7)),add(K,mul(w,z)),0.06,SK));
-  // doigts
-  fz.forEach((z,i)=>{let p=add(K,mul(w,z));const n=fl[i];for(let k=0;k<3;k++){const q=add(p,mul(dirAt((k+off)*c/3),n[k]));capsule(p,q,fr_[i]*(1-0.08*k),SK);p=q;}
-    if(i===0)tipIndex=p;});
-  // pouce : part du bord de la paume côté index et pointe selon w
-  const t0=add(add(K,mul(u,-0.32)),add(mul(w,0.08),mul(v,0.04))),t1=add(t0,add(mul(w,0.17),mul(u,0.04))),t2=add(t1,mul(w,0.15)),t3=add(t2,mul(w,0.11));
-  capsule(t0,t1,0.058,SK);capsule(t1,t2,0.05,SK);capsule(t2,t3,0.045,SK);thumbTip=t3;
-  // ombre sur le sol
-  shadowPts=[wrist,K,add(K,mul(dirAt(c),0.4)),t3];}
-let tipIndex=null,thumbTip=null,shadowPts=[];
-const ZF=-0.85;
-function floor(){const E=2.3,q=[[-E,-E,ZF],[E,-E,ZF],[E,E,ZF],[-E,E,ZF]].map(pr);const g=ctx.createLinearGradient(0,Math.min(...q.map(p=>p[1])),0,Math.max(...q.map(p=>p[1])));g.addColorStop(0,'#c9a173');g.addColorStop(1,'#93653a');poly(q,g);
-  ctx.save();poly(q);ctx.clip();ctx.strokeStyle='rgba(70,40,15,.15)';ctx.lineWidth=1.1;for(let k=-12;k<=12;k++){const y=k*E/12;ctx.beginPath();for(let i=0;i<=20;i++){const x=-E+2*E*i/20,p=pr([x,y+0.02*Math.sin(i*0.8+k),ZF]);i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]);}ctx.stroke();}ctx.restore();
-  if(shadowPts.length){const c=shadowPts.reduce((s,p)=>add(s,mul(p,1/shadowPts.length)),[0,0,0]),P=[];for(let i=0;i<24;i++){const a=i/24*2*Math.PI;P.push(pr([c[0]+0.42*Math.cos(a),c[1]+0.26*Math.sin(a),ZF+0.002]));}poly(P,'rgba(40,25,10,.18)');}}
+// ---- main droite : peau, ongles, manche ----
+const skinMat=new THREE.MeshStandardMaterial({color:0xcf8d66,roughness:0.52,metalness:0.0});
+const nailMat=new THREE.MeshStandardMaterial({color:0xe0a594,roughness:0.38,metalness:0.0});
+const sleeveMat=new THREE.MeshStandardMaterial({color:0x4d6283,roughness:0.85,metalness:0.0});
+const handMats=[skinMat,nailMat,sleeveMat];
 
-function build(){Q=[];labels=[];
-  if(ctxt==='W'){buildWire();return;}
-  const {a,b}=vecs(),first=swap?b:a,second=swap?a:b,u=nrm(first),w=nrm(crs(first,second)),v=crs(w,u),ang=Math.acos(Math.max(-1,Math.min(1,dot(nrm(a),nrm(b))))),cr=crs(first,second);
-  const names={V:['a','b','a × b'],Q:['v','B','v × B'],I:['I·L','B','I·L × B']}[ctxt],cols={V:[RED,BLU],Q:[GRN,BLU],I:[OR,BLU]}[ctxt];
-  // la main, placée sous le plan des vecteurs, côté −w
-  hand(add(mul(u,0.05),mul(w,-0.3)),u,v,w,curl);
-  // vecteurs
-  const sc=0.55;   // échelle d'affichage (produit vectoriel) ; en physique, longueurs fixes et F proportionnelle à sin θ
-  const da=ctxt==='V'?mul(a,sc):mul(nrm(a),1.1),db=ctxt==='V'?mul(b,sc):mul(nrm(b),0.85);
-  arrow3(ctxt==='I'?[0,0,0.07]:[0,0,0],da,cols[0],0.022,names[0],shade(cols[0],0.75));arrow3([0,0,0],db,cols[1],0.022,names[1],shade(cols[1],0.75));
-  const res=ctxt==='V'?mul(cr,sc*0.55):mul(nrm(cr),0.95*Math.sin(ang)),fr1=swap?names[1]+' × '+names[0]:names[2];
-  if(ctxt==='Q'&&neg){arrow3([0,0,0],res,PUR,0.016,'pouce : '+fr1,PUR_D,true,1);arrow3([0,0,0],mul(res,-1),RED,0.024,'F (électron)',RED_D,false,1);}
-  else arrow3([0,0,0],res,ctxt==='V'?PUR:RED,0.024,ctxt==='V'?fr1:'F = '+(ctxt==='Q'?'q·':'')+fr1,ctxt==='V'?PUR_D:RED_D,false,1);
-  if(ctxt==='Q')ballQ([0,0,0],0.07,neg?'#3b6fd0':'#d9483b',neg?'−':'+');
-  if(ctxt==='I'){const d=nrm(a);const p0=mul(d,-0.95),p1=mul(d,1.0);capsule(p0,p1,0.03,'#c07a3a','#f0b27a');
-    const bh=nrm(b),bp=crs([0,0,1],bh);obox(mul(bh,-0.95),bh,bp,[0,0,1],0.09,0.2,0.2,'#d9483b','N');obox(mul(bh,1.1),bh,bp,[0,0,1],0.09,0.2,0.2,'#3b6fd0','S');
-    for(let j=0;j<5;j++){const s=((j/5+t*0.25)%1)*1.8-0.9,P=pr(mul(d,s)),P2=pr(mul(d,s+0.05));Q.push({d:P[2]-0.03,f:()=>{const an=Math.atan2(P2[1]-P[1],P2[0]-P[0]),h=7;ctx.fillStyle='#fff3d6';ctx.beginPath();ctx.moveTo(P[0]+Math.cos(an)*h,P[1]+Math.sin(an)*h);ctx.lineTo(P[0]+Math.cos(an+2.4)*h,P[1]+Math.sin(an+2.4)*h);ctx.lineTo(P[0]+Math.cos(an-2.4)*h,P[1]+Math.sin(an-2.4)*h);ctx.closePath();ctx.fill();}});}}
-  return{a:da,b:db,sc:1,ang,first,second,u,v,w};}
-function buildWire(){const I=A;  // A sert de courant dans ce mode
-  capsule([0,0,-0.8],[0,0,0.8],0.035,'#c07a3a','#f0b27a');
-  for(let j=0;j<6;j++){const z=((j/6+t*0.2)%1)*1.5-0.75,P=pr([0,-0.05,z]),P2=pr([0,-0.05,z+0.05]);Q.push({d:P[2]-0.05,f:()=>{const an=Math.atan2(P2[1]-P[1],P2[0]-P[0]),h=7;ctx.fillStyle='#fff3d6';ctx.beginPath();ctx.moveTo(P[0]+Math.cos(an)*h,P[1]+Math.sin(an)*h);ctx.lineTo(P[0]+Math.cos(an+2.4)*h,P[1]+Math.sin(an+2.4)*h);ctx.lineTo(P[0]+Math.cos(an-2.4)*h,P[1]+Math.sin(an-2.4)*h);ctx.closePath();ctx.fill();}});}
-  // lignes de champ : cercles autour du fil, sens donné par les doigts
-  [[0.45,0.75],[0.7,0.75],[0.45,-0.55],[0.75,-0.55],[1.0,0.1]].forEach(([r,z])=>{const N=64;for(let i=0;i<N;i++){const a0=i/N*2*Math.PI,a1=(i+1)/N*2*Math.PI,P=pr([r*Math.cos(a0),r*Math.sin(a0),z]),R=pr([r*Math.cos(a1),r*Math.sin(a1),z]);Q.push({d:(P[2]+R[2])/2,f:()=>{ctx.strokeStyle='rgba(83,74,183,.75)';ctx.lineWidth=2.2;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(P[0],P[1]);ctx.lineTo(R[0],R[1]);ctx.stroke();}});}
-    for(let k=0;k<4;k++){const a=k/4*2*Math.PI+0.4+t*0.3,p=[r*Math.cos(a),r*Math.sin(a),z];arrow3(p,mul([-Math.sin(a),Math.cos(a),0],0.16),PUR,0.008);}});
-  // la main serre le fil : pouce vers le haut (sens de I), doigts autour
-  const u=[0,1,0],v=[-1,0,0],w=[0,0,1];hand([0.16,0,0.05],u,v,w,4.5,0.5);
-  arrow3([0,0,0.8],[0,0,0.3],OR,0.02,'I = '+fr(I,1)+' A',OR_D,false,1);labels.push(['B',[1.05,0,0.25],PUR_D]);
-  return{};}
+// segment arrondi (phalange) le long de +x, de 0 à len : profil de révolution, léger étranglement au milieu,
+// bout plus fin ; pad = coussinet côté paume (+y) et dos aplati (−y) pour la dernière phalange
+function phalanx(len,r0,r1,pad){
+  const pts=[],N=14;
+  for(let i=0;i<=N;i++){const a=-Math.PI/2+Math.PI/2*i/N;pts.push(new THREE.Vector2(r0*Math.cos(a),r0*Math.sin(a)));}
+  for(let i=1;i<10;i++){const s=i/10,r=r0+(r1-r0)*s,w=1-0.07*Math.sin(Math.PI*s);pts.push(new THREE.Vector2(r*w,len*s));}
+  for(let i=0;i<=N;i++){const a=Math.PI/2*i/N;pts.push(new THREE.Vector2(r1*Math.cos(a),len+r1*Math.sin(a)));}
+  const g=new THREE.LatheGeometry(pts,22);
+  g.rotateZ(-Math.PI/2);                       // axe de révolution : +y → +x
+  const p=g.attributes.position;
+  for(let i=0;i<p.count;i++){let x=p.getX(i),y=p.getY(i),z=p.getZ(i);
+    z*=1.06;y*=0.92;                            // section un peu plus large qu'épaisse
+    if(pad){const s=Math.max(0,Math.min(1,x/len));
+      if(y>0)y*=1+0.22*Math.sin(Math.PI*Math.min(1,s*1.15)); // coussinet
+      else y*=1-0.22*s;}                        // dos plat sous l'ongle
+    p.setXYZ(i,x,y,z);}
+  g.computeVertexNormals();
+  const m=new THREE.Mesh(g,skinMat);return m;}
+// ongle : coque ellipsoïdale posée sur le dos (−y) de la dernière phalange
+function nail(len,r){const m=new THREE.Mesh(new THREE.SphereGeometry(1,20,12),nailMat);
+  m.scale.set(len*0.32,r*0.12,r*0.56);m.position.set(len*0.72,-r*0.66,0);m.rotation.z=0.12;return m;}
+// doigt : 3 phalanges articulées (groupes imbriqués, rotation.z = flexion vers la paume +y)
+function finger(lens,rad,isThumb){
+  const radii=[rad,rad*0.9,rad*0.82,rad*0.72];const joints=[];let parent=null,root=null;
+  for(let k=0;k<lens.length;k++){const j=new THREE.Group();
+    if(parent){j.position.x=lens[k-1];parent.add(j);}else root=j;
+    const last=k===lens.length-1;
+    j.add(phalanx(lens[k],radii[k],last?radii[k+1]*0.92:radii[k+1],last));
+    if(last)j.add(nail(lens[k],radii[k]));
+    joints.push(j);parent=j;}
+  return {root,joints};}
+// capsule entre deux points (os du pouce, avant-bras)
+function capsuleBetween(a,b,r0,r1,mat){const d=b.clone().sub(a),L=d.length();
+  const m=phalanx(L,r0,r1,false);m.material=mat||skinMat;
+  const g=new THREE.Group();g.position.copy(a);g.quaternion.setFromUnitVectors(new THREE.Vector3(1,0,0),d.normalize());g.add(m);return {g,m};}
 
-// ---------- dessin ----------
-function draw(){size();cam();ctx.clearRect(0,0,W,H);const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#eef2f6');g.addColorStop(1,'#d3dbe3');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-  const S=build();floor();
-  if(ctxt!=='W'){const {a,b,sc}=S;
-    if(showP){const P=[[0,0,0],mul(a,sc),add(mul(a,sc),mul(b,sc)),mul(b,sc)].map(pr);poly(P,'rgba(127,119,221,.16)','rgba(83,74,183,.45)',1.2);}
-    // arc θ et balayage des doigts
-    const r0=0.42,N=40,ra=th*Math.PI/180,P=[];for(let i=0;i<=N;i++){const an=ra*i/N;P.push(pr([r0*Math.cos(an),r0*Math.sin(an),0]));}ctx.strokeStyle=OR;ctx.lineWidth=2.4;ctx.beginPath();P.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();
-    const sw=Math.min(1,curl/Math.max(1e-6,ra)),k=Math.round(N*sw);if(k>1){const S2=swap?P.slice(N-k).reverse():P.slice(0,k+1);ctx.strokeStyle='rgba(186,117,23,.35)';ctx.lineWidth=9;ctx.beginPath();S2.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke();}
-    const m=pr([0.55*Math.cos(ra/2),0.55*Math.sin(ra/2),0]);pill('θ = '+th+'°',m[0],m[1],OR_D);}
-  Q.sort((p,q)=>q.d-p.d).forEach(o=>o.f());
-  labels.forEach(([t_,p,col,dx])=>{const P=pr(p);ctx.font=font(800,13);pill(t_,P[0]+(dx?(ctx.measureText(t_).width/2+22)*dx:0),P[1],col);});
-  if(ctxt!=='W'){const bt=pr(S.b);if(!small()){ctx.strokeStyle='rgba(55,138,221,.5)';ctx.setLineDash([3,3]);ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(bt[0],bt[1],13,0,7);ctx.stroke();ctx.setLineDash([]);}}
-  hud();}
-function hud(){const sm=small(),r=th*Math.PI/180,s=Math.sin(r);let L1,L2,L3;
-  if(ctxt==='V'){L1='|a × b| = |a|·|b|·sin θ';L2=fr(A,1)+' × '+fr(Bm,1)+' × sin '+th+'° = '+fr(A*Bm*s,2);L3='aire du parallélogramme · max à 90°, nul à 0° et 180°';}
-  else if(ctxt==='Q'){const F=QE*A*1e6*Bm*s;L1='F = |q|·v·B·sin θ';L2='1,602·10⁻¹⁹ × '+fr(A,1)+'·10⁶ × '+fr(Bm,2)+' × sin '+th+'° = '+fr(F*1e13,2)+'·10⁻¹³ N';L3=neg?'électron (q < 0) : F est opposée au pouce':'proton (q > 0) : F a le sens du pouce';}
-  else if(ctxt==='I'){const F=A*0.1*Bm*s;L1='F = I·L·B·sin θ  (L = 10 cm dans l’aimant)';L2=fr(A,1)+' × 0,10 × '+fr(Bm,2)+' × sin '+th+'° = '+fr(F,3)+' N';L3='B va du pôle N au pôle S';}
-  else{const B=MU*A/(2*Math.PI*0.02);L1='Pouce : sens de I · doigts : sens de B';L2='B à 2 cm du fil = μ₀I/(2πr) = '+fr(B*1e6,1)+' µT';L3='les lignes de champ sont des cercles autour du fil';}
-  const w=sm?W-16:Math.min(470,W*0.56),h=sm?66:84,x=8,y=8;ctx.fillStyle='rgba(255,255,255,.94)';rr(x,y,w,h,10);ctx.fill();ctx.strokeStyle='#dfe5ec';ctx.lineWidth=1;ctx.stroke();
-  ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillStyle=INK;ctx.font=font(800,sm?13:15);ctx.fillText(L1,x+12,y+(sm?20:25));
-  ctx.fillStyle=ctxt==='V'?PUR_D:ctxt==='W'?PUR_D:RED_D;ctx.font=font(800,sm?13:15);ctx.fillText(L2,x+12,y+(sm?39:49));ctx.fillStyle=GREY;ctx.font=font(600,sm?10.5:12);ctx.fillText(L3,x+12,y+(sm?56:70));}
+const system=new THREE.Group();scene.add(system);
+const hand=new THREE.Group();system.add(hand);
 
-// ---------- textes ----------
-function upd(){$('thv').textContent=th+'°';
-  const lab={V:['|a| &nbsp;premier vecteur','|b| &nbsp;second vecteur',v=>fr(v,1),v=>fr(v,1)],Q:['v &nbsp;vitesse de la charge','B &nbsp;champ magnétique',v=>fr(v,1)+'·10⁶ m/s',v=>fr(v,2)+' T'],I:['I &nbsp;courant dans le fil','B &nbsp;champ de l’aimant',v=>fr(v,1)+' A',v=>fr(v,2)+' T'],W:['I &nbsp;courant dans le fil','',v=>fr(v,1)+' A',v=>'']}[ctxt];
-  $('pA').innerHTML=lab[0];$('pB').innerHTML=lab[1];$('vA').textContent=lab[2](A);$('vB').textContent=lab[3](Bm);
-  $('rowT').style.display=ctxt==='W'?'none':'';$('rowB').style.display=ctxt==='W'?'none':'';$('sw').style.display=ctxt==='W'?'none':'';$('pl').style.display=ctxt==='W'?'none':'';$('qs').style.display=ctxt==='Q'?'':'none';
-  $('fml').innerHTML={V:'<b>Règle de la main droite</b> : les doigts partent du <b style="color:#a32d2d">premier vecteur a</b> et s’enroulent vers le <b style="color:#185fa5">second b</b> par le plus petit angle θ ; le <b>pouce</b> donne le sens de <b style="color:#534AB7">a × b</b>, perpendiculaire au plan de a et b. Sa norme <b>|a × b| = |a|·|b|·sin θ</b> est l’aire du parallélogramme. L’ordre compte : <b>b × a = −(a × b)</b>.',
-    Q:'Sur une charge q de vitesse <b style="color:#0F6E56">v</b> dans un champ <b style="color:#185fa5">B</b> : <b style="color:#a32d2d">F = q·v × B</b>. Doigts selon v, enroulés vers B : le pouce donne v × B. <b>Si q est négative (électron), F est dans le sens opposé au pouce.</b> F est toujours perpendiculaire à v : elle courbe la trajectoire sans changer la norme de la vitesse (ni l’énergie cinétique).',
-    I:'Sur un fil de longueur L parcouru par un courant I dans un champ <b style="color:#185fa5">B</b> : force de Laplace <b style="color:#a32d2d">F = I·L × B</b>, de norme <b>I·L·B·sin θ</b>. Doigts dans le sens du courant, enroulés vers B : le pouce donne F. Fil parallèle à B (θ = 0°) : aucune force.',
-    W:'Deuxième usage de la main droite : <b>pouce dans le sens du courant I</b>, les <b>doigts qui serrent le fil</b> indiquent le sens des lignes de champ <b style="color:#534AB7">B</b>, qui sont des cercles centrés sur le fil. B = μ₀I/(2πr) diminue quand on s’éloigne.'}[ctxt];
-  const r=th*Math.PI/180;
-  $('info').innerHTML=ctxt==='V'?'θ = '+th+'° · sin θ = '+fr(Math.sin(r),3)+' · |a × b| = '+fr(A,1)+' × '+fr(Bm,1)+' × '+fr(Math.sin(r),3)+' = <b>'+fr(A*Bm*Math.sin(r),2)+'</b> · ordre : <b>'+(swap?'b × a (pouce vers le bas)':'a × b (pouce vers le haut)')+'</b>.'
-    :ctxt==='Q'?'|q| = 1,602·10⁻¹⁹ C · v = '+fr(A,1)+'·10⁶ m/s · B = '+fr(Bm,2)+' T · θ = '+th+'° · <b>F = '+fr(QE*A*1e6*Bm*Math.sin(r)*1e13,2)+'·10⁻¹³ N</b> · '+(neg?'électron : F opposée à v × B':'proton : F dans le sens de v × B')+'.'
-    :ctxt==='I'?'I = '+fr(A,1)+' A · L = 0,10 m · B = '+fr(Bm,2)+' T · θ = '+th+'° · <b>F = '+fr(A*0.1*Bm*Math.sin(r),3)+' N</b>'+(swap?' · ordre inversé B × I·L : c’est l’opposé de la force réelle.':'.')
-    :'I = '+fr(A,1)+' A · à r = 2 cm : B = 4π·10⁻⁷ × '+fr(A,1)+' / (2π × 0,02) = <b>'+fr(MU*A/(2*Math.PI*0.02)*1e6,1)+' µT</b> · à 5 cm : '+fr(MU*A/(2*Math.PI*0.05)*1e6,1)+' µT.';
-  $('hint').textContent=ctxt==='W'?'Glisse pour tourner autour du fil, molette pour zoomer.':'Attrape la pointe du second vecteur (bleu) pour changer θ. Glisse ailleurs pour tourner la vue, molette pour zoomer.';}
+// ---- paume : superellipsoïde déformée (dos bombé, creux de la paume, éminences thénar et hypothénar) ----
+function palmGeometry(){
+  const A=0.5,T=0.15,W=0.46,NU=26,NV=48,e1=0.42,e2=0.42;
+  const sp=(v,e)=>Math.sign(v)*Math.pow(Math.abs(v),e);
+  const pos=[],idx=[];
+  const put=(cu,su,cv,sv)=>{
+    let x=A*sp(cu,e1)*sp(cv,e2),y=T*sp(su,e1),z=W*sp(cu,e1)*sp(sv,e2);
+    const t=(x/A+1)/2;                                   // 0 au poignet, 1 aux jointures
+    z*=0.80+0.20*Math.sqrt(t);                           // plus large aux jointures
+    x+=0.06*(1-Math.pow(z/W,2))*Math.max(0,x/A);         // arc des jointures (majeur en avant)
+    x-=0.05*Math.pow(Math.max(0,z/W),2)*Math.max(0,x/A); // bord de l'index un peu en retrait
+    const zn=z/W;
+    if(y<0){y*=1+0.28*(1-zn*zn);}                        // dos de la main bombé
+    else{
+      y*=1-0.45*Math.exp(-((x-0.05)*(x-0.05)/0.05+zn*zn/0.35)); // creux de la paume
+      y+=0.10*Math.exp(-((x+0.22)*(x+0.22)/0.045+(z-0.24)*(z-0.24)/0.03))*Math.max(0,y/T+0.3); // thénar
+      y+=0.05*Math.exp(-((x+0.12)*(x+0.12)/0.08+(z+0.30)*(z+0.30)/0.02))*Math.max(0,y/T+0.3); // hypothénar
+      y+=0.035*Math.exp(-((x-0.42)*(x-0.42)/0.006))*Math.max(0,y/T);    // bourrelet sous les doigts
+    }
+    pos.push(x,y,z);};
+  put(0,-1,1,0);                                        // pôle −y
+  for(let i=1;i<NU;i++){const u=-Math.PI/2+Math.PI*i/NU;
+    for(let j=0;j<NV;j++){const v=-Math.PI+2*Math.PI*j/NV;put(Math.cos(u),Math.sin(u),Math.cos(v),Math.sin(v));}}
+  put(0,1,1,0);                                         // pôle +y
+  const top=1+(NU-1)*NV,row=i=>1+(i-1)*NV;
+  for(let j=0;j<NV;j++){const j2=(j+1)%NV;idx.push(0,row(1)+j2,row(1)+j);}
+  for(let i=1;i<NU-1;i++)for(let j=0;j<NV;j++){const j2=(j+1)%NV,a=row(i)+j,b=row(i)+j2,c=row(i+1)+j,d=row(i+1)+j2;idx.push(a,b,d,a,d,c);}
+  for(let j=0;j<NV;j++){const j2=(j+1)%NV;idx.push(top,row(NU-1)+j,row(NU-1)+j2);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);
+  g.computeVertexNormals();return g;}
+const palm=new THREE.Mesh(palmGeometry(),skinMat);palm.position.x=0.02;hand.add(palm);  // plat dans le plan xz, paume vers +y
 
-// ---------- commandes ----------
-function seg(ids,o){ids.forEach(i=>$(i).classList.toggle('on',i===o));}
-const DEF={V:[2,1.5,0.5,3,0.1],Q:[2,0.5,0.5,5,0.1],I:[5,0.5,1,20,0.5],W:[10,0.5,1,30,1]};
-function setCtx(c){ctxt=c;seg(['cV','cQ','cI','cW'],'c'+c);const d=DEF[c];A=d[0];Bm=d[1];const s=$('sA');s.min=d[2];s.max=d[3];s.step=d[4];s.value=A;
-  const sb=$('sB');if(c==='V'){sb.min=0.5;sb.max=3;sb.step=0.1;}else{sb.min=0.1;sb.max=2;sb.step=0.05;}sb.value=Bm;curl=0;phase=0;
-  if(c==='W')view(-0.5,0.3,1.15,'v3');else view(-0.62,0.42,1.5,'v3');upd();}
-$('cV').onclick=()=>setCtx('V');$('cQ').onclick=()=>setCtx('Q');$('cI').onclick=()=>setCtx('I');$('cW').onclick=()=>setCtx('W');
-$('th').oninput=e=>{th=+e.target.value;upd();};$('sA').oninput=e=>{A=+e.target.value;upd();};$('sB').oninput=e=>{Bm=+e.target.value;upd();};
-$('sw').onclick=()=>{swap=!swap;$('sw').classList.toggle('on',swap);phase=0;upd();};
-$('qs').onclick=()=>{neg=!neg;$('qs').classList.toggle('on',neg);upd();};
-$('an').onclick=()=>{anim=!anim;$('an').classList.toggle('on',anim);};
-$('pl').onclick=()=>{showP=!showP;$('pl').classList.toggle('on',showP);};
-let viewT=null;function view(y,p,z,id){viewT=[y,p,z];seg(['v3','vT','vF'],id);}
-$('v3').onclick=()=>view(ctxt==='W'?-0.5:-0.62,ctxt==='W'?0.3:0.42,ctxt==='W'?1.15:1.5,'v3');$('vT').onclick=()=>view(0,1.5,1.4,'vT');$('vF').onclick=()=>view(0,0.04,1.4,'vF');
-let drag=null;function pos(e){const b=cv.getBoundingClientRect();return[e.clientX-b.left,e.clientY-b.top];}
-cv.addEventListener('pointerdown',e=>{const [X,Y]=pos(e);cv.setPointerCapture(e.pointerId);
-  if(ctxt!=='W'){const bb=vecs().b,bt=pr(ctxt==='V'?mul(bb,0.55):mul(nrm(bb),0.85));if(Math.hypot(X-bt[0],Y-bt[1])<26){drag={t:'b'};cv.style.cursor='grabbing';return;}}
-  drag={t:'v',x:X,y:Y};viewT=null;seg(['v3','vT','vF'],'');cv.style.cursor='grabbing';});
-cv.addEventListener('pointermove',e=>{if(!drag)return;const [X,Y]=pos(e);
-  if(drag.t==='b'){const u=unproj(X,Y,0);if(u){let an=Math.atan2(u[1],u[0])*180/Math.PI;th=Math.round(Math.max(5,Math.min(175,an<-90?175:an<0?5:an)));$('th').value=th;upd();}}
-  else{yaw+=(X-drag.x)*0.008;pitch=Math.max(-0.6,Math.min(1.5,pitch+(Y-drag.y)*0.008));drag.x=X;drag.y=Y;}});
-function up(){drag=null;cv.style.cursor='grab';}cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
-cv.addEventListener('wheel',e=>{e.preventDefault();zoom=Math.max(0.6,Math.min(2.4,zoom*Math.exp(-e.deltaY*0.001)));},{passive:false});
-let last=null,phase=0;
-function frame(ts){if(last===null)last=ts;const dt=Math.min(0.05,(ts-last)/1000);last=ts;t+=dt;
-  const target=th*Math.PI/180;if(anim){phase=(phase+dt)%4.2;const p=phase<1.8?phase/1.8:phase<3.4?1:1-(phase-3.4)/0.8;curl=target*(0.5-0.5*Math.cos(Math.PI*p));}else curl=target;
-  if(viewT){yaw+=(viewT[0]-yaw)*0.12;pitch+=(viewT[1]-pitch)*0.12;zoom+=(viewT[2]-zoom)*0.12;if(Math.abs(viewT[0]-yaw)+Math.abs(viewT[1]-pitch)+Math.abs(viewT[2]-zoom)<1e-3)viewT=null;}
-  draw();requestAnimationFrame(frame);}
-window.__rmd={set:o=>{if(o.c)setCtx(o.c);if(o.th!=null){th=o.th;$('th').value=th;}if(o.A!=null){A=o.A;$('sA').value=A;}if(o.B!=null){Bm=o.B;$('sB').value=Bm;}if(o.neg!=null)neg=o.neg;if(o.swap!=null)swap=o.swap;if(o.still){anim=false;}upd();return document.getElementById('info').innerText;}};
-upd();requestAnimationFrame(frame);
+// poignet et avant-bras (section aplatie), manche de chemise
+const fa=capsuleBetween(new THREE.Vector3(-1.32,-0.01,0),new THREE.Vector3(-0.30,0,0),0.30,0.25);
+fa.m.scale.set(1,0.74,1.12);hand.add(fa.g);
+const sleeve=new THREE.Mesh(new THREE.CylinderGeometry(0.40,0.42,0.42,28,1,false),sleeveMat);
+sleeve.rotation.z=Math.PI/2;sleeve.scale.set(0.82,1,1.04);sleeve.position.set(-1.28,-0.01,0);hand.add(sleeve);
+const cuff=new THREE.Mesh(new THREE.TorusGeometry(0.40,0.035,10,32),sleeveMat);
+cuff.rotation.y=Math.PI/2;cuff.scale.set(1.04,0.82,1);cuff.position.set(-1.07,-0.01,0);hand.add(cuff);
+
+// 4 doigts au bord +x : index côté pouce (+z), auriculaire en −z ; légère divergence
+const fingers=[];
+const FD=[ // [x base, z base, écart, longueurs, rayon]
+  [0.47, 0.285,-0.07,[0.36,0.23,0.19],0.090],   // index
+  [0.52, 0.095,-0.01,[0.40,0.26,0.20],0.094],   // majeur
+  [0.50,-0.095, 0.05,[0.37,0.24,0.19],0.088],   // annulaire
+  [0.43,-0.270, 0.12,[0.29,0.19,0.16],0.076]];  // auriculaire
+FD.forEach(d=>{const F=finger(d[3],d[4]);F.root.position.set(d[0],0.0,d[1]);F.root.rotation.y=d[2];F.splay=d[2];hand.add(F.root);fingers.push(F);
+  // jointure saillante sur le dos de la main
+  const kn=new THREE.Mesh(new THREE.SphereGeometry(d[4]*1.05,16,12),skinMat);kn.scale.set(1,0.85,1);kn.position.set(d[0]-0.03,-0.06,d[1]);hand.add(kn);});
+
+// POUCE : métacarpien charnu (éminence thénar) puis 2 phalanges orientées selon +z (= ā×b̄)
+const tBase=new THREE.Vector3(-0.30,0.05,0.24),tKnuck=new THREE.Vector3(0.0,0.07,0.50);
+const tm=capsuleBetween(tBase,tKnuck,0.19,0.125);tm.m.scale.set(1,0.8,1);hand.add(tm.g);
+const thumb=finger([0.29,0.24],0.122);
+const thumbPivot=new THREE.Group();thumbPivot.position.copy(tKnuck);
+thumbPivot.rotation.set(0,-Math.PI/2,0);       // phalanges orientées vers +z (= ā×b̄), flexion vers la paume
+thumbPivot.add(thumb.root);hand.add(thumbPivot);
+// le pli de la peau entre pouce et index
+const web=capsuleBetween(new THREE.Vector3(0.0,0.06,0.44),new THREE.Vector3(0.40,0.03,0.30),0.085,0.07);hand.add(web.g);
+
+// ---- vecteurs (flèches 3D) ----
+const ORIG=new THREE.Vector3(0,0,0);
+// flèche pleine (tige cylindrique + pointe conique), même interface que ArrowHelper (setDirection / setLength)
+function arrow(dir,len,color){
+  const mat=new THREE.MeshStandardMaterial({color,roughness:0.42,metalness:0.05});
+  const g=new THREE.Group();
+  const shaft=new THREE.Mesh(new THREE.CylinderGeometry(0.035,0.035,1,16),mat);
+  const head=new THREE.Mesh(new THREE.ConeGeometry(1,1,24),mat);
+  shaft.castShadow=head.castShadow=true;g.add(shaft);g.add(head);
+  const base=new THREE.Mesh(new THREE.SphereGeometry(0.05,12,12),mat);g.add(base);
+  g.setDirection=function(d){const v=d.clone().normalize();
+    if(v.y>0.99999)g.quaternion.set(0,0,0,1);else if(v.y<-0.99999)g.quaternion.set(1,0,0,0);
+    else g.quaternion.setFromAxisAngle(new THREE.Vector3(v.z,0,-v.x).normalize(),Math.acos(v.y));};
+  g.setLength=function(L,hl,hw){hl=hl||0.28;hw=hw||0.16;const sl=Math.max(0.001,L-hl);
+    shaft.scale.set(1,sl,1);shaft.position.y=sl/2;head.scale.set(hw*0.7,hl,hw*0.7);head.position.y=sl+hl/2;};
+  g.setDirection(dir);g.setLength(len,0.28,0.16);return g;}
+const aArr=arrow(new THREE.Vector3(1,0,0),1.9,0xE24B4A);system.add(aArr);
+const bArr=arrow(new THREE.Vector3(1,0,0),1.9,0x378ADD);system.add(bArr);
+const mArr=arrow(new THREE.Vector3(0,0,1),1.5,0x7F77DD);system.add(mArr);
+
+// étiquettes
+function label(txt,color){const c=document.createElement('canvas');c.width=256;c.height=144;const x=c.getContext('2d');
+  x.font='800 84px Mulish,system-ui,sans-serif';x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';
+  x.strokeStyle='rgba(255,255,255,0.95)';x.lineWidth=16;x.strokeText(txt,128,76);x.fillStyle=color;x.fillText(txt,128,76);
+  const tex=new THREE.CanvasTexture(c);tex.anisotropy=4;
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,depthTest:false,transparent:true}));sp.renderOrder=10;
+  sp.scale.set(0.8,0.45,1);system.add(sp);return sp;}
+const laA=label('ā','#E24B4A'),laB=label('b̄','#378ADD'),laM=label('ā×b̄','#7F77DD');
+// arc de l'angle θ entre ā et b̄ (plan xy)
+const arcMat=new THREE.MeshBasicMaterial({color:0xBA7517,transparent:true,opacity:0.9});
+const arcFill=new THREE.MeshBasicMaterial({color:0xBA7517,transparent:true,opacity:0.12,side:THREE.DoubleSide,depthWrite:false});
+let arcMesh=null,arcSector=null;const laT=label('θ','#BA7517');laT.scale.set(0.6,0.34,1);
+function setArc(thr){if(arcMesh){system.remove(arcMesh);arcMesh.geometry.dispose();system.remove(arcSector);arcSector.geometry.dispose();}
+  const R0=0.95;arcMesh=new THREE.Mesh(new THREE.TorusGeometry(R0,0.018,8,48,thr),arcMat);system.add(arcMesh);
+  arcSector=new THREE.Mesh(new THREE.CircleGeometry(R0,48,0,thr),arcFill);system.add(arcSector);
+  laT.position.set(1.22*Math.cos(thr/2),1.22*Math.sin(thr/2),0);}
+let lastTh=null;
+
+// ---- interaction : orbite + zoom (PAS de rotation auto) ----
+let drag=null;
+renderer.domElement.style.cursor='grab';
+renderer.domElement.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY};renderer.domElement.style.cursor='grabbing';});
+window.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+  if(dragMode==='hand'){system.rotateOnWorldAxis(new THREE.Vector3(0,1,0),dx*0.01);system.rotateOnWorldAxis(new THREE.Vector3(1,0,0),dy*0.01);}
+  else{camTheta-=dx*0.006;camPhi=Math.max(0.2,Math.min(2.9,camPhi-dy*0.006));}
+  drag={x:e.clientX,y:e.clientY};});
+window.addEventListener('pointerup',()=>{drag=null;renderer.domElement.style.cursor='grab';});
+renderer.domElement.addEventListener('wheel',e=>{e.preventDefault();zoomCam(e.deltaY<0?1/1.1:1.1);},{passive:false});
+
+function resize(){const w=wrap.clientWidth,h=wrap.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;
+  /* écran étroit (téléphone) : on élargit le champ vertical pour garder un champ horizontal suffisant (étiquettes ā, ā×b̄ non rognées) */
+  const t0=Math.tan(22.5*Math.PI/180);camera.fov=2*Math.atan(Math.max(t0,t0*1.05/camera.aspect))*180/Math.PI;camera.updateProjectionMatrix();}
+window.addEventListener('resize',resize);
+
+let t=0;
+function tick(){
+  const thr=thDeg*Math.PI/180;
+  // b̄ dans le plan xy à l'angle θ ; ā×b̄ selon +z, longueur ∝ sinθ
+  bArr.setDirection(new THREE.Vector3(Math.cos(thr),Math.sin(thr),0));
+  if(lastTh!==thDeg){setArc(thr);lastTh=thDeg;}
+  const Mmag=Math.sin(thr);mArr.setLength(Math.max(0.25,1.7*Math.abs(Mmag)),0.28,0.16);
+  // enroulement des doigts (animation, sans tourner la main)
+  if(animOn)t+=0.03;const curl=(Math.sin(t)*0.5+0.5)*1.25+0.06;
+  // flexion par articulation (métacarpo-phalangienne, interphalangiennes proximale et distale)
+  const FLX=[0.80,1.05,0.78];
+  fingers.forEach((F,i)=>F.joints.forEach((j,k)=>{j.rotation.z=0.05+curl*FLX[k]*(1+0.05*i);}));
+  thumb.joints.forEach((j,k)=>j.rotation.z=0.10+curl*0.06);
+  // caméra
+  camera.position.set(camR*Math.sin(camPhi)*Math.cos(camTheta),camR*Math.cos(camPhi),camR*Math.sin(camPhi)*Math.sin(camTheta));
+  camera.lookAt(0,0,0);
+  // placer les étiquettes au bout des flèches
+  laA.position.set(2.1,0,0);
+  laB.position.set(2.1*Math.cos(thr),2.1*Math.sin(thr),0);
+  laM.position.set(0,0,Math.max(0.4,1.9*Math.abs(Mmag)));
+  document.getElementById('info').innerHTML='‖ā×b̄‖ = sinθ = <b style="color:#7F77DD">'+Mmag.toFixed(2).replace('.',',')+'</b> (max à 90°). 🖱 glisse pour tourner, molette pour zoomer.';
+  renderer.render(scene,camera);requestAnimationFrame(tick);}
+hand.traverse(o=>{if(o.isMesh&&handMats.indexOf(o.material)>=0)o.castShadow=true;});
+resize();tick();
 })();
 </script>
 </section></main>

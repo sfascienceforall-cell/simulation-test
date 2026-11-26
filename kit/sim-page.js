@@ -14,6 +14,7 @@ function shell(o) {
 /* Charge les fichiers sims-NN.js du cours qui manquent (dans l'ordre) ; again = recharger aussi ceux déjà présents. */
 function loadCourse(again, cb) {
   var M = window.SFA.meta, have = {}, todo = [], redo = [];
+  if (M && M.visuels) { cb(); return; }   /* cours « visuels » : pas de fichiers sims-NN.js numérotés à charger */
   Array.prototype.forEach.call(document.scripts, function (s) { var m = /sims-(\d+)\.js/.exec(s.src || ""); if (m) have[m[1]] = 1; });
   for (var i = 1; i <= Math.max(M && M.chapitres ? M.chapitres.length : 1, 1); i++) { var nn = String(i).padStart(2, "0"); if (!have[nn]) todo.push(nn); else if (again) redo.push(nn); }
   todo = todo.concat(redo);
@@ -36,14 +37,14 @@ function start() {
   document.body.classList.add("m-" + (M.matiere || "maths"));
   document.title = strip(d.titre) + " · " + (M.court || M.titre) + " · SFA";
   var nav = (M.nav || []).map(function (n) { return '<a href="' + rel(n[0]) + '"' + (n[2] ? ' class="on"' : "") + ">" + n[1] + "</a>"; }).join("");
-  var prepa = M.prepa || "https://sciencesforall.be/concours";
+  var prepa = M.prepa || "https://sciencesforall.be/concours", V = !!M.visuels;   /* V : cours sans théorie ni exercices */
   document.getElementById("app").innerHTML =
     '<header class="sfa-top"><div class="in"><a class="sfa-logo" href="https://sciencesforall.be"><i>SFA</i>Science For All</a><nav class="sfa-nav">' + nav + '</nav><a class="sfa-cta" href="' + prepa + '">Prépa concours médecine</a></div></header>' +
     '<div class="sfa-page"><nav class="sfa-crumbs" aria-label="Fil d\'Ariane"><a href="../">' + esc(M.court || M.titre) + '</a>›<a href="../#c=' + ci + '">' + esc(c.titre) + "</a>›<b>" + esc(strip(d.titre)) + "</b></nav>" +
     '<div class="sfa-grid"><main style="min-width:0">' +
     '<div class="sfa-titlecard"><div class="sfa-chips"><span class="sfa-chip">' + esc(M.court || M.titre) + " · Ch. " + (ci + 1) + '</span><span class="sfa-chip free">Gratuit</span>' + (d.tag ? '<span class="sfa-chip">' + esc(d.tag) + "</span>" : "") + "</div><h1>" + d.titre + "</h1><p>" + (d.but || d.resume || "") + "</p></div>" +
     '<section class="sfa-sim simhost" id="host"></section>' +
-    '<div class="sp-next"><a class="sp-go" href="../#c=' + ci + '&v=theo"><small>Rappel</small><b>Théorie du chapitre</b></a><a class="sp-go ex" href="../#c=' + ci + '&v=list"><small>S\'entraîner</small><b>Exercices du chapitre ★ → ★★★★★</b></a>' +
+    '<div class="sp-next">' + (V ? "" : '<a class="sp-go" href="../#c=' + ci + '&v=theo"><small>Rappel</small><b>Théorie du chapitre</b></a><a class="sp-go ex" href="../#c=' + ci + '&v=list"><small>S\'entraîner</small><b>Exercices du chapitre ★ → ★★★★★</b></a>') +
     (next ? '<a class="sp-go nx" href="../' + next.id + '/" rel="next"><small>Simulation suivante →</small><b>' + strip(next.titre) + "</b></a>"
           : (M.chapitres[ci + 1] ? '<a class="sp-go nx" href="../#c=' + (ci + 1) + '"><small>Chapitre suivant →</small><b>' + esc(M.chapitres[ci + 1].titre) + "</b></a>" : "")) + "</div>" +
     (prev ? '<a class="sp-prev" href="../' + prev.id + '/" rel="prev">← ' + strip(prev.titre) + "</a>" : "") +
@@ -51,7 +52,7 @@ function start() {
     '<aside class="sfa-side"><div class="sfa-list"><h2>' + esc(c.titre) + "<span>" + mates.length + " simulation" + (mates.length > 1 ? "s" : "") + "</span></h2><ol>" +
     mates.map(function (s, j) { return '<li><a href="../' + s.id + '/"' + (s === d ? ' class="on" aria-current="page"' : "") + "><i>" + String(j + 1).padStart(2, "0") + "</i>" + strip(s.titre) + "</a></li>"; }).join("") + "</ol>" +
     '<div class="sp-chap"><a href="../#c=' + ci + '">Tout le chapitre ' + (ci + 1) + " →</a></div></div>" +
-    '<div class="sfa-promo"><small>Envie d\'aller plus loin ?</small><b>La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.</b><a href="' + prepa + '">Voir la prépa concours médecine</a></div></aside></div></div>' +
+    '<div class="sfa-promo"><small>Envie d\'aller plus loin ?</small><b>' + (V ? "La prépa concours médecine SFA : le cours complet, la préparation aux examens et le suivi." : "La prépa concours médecine SFA : le cours complet, les exercices type examen corrigés et le suivi.") + '</b><a href="' + prepa + '">Voir la prépa concours médecine</a></div></aside></div></div>' +
     '<footer class="sfa-foot">Science For All · ' + esc(M.court || M.titre) + "</footer>";
   if (window.SFANAV) window.SFANAV.mount();
   /* flèches du clavier : simulation précédente / suivante (sauf pendant la saisie ou sur un curseur) */
@@ -66,7 +67,7 @@ function start() {
   var kit = S.mount(d, host);
   shell({ cours: M.court || M.titre, ci: ci, n: M.chapitres.length, titre: c.titre, cur: k, host: host,
           sims: mates.map(function (s) { return { href: "../" + s.id + "/", t: strip(s.titre) }; }),
-          theo: "../#c=" + ci + "&v=theo", exos: "../#c=" + ci + "&v=list" });
+          theo: V ? null : "../#c=" + ci + "&v=theo", exos: V ? null : "../#c=" + ci + "&v=list", visuels: V });
   /* Certaines simulations utilisent des aides communes définies dans le fichier d'un autre chapitre
      (ex. B4, C4 dans sims-01.js). Si la construction échoue faute d'une telle aide, on charge les autres
      fichiers sims-NN.js du cours puis on reconstruit la simulation. */
@@ -85,7 +86,7 @@ function start() {
    on le charge d'abord s'il manque, pour éviter un premier essai en échec. */
 function boot() {
   var has01 = Array.prototype.some.call(document.scripts, function (s) { return /sims-01\.js/.test(s.src || ""); });
-  if (has01 || !window.SFA || !window.SFA.meta) { start(); return; }
+  if (has01 || !window.SFA || !window.SFA.meta || window.SFA.meta.visuels) { start(); return; }
   var s = document.createElement("script"); s.src = "../sims-01.js";
   s.onload = s.onerror = function () { start(); };
   document.head.appendChild(s);

@@ -16,6 +16,7 @@ S.sim  = function(d){
 var preloaded = false;
 function preload01(){
   if (preloaded || !window.SFA_SIMPAGE || document.readyState !== "loading" || window.SFA_NO_PRELOAD) return;
+  if (S.meta && S.meta.visuels) return;   /* cours « visuels » (ex. quantique) : pas de sims-01.js */
   preloaded = true;
   try { document.write('<script src="../sims-01.js"><\/script>'); } catch (e){}
 }
